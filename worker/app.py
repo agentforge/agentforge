@@ -48,6 +48,7 @@ def chat():
   # Use the chatbot to generate a response
   response = chatbot.handle_input(message, context)
 
+  print(response)
   # Return the response
   return jsonify({"response": response})
 

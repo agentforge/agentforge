@@ -43,7 +43,8 @@ class GPT2Chatbot:
     self.history.append(f"[human]: {input_str}")
 
     # Generate a response to the user input
-    response = self.generate_response("\n".join(self.history))
+    # response = self.generate_response("\n".join(self.history))
+    response = self.generate_response(input_str)
 
     # Update the conversation history
     self.history.append(f"[robot]: {response}")
