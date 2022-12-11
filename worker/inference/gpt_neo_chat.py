@@ -5,18 +5,19 @@ from config import Config
 
 class GPT2Chatbot:
   def __init__(self):
-    config = Config()
+    self._c = Config()
     # Load the GPT-2 model and tokenizer from the transformers library
-    self.model = AutoModelForCausalLM.from_pretrained(config.config["gpt_model_cache"])
-    self.tokenizer = AutoTokenizer.from_pretrained(config.config["tokenizer_cache"])
+    self.model = AutoModelForCausalLM.from_pretrained(self._c.config["gpt_model_cache"])
+    self.tokenizer = AutoTokenizer.from_pretrained(self._c.config["tokenizer_cache"])
 
     # Initialize an empty list for storing the conversation history
     self.history = []
 
   def generate_response(self, prompt, temperature=0.5):
+
     # Use the GPT-2 model to generate a response to the given prompt
     input_ids = self.tokenizer.encode(prompt, return_tensors="pt")
-    response = self.model.generate(input_ids=input_ids, max_length=256, temperature=temperature)
+    response = self.model.generate(input_ids=input_ids, max_length=self._c.config["max_length"], temperature=temperature)
 
     # Extract the generated text from the response
     generated_text = self.tokenizer.decode(response[0])
