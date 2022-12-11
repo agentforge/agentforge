@@ -65,3 +65,4 @@ gem 'haml'
 gem 'haml-rails'
 gem 'bootstrap', '~> 4.0.0'
 gem 'jquery-rails'
+gem "font-awesome-sass", "~> 6.2.1"

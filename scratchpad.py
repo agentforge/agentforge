@@ -76,19 +76,10 @@ tokenizer = AutoTokenizer.from_pretrained("EleutherAI/gpt-neo-1.3B")
 model = AutoModelForCausalLM.from_pretrained("EleutherAI/gpt-neo-1.3B")
 prompt = """This is a discussion between a [human] and a [robot]. 
 The [robot] is very nice and empathetic.
-
-[human]: Hello nice to meet you.
-[robot]: Nice to meet you too.
-###
-[human]: How is it going today?
-[robot]: Not so bad, thank you! How about you?
-###
-[human]: I am ok, but I am a bit sad...
-[robot]: Oh? Why that?
-###
-[human]: I broke up with my girlfriend...
-[robot]: """
+[human]: Hello
+[robot]:
+"""
 input_ids = tokenizer(prompt, return_tensors="pt").input_ids
 # generate up to 30 tokens
-outputs = model.generate(input_ids, do_sample=True, max_length=)
+outputs = model.generate(input_ids, do_sample=True, max_length=64)
 tokenizer.batch_decode(outputs, skip_special_tokens=True)

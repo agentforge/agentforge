@@ -14,7 +14,7 @@ class InferenceController < ApplicationController
     request.body = JSON.dump(message: text, context: "")
   
     response = http.request(request)
-    
-    render json: { text: response.body }
+
+    render json: { text: ActionController::Base.helpers.strip_tags(JSON.parse(response.body)["response"]) }
   end
 end

@@ -5,9 +5,9 @@
     = Time.now
 
   .chat-widget
-    %ul.chat-history
+    %ul.chat-history{style:"max-height: 500px;overflow: scroll;"}
       %li.chat-log
-        %p No Chat History
+        %p Link: Hello
     #chat-input.row
       %input#user-input.col.form-control{type: "text"}
       %button#send-message.btn.btn-primary.col-2 Enter
