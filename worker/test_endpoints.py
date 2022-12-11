@@ -1,6 +1,7 @@
 # Import necessary libraries
 import requests
 import os
+import pytest
 
 # Define the URL of the API
 API_URL = "http://localhost:3000"

@@ -1,0 +1,6 @@
+{
+  "processor_cache": "../openai-whisper-large-processor",
+  "whisper_model_cache": "../openai-whisper-large",
+  "gpt_model_cache": "../EleutherAI-gpt-neo-1.3B",
+  "tokenizer_cache": "../EleutherAI-gpt-neo-1.3B-tokenizer"
+}

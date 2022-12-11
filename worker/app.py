@@ -26,7 +26,7 @@ def tts():
 
   # Use the gTTS library to generate a wav file from the given text
   # Call the speech function
-  wav_file = tts_pipeline.speech("Hello, I am a text-to-speech system.", "speech.wav")
+  wav_file = tts_pipeline.speech(text, filename)
   
   with open(wav_file, "rb") as f:
     wav_data = f.read()
@@ -35,7 +35,7 @@ def tts():
   return send_file(
     io.BytesIO(wav_data),
     mimetype="audio/wav",
-    attachment_filename="speech.wav"
+    attachment_filename=filename
   )
 
 # Define the API endpoint for chatting with the chatbot

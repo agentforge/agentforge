@@ -1,12 +1,14 @@
 # Import necessary libraries
 from transformers import AutoModelForCausalLM, AutoTokenizer
 import re
+from config import Config
 
 class GPT2Chatbot:
-  def __init__(self, model_name="./EleutherAI-gpt-neo-1.3B"):
+  def __init__(self):
+    config = Config()
     # Load the GPT-2 model and tokenizer from the transformers library
-    self.model = AutoModelForCausalLM.from_pretrained(model_name)
-    self.tokenizer = AutoTokenizer.from_pretrained("EleutherAI/gpt-neo-1.3B")
+    self.model = AutoModelForCausalLM.from_pretrained(config.config["gpt_model_cache"])
+    self.tokenizer = AutoTokenizer.from_pretrained(config.config["tokenizer_cache"])
 
     # Initialize an empty list for storing the conversation history
     self.history = []
