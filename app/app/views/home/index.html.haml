@@ -1,0 +1,13 @@
+.container
+  %h1 Welcome to Elder Link!
+  %p
+    The current time is
+    = Time.now
+
+  .chat-widget
+    %ul.chat-history
+      %li.chat-log
+        %p No Chat History
+    #chat-input.row
+      %input#user-input.col.form-control{type: "text"}
+      %button#send-message.btn.btn-primary.col-2 Enter
