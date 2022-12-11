@@ -1,5 +1,5 @@
 # Import necessary libraries
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
 import re
 from config import Config
 
@@ -7,7 +7,7 @@ class GPT2Chatbot:
   def __init__(self):
     self._c = Config()
     # Load the GPT-2 model and tokenizer from the transformers library
-    self.model = AutoModelForCausalLM.from_pretrained(self._c.config["gpt_model_cache"])
+    self.model = AutoModelForSeq2SeqLM.from_pretrained(self._c.config["gpt_model_cache"])
     self.tokenizer = AutoTokenizer.from_pretrained(self._c.config["tokenizer_cache"])
 
     # Initialize an empty list for storing the conversation history
@@ -44,8 +44,8 @@ class GPT2Chatbot:
     self.history.append(f"[human]: {input_str}")
 
     # Generate a response to the user input
-    # response = self.generate_response("\n".join(self.history))
-    response = self.generate_response(input_str)
+    response = self.generate_response("\n".join(self.history))
+    # response = self.generate_response(input_str)
 
     # Update the conversation history
     self.history.append(f"[robot]: {response}")
