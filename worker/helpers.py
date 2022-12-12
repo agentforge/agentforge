@@ -1,4 +1,5 @@
-import sys
+import importlib
 
 def str_to_class(classname):
-    return getattr(sys.modules[__name__], classname)
+  my_module = importlib.import_module("transformers")
+  return getattr(my_module, classname)
