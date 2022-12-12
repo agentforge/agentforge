@@ -29,12 +29,14 @@ class GPT2Chatbot:
     # Split the strings into a list of strings separated by [human] and [robot]
     new_phrases = re.split('\[robot\]|\[human\]', new_phrase)
     new_phrases = filter(lambda x: not (x.isspace() or len(x) == 0), new_phrases)
+    new_phrases = list(new_phrases)
     print(new_phrases)
     print(self.history)
     # Loop through the phrases in the new string
     for phrase in new_phrases:
       fixed = phrase.replace(":", "").strip()
       print(fixed)
+      print(f"[robot]: {fixed}" not in self.history and f"[human]: {fixed}" not in self.history)
       # Check if the phrase exists in the previous string
       if f"[robot]: {fixed}" not in self.history and f"[human]: {fixed}" not in self.history:
         # Return the phrase if it is not in the previous string
@@ -66,19 +68,34 @@ class GPT2Chatbot:
 
     return input_str
 
+  def relevant_history(self):
+    return self.history[-self._c.config["history_cache_stack"]:]
+
+  def reset_history(self):
+    self.history = []
+    print(self.history)
+
+  # Considers an input_str, a user supplied context, and 
   def handle_input(self, input_str, context):
+    print("Processing...")
+    print(f"input_str: {input_str}")
+    print(f"context: {context}")
     # Preprocess the user input
     input_str = self.preprocess_input(input_str)
+
+    # The default context forces the conversation into the POV of a chat
+    default_context = self._c.config["default_context"]
 
     # Update the conversation history
     self.history.append(f"[human]: {input_str}")
 
     # Generate a response to the user input
-    response = self.generate_response(context + "\n".join(self.history))
+    print(f"actual input: {context + '\n'.join(self.relevant_history()) + ' [robot]:'}")
+    response = self.generate_response(default_context + " " + context + "\n".join(self.relevant_history()) + " [robot]:")
+    print(f"eesponse: {response}")
     # response = self.generate_response(input_str)
-    print(f"Response {response}")
-    print(f"Context {context}")
-    new_phrase = self.find_new_phrase(response, context)
+
+    new_phrase = self.find_new_phrase(response, default_context  + " " +  context)
 
     # Update the conversation history
     self.history.append(f"[robot]: {new_phrase}")

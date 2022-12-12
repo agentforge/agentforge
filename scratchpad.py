@@ -72,8 +72,8 @@ translation = model.generate(model_inputs)
 
 
 from transformers import AutoTokenizer, AutoModelForCausalLM, GPTJForCausalLM
-tokenizer = AutoTokenizer.from_pretrained("EleutherAI/gpt-neo-1.3B")
-model = AutoModelForCausalLM.from_pretrained("EleutherAI/gpt-neo-1.3B")
+tokenizer = AutoTokenizer.from_pretrained("./EleutherAI-gpt-neo-1.3B-tokenizer")
+model = AutoModelForCausalLM.from_pretrained("./EleutherAI-gpt-neo-1.3B")
 prompt = """This is a discussion between a [human] and a [robot]. 
 The [robot] is very nice and empathetic.
 [human]: Hello

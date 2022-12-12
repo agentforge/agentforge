@@ -85,8 +85,21 @@ def test_chat():
     # Assert that the response contains something
     assert len(response.json()["response"]) > 0
 
+# Test the /reset_history endpoint
+def test_reset():
+    # Make a POST request to the /reset_history endpoint
+    response = requests.post(f"{API_URL}/reset_history")
+
+    # Assert that the response status code is 200
+    assert response.status_code == 200
+
+    # Assert that the response contains True
+    assert len(response.json()["success"]) == True
+
+
 # Run the tests
 if __name__ == "__main__":
   test_tts()
   test_chat()
   test_interpret()
+  test_reset()

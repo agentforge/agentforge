@@ -6,3 +6,17 @@ ul.chat-history {
   max-height: 300px;
   overflow-y: scroll;
 }
+.control-panel {
+  h2 {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  .form-check {
+    margin-bottom: 10px;
+  }
+
+  .form-group {
+    margin-bottom: 20px;
+  }
+}

@@ -52,6 +52,14 @@ def chat():
   # Return the response
   return jsonify({"response": response})
 
+# Define the API endpoint for chatting with the chatbot
+@app.route("/reset_history", methods=["POST"])
+def reset_history():
+  # Reset the history of the chatbot
+  chatbot.reset_history()
+  # Return the response
+  return jsonify({"success": True})
+
 # Define the /interpret endpoint
 @app.route("/interpret", methods=["POST"])
 def interpret():
