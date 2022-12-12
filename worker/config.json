@@ -2,6 +2,7 @@
   "processor_cache": "../../openai-whisper-large-processor",
   "whisper_model_cache": "../../openai-whisper-large",
   "gpt_model_cache": "../../EleutherAI-gpt-neo-1.3B",
+  "gpt_model_klass": "AutoModelForCausalLM",
   "tokenizer_cache": "../../EleutherAI-gpt-neo-1.3B-tokenizer",
-  "max_length": 64
+  "temperature": 0.5
 }

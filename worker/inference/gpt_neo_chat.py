@@ -1,23 +1,48 @@
 # Import necessary libraries
-from transformers import AutoModelForSeq2SeqLM, AutoTokenizer
+from transformers import AutoModelForSeq2SeqLM, AutoTokenizer, AutoModelForCausalLM
 import re
 from config import Config
+from helpers import str_to_class
 
 class GPT2Chatbot:
   def __init__(self):
     self._c = Config()
     # Load the GPT-2 model and tokenizer from the transformers library
-    self.model = AutoModelForSeq2SeqLM.from_pretrained(self._c.config["gpt_model_cache"])
+    klass = str_to_class(self._c.config["gpt_model_klass"])
+    self.model = klass.from_pretrained(self._c.config["gpt_model_cache"])
     self.tokenizer = AutoTokenizer.from_pretrained(self._c.config["tokenizer_cache"])
 
     # Initialize an empty list for storing the conversation history
     self.history = []
 
-  def generate_response(self, prompt, temperature=0.5):
+  def min_length(self, prompt):
+    # Returns the optimal min_length for this model
+    return len(prompt)+24
+  
+  def max_length(self, prompt):
+    # Returns the optimal max_length for this model
+    return len(prompt)+24
 
+  def find_new_phrase(self, new_phrase):
+    # Split the strings into a list of strings separated by [human] and [robot]
+    new_phrases = re.split('[robot]|[human]', new_phrase)
+
+    # Loop through the phrases in the new string
+    for phrase in new_phrases:
+      # Check if the phrase exists in the previous string
+      if phrase not in self.history:
+        # Return the phrase if it is not in the previous string
+        return phrase
+
+    # Return None if no new phrase was found
+    return None
+
+  def generate_response(self, prompt):
     # Use the GPT-2 model to generate a response to the given prompt
     input_ids = self.tokenizer.encode(prompt, return_tensors="pt")
-    response = self.model.generate(input_ids=input_ids, max_length=self._c.config["max_length"], temperature=temperature)
+    min_length = self.min_length(prompt)
+    max_length = self.max_length(prompt)
+    response = self.model.generate(input_ids=input_ids, do_sample=True, max_length=max_length, min_length=min_length, temperature=self._c.config["temperature"])
 
     # Extract the generated text from the response
     generated_text = self.tokenizer.decode(response[0])
@@ -47,10 +72,12 @@ class GPT2Chatbot:
     response = self.generate_response("\n".join(self.history))
     # response = self.generate_response(input_str)
 
-    # Update the conversation history
-    self.history.append(f"[robot]: {response}")
+    new_phrase = self.find_new_phrase(response)
 
-    return response
+    # Update the conversation history
+    self.history.append(f"[robot]: {new_phrase}")
+
+    return new_phrase
 
   def start_conversation(self):
     # Print a greeting message
