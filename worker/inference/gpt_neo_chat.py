@@ -90,7 +90,7 @@ class GPT2Chatbot:
     self.history.append(f"[human]: {input_str}")
 
     # Generate a response to the user input
-    print(f"actual input: {context + '\n'.join(self.relevant_history()) + ' [robot]:'}")
+    print(f"actual input: {default_context + context + ' '.join(self.relevant_history()) + ' [robot]:'}")
     response = self.generate_response(default_context + " " + context + "\n".join(self.relevant_history()) + " [robot]:")
     print(f"eesponse: {response}")
     # response = self.generate_response(input_str)
