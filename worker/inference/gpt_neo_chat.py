@@ -17,17 +17,17 @@ class GPT2Chatbot:
 
   def min_length(self, prompt):
     # Returns the optimal min_length for this model
-    return len(prompt)+24
+    return len(prompt)
   
   def max_length(self, prompt):
     # Returns the optimal max_length for this model
-    return len(prompt)+24
+    return len(prompt)+20
 
   def find_new_phrase(self, new_phrase, context):
     # Remove the context
     new_phrase = new_phrase.replace(context, "")
     # Split the strings into a list of strings separated by [human] and [robot]
-    new_phrases = re.split('\[robot\]|\[human\]', new_phrase)
+    new_phrases = re.split('\[robot\]:|\[human\]:', new_phrase)
     new_phrases = filter(lambda x: not (x.isspace() or len(x) == 0), new_phrases)
     new_phrases = list(new_phrases)
     print(new_phrases)
@@ -90,8 +90,8 @@ class GPT2Chatbot:
     self.history.append(f"[human]: {input_str}")
 
     # Generate a response to the user input
-    print(f"actual input: {default_context + context + ' '.join(self.relevant_history()) + ' [robot]:'}")
-    response = self.generate_response(default_context + " " + context + "\n".join(self.relevant_history()) + " [robot]:")
+    print(f"actual input: {default_context + ' ' + context + ' '.join(self.relevant_history()) + ' [robot]: '}")
+    response = self.generate_response(default_context + " " + context + " " + "\n".join(self.relevant_history()) + " [robot]: ")
     print(f"eesponse: {response}")
     # response = self.generate_response(input_str)
 

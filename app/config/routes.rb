@@ -7,5 +7,8 @@ Rails.application.routes.draw do
   post 'whisper/speech_to_text' => 'whisper#speech_to_text'
 
   post 'inference/interpret' => 'inference#interpret'
+
+  post 'inference/reset_history' => 'inference#reset_history'
+
   # For details on the DSL available within this file, see http://guides.rubyonrails.org/routing.html
 end
