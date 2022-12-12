@@ -23,17 +23,22 @@ class GPT2Chatbot:
     # Returns the optimal max_length for this model
     return len(prompt)+24
 
-  def find_new_phrase(self, new_phrase):
+  def find_new_phrase(self, new_phrase, context):
+    # Remove the context
+    new_phrase = new_phrase.replace(context, "")
     # Split the strings into a list of strings separated by [human] and [robot]
-    new_phrases = re.split('[robot]|[human]', new_phrase)
-
+    new_phrases = re.split('\[robot\]|\[human\]', new_phrase)
+    new_phrases = filter(lambda x: not (x.isspace() or len(x) == 0), new_phrases)
+    print(new_phrases)
+    print(self.history)
     # Loop through the phrases in the new string
     for phrase in new_phrases:
+      fixed = phrase.replace(":", "").strip()
+      print(fixed)
       # Check if the phrase exists in the previous string
-      if phrase not in self.history:
+      if f"[robot]: {fixed}" not in self.history and f"[human]: {fixed}" not in self.history:
         # Return the phrase if it is not in the previous string
-        return phrase
-
+        return fixed
     # Return None if no new phrase was found
     return None
 
@@ -69,10 +74,11 @@ class GPT2Chatbot:
     self.history.append(f"[human]: {input_str}")
 
     # Generate a response to the user input
-    response = self.generate_response("\n".join(self.history))
+    response = self.generate_response(context + "\n".join(self.history))
     # response = self.generate_response(input_str)
-
-    new_phrase = self.find_new_phrase(response)
+    print(f"Response {response}")
+    print(f"Context {context}")
+    new_phrase = self.find_new_phrase(response, context)
 
     # Update the conversation history
     self.history.append(f"[robot]: {new_phrase}")
@@ -100,4 +106,4 @@ class GPT2Chatbot:
 # Start a conversation if the module is run directly
 if __name__ == "__main__":
   chatbot = GPT2Chatbot()
-  chatbot.start_conversation()
+  print(chatbot.generate_response("Hi there!", ""))
