@@ -2,7 +2,7 @@
 from transformers import AutoModelForSeq2SeqLM, AutoTokenizer, AutoModelForCausalLM, GPTJForCausalLM
 import re
 import torch
-from history import History
+from .history import History
 from config import Config
 from helpers import str_to_class
 
