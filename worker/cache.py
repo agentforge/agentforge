@@ -1,5 +1,5 @@
 # Caches model locally so we can embed it into the Docker container image
-from transformers import AutoModelForCausalLM, AutoTokenizer, AutoModelForSpeechSeq2Seq, AutoProcessor
+from transformers import AutoModelForCausalLM, AutoTokenizer, AutoModelForSpeechSeq2Seq, AutoProcessor, GPTJForCausalLM
 
 tokenizer = AutoTokenizer.from_pretrained("EleutherAI/gpt-neo-1.3B")
 tokenizer.save_pretrained("./EleutherAI-gpt-neo-1.3B-tokenizer")
@@ -12,3 +12,6 @@ model.save_pretrained("./EleutherAI-gpt-neo-1.3B")
 
 whispermodel = AutoModelForSpeechSeq2Seq.from_pretrained("openai/whisper-large")
 whispermodel.save_pretrained("./openai-whisper-large")
+
+gptj = GPTJForCausalLM.from_pretrained("EleutherAI/gpt-j-6B")
+gptj.save_pretrained("./EleutherAI-gpt-j-6B")

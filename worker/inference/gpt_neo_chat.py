@@ -52,10 +52,11 @@ class GPT2Chatbot:
     self.history.append(f"[{self.name}]: {input_str}")
 
     # Generate a response to the user input
-    print(f"actual input: {self.default_context + ' ' + self.context + ' '.join(self.relevant_history(self._c.config['history_cache_stack'])) + ' [robot]:'}")
+    hist = self.history.relevant_history(self._c.config['history_cache_stack'])
+    print(f"actual input: {self.default_context + ' ' + self.context + ' '.join(hist) + ' [robot]:'}")
 
     # Use the GPT-2 model to generate a response to the given prompt
-    prompt = self.default_context + " " + self.context + " " + "\n".join(self.relevant_history(self._c.config["history_cache_stack"])) + " [robot]:"
+    prompt = self.default_context + " " + self.context + " " + "\n".join(hist) + " [robot]:"
     input_ids = self.tokenizer.encode(prompt, return_tensors="pt")
     min_length = self.min_length(prompt)
     max_length = self.max_length(prompt)

@@ -23,9 +23,6 @@ class InferenceController < ApplicationController
   end
 
   def reset_history
-    text = params[:text]
-    context = params[:context]
-
     uri = URI("http://localhost:3000/reset_history")
     http = Net::HTTP.new(uri.host, uri.port)
 

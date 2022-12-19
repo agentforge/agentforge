@@ -46,7 +46,7 @@ def chat():
   context = request.json["context"]
   name = request.json["name"]
 
-  opts = {name: name, context: context}
+  opts = {"name": name, "context": context}
 
   # Use the chatbot to generate a response
   response = chatbot.handle_input(message, opts)
