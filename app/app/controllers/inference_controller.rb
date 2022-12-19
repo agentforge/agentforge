@@ -6,6 +6,7 @@ class InferenceController < ApplicationController
     # an automated response
     text = params[:text]
     context = params[:context]
+    name = params[:name]
 
     uri = URI("http://localhost:3000/chat")
     http = Net::HTTP.new(uri.host, uri.port)
@@ -14,7 +15,7 @@ class InferenceController < ApplicationController
   
     request = Net::HTTP::Post.new(uri)
     request["Content-Type"] = "application/json"
-    request.body = JSON.dump(message: text, context: context)
+    request.body = JSON.dump(message: text, context: context, name: name)
   
     response = http.request(request)
 

@@ -15,3 +15,7 @@ To run an interactive shell use this instead:
 To run the flask server:
 
 ```flask run --host=0.0.0.0 --port=3000```
+
+To run the rails server
+
+```rails server -p 3001```

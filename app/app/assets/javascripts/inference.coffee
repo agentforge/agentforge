@@ -10,6 +10,7 @@ sendInferenceRequest = (url, text) ->
     data: 
       text: text
       context: $("#context-input").val()
+      name: $("#name-input").val()
       authenticity_token: window._token
     success: (response) ->
       $('.chat-history').append "<li><p>Link: #{response["text"]} </p></li>"
