@@ -11,8 +11,8 @@ class GPT2Chatbot:
     self._c = Config()
     # Load the GPT-2 model and tokenizer from the transformers library
     klass = str_to_class(self._c.config["gpt_model_klass"])
-    self.model = GPTJForCausalLM.from_pretrained("EleutherAI/gpt-j-6B", revision="float16", torch_dtype=torch.float16, low_cpu_mem_usage=True)
-    # self.model = klass.from_pretrained(self._c.config["gpt_model_cache"])
+    # self.model = GPTJForCausalLM.from_pretrained("EleutherAI/gpt-j-6B", revision="float16", torch_dtype=torch.float16, low_cpu_mem_usage=True)
+    self.model = klass.from_pretrained(self._c.config["gpt_model_cache"])
     self.tokenizer = AutoTokenizer.from_pretrained(self._c.config["tokenizer_cache"])
 
     # The default context forces the conversation into the POV of a chat
