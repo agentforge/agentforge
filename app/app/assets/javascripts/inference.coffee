@@ -1,8 +1,3 @@
-# Place all the behaviors and hooks related to the matching controller here.
-# All this logic will automatically be available in application.js.
-# You can use CoffeeScript in this file: http://coffeescript.org/
-
-
 sendInferenceRequest = (url, text) ->
   $.ajax
     url: url
@@ -17,6 +12,8 @@ sendInferenceRequest = (url, text) ->
       $("#spinner").remove()
 
 sendMessage = () ->
+  console.log(window.Settings["rails"]["host"])
+  console.log(window.Settings["rails"]["port"])
   text = $("#user-input").val()
   $("#user-input").val("")
   $('.chat-history').append "<li><p>You: #{text} </p></li>"

@@ -1,5 +1,6 @@
 class InferenceController < ApplicationController
   require 'net/http'
+  include Settings
 
   def interpret
     # Calls interpret API and takes request data and called inference engine to produce
@@ -7,8 +8,9 @@ class InferenceController < ApplicationController
     text = params[:text]
     context = params[:context]
     name = params[:name]
-
-    uri = URI("http://localhost:3000/chat")
+    host = Settings.config(['inference_api', 'host'])
+    port = Settings.config(['inference_api', 'port'])
+    uri = URI("http://#{host}:#{port}/chat")
     http = Net::HTTP.new(uri.host, uri.port)
 
     http.read_timeout = 600
@@ -23,7 +25,7 @@ class InferenceController < ApplicationController
   end
 
   def reset_history
-    uri = URI("http://localhost:3000/reset_history")
+    uri = URI("http://#{host}:#{port}/reset_history")
     http = Net::HTTP.new(uri.host, uri.port)
 
     http.read_timeout = 600

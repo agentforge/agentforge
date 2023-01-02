@@ -1,0 +1,8 @@
+# config/settings.yml
+
+inference_api:
+  host: 192.168.1.140
+  port: 3000
+rails:
+  host: localhost
+  port: 3001
