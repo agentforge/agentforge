@@ -72,7 +72,7 @@ class GPT2Chatbot:
     generated_text = re.sub(r"^\s+|\s+$", "", generated_text)
 
     total_context = self.default_context  + " " +  self.context
-    new_phrase = self.find_new_phrase(generated_text, total_context, self.name)
+    new_phrase = self.history.find_new_phrase(generated_text, total_context, self.name)
 
     # Update the conversation history
     self.history.append(f"[robot]: {new_phrase}")
