@@ -11,9 +11,12 @@ class GPT2Chatbot:
     self._c = Config()
     # Load the GPT-2 model and tokenizer from the transformers library
     klass = str_to_class(self._c.config["gpt_model_klass"])
-    # self.model = GPTJForCausalLM.from_pretrained("EleutherAI/gpt-j-6B", revision="float16", torch_dtype=torch.float16, low_cpu_mem_usage=True)
-    self.model = klass.from_pretrained(self._c.config["gpt_model_cache"])
+    self.model = GPTJForCausalLM.from_pretrained("EleutherAI/gpt-j-6B", revision="float16", torch_dtype=torch.float16, low_cpu_mem_usage=True)
+    # self.model = klass.from_pretrained(self._c.config["gpt_model_cache"])
     self.tokenizer = AutoTokenizer.from_pretrained(self._c.config["tokenizer_cache"])
+
+    device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
+    self.model = self.model.to(device)
 
     # The default context forces the conversation into the POV of a chat
     self.default_context = self._c.config["default_context"]
@@ -58,6 +61,7 @@ class GPT2Chatbot:
     # Use the GPT-2 model to generate a response to the given prompt
     prompt = self.default_context + " " + self.context + " " + "\n".join(hist) + " [robot]:"
     input_ids = self.tokenizer.encode(prompt, return_tensors="pt")
+    input_ids = input_ids.to('cuda')
     min_length = self.min_length(prompt)
     max_length = self.max_length(prompt)
     response = self.model.generate(input_ids=input_ids, do_sample=True, max_length=max_length, min_length=min_length, temperature=self._c.config["temperature"])

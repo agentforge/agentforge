@@ -4,7 +4,7 @@ from inference.gpt_neo_chat import GPT2Chatbot
 from speech.speech import TTS
 from speech.whisper import Whisper
 import io
-
+import torch
 
 # Create an instance of the Flask class
 app = Flask(__name__)
@@ -16,6 +16,7 @@ tts_pipeline = TTS()
 # Create a Whisper instance
 whisper = Whisper()
 
+print(torch.cuda.is_available())
 
 # Define the API endpoint for generating a wav file from text
 @app.route("/tts", methods=["POST"])
