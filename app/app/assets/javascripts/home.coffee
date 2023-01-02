@@ -12,7 +12,9 @@ sendResetRequest = (url) ->
       $(".chat-history").html("")
 
 sendMessage = () ->
-  sendResetRequest("http://localhost:3001/inference/reset_history")
+  host = window.Settings["rails"]["host"]
+  port = window.Settings["rails"]["port"]
+  sendResetRequest("http://#{host}:#{port}/inference/reset_history")
   event.preventDefault()
 
 

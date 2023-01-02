@@ -1,6 +1,5 @@
 class InferenceController < ApplicationController
   require 'net/http'
-  include Settings
 
   def interpret
     # Calls interpret API and takes request data and called inference engine to produce
@@ -8,8 +7,8 @@ class InferenceController < ApplicationController
     text = params[:text]
     context = params[:context]
     name = params[:name]
-    host = Settings.config(['inference_api', 'host'])
-    port = Settings.config(['inference_api', 'port'])
+    host = Settings.inference_api.host
+    port = Settings.inference_api.port
     uri = URI("http://#{host}:#{port}/chat")
     http = Net::HTTP.new(uri.host, uri.port)
 
@@ -25,6 +24,8 @@ class InferenceController < ApplicationController
   end
 
   def reset_history
+    host = Settings.inference_api.host
+    port = Settings.inference_api.port
     uri = URI("http://#{host}:#{port}/reset_history")
     http = Net::HTTP.new(uri.host, uri.port)
 

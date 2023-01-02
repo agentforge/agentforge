@@ -42,6 +42,9 @@ class GPT2Chatbot:
   def handle_input(self, input_str, opts):
     self.context = opts["context"]
     self.name = opts["name"]
+    # Default name helps
+    if self.name == "": 
+      self.name = "human"
     print("Processing...")
     print(f"input_str: {input_str}")
     print(f"context: {self.context}")
@@ -68,8 +71,6 @@ class GPT2Chatbot:
     # Use regular expressions to remove any leading or trailing whitespace
     generated_text = re.sub(r"^\s+|\s+$", "", generated_text)
 
-    generated_text = self.generate_response()
-
     total_context = self.default_context  + " " +  self.context
     new_phrase = self.find_new_phrase(generated_text, total_context, self.name)
 
@@ -78,7 +79,6 @@ class GPT2Chatbot:
 
     return new_phrase
 
-# Start a conversation if the module is run directly
+# TODO: Start a conversation if the module is run directly
 if __name__ == "__main__":
-  chatbot = GPT2Chatbot()
-  print(chatbot.generate_response("Hi there!", ""))
+  pass
