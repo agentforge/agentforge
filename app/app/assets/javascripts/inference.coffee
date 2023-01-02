@@ -10,6 +10,8 @@ sendInferenceRequest = (url, text) ->
     success: (response) ->
       $('.chat-history').append "<li><p>Link: #{response["text"]} </p></li>"
       $("#spinner").remove()
+    error: () ->
+      $("#spinner").remove()
 
 sendMessage = () ->
   host = window.Settings["rails"]["host"]
