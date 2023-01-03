@@ -5,6 +5,7 @@ import torch
 from .history import History
 from config import Config
 from helpers import str_to_class
+import random
 
 class GPT2Chatbot:
   def __init__(self):
@@ -29,13 +30,14 @@ class GPT2Chatbot:
     return len(prompt)
   
   def max_length(self, prompt):
+    value = random.randint(self._c.config["max_length_itr_min"], self._c.config["max_length_itr_max"])
     # Returns the optimal max_length for this model
-    return len(prompt)+20
+    return len(prompt)+value
 
   def preprocess_input(self, input_str):
     # Use regular expressions to remove any leading or trailing whitespace
     input_str = re.sub(r"^\s+|\s+$", "", input_str)
-
+20
     # Use regular expressions to replace any consecutive whitespace characters with a single space
     input_str = re.sub(r"\s+", " ", input_str)
 

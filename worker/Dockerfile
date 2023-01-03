@@ -7,7 +7,7 @@ ARG SSH_PRIVATE_KEY
 ENV REPO_URL=$REPO_URL
 ENV SSH_PRIVATE_KEY=$SSH_PRIVATE_KEY
 
-RUN pip install gTTS flask pytest
+RUN pip install gTTS flask pytest accelerate bitsandbytes
 RUN apt-get update && apt-get install -y git openssh-client
 
 # Copy the cacher file to the container
