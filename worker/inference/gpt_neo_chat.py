@@ -94,12 +94,15 @@ class GPT2Chatbot:
     total_context = self.default_context  + " " +  self.context
     new_phrase = self.history.find_new_phrase(generated_text, total_context, self.name)
 
+    # Second pass for more content
+    pass2 = self.generate_response(str(new_phrase))
+    new_phrase = self.tokenizer.decode(pass2[0])
+    new_phrase = re.sub(r"^\s+|\s+$", "", new_phrase)
+
     # Update the conversation history
     self.history.append(f"[robot]: {new_phrase}")
 
-    # let's expand on that idea
-    return self.generate_response(new_phrase)
-    # return new_phrase
+    return new_phrase
 
 # TODO: Start a conversation if the module is run directly
 if __name__ == "__main__":
