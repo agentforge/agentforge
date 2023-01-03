@@ -48,6 +48,22 @@ class GPT2Chatbot:
 
     return input_str
 
+  def generate_response(self, prompt):
+    input_ids = self.tokenizer.encode(prompt, return_tensors="pt")
+    input_ids = input_ids.to('cuda')
+    min_length = self.min_length(prompt)
+    max_length = self.max_length(prompt)
+    response = self.model.generate(
+        input_ids=input_ids,
+        do_sample=True,
+        max_length=max_length,
+        min_length=min_length,
+        temperature=self._c.config["temperature"],
+        pad_token_id=self.tokenizer.pad_token_id,
+        use_cache=True,
+    )
+    return response
+
   # Considers an input_str, a user supplied context, and name
   def handle_input(self, input_str, opts):
     self.context = opts["context"]
@@ -67,19 +83,7 @@ class GPT2Chatbot:
 
     # Use the GPT-2 model to generate a response to the given prompt
     prompt = self.default_context + " " + self.context + " " + "\n".join(hist) + " [robot]:"
-    input_ids = self.tokenizer.encode(prompt, return_tensors="pt")
-    input_ids = input_ids.to('cuda')
-    min_length = self.min_length(prompt)
-    max_length = self.max_length(prompt)
-    response = self.model.generate(
-        input_ids=input_ids,
-        do_sample=True,
-        max_length=max_length,
-        min_length=min_length,
-        temperature=self._c.config["temperature"],
-	pad_token_id=self.tokenizer.pad_token_id,
-	use_cache=True,
-    )
+    response = self.generate_response(prompt)
 
     # Extract the generated text from the response
     generated_text = self.tokenizer.decode(response[0])
@@ -93,7 +97,9 @@ class GPT2Chatbot:
     # Update the conversation history
     self.history.append(f"[robot]: {new_phrase}")
 
-    return new_phrase
+    # let's expand on that idea
+    return self.generate_response(new_phrase)
+    # return new_phrase
 
 # TODO: Start a conversation if the module is run directly
 if __name__ == "__main__":
