@@ -1,12 +1,12 @@
 {
-  "processor_cache": "../../openai-whisper-large-processor",
-  "whisper_model_cache": "../../openai-whisper-large",
+  "processor_cache": "openai/whisper-large",
+  "whisper_model_cache": "openai/whisper-large",
   "gpt_model_cache": "EleutherAI/gpt-j-6B",
   "gpt_model_klass": "GPTJForCausalLM",
   "tokenizer_cache": "EleutherAI/gpt-j-6B",
-  "temperature": 0.90,
+  "temperature": 0.88,
   "max_length_itr_min": 20,
   "max_length_itr_max": 30,
   "history_cache_stack": 5,
-  "default_context": "This is a discussion between a [human] and a [robot]. The [robot] is very nice and empathetic."
+  "default_context": "This is a discussion between a [human] and [robot]. [human]: Hello "
 }

@@ -12,8 +12,13 @@ class GPT2Chatbot:
     self._c = Config()
     # Load the GPT-2 model and tokenizer from the transformers library
     klass = str_to_class(self._c.config["gpt_model_klass"])
-    self.model = GPTJForCausalLM.from_pretrained("EleutherAI/gpt-j-6B", revision="float16", torch_dtype=torch.float16, low_cpu_mem_usage=True)
+    #self.model = GPTJForCausalLM.from_pretrained("EleutherAI/gpt-j-6B", revision="float16", torch_dtype=torch.float16, low_cpu_mem_usage=True)
     # self.model = klass.from_pretrained(self._c.config["gpt_model_cache"])
+    self.model = klass.from_pretrained(
+      self._c.config["gpt_model_cache"],
+      revision="float16",
+      torch_dtype=torch.float16,
+    )
     self.tokenizer = AutoTokenizer.from_pretrained(self._c.config["tokenizer_cache"])
 
     device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
@@ -37,7 +42,7 @@ class GPT2Chatbot:
   def preprocess_input(self, input_str):
     # Use regular expressions to remove any leading or trailing whitespace
     input_str = re.sub(r"^\s+|\s+$", "", input_str)
-20
+
     # Use regular expressions to replace any consecutive whitespace characters with a single space
     input_str = re.sub(r"\s+", " ", input_str)
 
@@ -66,7 +71,15 @@ class GPT2Chatbot:
     input_ids = input_ids.to('cuda')
     min_length = self.min_length(prompt)
     max_length = self.max_length(prompt)
-    response = self.model.generate(input_ids=input_ids, do_sample=True, max_length=max_length, min_length=min_length, temperature=self._c.config["temperature"])
+    response = self.model.generate(
+        input_ids=input_ids,
+        do_sample=True,
+        max_length=max_length,
+        min_length=min_length,
+        temperature=self._c.config["temperature"],
+	pad_token_id=self.tokenizer.pad_token_id,
+	use_cache=True,
+    )
 
     # Extract the generated text from the response
     generated_text = self.tokenizer.decode(response[0])
