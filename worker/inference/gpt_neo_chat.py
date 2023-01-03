@@ -95,9 +95,9 @@ class GPT2Chatbot:
     new_phrase = self.history.find_new_phrase(generated_text, total_context, self.name)
 
     # Second pass for more content
-    pass2 = self.generate_response(str(new_phrase))
-    new_phrase = self.tokenizer.decode(pass2[0])
-    new_phrase = re.sub(r"^\s+|\s+$", "", new_phrase)
+    # pass2 = self.generate_response(str(new_phrase))
+    # new_phrase = self.tokenizer.decode(pass2[0])
+    # new_phrase = re.sub(r"^\s+|\s+$", "", new_phrase)
 
     # Update the conversation history
     self.history.append(f"[robot]: {new_phrase}")
