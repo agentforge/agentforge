@@ -7,7 +7,8 @@ ARG SSH_PRIVATE_KEY
 ENV REPO_URL=$REPO_URL
 ENV SSH_PRIVATE_KEY=$SSH_PRIVATE_KEY
 
-RUN pip install gTTS flask pytest accelerate bitsandbytes
+RUN pip install gTTS flask pytest accelerate bitsandbytes trl
+RUN pip install --upgrade diffusers[torch]
 RUN apt-get update && apt-get install -y git openssh-client
 
 # Copy the cacher file to the container
@@ -15,6 +16,19 @@ COPY cache.py /app/
 
 # Set the working directory to /app
 WORKDIR /app
+
+# Stable Diffusion - Fun Times
+RUN git clone git@github.com:CompVis/stable-diffusion.git
+RUN git clone git@github.com:jquesnelle/txt2imghd.git
+
+RUN conda init bash
+RUN conda env create -f stable-diffusion/environment.yaml
+RUN conda activate ldm
+
+RUN wget -P /app/cache/ https://huggingface.co/runwayml/stable-diffusion-v1-5/resolve/main/v1-5-pruned-emaonly.ckpt
+
+RUN mkdir -p /root/stable-diffusion/models/ldm/stable-diffusion-v1
+RUN ln -s /app/cache/v1-5-pruned-emaonly.ckpt /root/stable-diffusion/models/ldm/stable-diffusion-v1/model.ckpt 
 
 # Bust that cache
 RUN python cache.py
