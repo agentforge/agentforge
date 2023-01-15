@@ -17,6 +17,13 @@ COPY cache.py /app/
 # Set the working directory to /app
 WORKDIR /app
 
+# Copy over remaining libs
+RUN mkdir -p /root/.ssh && \
+    echo "$SSH_PRIVATE_KEY" > /root/.ssh/id_rsa && \
+    chmod 600 /root/.ssh/id_rsa
+
+RUN ssh-keyscan github.com >> /root/.ssh/known_hosts
+
 # Stable Diffusion - Fun Times
 RUN git clone git@github.com:CompVis/stable-diffusion.git
 RUN git clone git@github.com:jquesnelle/txt2imghd.git
@@ -32,13 +39,6 @@ RUN ln -s /app/cache/v1-5-pruned-emaonly.ckpt /root/stable-diffusion/models/ldm/
 
 # Bust that cache
 # RUN python cache.py
-
-# Copy over remaining libs
-RUN mkdir -p /root/.ssh && \
-    echo "$SSH_PRIVATE_KEY" > /root/.ssh/id_rsa && \
-    chmod 600 /root/.ssh/id_rsa
-
-RUN ssh-keyscan github.com >> /root/.ssh/known_hosts
 
 RUN git clone "$REPO_URL"
 
