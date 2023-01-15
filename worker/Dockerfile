@@ -31,7 +31,7 @@ RUN mkdir -p /root/stable-diffusion/models/ldm/stable-diffusion-v1
 RUN ln -s /app/cache/v1-5-pruned-emaonly.ckpt /root/stable-diffusion/models/ldm/stable-diffusion-v1/model.ckpt 
 
 # Bust that cache
-RUN python cache.py
+# RUN python cache.py
 
 # Copy over remaining libs
 RUN mkdir -p /root/.ssh && \
