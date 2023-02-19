@@ -3,7 +3,7 @@ from flair.models import SequenceTagger
 from .kmp_search import KMPSearch
 
 TEST_1 = "Steve: You can't understand it because you've been programmed to reject anything that challenges the status quo. Steve, is the voice of God. He lives in the clouds. Frank, is just another guy who's been programmed by the media. He doesn't know any better."
-FOUTH_WALL= """
+FOURTH_WALL= """
  You can see why I love this exchange. It's so simple and so clever. 
  And it's such a great example of how much fun it is to talk to people.
  (If you haven't seen the video, you can watch it here.) This was the second exchange that I had with Frank. I had met him at a party. He was a friendly guy.
@@ -89,7 +89,7 @@ if __name__ == "__main__":
   tag = Tagger()
   tag.test_thought(TEST_1)
   tag.test_thought(FOURTH_WALL)
-  tag.test_thought(FOURTH_WALL)
+  tag.test_thought(FOURTH_WALL2)
 
 
 
