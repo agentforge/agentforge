@@ -5,6 +5,7 @@ class KMPSearch:
 
   # Python3 program for KMP Algorithm
   def search(self, pat, txt):
+    self.indexes = []
     M = len(pat)
     N = len(txt)
 
@@ -24,6 +25,7 @@ class KMPSearch:
 
       if j == M:
         print("Found pattern at index " + str(i-j))
+        self.indexes.append(str(i-j))
         j = lps[j-1]
 
       # mismatch after j matches
