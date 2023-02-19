@@ -7,7 +7,7 @@ from config import Config
 from helpers import str_to_class
 import random
 
-class GPT2Chatbot:
+class GPTChatbot:
   def __init__(self):
     self._c = Config()
     # Load the GPT-2 model and tokenizer from the transformers library
@@ -56,33 +56,55 @@ class GPT2Chatbot:
     response = self.model.generate(
         input_ids=input_ids,
         do_sample=True,
+        no_repeat_ngram_size=3,       
         max_length=max_length,
         min_length=min_length,
+        top_k=100, 
+        top_p=0.7,
         temperature=self._c.config["temperature"],
-        pad_token_id=self.tokenizer.pad_token_id,
+        pad_token_id=self.tokenizer.eos_token_id,
         use_cache=True,
     )
     return response
 
-  # Considers an input_str, a user supplied context, and name
-  def handle_input(self, input_str, opts):
+  def load_context(self, opts):
     self.context = opts["context"]
     self.name = opts["name"]
-    print("Processing...")
+    self.robot_name = opts["robot_name"]
+    self.default_context = self.default_context.replace("#human", self.name)
+    self.default_context = self.default_context.replace("#robot", self.robot_name)
+
+  def validations(self):
+    # Validations
+    if self.name == "" or self.name == None:
+      self.name = "Human"
+    
+    if self.robot_name == None or self.robot_name == "":
+      self.robot_name = "Robot"
+    self.history.robot_name = self.robot_name
+
+  # Considers an input_str, a user supplied context, and name
+  def handle_input(self, input_str, opts):
+    self.load_context(opts)
+    self.validations()
+
+    print(f"Processing... {opts}")
     print(f"input_str: {input_str}")
     print(f"context: {self.context}")
+    print(f"robot_name: {self.robot_name}")
+    print(f"name: {self.name}")
     # Preprocess the user input
     input_str = self.preprocess_input(input_str)
 
     # Update the conversation history
-    self.history.append(f"[{self.name}]: {input_str}")
+    self.history.append(f"{self.name}: {input_str}")
 
     # Generate a response to the user input
     hist = self.history.relevant_history(self._c.config['history_cache_stack'])
-    print(f"actual input: {self.default_context + ' ' + self.context + ' '.join(hist) + ' [robot]:'}")
+    print(f"actual input: {self.default_context + ' ' + self.context + ' '.join(hist) + ' '+ self.robot_name + ':'}")
 
-    # Use the GPT-2 model to generate a response to the given prompt
-    prompt = self.default_context + " " + self.context + " " + "\n".join(hist) + " [robot]:"
+    # Use the GPT model to generate a response to the given prompt
+    prompt = self.default_context + " " + self.context + " " + "\n".join(hist) + ' ' + self.robot_name + ':'
     response = self.generate_response(prompt)
 
     # Extract the generated text from the response
@@ -91,7 +113,7 @@ class GPT2Chatbot:
     # Use regular expressions to remove any leading or trailing whitespace
     generated_text = re.sub(r"^\s+|\s+$", "", generated_text)
 
-    total_context = self.default_context  + " " +  self.context
+    total_context = self.default_context + " " +  self.context
     new_phrase = self.history.find_new_phrase(generated_text, total_context, self.name)
 
     # Second pass for more content
@@ -100,9 +122,21 @@ class GPT2Chatbot:
     # new_phrase = re.sub(r"^\s+|\s+$", "", new_phrase)
 
     # Update the conversation history
-    self.history.append(f"[robot]: {new_phrase}")
+    self.history.append(f"{self.robot_name}: {new_phrase}")
 
     return new_phrase
+
+  # Considers an input_str, a user supplied context, and name
+  def simple_input(self, input_str):
+    response = self.generate_response(input_str)
+
+    # Extract the generated text from the response
+    generated_text = self.tokenizer.decode(response[0])
+
+    # Use regular expressions to remove any leading or trailing whitespace
+    generated_text = re.sub(r"^\s+|\s+$", "", generated_text)
+
+    return generated_text
 
 # TODO: Start a conversation if the module is run directly
 if __name__ == "__main__":

@@ -1,6 +1,6 @@
 # Import necessary libraries
 from flask import Flask, request, jsonify, send_file
-from inference.gpt_neo_chat import GPT2Chatbot
+from inference.gpt_neo_chat import GPTChatbot
 from speech.speech import TTS
 from speech.whisper import Whisper
 import io
@@ -11,8 +11,8 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)
 
-# Create an instance of the GPT2Chatbot class
-chatbot = GPT2Chatbot()
+# Create an instance of the GPTChatbot class
+chatbot = GPTChatbot()
 tts_pipeline = TTS()
 
 # Create a Whisper instance
@@ -42,33 +42,29 @@ def tts():
   )
 
 
-# Define the API endpoint for chatting with the chatbot
+# Define the API endpoint for chatting with the prompts-ai (openAPI mimic)
 @app.route("/completions", methods=["POST"])
 def completions():
   # Get the message and context from the request
   message = request.json["prompt"]
-  context = ""
-  name = "human"
-
-  opts = {"name": name, "context": context}
 
   # Use the chatbot to generate a response
-  response = chatbot.handle_input(message, opts)
+  response = chatbot.simple_input(message)
 
   print(response)
   # Return the response
   return jsonify({"choices": [{"text":response}]})
 
-
-# Define the API endpoint for chatting with the chatbot
+# Define the API endpoint for chatting with the RAILS app
 @app.route("/chat", methods=["POST"])
 def chat():
   # Get the message and context from the request
   message = request.json["message"]
   context = request.json["context"]
+  robot_name = request.json["robot_name"]
   name = request.json["name"]
 
-  opts = {"name": name, "context": context}
+  opts = {"name": name, "context": context, "robot_name": robot_name}
 
   # Use the chatbot to generate a response
   response = chatbot.handle_input(message, opts)

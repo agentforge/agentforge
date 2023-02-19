@@ -8,5 +8,5 @@
   "max_length_itr_min": 20,
   "max_length_itr_max": 30,
   "history_cache_stack": 5,
-  "default_context": "This is a discussion between a [human] and [robot]. [human]: Hello "
+"default_context": "This is a discussion between #human and #robot. #robot is thousands of years old and quite verbose. #human is a human being that should be respected."
 }

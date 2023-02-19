@@ -1,1 +1,1 @@
-from .gpt_neo_chat import GPT2Chatbot
+from .gpt_neo_chat import GPTChatbot
