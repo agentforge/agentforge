@@ -42,7 +42,7 @@ def tts():
   )
 
 
-# Define the API endpoint for chatting with the chatbot
+# Define the API endpoint for chatting with the prompts-ai (openAPI mimic)
 @app.route("/completions", methods=["POST"])
 def completions():
   # Get the message and context from the request
@@ -59,27 +59,7 @@ def completions():
   # Return the response
   return jsonify({"choices": [{"text":response}]})
 
-
-# Define the API endpoint for chatting with the chatbot
-@app.route("/chat", methods=["POST"])
-def chat():
-  print(request)
-  # Get the message and context from the request
-  message = request.json["prompt"]
-  context = request.json["context"]
-  name = request.json["name"]
-
-  opts = {"name": name, "context": context}
-
-  # Use the chatbot to generate a response
-  response = chatbot.simple_input(message, opts)
-
-  print(response)
-  # Return the response
-  return jsonify({"choices": [{"text": response}]})
-
-
-# Define the API endpoint for chatting with the chatbot
+# Define the API endpoint for chatting with the RAILS app
 @app.route("/chat", methods=["POST"])
 def chat():
   # Get the message and context from the request
