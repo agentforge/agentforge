@@ -32,12 +32,12 @@ class GPTChatbot:
 
   def min_length(self, prompt):
     # Returns the optimal min_length for this model
-    return len(prompt)
+    value = random.randint(self._c.config["min_length_itr_min"], self._c.config["min_length_itr_max"])
   
   def max_length(self, prompt):
     value = random.randint(self._c.config["max_length_itr_min"], self._c.config["max_length_itr_max"])
     # Returns the optimal max_length for this model
-    return len(prompt)+value
+    return value
 
   def preprocess_input(self, input_str):
     # Use regular expressions to remove any leading or trailing whitespace
