@@ -93,7 +93,7 @@ class GPTChatbot:
 
   def pre_process(self):
     # Preserve newlines
-    self.phrase = new_phrase.replace("\n", "[n]")
+    self.phrase = self.phrase.replace("\n", "[n]")
     # Use regular expressions to remove any leading or trailing whitespace
     self.phrase = re.sub(r"^\s+|\s+$", "", self.phrase)
     return self.phrase
