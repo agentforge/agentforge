@@ -40,37 +40,13 @@ class GPTChatbot:
     return len(prompt)+value
 
   def preprocess_input(self, input_str):
-    # Use regular expressions to rerails server -p 3001move any leading or trailing whitespace
+    # Use regular expressions to remove any leading or trailing whitespace
     input_str = re.sub(r"^\s+|\s+$", "", input_str)
 
     # Use regular expressions to replace any consecutive whitespace characters with a single space
     input_str = re.sub(r"\s+", " ", input_str)
 
     return input_str
-
-  def simple_input(self, prompt):
-      # encode the new user input, add the eos_token and return a tensor in Pytorch
-      new_user_input_ids = self.tokenizer.encode("User: #{prompt}" + self.tokenizer.eos_token, return_tensors='pt')
-      # print(new_user_input_ids)
-
-      # append the new user input tokens to the chat history
-      bot_input_ids = torch.cat([chat_history_ids, new_user_input_ids], dim=-1) if step > 0 else new_user_input_ids
-
-      # generated a response while limiting the total chat history to 1000 tokens, 
-      chat_history_ids = self.model.generate(
-          bot_input_ids, max_length=500,
-          pad_token_id=self.tokenizer.eos_token_id,  
-          no_repeat_ngram_size=3,       
-          do_sample=True, 
-          top_k=100, 
-          top_p=0.7,
-          temperature = 0.8
-      )
-    
-    # pretty print last ouput tokens from bot
-    val = "AI: {}".format(self.tokenizer.decode(chat_history_ids[:, bot_input_ids.shape[-1]:][0], skip_special_tokens=True))
-    return val
-
 
   def generate_response(self, prompt):
     input_ids = self.tokenizer.encode(prompt, return_tensors="pt")
@@ -80,10 +56,13 @@ class GPTChatbot:
     response = self.model.generate(
         input_ids=input_ids,
         do_sample=True,
-        max_length=max_length,
-        min_length=min_length,
+        no_repeat_ngram_size=3,       
+        max_length=512,
+        # min_length=min_length,
+        top_k=100, 
+        top_p=0.7,
         temperature=self._c.config["temperature"],
-        pad_token_id=self.tokenizer.pad_token_id,
+        pad_token_id=self.tokenizer.eos_token_id,
         use_cache=True,
     )
     return response
@@ -92,6 +71,8 @@ class GPTChatbot:
   def handle_input(self, input_str, opts):
     self.context = opts["context"]
     self.name = opts["name"]
+    if self.name == ""
+      self.name = "human"
     print("Processing...")
     print(f"input_str: {input_str}")
     print(f"context: {self.context}")
@@ -128,17 +109,17 @@ class GPTChatbot:
 
     return new_phrase
 
-  # # Considers an input_str, a user supplied context, and name
-  # def simple_input(self, input_str):
-  #   response = self.generate_response(input_str)
+  # Considers an input_str, a user supplied context, and name
+  def simple_input(self, input_str):
+    response = self.generate_response(input_str)
 
-  #   # Extract the generated text from the response
-  #   generated_text = self.tokenizer.decode(response[0])
+    # Extract the generated text from the response
+    generated_text = self.tokenizer.decode(response[0])
 
-  #   # Use regular expressions to remove any leading or trailing whitespace
-  #   generated_text = re.sub(r"^\s+|\s+$", "", generated_text)
+    # Use regular expressions to remove any leading or trailing whitespace
+    generated_text = re.sub(r"^\s+|\s+$", "", generated_text)
 
-  #   return generated_text
+    return generated_text
 
 # TODO: Start a conversation if the module is run directly
 if __name__ == "__main__":
