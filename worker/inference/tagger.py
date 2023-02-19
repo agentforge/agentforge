@@ -40,11 +40,11 @@ class Tagger:
     #print(self.kmp.indexes)
     #print(len(t))
     #print(min(self.kmp.indexes))
-    #for i in self.kmp.indexes:
-    #  print(t[int(i)-1:int(i)+3])
-    if len(self.kmp.indexes) == 0:
-      return None
-    return min(self.kmp.indexes)
+    idx = min(self.kmp.indexes)
+    test_str = " ".join(t[int(idx)-1:int(idx)+3])
+    self.kmp.search(test_str, prompt)
+    print(min(self.kmp.indexes))
+
 
 
 if __name__ == "__main__":
