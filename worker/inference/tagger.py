@@ -35,17 +35,9 @@ class Tagger:
     v=list(result)
     t=list(texts)
     self.kmp.search(["NNP", "," ,"VBZ"], v)
-    #print(v)
-    #print(t)
-    #print(self.kmp.indexes)
-    #print(len(t))
-    #print(min(self.kmp.indexes))
     idx = min(self.kmp.indexes)
-    test_str = " ".join(t[int(idx)-1:int(idx)+3])
-    self.kmp.search(test_str, prompt)
-    print(min(self.kmp.indexes))
-
-
+    test_str = "".join(t[int(idx):int(idx)+2])
+    return prompt.index(test_str)
 
 if __name__ == "__main__":
   # load tagger
