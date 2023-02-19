@@ -97,7 +97,7 @@ class GPTChatbot:
     input_str = self.preprocess_input(input_str)
 
     # Update the conversation history
-    self.history.append(f"{self.name}: {input_str} ")
+    self.history.append(f"{self.name}: {input_str}")
 
     # Generate a response to the user input
     hist = self.history.relevant_history(self._c.config['history_cache_stack'])
