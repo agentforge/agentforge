@@ -100,6 +100,7 @@ class GPTChatbot:
   def post_process(self):
     # Preserve newlines
     self.phrase = self.phrase.replace("[n]", "\\n")
+    self.phrase = re.sub(r'\[.*\]', ' ', self.phrase)
 
   # Considers an input_str, a user supplied context, and name
   def handle_input(self, input_str, opts):
