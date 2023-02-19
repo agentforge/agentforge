@@ -19,7 +19,7 @@ class Tagger:
     sentence = Sentence(prompt)
 
     # predict NER tags
-    tagger.predict(sentence)
+    self.tagger.predict(sentence)
 
     def get_value(n):
       return str(n.value)
