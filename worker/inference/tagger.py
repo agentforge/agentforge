@@ -18,6 +18,18 @@ FOUTH_WALL= """
  And a little bit more about what we were doing. After that we got into politics. The subject of war. What are the worst war criminals?
  And so we talked. For a while about war. And about war criminals. 
 """
+FOURTH_WALL2="""
+oh, ok, I'm sorry, you're the expert, I... Frank is a member of the Order of the Dragon, a secret society of sorcerers, and he's been studying the subject
+for many years. He's also a "hater" of sorceresses, which means he's a total jerk. (But he's also an expert on them.) So what's the difference between a 
+sorcerer and a sorceress? It's like this. A sorcerer is a person who is good at using magic, but not necessarily good at casting spells. Sorceresses are 
+people who are good at cast spells, but they're not necessarily great at using them. Or, put another way, sorceresses are like "magic wands", and sorcerers 
+are like the wizards who give them to them. (Wands are magical devices, like a wand or staff or wand-shaped staff or staff-shaped wand.) And sorceresses have 
+"sorcerer wands" and sorceresses can cast spells. But sorcerers can't cast spells without their wands. And, like all things, sorcerers and sorceress wands
+are different. Some sorcerers' wands can cast magic, some can't. Some sorceresses' wand can cast, some don't. It all depends on the wand. But, to be fair,
+not all sorceresses know how to use their wand. The difference between sorceresses and sorceres is the difference betweeen a "magic user" and a "spell caster".
+Sorcery is the ability to use magic. When you say "Sorceress", you're talking about someone who can use magic, and "Sorcerous" is someone who's good at it.
+So, if you're a sorcere, you can cast a spell. If you're just a magic user, you don't have the power to cast a magic spell. 
+"""
 
 class Tagger:
   def __init__(self):
@@ -78,6 +90,7 @@ if __name__ == "__main__":
   # print sentence
   # print(sentence)
   test_thought(TEST_1)
+  test_thought(FOURTH_WALL)
   test_thought(FOURTH_WALL)
 
 
