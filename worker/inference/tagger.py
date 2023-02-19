@@ -64,8 +64,8 @@ if __name__ == "__main__":
   thought_index = tag.test_third_person(TEST_1)
   if thought_index == None:
     print("NO THOUGHT INDEX")
-  phrase = self.phrase[0:thought_index]
-  thought = self.phrase[thought_index:len(self.phrase)]
+  phrase = TEST_1[0:thought_index]
+  thought = TEST_1[thought_index:len(TEST_1)]
   print(f"PHRASE: {phrase}")
   print(f"THOUGHT: {thought}")
 
