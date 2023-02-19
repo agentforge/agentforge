@@ -21,7 +21,7 @@ class InferenceController < ApplicationController
   
     response = http.request(request)
     text = ActionController::Base.helpers.strip_tags(JSON.parse(response.body)["response"])
-    text.gsub("\n", "<br/>")  
+    text.gsub("\n", "<br/>")
 
     render json: { text: text }
   end
