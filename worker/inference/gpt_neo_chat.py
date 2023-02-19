@@ -136,14 +136,14 @@ class GPTChatbot:
     self.post_process()
 
     # Second pass for more content
-    # pass2 = self.generate_response(str(new_phrase))
-    # new_phrase = self.tokenizer.decode(pass2[0])
-    # new_phrase = re.sub(r"^\s+|\s+$", "", new_phrase)
+    # pass2 = self.generate_response(str(self.phrase))
+    # self.phrase = self.tokenizer.decode(pass2[0])
+    # self.phrase = re.sub(r"^\s+|\s+$", "", self.phrase)
 
     # Update the conversation history
-    self.history.append(f"{self.robot_name}: {new_phrase}")
+    self.history.append(f"{self.robot_name}: {self.phrase}")
 
-    self.response["response"] = new_phrase
+    self.response["response"] = self.phrase
     return self.response
 
   # Considers an input_str, a user supplied context, and name
