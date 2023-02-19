@@ -71,8 +71,13 @@ class GPTChatbot:
   def handle_input(self, input_str, opts):
     self.context = opts["context"]
     self.name = opts["name"]
+    self.robot_name = opts["robot_name"]
     if self.name == "":
-      self.name = "human"
+      self.name = "Human"
+    if self.robot_name == "":
+      self.robot_name = "Robot"
+    self.history = robot_name
+
     print("Processing...")
     print(f"input_str: {input_str}")
     print(f"context: {self.context}")
@@ -84,10 +89,10 @@ class GPTChatbot:
 
     # Generate a response to the user input
     hist = self.history.relevant_history(self._c.config['history_cache_stack'])
-    print(f"actual input: {self.default_context + ' ' + self.context + ' '.join(hist) + ' [robot]:'}")
+    print(f"actual input: {self.default_context + ' ' + self.context + ' '.join(hist) + self.robot_name + ' :'}")
 
     # Use the GPT model to generate a response to the given prompt
-    prompt = self.default_context + " " + self.context + " " + "\n".join(hist) + " [robot]:"
+    prompt = self.default_context.replace("#human", self.name) + " " + self.context + " " + " ".join(hist) + f" {self.robot_name}:"
     response = self.generate_response(prompt)
 
     # Extract the generated text from the response
@@ -105,7 +110,7 @@ class GPTChatbot:
     # new_phrase = re.sub(r"^\s+|\s+$", "", new_phrase)
 
     # Update the conversation history
-    self.history.append(f"[robot]: {new_phrase}")
+    self.history.append(f"{self.robot_name}: {new_phrase}")
 
     return new_phrase
 

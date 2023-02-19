@@ -4,9 +4,10 @@ import re
 
 # Stores History of the relationship between man and machine
 class History:
-  def __init__(self):
+  def __init__(self, robot_name="Robot"):
     self.history = []
     self.user_id = None
+    self.robot_name = robot_name
 
   def get(self):
     return self.history
@@ -33,7 +34,7 @@ class History:
     new_phrase = new_phrase.replace(context, "")
     print(new_phrase)
     # Split the strings into a list of strings separated by [human] and [robot]
-    new_phrases = re.split(f"\[robot\]:|\[{human_name}\]|\[{human_name}\]", new_phrase)
+    new_phrases = re.split(f"\{self.robot_name}\:|\{human_name}\:", new_phrase)
     new_phrases = filter(lambda x: not (x.isspace() or len(x) == 0), new_phrases)
     new_phrases = list(new_phrases)
     print(new_phrases)
@@ -42,9 +43,9 @@ class History:
     for phrase in new_phrases:
       fixed = phrase.replace(":", "").strip()
       print(fixed)
-      print(f"[robot]: {fixed}" not in self.history and f"[{human_name}]: {fixed}" not in self.history)
+      print(f"{self.robot_name}: {fixed}" not in self.history and f"{human_name}: {fixed}" not in self.history)
       # Check if the phrase exists in the previous string
-      if f"[robot]: {fixed}" not in self.history and f"[{human_name}]: {fixed}" not in self.history:
+      if f"{self.robot_name}: {fixed}" not in self.history and f"{human_name}: {fixed}" not in self.history:
         # Return the phrase if it is not in the previous string
         return fixed
     # Return None if no new phrase was found
