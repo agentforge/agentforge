@@ -105,7 +105,7 @@ class GPTChatbot:
     return new_phrase
 
   # Considers an input_str, a user supplied context, and name
-  def simple_input(self, input_str, opts):
+  def simple_input(self, input_str):
     response = self.generate_response(input_str)
 
     # Extract the generated text from the response

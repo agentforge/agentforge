@@ -47,13 +47,9 @@ def tts():
 def completions():
   # Get the message and context from the request
   message = request.json["prompt"]
-  context = ""
-  name = "human"
-
-  opts = {"name": name, "context": context}
 
   # Use the chatbot to generate a response
-  response = chatbot.handle_input(message, opts)
+  response = chatbot.simple_input(message)
 
   print(response)
   # Return the response
