@@ -87,8 +87,8 @@ class GPTChatbot:
 
   # Removes the incomplete sentence using regex
   def remove_hanging(self, new_phrase):
-    new_phrase = re.match("(^.*[\.\?!]|^\S[^.\?!]*)", new_phrase)
-    return new_phrase.group()
+    new_phrase = re.match("(^.*[\.\?!]|^\S[^.\?!]*)", new_phrase.replace("\n", "[n]"))
+    return new_phrase.group().replace("[n]", "\n")
 
   # Considers an input_str, a user supplied context, and name
   def handle_input(self, input_str, opts):
