@@ -79,7 +79,7 @@ class GPTChatbot:
     
     if self.robot_name == "":
       self.robot_name = "Robot"
-    self.history = self.robot_name
+    self.history.robot_name = self.robot_name
 
   # Considers an input_str, a user supplied context, and name
   def handle_input(self, input_str, opts):
