@@ -20,8 +20,10 @@ class InferenceController < ApplicationController
     request.body = JSON.dump(message: text, context: context, name: name, robot_name: robot_name)
   
     response = http.request(request)
+    text = ActionController::Base.helpers.strip_tags(JSON.parse(response.body)["response"])
+    text.gsub("\n", "<br/>")  
 
-    render json: { text: ActionController::Base.helpers.strip_tags(JSON.parse(response.body)["response"]) }
+    render json: { text: text }
   end
 
   def reset_history

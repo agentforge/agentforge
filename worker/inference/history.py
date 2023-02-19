@@ -41,7 +41,7 @@ class History:
     print(self.history)
     # Loop through the phrases in the new string
     for phrase in new_phrases:
-      fixed = phrase.replace(":", "").strip()
+      fixed = phrase.replace(":", "").replace("[n]", "").strip()
       print(fixed)
       print(f"{self.robot_name}: {fixed}" not in self.history and f"{human_name}: {fixed}" not in self.history)
       # Check if the phrase exists in the previous string
