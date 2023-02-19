@@ -2,7 +2,8 @@
 from flair.data import Sentence
 from flair.models import SequenceTagger
 from flair.tokenization import SegtokSentenceSplitter
-from kmp_search import KMPSearch
+from .kmp_search import Search
+from .fuzzy_search import FuzzySearch
 
 TEST_1 = "Steve: You can't understand it because you've been programmed to reject anything that challenges the status quo. Steve, is the voice of God. He lives in the clouds. Frank, is just another guy who's been programmed by the media. He doesn't know any better."
 FOURTH_WALL= """
@@ -38,6 +39,7 @@ class Tagger:
   def __init__(self):
     self.tagger = SequenceTagger.load("flair/pos-english")
     self.kmp = KMPSearch()
+    self.fuzzy = FuzzySearch()
 
   # Returns the earliest index of a possible hit for third person rhetoric
   def test_third_person(self, prompt):
@@ -87,7 +89,10 @@ class Tagger:
     first = indexes[0].text.replace(" n't", "n't").replace(" ,", ",").replace(" .", ".").replace(" 's", "'s")
     print(first)
     print(prompt)
-    return str(prompt).replace("\'", "'").replace("\n", " ").index(str(first))
+    fz_ret = self.fuzzy.fuzzy_extract(str(first), str(prompt).replace("\'", "'").replace("\n", " "), 70)
+    if len(fz_ret) > 0:
+      # return index
+      return fz_ret[0][1]
 
   def test_thought(self, test_val):
     thought_index = self.test_third_person(test_val)

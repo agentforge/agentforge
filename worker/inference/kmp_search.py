@@ -1,4 +1,5 @@
-
+#Performant String Sequence Matching Algorithm
+# Link: https://www.geeksforgeeks.org/kmp-algorithm-for-pattern-searching/
 class KMPSearch:
   def __init__(self):
     pass
