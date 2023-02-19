@@ -3,6 +3,7 @@ from transformers import AutoModelForSeq2SeqLM, AutoTokenizer, AutoModelForCausa
 import re
 import torch
 from .history import History
+from .tagger import Tagger
 from config import Config
 from helpers import str_to_class
 import random
@@ -29,6 +30,8 @@ class GPTChatbot:
 
     # Initialize an empty list for storing the conversation history
     self.history = History()
+
+    self.tagger = Tagger()
 
   def min_length(self, prompt):
     # Returns the optimal min_length for this model
@@ -101,6 +104,15 @@ class GPTChatbot:
     # Preserve newlines
     self.phrase = self.phrase.replace("[n]", "\\n")
     self.phrase = re.sub(r'\[.*\]', ' ', self.phrase)
+
+  def store_thought(self):
+    thought_index = self.tagger.test_third_person(self.phrase)
+    if thought_index == None:
+      return
+    phrase = self.phrase[0:thought_index]
+    thought = self.phrase[thought_index:len(self.phrase)]
+    print(phrase)
+    print(thought)
 
   # Considers an input_str, a user supplied context, and name
   def handle_input(self, input_str, opts):

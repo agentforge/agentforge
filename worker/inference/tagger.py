@@ -42,6 +42,8 @@ class Tagger:
     #print(min(self.kmp.indexes))
     #for i in self.kmp.indexes:
     #  print(t[int(i)-1:int(i)+3])
+    if len(self.kmp.indexes) == 0:
+      return None
     return min(self.kmp.indexes)
 
 
@@ -59,5 +61,11 @@ if __name__ == "__main__":
   print(sentence)
 
   tag = Tagger()
-  tag.test_third_person(TEST_1)
+  thought_index = tag.test_third_person(TEST_1)
+  if thought_index == None:
+    print("NO THOUGHT INDEX")
+  phrase = self.phrase[0:thought_index]
+  thought = self.phrase[thought_index:len(self.phrase)]
+  print(f"PHRASE: {phrase}")
+  print(f"THOUGHT: {thought}")
 
