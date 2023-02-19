@@ -66,7 +66,7 @@ class Tagger:
     test_str = "".join(t[int(idx):int(idx)+2])
     return prompt.index(test_str)
 
-  def test_thought(self, test_val)
+  def test_thought(self, test_val):
     tag = Tagger()
     thought_index = tag.test_third_person(test_val)
     if thought_index == None:
