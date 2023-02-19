@@ -31,6 +31,7 @@ class History:
   def find_new_phrase(self, new_phrase, context, human_name):
     # Remove the context
     new_phrase = new_phrase.replace(context, "")
+    print(new_phrase)
     # Split the strings into a list of strings separated by [human] and [robot]
     new_phrases = re.split(f"\[robot\]:|\[{human_name}\]|\[{human_name}\]", new_phrase)
     new_phrases = filter(lambda x: not (x.isspace() or len(x) == 0), new_phrases)
