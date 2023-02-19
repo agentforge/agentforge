@@ -66,7 +66,7 @@ class GPTChatbot:
     response = self.model.generate(
         input_ids=input_ids,
         do_sample=True,
-        no_repeat_ngram_size=3,       
+        no_repeat_ngram_size=3,
         max_length=max_length,
         min_length=min_length,
         top_k=100,
@@ -88,7 +88,6 @@ class GPTChatbot:
     # Validations
     if self.name == "" or self.name == None:
       self.name = "Human"
-    
     if self.robot_name == None or self.robot_name == "":
       self.robot_name = "Robot"
     self.history.robot_name = self.robot_name

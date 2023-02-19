@@ -1,7 +1,8 @@
+
 from flair.data import Sentence
 from flair.models import SequenceTagger
 from flair.tokenization import SegtokSentenceSplitter
-from .kmp_search import KMPSearch
+from kmp_search import KMPSearch
 
 TEST_1 = "Steve: You can't understand it because you've been programmed to reject anything that challenges the status quo. Steve, is the voice of God. He lives in the clouds. Frank, is just another guy who's been programmed by the media. He doesn't know any better."
 FOURTH_WALL= """
@@ -48,12 +49,13 @@ class Tagger:
     splitter = SegtokSentenceSplitter()
 
     # use splitter to split text into list of sentences
-    sentences = splitter.split(text)
+    sentences = splitter.split(prompt)
 
+    print(sentences)
     self.tagger.predict(sentences)
-    
+    indexes = []
     for sentence in sentences:
-      
+      print(sentence)
       # sentence = Sentence(prompt)
 
       # # predict NER tags
@@ -69,19 +71,23 @@ class Tagger:
       labels = sentence.get_labels('pos')
       result = map(get_value, labels)
       texts = map(get_text, labels)
-      indexes = []
       v=list(result)
       t=list(texts)
       for rule in THIRD_PERSON_RULES:
         self.kmp.search(rule, v)
-        indexes = indexes + self.kmp.indexes
+        if len(self.kmp.indexes) > 0:
+          print(self.kmp.indexes)
+          indexes.append(sentence)
 
+    print(indexes)
     # Process all indexes
     if len(indexes) == 0:
       return None
-    idx = min(indexes)
-    test_str = " ".join(t[int(idx):int(idx)+2])
-    return prompt.index(test_str)
+
+    first = indexes[0].text.replace(" n't", "n't").replace(" ,", ",").replace(" .", ".").replace(" 's", "'s")
+    print(first)
+    print(prompt)
+    return str(prompt).replace("\'", "'").replace("\n", " ").index(str(first))
 
   def test_thought(self, test_val):
     thought_index = self.test_third_person(test_val)
