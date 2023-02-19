@@ -87,7 +87,7 @@ if __name__ == "__main__":
   # print sentence
   # print(sentence)
   tag = Tagger()
-  tagtest_thought(TEST_1)
+  tag.test_thought(TEST_1)
   tag.test_thought(FOURTH_WALL)
   tag.test_thought(FOURTH_WALL)
 
