@@ -34,7 +34,7 @@ class History:
     new_phrase = new_phrase.replace(context, "")
     print(new_phrase)
     # Split the strings into a list of strings separated by [human] and [robot]
-    new_phrases = re.split(f"{self.robot_name}\:|{human_name}\:", new_phrase)
+    new_phrases = re.split(f"{self.robot_name}\:|{human_name}\:|", new_phrase)
     new_phrases = filter(lambda x: not (x.isspace() or len(x) == 0), new_phrases)
     new_phrases = list(new_phrases)
     print(new_phrases)

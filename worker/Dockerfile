@@ -24,7 +24,7 @@ RUN git clone "$REPO_URL"
 RUN git clone git@github.com:CompVis/stable-diffusion.git
 RUN git clone git@github.com:jquesnelle/txt2imghd.git
 
-RUN pip install gTTS flask pytest accelerate bitsandbytes trl
+RUN pip install gTTS flask pytest accelerate bitsandbytes trl pip install flair flask_cors
 RUN pip install --upgrade diffusers[torch]
 RUN apt-get update && apt-get install -y git openssh-client
 
