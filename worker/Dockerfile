@@ -49,9 +49,18 @@ RUN ln -s /app/cache/v1-5-pruned-emaonly.ckpt /root/stable-diffusion/models/ldm/
 # COPY speech /app/speech
 # COPY inference /app/inference
 
+# FIX FOR packaging.version.InvalidVersion: Invalid version: '0.10.1,<0.11'
+# Run twice to grab all version
+RUN pip uninstall -y packaging transformers torchmetrics
+RUN pip uninstall -y packaging transformers torchmetrics
+# Reinstall with specific versions
+RUN pip install transformers==4.26.1
+RUN pip install packaging==21.3
+RUN pip install 'torchmetrics<0.8'
+
+
 # Expose port 3000
 EXPOSE 3000
 
-# Run the Flask API
 #CMD ["flask", "run", "--host=0.0.0.0", "--port=3000"]
 CMD tail -f /dev/null

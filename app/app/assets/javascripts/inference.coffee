@@ -1,13 +1,12 @@
 sendInferenceRequest = (url, text) ->
-  name = $("#name-input").val()
-  name = "human" unless name?
   $.ajax
     url: url
     type: 'POST'
     data: 
       text: text
       context: $("#context-input").val()
-      name: name
+      name: $("#name-input").val()
+      robot_name: $("#robot-name-input").val()
       authenticity_token: window._token
     success: (response) ->
       $('.chat-history').append "<li><p>Link: #{response["text"]} </p></li>"
