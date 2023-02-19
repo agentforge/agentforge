@@ -11,7 +11,7 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)
 
-# Create an instance of the GPT2Chatbot class
+# Create an instance of the GPTChatbot class
 chatbot = GPTChatbot()
 tts_pipeline = TTS()
 
