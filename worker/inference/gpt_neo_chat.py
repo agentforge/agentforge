@@ -119,8 +119,8 @@ class GPTChatbot:
     # We have a thought!
     phrase = self.phrase[0:thought_index]
     thought = self.phrase[thought_index:len(self.phrase)]
-    print(phrase)
-    print(thought)
+    print(f"phrase: {phrase}")
+    print(f"thought: {thought}")
     self.phrase = phrase
     self.thoughts.append(thought)
 
@@ -152,7 +152,7 @@ class GPTChatbot:
 
     # Extract the generated text from the response
     self.phrase = self.tokenizer.decode(response[0])
-    print(self.phrase)
+    # print(self.phrase)
 
     total_context = self.default_context + " " +  self.context
     self.pre_process()
