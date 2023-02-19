@@ -74,10 +74,10 @@ class GPTChatbot:
     
   def validations(self):
     # Validations
-    if self.name == "":
+    if self.name == "" or self.name == None:
       self.name = "Human"
     
-    if self.robot_name == "":
+    if self.robot_name == None or self.robot_name == "":
       self.robot_name = "Robot"
     self.history.robot_name = self.robot_name
 
