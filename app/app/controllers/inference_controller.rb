@@ -7,6 +7,7 @@ class InferenceController < ApplicationController
     text = params[:text]
     context = params[:context]
     name = params[:name]
+    robot_name = params[:robot_name]
     host = Settings.inference_api.host
     port = Settings.inference_api.port
     uri = URI("http://#{host}:#{port}/chat")
@@ -16,7 +17,7 @@ class InferenceController < ApplicationController
   
     request = Net::HTTP::Post.new(uri)
     request["Content-Type"] = "application/json"
-    request.body = JSON.dump(message: text, context: context, name: name)
+    request.body = JSON.dump(message: text, context: context, name: name, robot_name: robot_name)
   
     response = http.request(request)
 
