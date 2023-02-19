@@ -120,6 +120,8 @@ class GPTChatbot:
 
     # Generate a response to the user input
     hist = self.history.relevant_history(self._c.config['history_cache_stack'])
+
+    print(hist)
     print(f"actual input: {self.default_context + ' ' + self.context + ' '.join(hist) + ' '+ self.robot_name + ':'}")
 
     # Use the GPT model to generate a response to the given prompt
