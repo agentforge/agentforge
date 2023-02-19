@@ -71,7 +71,7 @@ class GPTChatbot:
   def handle_input(self, input_str, opts):
     self.context = opts["context"]
     self.name = opts["name"]
-    if self.name == ""
+    if self.name == "":
       self.name = "human"
     print("Processing...")
     print(f"input_str: {input_str}")
