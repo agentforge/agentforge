@@ -61,7 +61,7 @@ def completions():
 
 
 # Define the API endpoint for chatting with the chatbot
-@app.route("/completions", methods=["POST"])
+@app.route("/chat", methods=["POST"])
 def chat():
   print(request)
   # Get the message and context from the request
