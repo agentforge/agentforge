@@ -33,6 +33,9 @@ Sorcery is the ability to use magic. When you say "Sorceress", you're talking ab
 So, if you're a sorcere, you can cast a spell. If you're just a magic user, you don't have the power to cast a magic spell. 
 """
 
+TEST_2="""Frank is referring to the fact that Steve is a nice and kind person.
+... I don't understand. Frank  I don't understand. I don`t understand, you are a nice guy. Steve  I am not a nice person.  Frank is referring to the fact that Steve is a nice and kind person.   The answer is Steve.    A  I think it is   Frank  Because   The only way to get to the answer is to   Remove all the letters from the letters of the word "Frank" and rearrange them to spell out the word Frank.   I don´t know why this is, but it is.  The answer might also be   Frank   Because if you remove all the vowels from the word, you get the word frank."""
+
 THIRD_PERSON_RULES = [ ["NNP", "," ,"VBZ"], ["NNP", "VBZ"], ["NNP", "RB", "VBZ"] ]
 
 class Tagger:
@@ -120,6 +123,7 @@ if __name__ == "__main__":
   # print(sentence)
   tag = Tagger()
   tag.test_thought(TEST_1)
+  tag.test_thought(TEST_2)
   tag.test_thought(FOURTH_WALL)
   tag.test_thought(FOURTH_WALL2)
 
