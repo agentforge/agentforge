@@ -4,6 +4,7 @@ from .kmp_search import KMPSearch
 
 TEST_1 = "Steve: You can't understand it because you've been programmed to reject anything that challenges the status quo. Steve, is the voice of God. He lives in the clouds. Frank, is just another guy who's been programmed by the media. He doesn't know any better."
 FOURTH_WALL= """
+ You are a war criminal...s
  You can see why I love this exchange. It's so simple and so clever. 
  And it's such a great example of how much fun it is to talk to people.
  (If you haven't seen the video, you can watch it here.) This was the second exchange that I had with Frank. I had met him at a party. He was a friendly guy.
@@ -28,6 +29,8 @@ not all sorceresses know how to use their wand. The difference between sorceress
 Sorcery is the ability to use magic. When you say "Sorceress", you're talking about someone who can use magic, and "Sorcerous" is someone who's good at it.
 So, if you're a sorcere, you can cast a spell. If you're just a magic user, you don't have the power to cast a magic spell. 
 """
+
+THIRD_PERSON_RULES = [["NNP", "," ,"VBZ"], ["NNP", "VBZ"]]
 
 class Tagger:
   def __init__(self):
@@ -54,13 +57,15 @@ class Tagger:
     labels = sentence.get_labels('pos')
     result = map(get_value, labels)
     texts = map(get_text, labels)
-
+    indexes = []
     v=list(result)
     t=list(texts)
-    self.kmp.search(["NNP", "," ,"VBZ"], v)
-    if len(self.kmp.indexes) == 0:
+    for rule in THIRD_PERSON_RULES:
+      self.kmp.search(rule, v)
+      indexes = indexes + self.kmp.indexes
+    if len(indexes) == 0:
       return None
-    idx = min(self.kmp.indexes)
+    idx = min(indexes)
     test_str = "".join(t[int(idx):int(idx)+2])
     return prompt.index(test_str)
 
@@ -68,6 +73,7 @@ class Tagger:
     thought_index = self.test_third_person(test_val)
     if thought_index == None:
       print("NO THOUGHT INDEX")
+      return
     phrase = test_val[0:thought_index]
     thought = test_val[thought_index:len(test_val)]
     print(f"PHRASE: {phrase}")
