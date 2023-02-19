@@ -10,5 +10,5 @@
   "min_length_itr_min": 24,
   "min_length_itr_max": 48,
   "history_cache_stack": 5,
-  "default_context": "This is a chat between #human and #robot in the format of #human: Hey there. #robot: hey friend."
+  "default_context": "This is a chat between two friendly people in the format of #human: Hey there. #robot: hey friend."
 }
