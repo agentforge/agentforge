@@ -38,14 +38,5 @@ if __name__ == "__main__":
   tagger.predict(sentence)
 
   # print sentence
-  # print(sentence)
-
-  # print predicted NER spans
-  print('The following NER tags are found:')
-  # iterate over entities and print
-  for entity in sentence.get_spans('pos'):
-      print(entity)
-      # go through each token in entity and print its idx
-      for token in entity:
-          print(token.idx)
+  print(sentence)
 
