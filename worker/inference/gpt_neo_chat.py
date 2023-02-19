@@ -68,7 +68,7 @@ class GPTChatbot:
         do_sample=True,
         no_repeat_ngram_size=3,
         max_length=max_length,
-        min_length=min_length,
+        #min_length=min_length,
         top_k=100,
         top_p=0.7,
         temperature=self._c.config["temperature"],
@@ -102,6 +102,17 @@ class GPTChatbot:
     self.phrase = self.phrase.replace("\n", "[n]")
     # Use regular expressions to remove any leading or trailing whitespace
     self.phrase = re.sub(r"^\s+|\s+$", "", self.phrase)
+    # Capture strangely encoded thoughts
+    self.special_thought()
+    #Fix weird issue
+    self.phrase = self.phrase.replace(": :", ":")
+
+  def special_thought(self):
+    # Sometimes an A: shows up as a thought, we need to capture that
+    test = self.phrase.split("A:")
+    if len(test) > 1:
+      self.phrase = test[0]
+      self.store_thought(test[1])
 
   def post_process(self):
     # Preserve newlines
@@ -111,13 +122,18 @@ class GPTChatbot:
 
   # Store those strange third-person mutterings best kept to ourselves
   # It's just good etiquette
-  def store_thought(self):
+  def store_thought(self, val=None):
+    if val != None:
+      self.thoughts.append(val)
+      return
     thought_index = self.tagger.test_third_person(self.phrase)
     if thought_index == None:
       return
     # We have a thought!
     phrase = self.phrase[0:thought_index]
     thought = self.phrase[thought_index:len(self.phrase)]
+    if len(phrase.strip()) == 0:
+      phrase = self.tagger.first_sentence()
     print(f"phrase: {phrase}")
     print(f"thought: {thought}")
     self.phrase = phrase

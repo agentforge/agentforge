@@ -2,8 +2,8 @@
 from flair.data import Sentence
 from flair.models import SequenceTagger
 from flair.tokenization import SegtokSentenceSplitter
-from kmp_search import KMPSearch
-from fuzzy_search import FuzzySearch
+from .kmp_search import KMPSearch
+from .fuzzy_search import FuzzySearch
 
 TEST_1 = "Steve: You can't understand it because you've been programmed to reject anything that challenges the status quo. Steve, is the voice of God. He lives in the clouds. Frank, is just another guy who's been programmed by the media. He doesn't know any better."
 FOURTH_WALL= """
@@ -36,13 +36,28 @@ So, if you're a sorcere, you can cast a spell. If you're just a magic user, you 
 TEST_2="""Frank is referring to the fact that Steve is a nice and kind person.
 ... I don't understand. Frank  I don't understand. I don`t understand, you are a nice guy. Steve  I am not a nice person.  Frank is referring to the fact that Steve is a nice and kind person.   The answer is Steve.    A  I think it is   Frank  Because   The only way to get to the answer is to   Remove all the letters from the letters of the word "Frank" and rearrange them to spell out the word Frank.   I don´t know why this is, but it is.  The answer might also be   Frank   Because if you remove all the vowels from the word, you get the word frank."""
 
-THIRD_PERSON_RULES = [ ["NNP", "," ,"VBZ"], ["NNP", "VBZ"], ["NNP", "RB", "VBZ"] ]
+TEST_3="The War of 1812. A I think it is a trick question, as I think the answer is clear from the context. It is a game of two people talking, not a real conversation."
+
+THIRD_PERSON_RULES = [ ["NNP", "," ,"VBZ"], ["NNP", "VBZ"], ["NNP", "RB", "VBZ"], ["PRP", "VBP", "PRP", "VBZ"] ]
 
 class Tagger:
   def __init__(self):
     self.tagger = SequenceTagger.load("flair/pos-english")
     self.kmp = KMPSearch()
     self.fuzzy = FuzzySearch()
+
+  def format_processed_string(self, value):
+    return value.replace(" n't", "n't").replace(" ,", ",").replace(" .", ".").replace(" 's", "'s")
+
+  def first_sentence(self, prompt):
+    splitter = SegtokSentenceSplitter()
+    # use splitter to split text into list of sentences
+    sentences = splitter.split(prompt)
+    #print(sentences)
+    self.tagger.predict(sentences)
+    indexes = []
+    for sentence in sentences:
+      return sentence.text
 
   # Returns the earliest index of a possible hit for third person rhetoric
   def test_third_person(self, prompt):
@@ -77,10 +92,11 @@ class Tagger:
       texts = map(get_text, labels)
       v=list(result)
       t=list(texts)
+      print(sentence)
       for rule in THIRD_PERSON_RULES:
         self.kmp.search(rule, v)
         if len(self.kmp.indexes) > 0:
-          print(sentence)
+          #print(sentence)
           print(self.kmp.indexes)
           indexes.append(sentence)
 
@@ -89,7 +105,7 @@ class Tagger:
     if len(indexes) == 0:
       return None
 
-    first = indexes[0].text.replace(" n't", "n't").replace(" ,", ",").replace(" .", ".").replace(" 's", "'s")
+    first = self.format_processed_string(indexes[0].text)
     print(first)
     print(prompt)
     fz_ret = self.fuzzy.fuzzy_extract(str(first), str(prompt), 30)
@@ -123,10 +139,11 @@ if __name__ == "__main__":
   # print sentence
   # print(sentence)
   tag = Tagger()
-  tag.test_thought(TEST_1)
-  tag.test_thought(TEST_2)
-  tag.test_thought(FOURTH_WALL)
-  tag.test_thought(FOURTH_WALL2)
+  #tag.test_thought(TEST_1)
+  #tag.test_thought(TEST_2)
+  tag.test_thought(TEST_3)
+  #tag.test_thought(FOURTH_WALL)
+  #tag.test_thought(FOURTH_WALL2)
 
 
 
