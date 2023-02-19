@@ -5,9 +5,11 @@ from speech.speech import TTS
 from speech.whisper import Whisper
 import io
 import torch
+from flask_cors import CORS
 
 # Create an instance of the Flask class
 app = Flask(__name__)
+CORS(app)
 
 # Create an instance of the GPT2Chatbot class
 chatbot = GPT2Chatbot()
@@ -38,6 +40,25 @@ def tts():
     mimetype="audio/wav",
     attachment_filename=filename
   )
+
+
+# Define the API endpoint for chatting with the chatbot
+@app.route("/completions", methods=["POST"])
+def completions():
+  # Get the message and context from the request
+  message = request.json["prompt"]
+  context = ""
+  name = "human"
+
+  opts = {"name": name, "context": context}
+
+  # Use the chatbot to generate a response
+  response = chatbot.handle_input(message, opts)
+
+  print(response)
+  # Return the response
+  return jsonify({"choices": [{"text":response}]})
+
 
 # Define the API endpoint for chatting with the chatbot
 @app.route("/chat", methods=["POST"])
