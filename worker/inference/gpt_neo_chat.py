@@ -131,7 +131,7 @@ class GPTChatbot:
 
     total_context = self.default_context + " " +  self.context
     self.pre_process()
-    self.history.find_new_phrase(self.phrase, total_context, self.name)
+    self.phrase = self.history.find_new_phrase(self.phrase, total_context, self.name)
     self.remove_hanging()
     self.post_process()
 

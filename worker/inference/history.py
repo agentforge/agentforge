@@ -48,8 +48,8 @@ class History:
       if f"{self.robot_name}: {fixed}" not in self.history and f"{human_name}: {fixed}" not in self.history:
         # Return the phrase if it is not in the previous string
         return fixed
-    # Return None if no new phrase was found
-    return None
+    # Return default if no new phrase was found
+    return "..."
 
   def create_tables(self, cursor):
     cursor.execute(
