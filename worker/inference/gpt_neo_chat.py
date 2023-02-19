@@ -87,9 +87,20 @@ class GPTChatbot:
     self.history.robot_name = self.robot_name
 
   # Removes the incomplete sentence using regex
-  def remove_hanging(self, new_phrase):
-    new_phrase = re.match("(^.*[\.\?!]|^\S[^.\?!]*)", new_phrase.replace("\n", "[n]"))
-    return new_phrase.group().replace("[n]", "\n")
+  def remove_hanging(self):
+    self.phrase = re.match("(^.*[\.\?!]|^\S[^.\?!]*)", self.phrase)
+    return self.phrase.group()
+
+  def pre_process(self):
+    # Preserve newlines
+    self.phrase = new_phrase.replace("\n", "[n]")
+    # Use regular expressions to remove any leading or trailing whitespace
+    self.phrase = re.sub(r"^\s+|\s+$", "", self.phrase)
+    return self.phrase
+
+  def post_process(self):
+    # Preserve newlines
+    return self.phrase.replace("[n]", "\n")
 
   # Considers an input_str, a user supplied context, and name
   def handle_input(self, input_str, opts):
@@ -117,20 +128,19 @@ class GPTChatbot:
     response = self.generate_response(prompt)
 
     # Extract the generated text from the response
-    generated_text = self.tokenizer.decode(response[0])
-
-    # Use regular expressions to remove any leading or trailing whitespace
-    generated_text = re.sub(r"^\s+|\s+$", "", generated_text)
+    self.phrase = self.tokenizer.decode(response[0])
 
     total_context = self.default_context + " " +  self.context
-    new_phrase = self.history.find_new_phrase(generated_text, total_context, self.name)
+    self.pre_process()
+    self.history.find_new_phrase(self.phrase, total_context, self.name)
+    self.remove_hanging()
+    self.pre_process()
 
     # Second pass for more content
     # pass2 = self.generate_response(str(new_phrase))
     # new_phrase = self.tokenizer.decode(pass2[0])
     # new_phrase = re.sub(r"^\s+|\s+$", "", new_phrase)
 
-    new_phrase = self.remove_hanging(new_phrase)
     # Update the conversation history
     self.history.append(f"{self.robot_name}: {new_phrase}")
 
