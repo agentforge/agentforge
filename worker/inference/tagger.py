@@ -2,8 +2,8 @@
 from flair.data import Sentence
 from flair.models import SequenceTagger
 from flair.tokenization import SegtokSentenceSplitter
-from .kmp_search import KMPSearch
-from .fuzzy_search import FuzzySearch
+from kmp_search import KMPSearch
+from fuzzy_search import FuzzySearch
 
 TEST_1 = "Steve: You can't understand it because you've been programmed to reject anything that challenges the status quo. Steve, is the voice of God. He lives in the clouds. Frank, is just another guy who's been programmed by the media. He doesn't know any better."
 FOURTH_WALL= """
@@ -56,11 +56,10 @@ class Tagger:
     # use splitter to split text into list of sentences
     sentences = splitter.split(prompt)
 
-    print(sentences)
+    #print(sentences)
     self.tagger.predict(sentences)
     indexes = []
     for sentence in sentences:
-      print(sentence)
       # sentence = Sentence(prompt)
 
       # # predict NER tags
@@ -81,6 +80,7 @@ class Tagger:
       for rule in THIRD_PERSON_RULES:
         self.kmp.search(rule, v)
         if len(self.kmp.indexes) > 0:
+          print(sentence)
           print(self.kmp.indexes)
           indexes.append(sentence)
 
@@ -92,8 +92,9 @@ class Tagger:
     first = indexes[0].text.replace(" n't", "n't").replace(" ,", ",").replace(" .", ".").replace(" 's", "'s")
     print(first)
     print(prompt)
-    fz_ret = self.fuzzy.fuzzy_extract(str(first), str(prompt).replace("\'", "'").replace("\n", " "), 70)
-    for ret in fz_ret:
+    fz_ret = self.fuzzy.fuzzy_extract(str(first), str(prompt), 30)
+    ret_vals = list(fz_ret)
+    for ret in ret_vals:
       # return index
       return ret[1]
     return None
