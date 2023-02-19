@@ -6,9 +6,9 @@
   "tokenizer_cache": "EleutherAI/gpt-j-6B",
   "temperature": 0.88,
   "max_length_itr_min": 128,
-  "max_length_itr_max": 512,
+  "max_length_itr_max": 256,
   "min_length_itr_min": 24,
   "min_length_itr_max": 48,
   "history_cache_stack": 5,
-  "default_context": "This is a discussion between #human and #robot. #robot is thousands of years old and quite verbose. #human is a human being that should be respected."
+  "default_context": "CONTEXT: This is a discussion between #human and #robot; DISCUSSION: #human: Hey there! #robot: hey friend."
 }

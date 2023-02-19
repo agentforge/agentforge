@@ -38,7 +38,7 @@ class GPTChatbot:
   def max_length(self, prompt):
     value = random.randint(self._c.config["max_length_itr_min"], self._c.config["max_length_itr_max"])
     # Returns the optimal max_length for this model
-    return int(max(len(prompt), value))
+    return int(max(len(prompt) + value, len(prompt)))
 
   def preprocess_input(self, input_str):
     # Use regular expressions to remove any leading or trailing whitespace
