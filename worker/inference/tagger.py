@@ -1,5 +1,3 @@
-# Steve: You can't understand it because you've been programmed to reject anything that challenges the status quo. Steve, is the voice of God. He lives in the clouds. Frank, is just another guy who's been programmed by the media. He doesn't know any better. 
-
 from flair.data import Sentence
 from flair.models import SequenceTagger
 from .kmp_search import KMPSearch
@@ -67,8 +65,7 @@ class Tagger:
     return prompt.index(test_str)
 
   def test_thought(self, test_val):
-    tag = Tagger()
-    thought_index = tag.test_third_person(test_val)
+    thought_index = self.test_third_person(test_val)
     if thought_index == None:
       print("NO THOUGHT INDEX")
     phrase = test_val[0:thought_index]
@@ -89,9 +86,10 @@ if __name__ == "__main__":
 
   # print sentence
   # print(sentence)
-  test_thought(TEST_1)
-  test_thought(FOURTH_WALL)
-  test_thought(FOURTH_WALL)
+  tag = Tagger()
+  tagtest_thought(TEST_1)
+  tag.test_thought(FOURTH_WALL)
+  tag.test_thought(FOURTH_WALL)
 
 
 
