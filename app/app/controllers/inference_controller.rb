@@ -21,9 +21,9 @@ class InferenceController < ApplicationController
   
     response = http.request(request)
     text = ActionController::Base.helpers.strip_tags(JSON.parse(response.body)["response"])
+    thoughts = ActionController::Base.helpers.strip_tags(JSON.parse(response.body)["thoughts"])
     text.gsub("\n", "<br/>")
-
-    render json: { text: text }
+    render json: { text: text, thoughts: thoughts }
   end
 
   def reset_history
