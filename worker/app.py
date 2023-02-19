@@ -65,7 +65,7 @@ def completions():
 def chat():
   print(request)
   # Get the message and context from the request
-  message = request.json["message"]
+  message = request.json["prompt"]
   context = request.json["context"]
   name = request.json["name"]
 
@@ -76,7 +76,7 @@ def chat():
 
   print(response)
   # Return the response
-  return jsonify({"response": response})Chatbot
+  return jsonify({"choices": [{"text": response}]})
 
 
 # Define the API endpoint for chatting with the chatbot
@@ -94,7 +94,7 @@ def chat():
 
   print(response)
   # Return the response
-  return jsonify({"response": response})Chatbot
+  return jsonify({"response": response})
 
 # Define the API endpoint for chatting with the chatbot
 @app.route("/reset_history", methods=["POST"])
