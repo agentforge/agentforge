@@ -67,16 +67,24 @@ class GPTChatbot:
     )
     return response
 
-  # Considers an input_str, a user supplied context, and name
-  def handle_input(self, input_str, opts):
+  def load_context(self, opts):
     self.context = opts["context"]
     self.name = opts["name"]
     self.robot_name = opts["robot_name"]
+    
+  def validations(self):
+    # Validations
     if self.name == "":
       self.name = "Human"
+    
     if self.robot_name == "":
       self.robot_name = "Robot"
-    self.history = robot_name
+    self.history = self.robot_name
+
+  # Considers an input_str, a user supplied context, and name
+  def handle_input(self, input_str, opts):
+    self.load_context(opts)
+    self.validations()
 
     print("Processing...")
     print(f"input_str: {input_str}")
