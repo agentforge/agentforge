@@ -4,6 +4,8 @@ from flair.data import Sentence
 from flair.models import SequenceTagger
 from kmp_search import KMPSearch
 
+TEST_1 = "Steve: You can't understand it because you've been programmed to reject anything that challenges the status quo. Steve, is the voice of God. He lives in the clouds. Frank, is just another guy who's been programmed by the media. He doesn't know any better."
+
 class Tagger:
   def __init__(self):
     self.tagger = SequenceTagger.load("flair/pos-english")
@@ -24,7 +26,7 @@ class Tagger:
     # We double all numbers using map()
     result = map(get_value, sentence.get_labels('pos'))
     print(result)
-    # self.kmp.search([])
+    self.kmp.search(["NNP", ",", "VBZ"], result)
 
 
 if __name__ == "__main__":
@@ -32,11 +34,14 @@ if __name__ == "__main__":
   tagger = SequenceTagger.load("flair/pos-english")
 
   # make example sentence
-  sentence = Sentence("Steve: You can't understand it because you've been programmed to reject anything that challenges the status quo. Steve, is the voice of God. He lives in the clouds. Frank, is just another guy who's been programmed by the media. He doesn't know any better.")
+  sentence = Sentence(TEST_1)
 
   # predict NER tags
   tagger.predict(sentence)
 
   # print sentence
   print(sentence)
+
+  tag = Tagger()
+  tag.test_third_person(TEST_1)
 
