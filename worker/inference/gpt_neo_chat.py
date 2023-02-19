@@ -85,6 +85,11 @@ class GPTChatbot:
       self.robot_name = "Robot"
     self.history.robot_name = self.robot_name
 
+  # Removes the incomplete sentence using regex
+  def remove_hanging(self, new_phrase):
+    new_phrase = re.match("(^.*[\.\?!]|^\S[^.\?!]*)", new_phrase)
+    return new_phrase.group()
+
   # Considers an input_str, a user supplied context, and name
   def handle_input(self, input_str, opts):
     self.response = {}
@@ -124,6 +129,7 @@ class GPTChatbot:
     # new_phrase = self.tokenizer.decode(pass2[0])
     # new_phrase = re.sub(r"^\s+|\s+$", "", new_phrase)
 
+    new_phrase = self.remove_hanging(new_phrase)
     # Update the conversation history
     self.history.append(f"{self.robot_name}: {new_phrase}")
 
