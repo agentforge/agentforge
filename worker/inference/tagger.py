@@ -2,7 +2,7 @@
 from flair.data import Sentence
 from flair.models import SequenceTagger
 from flair.tokenization import SegtokSentenceSplitter
-from .kmp_search import Search
+from .kmp_search import KMPSearch
 from .fuzzy_search import FuzzySearch
 
 TEST_1 = "Steve: You can't understand it because you've been programmed to reject anything that challenges the status quo. Steve, is the voice of God. He lives in the clouds. Frank, is just another guy who's been programmed by the media. He doesn't know any better."
@@ -33,7 +33,7 @@ Sorcery is the ability to use magic. When you say "Sorceress", you're talking ab
 So, if you're a sorcere, you can cast a spell. If you're just a magic user, you don't have the power to cast a magic spell. 
 """
 
-THIRD_PERSON_RULES = [["NNP", "," ,"VBZ"], ["NNP", "VBZ"]]
+THIRD_PERSON_RULES = [ ["NNP", "," ,"VBZ"], ["NNP", "VBZ"], ["NNP", "RB", "VBZ"] ]
 
 class Tagger:
   def __init__(self):
@@ -90,9 +90,10 @@ class Tagger:
     print(first)
     print(prompt)
     fz_ret = self.fuzzy.fuzzy_extract(str(first), str(prompt).replace("\'", "'").replace("\n", " "), 70)
-    if len(fz_ret) > 0:
+    for ret in fz_ret:
       # return index
-      return fz_ret[0][1]
+      return ret[1]
+    return None
 
   def test_thought(self, test_val):
     thought_index = self.test_third_person(test_val)

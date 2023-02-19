@@ -13,7 +13,7 @@ class History:
     return self.history
 
   def append(self, value):
-    self.history.append(value)
+    self.history.append(value.strip())
 
   def relevant_history(self, historical_length):
     return self.history[-historical_length:]
