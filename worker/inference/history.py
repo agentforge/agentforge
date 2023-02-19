@@ -32,17 +32,17 @@ class History:
   def find_new_phrase(self, new_phrase, context, human_name):
     # Remove the context
     new_phrase = new_phrase.replace(context, "")
-    print(new_phrase)
+    print(f"new_phrase: {new_phrase}")
     # Split the strings into a list of strings separated by [human] and [robot]
     new_phrases = re.split(f"{self.robot_name}\:|{human_name}\:|", new_phrase)
     new_phrases = filter(lambda x: not (x.isspace() or len(x) == 0), new_phrases)
     new_phrases = list(new_phrases)
-    print(new_phrases)
-    print(self.history)
+    print(f"new_phrases: {new_phrases}")
+    print(f"self.history: {self.history}")
     # Loop through the phrases in the new string
     for phrase in new_phrases:
       fixed = phrase.replace(":", "").replace("[n]", " ").strip()
-      print(fixed)
+      print(f"fixed {fixed}")
       print(f"{self.robot_name}: {fixed}" not in self.history and f"{human_name}: {fixed}" not in self.history)
       # Check if the phrase exists in the previous string
       if f"{self.robot_name}: {fixed}" not in self.history and f"{human_name}: {fixed}" not in self.history:
