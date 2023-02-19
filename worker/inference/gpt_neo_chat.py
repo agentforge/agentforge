@@ -53,13 +53,15 @@ class GPTChatbot:
     input_ids = input_ids.to('cuda')
     min_length = self.min_length(prompt)
     max_length = self.max_length(prompt)
+    self.response["min_length"] = min_length
+    self.response["max_length"] = max_length
     response = self.model.generate(
         input_ids=input_ids,
         do_sample=True,
         no_repeat_ngram_size=3,       
         max_length=max_length,
         min_length=min_length,
-        top_k=100, 
+        top_k=100,
         top_p=0.7,
         temperature=self._c.config["temperature"],
         pad_token_id=self.tokenizer.eos_token_id,
@@ -85,6 +87,7 @@ class GPTChatbot:
 
   # Considers an input_str, a user supplied context, and name
   def handle_input(self, input_str, opts):
+    self.response = {}
     self.load_context(opts)
     self.validations()
 
@@ -124,7 +127,8 @@ class GPTChatbot:
     # Update the conversation history
     self.history.append(f"{self.robot_name}: {new_phrase}")
 
-    return new_phrase
+    self.response["reponse"] = new_phrase
+    return self.response
 
   # Considers an input_str, a user supplied context, and name
   def simple_input(self, input_str):
