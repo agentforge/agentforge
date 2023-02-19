@@ -11,6 +11,7 @@ class Tagger:
     self.tagger = SequenceTagger.load("flair/pos-english")
     self.kmp = KMPSearch()
 
+  # Returns the earliest index of a possible hit for third person rhetoric
   def test_third_person(self, prompt):
     # After detection of NNP/VBZ tuple with NNP matching either of the parties in conversation
     # We can assume this is a third person thought and should not be presented to the user
@@ -21,13 +22,28 @@ class Tagger:
     tagger.predict(sentence)
 
     def get_value(n):
-      return n.value
+      return str(n.value)
+
+    def get_text(n):
+      return n.data_point.text
 
     # We double all numbers using map()
-    result = map(get_value, sentence.get_labels('pos'))
-    print(list(result))
-    idx = self.kmp.search(["NNP", ",", "VBZ"], list(result))
-    print(idx)
+    labels = sentence.get_labels('pos')
+    result = map(get_value, labels)
+    texts = map(get_text, labels)
+
+    v=list(result)
+    t=list(texts)
+    self.kmp.search(["NNP", "," ,"VBZ"], v)
+    #print(v)
+    #print(t)
+    #print(self.kmp.indexes)
+    #print(len(t))
+    #print(min(self.kmp.indexes))
+    #for i in self.kmp.indexes:
+    #  print(t[int(i)-1:int(i)+3])
+    return min(self.kmp.indexes)
+
 
 if __name__ == "__main__":
   # load tagger

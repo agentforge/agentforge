@@ -24,8 +24,8 @@ class KMPSearch:
         j += 1
 
       if j == M:
-        print("Found pattern at index " + str(i-j))
-        self.indexes.append(str(i-j))
+        #print("Found pattern at index " + str(i-j))
+        self.indexes.append(i-j)
         j = lps[j-1]
 
       # mismatch after j matches
