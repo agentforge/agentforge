@@ -3,7 +3,7 @@ class KMPSearch:
   def __init__(self):
     pass
 
-  def search(pat, txt): 
+  def search(self, pat, txt): 
       M = len(pat) 
       N = len(txt) 
 
@@ -13,7 +13,7 @@ class KMPSearch:
       j = 0 # index for pat[] 
 
       # Preprocess the pattern (calculate lps[] array) 
-      computeLPSArray(pat, M, lps) 
+      self.computeLPSArray(pat, M, lps) 
 
       i = 0 # index for txt[] 
       while i < N: 
@@ -34,7 +34,7 @@ class KMPSearch:
               else: 
                   i += 1
 
-  def computeLPSArray(pat, M, lps): 
+  def computeLPSArray(self, pat, M, lps): 
       len = 0 # length of the previous longest prefix suffix 
 
       lps[0] # lps[0] is always 0 
