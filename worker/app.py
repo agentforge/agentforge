@@ -1,6 +1,6 @@
 # Import necessary libraries
 from flask import Flask, request, jsonify, send_file
-from inference.gpt_neo_chat import GPT2Chatbot
+from inference.gpt_neo_chat import GPTChatbot
 from speech.speech import TTS
 from speech.whisper import Whisper
 import io
@@ -12,7 +12,7 @@ app = Flask(__name__)
 CORS(app)
 
 # Create an instance of the GPT2Chatbot class
-chatbot = GPT2Chatbot()
+chatbot = GPTChatbot()
 tts_pipeline = TTS()
 
 # Create a Whisper instance
@@ -61,6 +61,25 @@ def completions():
 
 
 # Define the API endpoint for chatting with the chatbot
+@app.route("/completions", methods=["POST"])
+def chat():
+  print(request)
+  # Get the message and context from the request
+  message = request.json["message"]
+  context = request.json["context"]
+  name = request.json["name"]
+
+  opts = {"name": name, "context": context}
+
+  # Use the chatbot to generate a response
+  response = chatbot.simple_input(message, opts)
+
+  print(response)
+  # Return the response
+  return jsonify({"response": response})Chatbot
+
+
+# Define the API endpoint for chatting with the chatbot
 @app.route("/chat", methods=["POST"])
 def chat():
   # Get the message and context from the request
@@ -75,7 +94,7 @@ def chat():
 
   print(response)
   # Return the response
-  return jsonify({"response": response})
+  return jsonify({"response": response})Chatbot
 
 # Define the API endpoint for chatting with the chatbot
 @app.route("/reset_history", methods=["POST"])
