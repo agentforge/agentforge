@@ -1,10 +1,11 @@
 from flair.data import Sentence
 from flair.models import SequenceTagger
+from flair.tokenization import SegtokSentenceSplitter
 from .kmp_search import KMPSearch
 
 TEST_1 = "Steve: You can't understand it because you've been programmed to reject anything that challenges the status quo. Steve, is the voice of God. He lives in the clouds. Frank, is just another guy who's been programmed by the media. He doesn't know any better."
 FOURTH_WALL= """
- You are a war criminal...s
+ You are a war criminal...
  You can see why I love this exchange. It's so simple and so clever. 
  And it's such a great example of how much fun it is to talk to people.
  (If you haven't seen the video, you can watch it here.) This was the second exchange that I had with Frank. I had met him at a party. He was a friendly guy.
@@ -42,31 +43,44 @@ class Tagger:
     # After detection of NNP/VBZ tuple with NNP matching either of the parties in conversation
     # We can assume this is a third person thought and should not be presented to the user
     # and instead stored as context
-    sentence = Sentence(prompt)
 
-    # predict NER tags
-    self.tagger.predict(sentence)
+    # initialize sentence splitter
+    splitter = SegtokSentenceSplitter()
 
-    def get_value(n):
-      return str(n.value)
+    # use splitter to split text into list of sentences
+    sentences = splitter.split(text)
 
-    def get_text(n):
-      return n.data_point.text
+    self.tagger.predict(sentences)
+    
+    for sentence in sentences:
+      
+      # sentence = Sentence(prompt)
 
-    # We double all numbers using map()
-    labels = sentence.get_labels('pos')
-    result = map(get_value, labels)
-    texts = map(get_text, labels)
-    indexes = []
-    v=list(result)
-    t=list(texts)
-    for rule in THIRD_PERSON_RULES:
-      self.kmp.search(rule, v)
-      indexes = indexes + self.kmp.indexes
+      # # predict NER tags
+      # self.tagger.predict(sentence)
+
+      def get_value(n):
+        return str(n.value)
+
+      def get_text(n):
+        return n.data_point.text
+
+      # We double all numbers using map()
+      labels = sentence.get_labels('pos')
+      result = map(get_value, labels)
+      texts = map(get_text, labels)
+      indexes = []
+      v=list(result)
+      t=list(texts)
+      for rule in THIRD_PERSON_RULES:
+        self.kmp.search(rule, v)
+        indexes = indexes + self.kmp.indexes
+
+    # Process all indexes
     if len(indexes) == 0:
       return None
     idx = min(indexes)
-    test_str = "".join(t[int(idx):int(idx)+2])
+    test_str = " ".join(t[int(idx):int(idx)+2])
     return prompt.index(test_str)
 
   def test_thought(self, test_val):
