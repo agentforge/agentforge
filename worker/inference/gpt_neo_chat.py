@@ -133,7 +133,7 @@ class GPTChatbot:
     # Update the conversation history
     self.history.append(f"{self.robot_name}: {new_phrase}")
 
-    self.response["reponse"] = new_phrase
+    self.response["response"] = new_phrase
     return self.response
 
   # Considers an input_str, a user supplied context, and name
