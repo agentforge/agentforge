@@ -89,18 +89,17 @@ class GPTChatbot:
   # Removes the incomplete sentence using regex
   def remove_hanging(self):
     self.phrase = re.match("(^.*[\.\?!]|^\S[^.\?!]*)", self.phrase)
-    return self.phrase.group()
+    self.phrase = self.phrase.group()
 
   def pre_process(self):
     # Preserve newlines
     self.phrase = self.phrase.replace("\n", "[n]")
     # Use regular expressions to remove any leading or trailing whitespace
     self.phrase = re.sub(r"^\s+|\s+$", "", self.phrase)
-    return self.phrase
 
   def post_process(self):
     # Preserve newlines
-    return self.phrase.replace("[n]", "\n")
+    self.phrase = self.phrase.replace("[n]", "\n")
 
   # Considers an input_str, a user supplied context, and name
   def handle_input(self, input_str, opts):
@@ -134,7 +133,7 @@ class GPTChatbot:
     self.pre_process()
     self.history.find_new_phrase(self.phrase, total_context, self.name)
     self.remove_hanging()
-    self.pre_process()
+    self.post_process()
 
     # Second pass for more content
     # pass2 = self.generate_response(str(new_phrase))
