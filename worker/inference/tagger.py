@@ -5,6 +5,19 @@ from flair.models import SequenceTagger
 from .kmp_search import KMPSearch
 
 TEST_1 = "Steve: You can't understand it because you've been programmed to reject anything that challenges the status quo. Steve, is the voice of God. He lives in the clouds. Frank, is just another guy who's been programmed by the media. He doesn't know any better."
+FOUTH_WALL= """
+ You can see why I love this exchange. It's so simple and so clever. 
+ And it's such a great example of how much fun it is to talk to people.
+ (If you haven't seen the video, you can watch it here.) This was the second exchange that I had with Frank. I had met him at a party. He was a friendly guy.
+ But I was really just there to chat with some other people. I didn't want to talk with him. So I tried to make it clear that I wasn't interested
+ in talking with him by saying, "I'm just here to talk." But then he said, "Hey, you know, I have a friend who's an accountant. He could help you."
+ And I was like, "No thanks. I'm good." But he insisted. "He's an excellent accountant. I can get him to do it for you for free."
+ So finally I just said, "Okay, fine. But you're the only one I'm paying." He laughed. "I don't care. You're the one I want to do business with.
+ You're the most interesting person I've met all night." I was like "Oh, that's nice." "No, seriously, I'm telling you, you're a fascinating person."
+ It was true. I was. We talked for a while. About business. That's how we started talking. A little bit about business.
+ And a little bit more about what we were doing. After that we got into politics. The subject of war. What are the worst war criminals?
+ And so we talked. For a while about war. And about war criminals. 
+"""
 
 class Tagger:
   def __init__(self):
@@ -41,25 +54,31 @@ class Tagger:
     test_str = "".join(t[int(idx):int(idx)+2])
     return prompt.index(test_str)
 
+  def test_thought(self, test_val)
+    tag = Tagger()
+    thought_index = tag.test_third_person(test_val)
+    if thought_index == None:
+      print("NO THOUGHT INDEX")
+    phrase = test_val[0:thought_index]
+    thought = test_val[thought_index:len(test_val)]
+    print(f"PHRASE: {phrase}")
+    print(f"THOUGHT: {thought}")
+
+
 if __name__ == "__main__":
   # load tagger
   tagger = SequenceTagger.load("flair/pos-english")
 
   # make example sentence
-  sentence = Sentence(TEST_1)
+  # sentence = Sentence(TEST_1)
 
   # predict NER tags
-  tagger.predict(sentence)
+  # tag.tagger.predict(sentence)
 
   # print sentence
-  print(sentence)
+  # print(sentence)
+  test_thought(TEST_1)
+  test_thought(FOURTH_WALL)
 
-  tag = Tagger()
-  thought_index = tag.test_third_person(TEST_1)
-  if thought_index == None:
-    print("NO THOUGHT INDEX")
-  phrase = TEST_1[0:thought_index]
-  thought = TEST_1[thought_index:len(TEST_1)]
-  print(f"PHRASE: {phrase}")
-  print(f"THOUGHT: {thought}")
+
 
