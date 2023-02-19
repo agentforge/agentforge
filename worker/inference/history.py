@@ -8,7 +8,7 @@ class History:
     self.history = []
     self.user_id = None
     self.robot_name = robot_name
-
+  
   def get(self):
     return self.history
 
