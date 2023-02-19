@@ -25,9 +25,9 @@ class Tagger:
 
     # We double all numbers using map()
     result = map(get_value, sentence.get_labels('pos'))
-    print(result)
-    self.kmp.search(["NNP", ",", "VBZ"], result)
-
+    print(list(result))
+    idx = self.kmp.search(["NNP", ",", "VBZ"], list(result))
+    print(idx)
 
 if __name__ == "__main__":
   # load tagger
