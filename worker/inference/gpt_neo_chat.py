@@ -31,7 +31,11 @@ class GPTChatbot:
     # Initialize an empty list for storing the conversation history
     self.history = History()
 
+    # For tagging POS and other NLP classification
     self.tagger = Tagger()
+
+    # For storing thoughts better kept to ourselves
+    self.thoughts = []
 
   def min_length(self, prompt):
     # Returns the optimal min_length for this model
@@ -104,15 +108,21 @@ class GPTChatbot:
     # Preserve newlines
     self.phrase = self.phrase.replace("[n]", "\\n")
     self.phrase = re.sub(r'\[.*\]', ' ', self.phrase)
+    self.store_thought()
 
+  # Store those strange third-person mutterings best kept to ourselves
+  # It's just good etiquette
   def store_thought(self):
     thought_index = self.tagger.test_third_person(self.phrase)
     if thought_index == None:
       return
+    # We have a thought!
     phrase = self.phrase[0:thought_index]
     thought = self.phrase[thought_index:len(self.phrase)]
     print(phrase)
     print(thought)
+    self.phrase = phrase
+    self.thoughts.append(thought)
 
   # Considers an input_str, a user supplied context, and name
   def handle_input(self, input_str, opts):
@@ -159,6 +169,7 @@ class GPTChatbot:
     self.history.append(f"{self.robot_name}: {self.phrase}")
 
     self.response["response"] = self.phrase
+    self.response["thoughts"] = self.thoughts
     return self.response
 
   # Considers an input_str, a user supplied context, and name
