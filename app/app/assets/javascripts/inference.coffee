@@ -9,7 +9,8 @@ sendInferenceRequest = (url, text) ->
       robot_name: $("#robot-name-input").val()
       authenticity_token: window._token
     success: (response) ->
-      $('.chat-history').append "<li><p>Link: #{response["text"]} </p></li>"
+      $('.chat-history').append "<li><p>#{$("#robot-name-input").val()}: #{response["text"]} </p></li>"
+      $('.thought-history').append "<li><p>Thought: #{response["thoughts"]} </p></li>"
       $("#spinner").remove()
     error: () ->
       $("#spinner").remove()
@@ -19,7 +20,7 @@ sendMessage = () ->
   port = window.Settings["rails"]["port"]
   text = $("#user-input").val()
   $("#user-input").val("")
-  $('.chat-history').append "<li><p>You: #{text} </p></li>"
+  $('.chat-history').append "<li><p>#{$("#name-input").val()}: #{text} </p></li>"
   $('.chat-history').append '<li id="spinner"><p><i class="fas fa-spinner fa-pulse"></p></i>'
   $(".chat-history").scrollTop($(".chat-history")[0].scrollHeight);
   console.log("#send-message #{text}")

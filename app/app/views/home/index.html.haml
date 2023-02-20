@@ -1,5 +1,4 @@
 .row
-  .col-1
   .col-2
     .control-panel.container
       %h2 Control Panel
@@ -13,10 +12,10 @@
         %button#reset-history.btn.btn-primary{type: "button"} Reset History
       .form-group
         %h5 Name
-        %input#name-input.form-control{value: "human"}
+        %input#name-input.form-control
       .form-group
         %h5 Robot Name
-        %input#robot-name-input.form-control
+        %input#robot-name-input.form-control  
       .form-group
         %h5 Context
         %textarea#context-input.form-control{rows: "3"}
@@ -29,8 +28,9 @@
 
       .chat-widget
         %ul.chat-history{style:"max-height: 500px;overflow: scroll;"}
-          %li.chat-log
-            %p Robot: Hello
         #chat-input.row
           %input#user-input.col.form-control{type: "text"}
-          %button#send-message.btn.btn-primary.col-2 Enter
+  .col-2
+    .container
+        %ul.thought-history{style:"max-height: 500px;overflow: scroll;"}
+          %li.thought-log
