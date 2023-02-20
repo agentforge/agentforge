@@ -83,6 +83,7 @@ class GPTChatbot:
     self.robot_name = opts["robot_name"]
     self.default_context = self.default_context.replace("#human", self.name)
     self.default_context = self.default_context.replace("#robot", self.robot_name)
+    self.current_thought = ""
 
   def validations(self):
     # Validations
@@ -125,6 +126,7 @@ class GPTChatbot:
   def store_thought(self, val=None):
     if val != None:
       self.thoughts.append(val)
+      self.current_thought = val
       return
     thought_index = self.tagger.test_third_person(self.phrase)
     if thought_index == None:
@@ -137,6 +139,7 @@ class GPTChatbot:
     print(f"phrase: {phrase}")
     print(f"thought: {thought}")
     self.phrase = phrase
+    self.current_thought = thought
     self.thoughts.append(thought)
 
   # Considers an input_str, a user supplied context, and name
@@ -184,7 +187,7 @@ class GPTChatbot:
     self.history.append(f"{self.robot_name}: {self.phrase}")
 
     self.response["response"] = self.phrase
-    self.response["thoughts"] = self.thoughts
+    self.response["thoughts"] = self.current_thought
     return self.response
 
   # Considers an input_str, a user supplied context, and name
