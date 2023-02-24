@@ -10,7 +10,7 @@ sendInferenceRequest = (url, text) ->
       authenticity_token: window._token
     success: (response) ->
       $('.chat-history').append "<li><p>#{$("#robot-name-input").val()}: #{response["text"]} </p></li>"
-      $('.thought-history').append "<li><p>Thought: #{response["thoughts"]} </p></li>"
+      $('.thought-history').append "<li><p>Thought: #{response["thoughts"]} </p></li>" if response["thoughts"] != ""
       $("#spinner").remove()
     error: () ->
       $("#spinner").remove()
