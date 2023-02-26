@@ -7,6 +7,9 @@ import io
 import torch
 from flask_cors import CORS
 
+import logging
+logging.basicConfig(filename='gpt.log', level=logging.DEBUG)
+
 # Create an instance of the Flask class
 app = Flask(__name__)
 CORS(app)
@@ -64,7 +67,7 @@ def chat():
   robot_name = request.json["robot_name"]
   name = request.json["name"]
 
-  opts = {"name": name, "context": context, "robot_name": robot_name}
+  opts = {"name": name, "context": context, "robot_name": robot_name, "app": app}
 
   # Use the chatbot to generate a response
   response = chatbot.handle_input(message, opts)
