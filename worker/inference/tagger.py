@@ -37,8 +37,9 @@ TEST_2="""Frank is referring to the fact that Steve is a nice and kind person.
 ... I don't understand. Frank  I don't understand. I don`t understand, you are a nice guy. Steve  I am not a nice person.  Frank is referring to the fact that Steve is a nice and kind person.   The answer is Steve.    A  I think it is   Frank  Because   The only way to get to the answer is to   Remove all the letters from the letters of the word "Frank" and rearrange them to spell out the word Frank.   I don´t know why this is, but it is.  The answer might also be   Frank   Because if you remove all the vowels from the word, you get the word frank."""
 
 TEST_3="The War of 1812. A I think it is a trick question, as I think the answer is clear from the context. It is a game of two people talking, not a real conversation."
-
-THIRD_PERSON_RULES = [ ["NNP", "," ,"VBZ"], ["NNP", "VBZ"], ["NNP", "RB", "VBZ"], ["PRP", "VBP", "PRP", "VBZ"] ]
+TEST_4="""I’m a Christian, so I believe that God created the world, and he’ll take care of it. I believe in the Bible, and it says that the Earth is the Lord’’ and the Earth was created for man. Steve is a Christian. He believes in God, and that God will take care if it. He is also a scientist, and believes in the science of climate change. However, Frank is a skeptic. He doesn’t believe in God. He thinks that God is a myth. He also thinks that the science is wrong, and the climate is not changing. How would you persuade Frank to change his mind? """
+THIRD_PERSON_RULES = [ ["NNP", "," ,"VBZ"], ["NNP", "VBZ"], ["NNP", "RB", "VBZ"], ["PRP", "VBD", "IN", "NNP"], ["NNP", "CC", "NNP", "VBP"] ]
+RULES_NEED_WORK = [["PRP", "VBP", "PRP", "VBZ"]]
 
 class Tagger:
   def __init__(self):
@@ -60,10 +61,13 @@ class Tagger:
       return sentence.text
 
   # Returns the earliest index of a possible hit for third person rhetoric
-  def test_third_person(self, prompt):
+  def test_third_person(self, prompt, nnps=[]):
     # After detection of NNP/VBZ tuple with NNP matching either of the parties in conversation
     # We can assume this is a third person thought and should not be presented to the user
     # and instead stored as context
+
+    # prevents edge cases where we lose text
+    prompt += " ."
 
     # initialize sentence splitter
     splitter = SegtokSentenceSplitter()
@@ -71,20 +75,22 @@ class Tagger:
     # use splitter to split text into list of sentences
     sentences = splitter.split(prompt)
 
+    def get_value(n):
+      return str(n.value)
+
+    def get_text(n):
+      return n.data_point.text
+
     #print(sentences)
     self.tagger.predict(sentences)
     indexes = []
+    idx = 0
+    thought_found = None
     for sentence in sentences:
       # sentence = Sentence(prompt)
 
       # # predict NER tags
       # self.tagger.predict(sentence)
-
-      def get_value(n):
-        return str(n.value)
-
-      def get_text(n):
-        return n.data_point.text
 
       # We double all numbers using map()
       labels = sentence.get_labels('pos')
@@ -96,27 +102,36 @@ class Tagger:
       for rule in THIRD_PERSON_RULES:
         self.kmp.search(rule, v)
         if len(self.kmp.indexes) > 0:
-          #print(sentence)
-          print(self.kmp.indexes)
-          indexes.append(sentence)
-
+          for i in self.kmp.indexes:
+            print(v[i])
+            print(t[i])
+            if v[i] == "NNP" and t[i] in nnps:
+              print("3rd PERSON THOGUHT FOUND")
+              print(t[self.kmp.indexes[0]])
+              indexes.append(sentence)
+              if thought_found == None:
+                thought_found = idx
+      idx+=1
+    print("INDEXES")
     print(indexes)
     # Process all indexes
-    if len(indexes) == 0:
-      return None
-
-    first = self.format_processed_string(indexes[0].text)
-    print(first)
-    print(prompt)
-    fz_ret = self.fuzzy.fuzzy_extract(str(first), str(prompt), 30)
-    ret_vals = list(fz_ret)
-    for ret in ret_vals:
-      # return index
-      return ret[1]
+    #if len(indexes) == 0:
+    #  return None
+    print(thought_found)
+    print(sentences)
+    if thought_found != None:
+      first = self.format_processed_string(sentences[thought_found].text)
+      #first = self.format_processed_string(indexes[0].text)
+      #print(first)
+      #print(prompt)
+      fz_ret = self.fuzzy.fuzzy_extract(str(first), str(prompt), 30)
+      ret_vals = list(fz_ret)
+      for ret in ret_vals:
+         return ret[1]
     return None
 
   def test_thought(self, test_val):
-    thought_index = self.test_third_person(test_val)
+    thought_index = self.test_third_person(test_val, ["Steve", "Frank"])
     if thought_index == None:
       print("NO THOUGHT INDEX")
       return
@@ -141,8 +156,8 @@ if __name__ == "__main__":
   tag = Tagger()
   #tag.test_thought(TEST_1)
   #tag.test_thought(TEST_2)
-  tag.test_thought(TEST_3)
-  #tag.test_thought(FOURTH_WALL)
+  #tag.test_thought(TEST_1)
+  tag.test_thought(FOURTH_WALL)
   #tag.test_thought(FOURTH_WALL2)
 
 

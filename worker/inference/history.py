@@ -36,7 +36,7 @@ class History:
     # Split the strings into a list of strings separated by [human] and [robot]
     rn = self.robot_name
     hn = human_name
-    new_phrases = re.split(f"{rn}\:|{hn}\:|{hn}\;|{rn}\;|{hn}\s\s+|{rn}\s\s+|{rn}\s\:|{hn}\s\:", new_phrase)
+    new_phrases = re.split(f"{rn}\:|{hn}\:|{hn}\;|{rn}\;|{hn}\s\s+|{rn}\s\s+|{rn}\s\:|{hn}\s\:|{hn}\s\(\S+\)|{rn}\s\(\S+\)|{rn},\s|{hn},\s|{hn}\s|{rn}\s|{hn}\.\s|{rn}\.\s", new_phrase)
     new_phrases = filter(lambda x: not (x.isspace() or len(x) == 0), new_phrases)
     new_phrases = list(new_phrases)
     print(f"new_phrases: {new_phrases}")
