@@ -58,6 +58,7 @@ class GPTChatbot:
 
   def generate_response(self, prompt):
     input_ids = self.tokenizer.encode(prompt, return_tensors="pt")
+    print("INPUT IDS: ", input_ids)
     input_ids = input_ids.to('cuda')
     min_length = self.min_length(prompt)
     max_length = self.max_length(prompt)
@@ -171,11 +172,11 @@ class GPTChatbot:
     # Extract the generated text from the response
     self.phrase = self.tokenizer.decode(response[0])
     print("PHRASE:")
-    print(self.phrase)
+    print(self.full_phrase)
 
     total_context = self.default_context + " " +  self.context
     self.pre_process()
-    self.phrase = self.history.find_new_phrase(self.phrase, total_context, self.name)
+    self.phrase = self.history.find_new_phrase(self.full_phrase, total_context, self.name)
     self.remove_hanging()
     self.post_process()
 
@@ -187,7 +188,7 @@ class GPTChatbot:
     # Update the conversation history
     self.history.append(f"{self.robot_name}: {self.phrase}")
 
-    self.response["response"] = self.phrase
+    self.response["response"] = self.full_phrase
     self.response["thoughts"] = self.current_thought
     return self.response
 
