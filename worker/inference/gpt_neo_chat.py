@@ -69,7 +69,7 @@ class GPTChatbot:
         no_repeat_ngram_size=3,
         max_length=max_length,
         #min_length=min_length,
-        top_k=100,
+        top_k=100, 
         top_p=0.7,
         temperature=self._c.config["temperature"],
         pad_token_id=self.tokenizer.eos_token_id,
@@ -104,7 +104,7 @@ class GPTChatbot:
     # Use regular expressions to remove any leading or trailing whitespace
     self.phrase = re.sub(r"^\s+|\s+$", "", self.phrase)
     # Capture strangely encoded thoughts
-    self.special_thought()
+    # self.special_thought()
     #Fix weird issue
     self.phrase = self.phrase.replace(": :", ":")
 
@@ -119,7 +119,7 @@ class GPTChatbot:
     # Preserve newlines
     self.phrase = self.phrase.replace("[n]", "\\n")
     self.phrase = re.sub(r'\[.*\]', ' ', self.phrase)
-    self.store_thought()
+    # self.store_thought()
 
   # Store those strange third-person mutterings best kept to ourselves
   # It's just good etiquette
@@ -170,7 +170,8 @@ class GPTChatbot:
 
     # Extract the generated text from the response
     self.phrase = self.tokenizer.decode(response[0])
-    # print(self.phrase)
+    print("PHRASE:")
+    print(self.phrase)
 
     total_context = self.default_context + " " +  self.context
     self.pre_process()
