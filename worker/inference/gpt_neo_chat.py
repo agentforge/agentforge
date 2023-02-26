@@ -58,7 +58,7 @@ class GPTChatbot:
 
   def generate_response(self, prompt):
     input_ids = self.tokenizer.encode(prompt, return_tensors="pt")
-    print("INPUT IDS: ", input_ids)
+    self.app.logger.info("INPUT IDS: ", input_ids)
     input_ids = input_ids.to('cuda')
     min_length = self.min_length(prompt)
     max_length = self.max_length(prompt)
@@ -79,6 +79,7 @@ class GPTChatbot:
     return response
 
   def load_context(self, opts):
+    self.app = opts["app"]
     self.context = opts["context"]
     self.name = opts["name"]
     self.robot_name = opts["robot_name"]
@@ -137,8 +138,8 @@ class GPTChatbot:
     thought = self.phrase[thought_index:len(self.phrase)]
     if len(phrase.strip()) == 0:
       phrase = self.tagger.first_sentence()
-    print(f"phrase: {phrase}")
-    print(f"thought: {thought}")
+    self.app.logger.info(f"phrase: {phrase}")
+    self.app.logger.info(f"thought: {thought}")
     self.phrase = phrase
     self.current_thought = thought
     self.thoughts.append(thought)
@@ -149,11 +150,11 @@ class GPTChatbot:
     self.load_context(opts)
     self.validations()
 
-    print(f"Processing... {opts}")
-    print(f"input_str: {input_str}")
-    print(f"context: {self.context}")
-    print(f"robot_name: {self.robot_name}")
-    print(f"name: {self.name}")
+    self.app.logger.info(f"Processing... {opts}")
+    self.app.logger.info(f"input_str: {input_str}")
+    self.app.logger.info(f"context: {self.context}")
+    self.app.logger.info(f"robot_name: {self.robot_name}")
+    self.app.logger.info(f"name: {self.name}")
     # Preprocess the user input
     input_str = self.preprocess_input(input_str)
 
@@ -163,7 +164,7 @@ class GPTChatbot:
     # Generate a response to the user input
     hist = self.history.relevant_history(self._c.config['history_cache_stack'])
 
-    print(f"actual input: {self.default_context + ' ' + self.context + ' '.join(hist) + ' '+ self.robot_name + ':'}")
+    self.app.logger.info(f"actual input: {self.default_context + ' ' + self.context + ' '.join(hist) + ' '+ self.robot_name + ':'}")
 
     # Use the GPT model to generate a response to the given prompt
     prompt = self.default_context + " " + self.context + " " + "\n".join(hist) + ' ' + self.robot_name + ':'
@@ -171,8 +172,8 @@ class GPTChatbot:
 
     # Extract the generated text from the response
     self.phrase = self.tokenizer.decode(response[0])
-    print("PHRASE:")
-    print(self.full_phrase)
+    self.app.logger.info("PHRASE:")
+    self.app.logger.info(self.full_phrase)
 
     total_context = self.default_context + " " +  self.context
     self.pre_process()

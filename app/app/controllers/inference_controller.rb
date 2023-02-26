@@ -20,7 +20,7 @@ class InferenceController < ApplicationController
     request.body = JSON.dump(message: text, context: context, name: name, robot_name: robot_name)
   
     response = http.request(request)
-    text = ActionController::Base.helpers.strip_tags(JSON.parse(response.body)["response"])
+    text = JSON.parse(response.body)["response"]
     thoughts = JSON.parse(response.body)["thoughts"]
     text.gsub("\n", "<br/>")
     render json: { text: text, thoughts: thoughts }
