@@ -1,12 +1,13 @@
 
-from langchain.chains.conversation.memory import ConversationBufferMemory
+from langchain.chains.conversation.memory import ConversationBufferWindowMemory
 from langchain import PromptTemplate, LLMChain
 from langchain.llms import HuggingFacePipeline
 import torch, random
 from config import Config
 from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
 from transformers.configuration_utils import PretrainedConfig
-
+from langchain.utilities import GoogleSearchAPIWrapper
+from langchain.agents import ZeroShotAgent, Tool, AgentExecutor
 
 class GPTChatbot:
   def __init__(self):
@@ -41,20 +42,9 @@ class GPTChatbot:
     Human: {question}
     Answer in MarkDown:
     """
-    assistant_template = """Assistant is a large language model trained by OpenAI.
-
-    Assistant is designed to be able to assist with a wide range of tasks, from answering simple questions to providing in-depth explanations and discussions on a wide range of topics. As a language model, Assistant is able to generate human-like text based on the input it receives, allowing it to engage in natural-sounding conversations and provide responses that are coherent and relevant to the topic at hand.
-
-    Assistant is constantly learning and improving, and its capabilities are constantly evolving. It is able to process and understand large amounts of text, and can use this knowledge to provide accurate and informative responses to a wide range of questions. Additionally, Assistant is able to generate its own text based on the input it receives, allowing it to engage in discussions and provide explanations and descriptions on a wide range of topics.
-
-    Overall, Assistant is a powerful tool that can help with a wide range of tasks and provide valuable insights and information on a wide range of topics. Whether you need help with a specific question or just want to have a conversation about a particular topic, Assistant is here to assist.
-
-    {chat_history}
-    Human: {question}
-    Assistant:"""
 
     prompt_template = PromptTemplate(input_variables=["chat_history","question"], template=template)
-    memory = ConversationBufferMemory(memory_key="chat_history")
+    memory = ConversationBufferWindowMemory(k=2, memory_key="chat_history")
 
     self.llm_chain = LLMChain(
         prompt=prompt_template,
@@ -62,6 +52,9 @@ class GPTChatbot:
         verbose=True,
         memory=memory,
     )
+
+    agent = ZeroShotAgent(llm_chain=self.llm_chain, tools=self.tools, verbose=True)
+    agent_chain = AgentExecutor.from_agent_and_tools(agent=agent, tools=self.tools, verbose=True, memory=memory)
 
   def handle_input(self, input_str, opts):
     self.opts = opts
