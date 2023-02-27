@@ -6,8 +6,8 @@ import torch, random
 from config import Config
 from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
 from transformers.configuration_utils import PretrainedConfig
-from langchain.utilities import GoogleSearchAPIWrapper
-from langchain.agents import ZeroShotAgent, Tool, AgentExecutor
+from langchain.agents import initialize_agent
+from langchain.agents import load_tools
 
 class GPTChatbot:
   def __init__(self):
@@ -53,8 +53,9 @@ class GPTChatbot:
         memory=memory,
     )
 
-    agent = ZeroShotAgent(llm_chain=self.llm_chain, tools=self.tools, verbose=True)
-    agent_chain = AgentExecutor.from_agent_and_tools(agent=agent, tools=self.tools, verbose=True, memory=memory)
+    self.tools = load_tools(["google-search"], llm=self.llm_chain)
+
+    agent = initialize_agent(tools, llm, agent="zero-shot-react-description", verbose=True)
 
   def handle_input(self, input_str, opts):
     self.opts = opts
