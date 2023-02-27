@@ -1,7 +1,7 @@
 # Import necessary libraries
 from flask import Flask, request, jsonify, send_file
 # from inference.gpt_neo_chat import GPTChatbot
-from inference.lanchain_bot import GPTChatbot
+from inference.langchain_bot import GPTChatbot
 from speech.speech import TTS
 from speech.whisper import Whisper
 import io
