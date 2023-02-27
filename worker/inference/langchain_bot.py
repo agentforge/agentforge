@@ -36,7 +36,7 @@ class GPTChatbot:
     template = """You are a teacher in physics for High School student. Given the text of question, it is your job to write a answer that question with example.
     {chat_history}
     Human: {question}
-    AI:
+    Answer in MarkDown:
     """
     prompt_template = PromptTemplate(input_variables=["chat_history","question"], template=template)
     memory = ConversationBufferMemory(memory_key="chat_history")
