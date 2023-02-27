@@ -27,6 +27,8 @@ class GPTChatbot:
       "torch_dtype": torch.float16,
     }
 
+    device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
+    self.model = self.model.to(device)
     pipe = pipeline("text-generation", model=self.model, tokenizer=self.tokenizer, max_new_tokens=64)
     self.hf = HuggingFacePipeline(pipeline=pipe)
     self.model_kwargs = args
