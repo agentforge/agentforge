@@ -54,9 +54,9 @@ class GPTChatbot:
         memory=memory,
     )
 
-    self.tools = load_tools(["google-search"], llm=self.llm_chain)
+    #self.tools = load_tools(["google-search"], llm=self.llm_chain)
 
-    agent = initialize_agent(tools, llm, agent="zero-shot-react-description", verbose=True)
+    #agent = initialize_agent(self.tools, llm, agent="zero-shot-react-description", verbose=True)
 
   def handle_input(self, input_str, opts):
     self.opts = opts
