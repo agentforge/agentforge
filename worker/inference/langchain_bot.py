@@ -24,8 +24,8 @@ class GPTChatbot:
       #"max_length":64,
       #"top_k": 100,
       #"top_p": 0.7,
-      # "revision": "float16",
-      # "torch_dtype": torch.float16,
+      "revision": "float16",
+      "torch_dtype": torch.float16,
     }
 
 
