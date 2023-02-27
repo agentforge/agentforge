@@ -13,15 +13,21 @@ class GPTChatbot:
     self._c = Config()
     self.model = AutoModelForCausalLM.from_pretrained(
       self._c.config["gpt_model_cache"],
-      revision="float16",
-      torch_dtype=torch.float16,
+      
     )
     self.tokenizer = AutoTokenizer.from_pretrained(self._c.config["tokenizer_cache"])
 
-    args = { "temperature":self._c.config["temperature"], "max_length":64, "top_k": 100, "top_p": 0.7 }
+    args = { 
+      "temperature":self._c.config["temperature"], 
+      "max_length":64,
+      "top_k": 100,
+      "top_p": 0.7,
+      "revision": "float16",
+      "torch_dtype": torch.float16,
+    }
 
     pipe = pipeline("text-generation", model=self.model, tokenizer=self.tokenizer, max_new_tokens=10)
-    self.hf = HuggingFacePipeline(pipeline=pipe, model_kwargs=args)
+    self.hf = HuggingFacePipeline.from_model_id(model_id=self._c.config["gpt_model_cache"], task="text-generation", device=1, model_kwargs=args)
 
     template = """You are a teacher in physics for High School student. Given the text of question, it is your job to write a answer that question with example.
     {chat_history}
@@ -36,7 +42,6 @@ class GPTChatbot:
         llm=self.hf,
         verbose=True,
         memory=memory,
-        device=1 if torch.cuda.is_available() else -1,
     )
 
   def handle_input(self, input_str, opts):
