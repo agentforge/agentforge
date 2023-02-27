@@ -14,7 +14,8 @@ class GPTChatbot:
     self.model_config = PretrainedConfig()
     self.model = AutoModelForCausalLM.from_pretrained(
       self._c.config["gpt_model_cache"],
-      
+      revision="float16",
+      torch_dtype=torch.float16,      
     )
     self.tokenizer = AutoTokenizer.from_pretrained(self._c.config["tokenizer_cache"])
 
