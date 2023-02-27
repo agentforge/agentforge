@@ -50,13 +50,13 @@ class GPTChatbot:
     prompt_template = PromptTemplate(input_variables=["history","chat_history","question"], template=template)
     conv_memory = ConversationBufferWindowMemory(k=5, memory_key="chat_history", input_key="question", ai_prefix="AI", human_prefix="Human")
 
-    memory = CombinedMemory(memories=[conv_memory, summary_memory])
+    # memory = CombinedMemory(memories=[conv_memory, summary_memory])
 
     self.llm_chain = LLMChain(
         prompt=prompt_template,
         llm=self.hf,
         verbose=True,
-        memory=memory,
+        memory=conv_memory,
     )
 
     #self.tools = load_tools(["google-search"], llm=self.llm_chain)
