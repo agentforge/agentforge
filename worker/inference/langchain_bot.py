@@ -15,32 +15,33 @@ class GPTChatbot:
     self.model_config = PretrainedConfig()
     self.model = AutoModelForCausalLM.from_pretrained(
       self._c.config["gpt_model_cache"],
-      
+      revision="float16",
+      torch_dtype=torch.float16,
     )
     self.tokenizer = AutoTokenizer.from_pretrained(self._c.config["tokenizer_cache"])
 
     args = { 
-      #"temperature":self._c.config["temperature"], 
+      "temperature":self._c.config["temperature"], 
       #"max_length":64,
-      #"top_k": 100,
-      #"top_p": 0.7,
-      "revision": "float16",
-      "torch_dtype": torch.float16,
+      "top_k": 100,
+      "top_p": 0.7,
+      #"revision": "float16",
+      #"torch_dtype": torch.float16,
     }
 
 
     # device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
     # self.model = self.model.to(device)
-    pipe = pipeline("text-generation", model=self.model, tokenizer=self.tokenizer, device=0, model_kwargs=args, max_new_tokens=64)
+    pipe = pipeline("text-generation", model=self.model, tokenizer=self.tokenizer, device=0, model_kwargs=args, max_new_tokens=256)
     self.hf = HuggingFacePipeline(pipeline=pipe)
     self.model_kwargs = args
     self.device = 0
     # self.hf = HuggingFacePipeline.from_model_id(model_id=self._c.config["gpt_model_cache"], task="text-generation", device=1, model_kwargs=args)
 
-    template = """You are a teacher in physics for High School student. Given the text of question, it is your job to write a answer that question with example.
+    template = """You are a friendly AI having a conversation with a Human. Be nice.
     {chat_history}
     Human: {question}
-    Answer in MarkDown:
+    Answer:
     """
 
     prompt_template = PromptTemplate(input_variables=["chat_history","question"], template=template)
