@@ -19,15 +19,15 @@ class GPTChatbot:
     self.tokenizer = AutoTokenizer.from_pretrained(self._c.config["tokenizer_cache"])
 
     args = { 
-      "temperature":self._c.config["temperature"], 
-      "max_length":64,
-      "top_k": 100,
-      "top_p": 0.7,
+      #"temperature":self._c.config["temperature"], 
+      #"max_length":64,
+      #"top_k": 100,
+      #"top_p": 0.7,
       "revision": "float16",
       "torch_dtype": torch.float16,
     }
 
-    pipe = pipeline("text-generation", model=self.model, tokenizer=self.tokenizer, max_new_tokens=10)
+    pipe = pipeline("text-generation", model=self.model, tokenizer=self.tokenizer, max_new_tokens=64)
     self.hf = HuggingFacePipeline(pipeline=pipe)
     self.model_kwargs = args
     self.device = 0
