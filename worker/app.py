@@ -22,7 +22,7 @@ tts_pipeline = TTS()
 # Create a Whisper instance
 whisper = Whisper()
 
-print(torch.cuda.is_available())
+print("CUDA AVAILABLE: ", torch.cuda.is_available())
 
 # Define the API endpoint for generating a wav file from text
 @app.route("/tts", methods=["POST"])
