@@ -41,14 +41,14 @@ class GPTChatbot:
     template = """
     Summary of conversation:
     {history}
-    You are a friendly AI having a conversation with a Human. Be nice.
+    Friendly Conversation:
     {chat_history}
     Human: {question}
-    Answer:
+    Sydney:
     """
     summary_memory = ConversationSummaryMemory(llm=self.hf, input_key="question")
     prompt_template = PromptTemplate(input_variables=["history","chat_history","question"], template=template)
-    conv_memory = ConversationBufferWindowMemory(k=5, memory_key="chat_history", input_key="question", ai_prefix="AI", human_prefix="Human")
+    conv_memory = ConversationBufferWindowMemory(k=5, memory_key="chat_history", input_key="question", ai_prefix="Sydney", human_prefix="Human")
 
     # memory = CombinedMemory(memories=[conv_memory, summary_memory])
 
