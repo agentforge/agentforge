@@ -36,6 +36,7 @@ class GPTChatbot:
         llm=self.hf,
         verbose=True,
         memory=memory,
+        device=1 if torch.cuda.is_available() else -1,
     )
 
   def handle_input(self, input_str, opts):
