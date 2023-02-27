@@ -62,14 +62,8 @@ class GPTChatbot:
 
   def handle_input(self, input_str, opts):
     self.opts = opts
-    self.result = self.llm_chain.predict(question=input_str)
+    self.result = self.llm_chain.generate(stop=["Human:", "human:", "AI:", "Assistant:", "assistant:"], question=input_str)
     return {"response": self.result}
-
-  def max_length(self, prompt):
-    value = random.randint(self._c.config["max_length_itr_min"], self._c.config["max_length_itr_max"])
-    # Returns the optimal max_length for this model
-    return int(max(len(prompt) + value, len(prompt)))
-
 
 if __name__ == "__main__":
   pass
