@@ -1,5 +1,5 @@
 
-from langchain.chains.conversation.memory import ConversationBufferWindowMemory
+from langchain.chains.conversation.memory import ConversationBufferWindowMemory, ConversationSummaryMemory, CombinedMemory
 from langchain import PromptTemplate, LLMChain
 from langchain.llms import HuggingFacePipeline
 import torch, random
@@ -38,14 +38,19 @@ class GPTChatbot:
     self.device = 0
     # self.hf = HuggingFacePipeline.from_model_id(model_id=self._c.config["gpt_model_cache"], task="text-generation", device=1, model_kwargs=args)
 
-    template = """You are a friendly AI having a conversation with a Human. Be nice.
+    template = """
+    Summary of conversation:
+    {history}
+    You are a friendly AI having a conversation with a Human. Be nice.
     {chat_history}
     Human: {question}
     Answer:
     """
+    summary_memory = ConversationSummaryMemory(llm=self.hf, input_key="input")
+    prompt_template = PromptTemplate(input_variables=["history","chat_history","question"], template=template)
+    conv_memory = ConversationBufferWindowMemory(k=5, memory_key="chat_history", input_key="question", ai_prefix="AI", human_prefix="Human")
 
-    prompt_template = PromptTemplate(input_variables=["chat_history","question"], template=template)
-    memory = ConversationBufferWindowMemory(k=2, memory_key="chat_history")
+    memory = CombinedMemory(memories=[conv_memory, summary_memory])
 
     self.llm_chain = LLMChain(
         prompt=prompt_template,
