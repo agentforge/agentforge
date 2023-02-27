@@ -27,6 +27,8 @@ class GPTChatbot:
       "torch_dtype": torch.float16,
     }
 
+    device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
+    self.model = self.model.to(device)
     pipe = pipeline("text-generation", model=self.model, tokenizer=self.tokenizer, max_new_tokens=64)
     self.hf = HuggingFacePipeline(pipeline=pipe)
     self.model_kwargs = args
@@ -62,7 +64,8 @@ class GPTChatbot:
 
   def handle_input(self, input_str, opts):
     self.opts = opts
-    self.result = self.llm_chain.generate(stop=["Human:", "human:", "AI:", "Assistant:", "assistant:"], question=input_str)
+    stop_words = ["Human:", "human:", "AI:", "Assistant:", "assistant:"]
+    self.result = self.llm_chain.predict(stop=stop_words, question=input_str)
     return {"response": self.result}
 
 if __name__ == "__main__":
