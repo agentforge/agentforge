@@ -4,7 +4,7 @@
   "gpt_model_cache": "EleutherAI/gpt-j-6B",
   "gpt_model_klass": "GPTJForCausalLM",
   "tokenizer_cache": "EleutherAI/gpt-j-6B",
-  "temperature": 0.5,
+  "temperature": 0.88,
   "max_length_itr_min": 128,
   "max_length_itr_max": 256,
   "min_length_itr_min": 24,
