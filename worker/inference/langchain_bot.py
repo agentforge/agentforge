@@ -2,15 +2,16 @@
 from langchain.chains.conversation.memory import ConversationBufferMemory
 from langchain import PromptTemplate, LLMChain
 from langchain.llms import HuggingFacePipeline
-import torch
+import torch, random
 from config import Config
 from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
-from helpers import str_to_class
+from transformers.configuration_utils import PretrainedConfig
 
 
 class GPTChatbot:
   def __init__(self):
     self._c = Config()
+    self.model_config = PretrainedConfig()
     self.model = AutoModelForCausalLM.from_pretrained(
       self._c.config["gpt_model_cache"],
       
@@ -27,7 +28,10 @@ class GPTChatbot:
     }
 
     pipe = pipeline("text-generation", model=self.model, tokenizer=self.tokenizer, max_new_tokens=10)
-    self.hf = HuggingFacePipeline.from_model_id(model_id=self._c.config["gpt_model_cache"], task="text-generation", device=1, model_kwargs=args)
+    self.hf = HuggingFacePipeline(pipeline=pipe)
+    self.model_kwargs = args
+    self.device = 0
+    # self.hf = HuggingFacePipeline.from_model_id(model_id=self._c.config["gpt_model_cache"], task="text-generation", device=1, model_kwargs=args)
 
     template = """You are a teacher in physics for High School student. Given the text of question, it is your job to write a answer that question with example.
     {chat_history}
@@ -48,6 +52,12 @@ class GPTChatbot:
     self.opts = opts
     self.result = self.llm_chain.predict(question=input_str)
     return {"response": self.result}
+
+  def max_length(self, prompt):
+    value = random.randint(self._c.config["max_length_itr_min"], self._c.config["max_length_itr_max"])
+    # Returns the optimal max_length for this model
+    return int(max(len(prompt) + value, len(prompt)))
+
 
 if __name__ == "__main__":
   pass
