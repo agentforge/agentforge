@@ -27,6 +27,7 @@ RUN git clone git@github.com:jquesnelle/txt2imghd.git
 RUN pip install gTTS flask pytest accelerate bitsandbytes trl pip install flair flask_cors fuzzywuzzy fuzzysearch python-Levenshtein
 RUN pip install --upgrade diffusers[torch]
 RUN apt-get update && apt-get install -y git openssh-client
+RUN pip install 'langchain @ git+https://github.com/fragro/langchain.git'
 
 RUN . /root/.bashrc && \
     conda init bash && \

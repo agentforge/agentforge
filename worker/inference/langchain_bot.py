@@ -1,12 +1,13 @@
 
-from langchain.chains.conversation.memory import ConversationBufferMemory
+from langchain.chains.conversation.memory import ConversationBufferWindowMemory
 from langchain import PromptTemplate, LLMChain
 from langchain.llms import HuggingFacePipeline
 import torch, random
 from config import Config
 from transformers import AutoModelForCausalLM, AutoTokenizer, pipeline
 from transformers.configuration_utils import PretrainedConfig
-
+from langchain.utilities import GoogleSearchAPIWrapper
+from langchain.agents import ZeroShotAgent, Tool, AgentExecutor
 
 class GPTChatbot:
   def __init__(self):
@@ -44,7 +45,7 @@ class GPTChatbot:
     """
 
     prompt_template = PromptTemplate(input_variables=["chat_history","question"], template=template)
-    memory = ConversationBufferMemory(memory_key="chat_history")
+    memory = ConversationBufferWindowMemory(k=2, memory_key="chat_history")
 
     self.llm_chain = LLMChain(
         prompt=prompt_template,
@@ -52,6 +53,9 @@ class GPTChatbot:
         verbose=True,
         memory=memory,
     )
+
+    agent = ZeroShotAgent(llm_chain=self.llm_chain, tools=self.tools, verbose=True)
+    agent_chain = AgentExecutor.from_agent_and_tools(agent=agent, tools=self.tools, verbose=True, memory=memory)
 
   def handle_input(self, input_str, opts):
     self.opts = opts
