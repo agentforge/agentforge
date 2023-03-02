@@ -16,13 +16,16 @@ class WhisperController < ApplicationController
   
     # response should be a raw wav file
     response = http.request(request)
-    puts response
+    puts response.body
+    send_data response.body, :type => 'audio/wav'
+
+    # puts response
     save_path = Rails.root.join("public/out.wav")
     File.open(save_path, 'wb') do |f|
-      f.write response
+      f.write response.body
     end
-    # parse the response wave file and send it back to the client
-    render json: { response: response }
+    # # parse the response wave file and send it back to the client
+    # render json: { response: response }
   end
 
   def speech_to_text

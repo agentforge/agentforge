@@ -33,18 +33,14 @@ def tts():
 
   # Use the gTTS library to generate a wav file from the given text
   # Call the speech function
-  wav_file = tts_pipeline.synthesizer(text, filename)
-
-  with open(wav_file, "rb") as f:
-    wav_data = f.read()
+  wav_data = tts_pipeline.synthesizer(text, filename)
 
   # Return the wav file in the response
+  print(wav_data)
   return send_file(
     io.BytesIO(wav_data),
     mimetype="audio/wav",
-    attachment_filename=filename
   )
-
 
 # Define the API endpoint for chatting with the prompts-ai (openAPI mimic)
 @app.route("/completions", methods=["POST"])

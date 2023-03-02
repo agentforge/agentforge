@@ -29,19 +29,19 @@ RUN pip install --upgrade diffusers[torch]
 RUN apt-get update && apt-get install -y git openssh-client
 RUN pip install 'langchain @ git+https://github.com/fragro/langchain.git'
 
-RUN . /root/.bashrc && \
-    conda init bash && \
-    conda env create -f stable-diffusion/environment.yaml && \
-    conda update -n base conda
+# RUN . /root/.bashrc && \
+#     conda init bash && \
+#     conda env create -f stable-diffusion/environment.yaml && \
+#     conda update -n base conda
 
 # RUN conda init bash
 # RUN conda env create -f stable-diffusion/environment.yaml
 # RUN source ~/.bashrc && conda activate ldm
 
-RUN wget -P /app/cache/ https://huggingface.co/runwayml/stable-diffusion-v1-5/resolve/main/v1-5-pruned-emaonly.ckpt
+# RUN wget -P /app/cache/ https://huggingface.co/runwayml/stable-diffusion-v1-5/resolve/main/v1-5-pruned-emaonly.ckpt
 
-RUN mkdir -p /root/stable-diffusion/models/ldm/stable-diffusion-v1
-RUN ln -s /app/cache/v1-5-pruned-emaonly.ckpt /root/stable-diffusion/models/ldm/stable-diffusion-v1/model.ckpt 
+# RUN mkdir -p /root/stable-diffusion/models/ldm/stable-diffusion-v1
+# RUN ln -s /app/cache/v1-5-pruned-emaonly.ckpt /root/stable-diffusion/models/ldm/stable-diffusion-v1/model.ckpt 
 
 # Bust that cache
 # RUN python cache.py
@@ -52,7 +52,6 @@ RUN ln -s /app/cache/v1-5-pruned-emaonly.ckpt /root/stable-diffusion/models/ldm/
 
 # FIX FOR packaging.version.InvalidVersion: Invalid version: '0.10.1,<0.11'
 # Run twice to grab all version
-RUN pip uninstall -y packaging transformers torchmetrics
 RUN pip uninstall -y packaging transformers torchmetrics
 # Reinstall with specific versions
 RUN pip install transformers==4.26.1

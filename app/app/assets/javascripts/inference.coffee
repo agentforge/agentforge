@@ -6,7 +6,8 @@ sendTTSRequest = (url, text) ->
       text: text
       authenticity_token: window._token
     success: (response) ->
-      console.log(response)
+      snd = new Audio('/out.wav');
+      snd.play()
 
 getTTS = (text) ->
   host = window.Settings["rails"]["host"]
@@ -27,7 +28,7 @@ sendInferenceRequest = (url, text) ->
     success: (response) ->
       getTTS(response["text"])
       $('.chat-history').append "<li class='ai'><md-block>#{$("#robot-name-input").val()}: #{response["text"]}</li>"
-      $('.thought-history').append "<li><p>Thought: #{response["thoughts"]} </p></li>" if response["thoughts"] != ""
+      $('.thought-history').append "<li><p>Thought: #{response["thoughts"]} </p></li>" if response["thoughts"] != null
       $("#spinner").remove()
     error: () ->
       $("#spinner").remove()
