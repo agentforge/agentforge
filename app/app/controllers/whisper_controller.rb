@@ -5,7 +5,7 @@ class WhisperController < ApplicationController
     
     host = Settings.inference_api.host
     port = Settings.inference_api.port
-    uri = URI("http://#{host}:#{port}/chat")
+    uri = URI("http://#{host}:#{port}/tts")
     http = Net::HTTP.new(uri.host, uri.port)
 
     http.read_timeout = 600
@@ -16,6 +16,7 @@ class WhisperController < ApplicationController
   
     # response should be a raw wav file
     response = http.request(request)
+    puts response
     save_path = Rails.root.join("public/out.wav")
     File.open(save_path, 'wb') do |f|
       f.write response

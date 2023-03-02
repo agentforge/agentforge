@@ -33,7 +33,7 @@ def tts():
 
   # Use the gTTS library to generate a wav file from the given text
   # Call the speech function
-  wav_file = tts_pipeline.speech(text, filename)
+  wav_file = tts_pipeline.synthesizer(text, filename)
 
   with open(wav_file, "rb") as f:
     wav_data = f.read()

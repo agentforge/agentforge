@@ -13,3 +13,98 @@
  */
  @import "bootstrap";
  @import "font-awesome";
+
+ .main-control, .secondary-control {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    width: 100vw;
+    background-color: black;
+    color: rgb(236,236,241);
+    input {
+      background: black;
+      color: rgb(236,236,241);
+    }
+    textarea {
+      background: black;
+      color: rgb(236,236,241);
+    }
+ }
+.ai {
+  background-color: rgb(64, 65, 79);
+  padding: 12px;
+}
+ul.no-bullets {
+  list-style-type: none; /* Remove bullets */
+}
+.interaction {
+  align-items: center;
+  background-color: rgb(52, 53, 65);
+  border-bottom-color: rgb(217, 217, 227);
+  border-bottom-style: solid;
+  border-bottom-width: 0px;
+  border-image-outset: 0;
+  border-image-repeat: stretch;
+  border-image-slice: 100%;
+  border-image-source: none;
+  border-image-width: 1;
+  border-left-color: rgb(217, 217, 227);
+  border-left-style: solid;
+  border-left-width: 0px;
+  border-right-color: rgb(217, 217, 227);
+  border-right-style: solid;
+  border-right-width: 0px;
+  border-top-color: rgb(217, 217, 227);
+  border-top-style: solid;
+  border-top-width: 0px;
+  box-sizing: border-box;
+  color-scheme: dark;
+  display: flex;
+  flex-direction: column;
+  font-family: Söhne, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif, Helvetica Neue, Arial, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
+  font-size: 16px;
+  color: rgb(217, 217, 227);
+  line-height: 20px;
+  tab-size: 4;
+  textarea, textarea:focus {
+    background-color: rgb(64, 65, 79);
+    border-bottom-color: rgba(32, 33, 35, 0.5);
+    border-bottom-left-radius: 6px;
+    border-bottom-right-radius: 6px;
+    border-bottom-style: solid;
+    border-bottom-width: 1px;
+    border-image-outset: 0;
+    border-image-repeat: stretch;
+    border-image-slice: 100%;
+    border-image-source: none;
+    border-image-width: 1;
+    border-left-color: rgba(32, 33, 35, 0.5);
+    border-left-style: solid;
+    border-left-width: 1px;
+    border-right-color: rgba(32, 33, 35, 0.5);
+    border-right-style: solid;
+    border-right-width: 1px;
+    border-top-color: rgba(32, 33, 35, 0.5);
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    border-top-style: solid;
+    border-top-width: 1px;
+    box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.1) 0px 0px 15px 0px;
+    box-sizing: border-box;
+    color: rgb(255, 255, 255);
+    color-scheme: dark;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    font-family: Söhne, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif, Helvetica Neue, Arial, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
+    line-height: 24px;
+    padding-bottom: 12px;
+    padding-left: 16px;
+    padding-top: 12px;
+    position: relative;
+    tab-size: 4;
+    width: 768px
+  }
+}

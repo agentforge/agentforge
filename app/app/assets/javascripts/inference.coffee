@@ -4,6 +4,7 @@ sendTTSRequest = (url, text) ->
     type: 'POST'
     data: 
       text: text
+      authenticity_token: window._token
     success: (response) ->
       console.log(response)
 
@@ -25,7 +26,7 @@ sendInferenceRequest = (url, text) ->
       authenticity_token: window._token
     success: (response) ->
       getTTS(response["text"])
-      $('.chat-history').append "<li><p>#{$("#robot-name-input").val()}: #{response["text"]} </p></li>"
+      $('.chat-history').append "<li class='ai'><md-block>#{$("#robot-name-input").val()}: #{response["text"]}</li>"
       $('.thought-history').append "<li><p>Thought: #{response["thoughts"]} </p></li>" if response["thoughts"] != ""
       $("#spinner").remove()
     error: () ->
@@ -37,7 +38,7 @@ sendMessage = () ->
   text = $("#user-input").val()
   $("#user-input").val("")
   $('.chat-history').append "<li><p>#{$("#name-input").val()}: #{text} </p></li>"
-  $('.chat-history').append '<li id="spinner"><md-block><i class="fas fa-spinner fa-pulse"></md-block></i>'
+  $('.chat-history').append '<li id="spinner"><p><i class="fas fa-spinner fa-pulse"></p></i>'
   $(".chat-history").scrollTop($(".chat-history")[0].scrollHeight);
   console.log("#send-message #{text}")
   sendInferenceRequest("http://#{host}:#{port}/inference/interpret", text)

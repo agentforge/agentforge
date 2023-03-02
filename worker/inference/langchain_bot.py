@@ -72,6 +72,7 @@ class GPTChatbot:
         no_repeat_ngram_size=3,
         max_new_tokens= 256,
         temperature=0,
+
         pad_token_id=self.tokenizer.eos_token_id,
         use_cache=True,
     )

@@ -23,7 +23,7 @@ class InferenceController < ApplicationController
     text = JSON.parse(response.body)["response"]
     thoughts = JSON.parse(response.body)["thoughts"]
     full_phrase = JSON.parse(response.body)["full_phrase"]
-    text.gsub("\n", "<br/>")
+    text.gsub("\\n", "<br/>")
     render json: { text: text, thoughts: thoughts, full_phrase: full_phrase}
   end
 
