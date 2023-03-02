@@ -29,12 +29,12 @@ print("CUDA AVAILABLE: ", torch.cuda.is_available())
 def tts():
   # Get the text and filename from the request
   text = request.json["text"]
-  filename = request.json["filename"]
+  filename = "out.wav"
 
   # Use the gTTS library to generate a wav file from the given text
   # Call the speech function
   wav_file = tts_pipeline.speech(text, filename)
-    
+
   with open(wav_file, "rb") as f:
     wav_data = f.read()
 
