@@ -12,7 +12,6 @@ getTTS = (text) ->
   port = window.Settings["rails"]["port"]
   console.log("#send-message #{text}")
   sendTTSRequest("http://#{host}:#{port}/whisper/text_to_speech", text)
-  event.preventDefault()
 
 sendInferenceRequest = (url, text) ->
   $.ajax
@@ -42,11 +41,11 @@ sendMessage = () ->
   $(".chat-history").scrollTop($(".chat-history")[0].scrollHeight);
   console.log("#send-message #{text}")
   sendInferenceRequest("http://#{host}:#{port}/inference/interpret", text)
-  event.preventDefault()
 
 $(document).on('turbolinks:load', ->
   $('#send-message').on 'click', (event) ->
-    sendMessage()
+    sendMessage(event)
+    event.preventDefault()
 
   $("textarea").keydown (e) ->
     if (e.keyCode == 13 && !e.shiftKey)
