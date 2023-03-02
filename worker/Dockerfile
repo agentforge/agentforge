@@ -66,7 +66,7 @@ RUN add-apt-repository ppa:ubuntu-toolchain-r/test
 RUN apt-get update
 RUN apt-get install libstdc++6-7-dbg
 RUN pip install numpy==1.23.5
-RUN apt-get install ffmpeg
+RUN apt-get install tig ffmpeg
 RUN rm /usr/lib/x86_64-linux-gnu/libst  dc++.so.6 && ln -s /opt/conda/x86_64-conda-linux-gnu/lib/libstdc++.so.6.0.30 /usr/lib/x86_64-linux-gnu/libstdc++.so.6
 RUN pip install --upgrade pip
 

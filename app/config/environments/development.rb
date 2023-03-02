@@ -61,4 +61,6 @@ Rails.application.configure do
 
   # Make sure your Rails application is set up to compile and serve assets
   config.assets.compile = true
+
+  config.serve_static_assets = false
 end

@@ -29,7 +29,6 @@ class GPTChatbot:
       #"torch_dtype": torch.float16,
     }
 
-
     device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
     print("loading model")
     self.model = self.model.to(device)

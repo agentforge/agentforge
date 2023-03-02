@@ -16,9 +16,6 @@
 
   <body>
     <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
-    <header>
-      <%= render 'layouts/navigation' %>
-    </header>
     <main role="main">
       <%= content_for?(:content) ? yield(:content) : yield %>
     </main>

@@ -1,3 +1,19 @@
+sendTTSRequest = (url, text) ->
+  $.ajax
+    url: url
+    type: 'POST'
+    data: 
+      text: text
+      authenticity_token: window._token
+    success: (response) ->
+      console.log(response)
+
+getTTS = (text) ->
+  host = window.Settings["rails"]["host"]
+  port = window.Settings["rails"]["port"]
+  console.log("#send-message #{text}")
+  sendTTSRequest("http://#{host}:#{port}/whisper/text_to_speech", text)
+
 sendInferenceRequest = (url, text) ->
   $.ajax
     url: url
@@ -10,7 +26,7 @@ sendInferenceRequest = (url, text) ->
       authenticity_token: window._token
     success: (response) ->
       getTTS(response["text"])
-      $('.chat-history').append "<li><p>#{$("#robot-name-input").val()}: #{response["text"]} </p></li>"
+      $('.chat-history').append "<li class='ai'><md-block>#{$("#robot-name-input").val()}: #{response["text"]}</li>"
       $('.thought-history').append "<li><p>Thought: #{response["thoughts"]} </p></li>" if response["thoughts"] != ""
       $("#spinner").remove()
     error: () ->
@@ -22,19 +38,19 @@ sendMessage = () ->
   text = $("#user-input").val()
   $("#user-input").val("")
   $('.chat-history').append "<li><p>#{$("#name-input").val()}: #{text} </p></li>"
-  $('.chat-history').append '<li id="spinner"><md-block><i class="fas fa-spinner fa-pulse"></md-block></i>'
+  $('.chat-history').append '<li id="spinner"><p><i class="fas fa-spinner fa-pulse"></p></i>'
   $(".chat-history").scrollTop($(".chat-history")[0].scrollHeight);
   console.log("#send-message #{text}")
   sendInferenceRequest("http://#{host}:#{port}/inference/interpret", text)
-  event.preventDefault()
 
 $(document).on('turbolinks:load', ->
   $('#send-message').on 'click', (event) ->
-    sendMessage()
+    sendMessage(event)
+    event.preventDefault()
 
   $("textarea").keydown (e) ->
-  if (e.keyCode == 13 && !e.shiftKey)
-    e.preventDefault()
+    if (e.keyCode == 13 && !e.shiftKey)
+      e.preventDefault()
 
   # Capture the enter key press event
   $(document).on 'keypress', (event) ->
