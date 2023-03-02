@@ -21,7 +21,7 @@ sendMessage = () ->
   text = $("#user-input").val()
   $("#user-input").val("")
   $('.chat-history').append "<li><p>#{$("#name-input").val()}: #{text} </p></li>"
-  $('.chat-history').append '<li id="spinner"><p><i class="fas fa-spinner fa-pulse"></p></i>'
+  $('.chat-history').append '<li id="spinner"><md-block><i class="fas fa-spinner fa-pulse"></md-block></i>'
   $(".chat-history").scrollTop($(".chat-history")[0].scrollHeight);
   console.log("#send-message #{text}")
   sendInferenceRequest("http://#{host}:#{port}/inference/interpret", text)
@@ -30,6 +30,10 @@ sendMessage = () ->
 $(document).on('turbolinks:load', ->
   $('#send-message').on 'click', (event) ->
     sendMessage()
+
+  $("textarea").keydown (e) ->
+  if (e.keyCode == 13 && !e.shiftKey)
+    e.preventDefault()
 
   # Capture the enter key press event
   $(document).on 'keypress', (event) ->

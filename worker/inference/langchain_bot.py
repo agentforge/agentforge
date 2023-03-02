@@ -30,43 +30,56 @@ class GPTChatbot:
     }
 
 
-    # device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
-    # self.model = self.model.to(device)
-    pipe = pipeline("text-generation", model=self.model, tokenizer=self.tokenizer, device=0, model_kwargs=args, max_new_tokens=256)
-    self.hf = HuggingFacePipeline(pipeline=pipe)
+    device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
+    print("loading model")
+    self.model = self.model.to(device)
+    # pipe = pipeline("text-generation", model=self.model, tokenizer=self.tokenizer, device=0, model_kwargs=args, max_new_tokens=256)
+    # self.hf = HuggingFacePipeline(pipeline=pipe)
     self.model_kwargs = args
     self.device = 0
     # self.hf = HuggingFacePipeline.from_model_id(model_id=self._c.config["gpt_model_cache"], task="text-generation", device=1, model_kwargs=args)
 
-    template = """
-    Summary of conversation:
-    {history}
-    Friendly Conversation:
-    {chat_history}
-    Human: {question}
-    Sydney:
-    """
-    summary_memory = ConversationSummaryMemory(llm=self.hf, input_key="question")
-    prompt_template = PromptTemplate(input_variables=["history","chat_history","question"], template=template)
-    conv_memory = ConversationBufferWindowMemory(k=5, memory_key="chat_history", input_key="question", ai_prefix="Sydney", human_prefix="Human")
+    # template = """
+    # Summary of conversation:
+    # {history}
+    # Friendly Conversation:
+    # {chat_history}
+    # Human: {question}
+    # Sydney:
+    # """
+    # summary_memory = ConversationSummaryMemory(llm=self.hf, input_key="question")
+    # prompt_template = PromptTemplate(input_variables=["history","chat_history","question"], template=template)
+    # conv_memory = ConversationBufferWindowMemory(k=5, memory_key="chat_history", input_key="question", ai_prefix="Sydney", human_prefix="Human")
 
     # memory = CombinedMemory(memories=[conv_memory, summary_memory])
 
-    self.llm_chain = LLMChain(
-        prompt=prompt_template,
-        llm=self.hf,
-        verbose=True,
-        memory=conv_memory,
-    )
+    # self.llm_chain = LLMChain(
+    #     prompt=prompt_template,
+    #     llm=self.hf,
+    #     verbose=True,
+    #     memory=conv_memory,
+    # )
 
     #self.tools = load_tools(["google-search"], llm=self.llm_chain)
 
     #agent = initialize_agent(self.tools, llm, agent="zero-shot-react-description", verbose=True)
 
   def handle_input(self, input_str, opts):
-    self.opts = opts
-    stop_words = ["Human:", "human:", "AI:", "Assistant:", "assistant:"]
-    self.result = self.llm_chain.predict(stop=stop_words, question=input_str)
+    input_ids = self.tokenizer.encode(input_str, return_tensors="pt")
+    input_ids = input_ids.to('cuda')
+    response = self.model.generate(
+        input_ids=input_ids,
+        do_sample=True,
+        no_repeat_ngram_size=3,
+        max_new_tokens= 256,
+        temperature=0,
+        pad_token_id=self.tokenizer.eos_token_id,
+        use_cache=True,
+    )
+    self.result = self.tokenizer.decode(response[0])
+    # self.opts = opts
+    # stop_words = ["Human:", "human:", "AI:", "Assistant:", "assistant:"]
+    # self.result = self.llm_chain.predict(stop=stop_words, question=input_str)
     return {"response": self.result}
 
 if __name__ == "__main__":

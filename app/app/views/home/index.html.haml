@@ -32,8 +32,11 @@
       .chat-widget
         %ul.chat-history{style:"max-height: 500px;overflow: scroll;"}
         #chat-input.row
-          %input#user-input.col.form-control{type: "text"}
-          %button#send-message.btn.btn-primary.col-2 Enter
+          //%input#user-input.col.form-control{type: "text"}
+          .col-9
+            %textarea#user-input.form-control{rows: "3"}
+          .col-3
+            %button#send-message.btn.btn-primary.btn-lg Enter
 
   .col-2
     .container

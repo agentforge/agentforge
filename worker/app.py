@@ -1,5 +1,5 @@
 # Import necessary libraries
-from flask import Flask, request, jsonify, send_file
+from flask import Flask, request, jsonify, send_file, Response
 # from inference.gpt_neo_chat import GPTChatbot
 from inference.langchain_bot import GPTChatbot
 from speech.speech import TTS
@@ -34,7 +34,7 @@ def tts():
   # Use the gTTS library to generate a wav file from the given text
   # Call the speech function
   wav_file = tts_pipeline.speech(text, filename)
-  
+    
   with open(wav_file, "rb") as f:
     wav_data = f.read()
 
