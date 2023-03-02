@@ -1,3 +1,19 @@
+sendTTSRequest = (url, text) ->
+  $.ajax
+    url: url
+    type: 'POST'
+    data: 
+      text: text
+    success: (response) ->
+      console.log(response)
+
+getTTS = (text) ->
+  host = window.Settings["rails"]["host"]
+  port = window.Settings["rails"]["port"]
+  console.log("#send-message #{text}")
+  sendTTSRequest("http://#{host}:#{port}/whisper/text_to_speech", text)
+  event.preventDefault()
+
 sendInferenceRequest = (url, text) ->
   $.ajax
     url: url
@@ -9,7 +25,9 @@ sendInferenceRequest = (url, text) ->
       robot_name: $("#robot-name-input").val()
       authenticity_token: window._token
     success: (response) ->
-      getTTS(response["text"])
+     `import(/* webpackChunkName: "vnd-forms" */ 'js/vendor/forms')`.then(() ->
+        getTTS(response["text"])
+      )
       $('.chat-history').append "<li><p>#{$("#robot-name-input").val()}: #{response["text"]} </p></li>"
       $('.thought-history').append "<li><p>Thought: #{response["thoughts"]} </p></li>" if response["thoughts"] != ""
       $("#spinner").remove()
