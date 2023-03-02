@@ -68,15 +68,17 @@ class GPTChatbot:
     input_ids = input_ids.to('cuda')
     response = self.model.generate(
         input_ids=input_ids,
-        do_sample=True,
+        do_sample=False,
         no_repeat_ngram_size=3,
-        max_new_tokens= 256,
-        temperature=0,
-
+        max_new_tokens=512,
+        renormalize_logits=True,
+        temperature=0.01,
+        top_k=64,
         pad_token_id=self.tokenizer.eos_token_id,
         use_cache=True,
     )
     self.result = self.tokenizer.decode(response[0])
+    self.result = self.result.replace("\n", "<br>")
     # self.opts = opts
     # stop_words = ["Human:", "human:", "AI:", "Assistant:", "assistant:"]
     # self.result = self.llm_chain.predict(stop=stop_words, question=input_str)

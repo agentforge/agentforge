@@ -33,12 +33,12 @@ def tts():
 
   # Use the gTTS library to generate a wav file from the given text
   # Call the speech function
-  wav_data = tts_pipeline.synthesizer(text, filename)
+  filename = tts_pipeline.synthesizer(text, filename)
 
   # Return the wav file in the response
-  print(wav_data)
+  print(filename)
   return send_file(
-    io.BytesIO(wav_data),
+    filename,
     mimetype="audio/wav",
   )
 
