@@ -5,6 +5,8 @@ from pathlib import Path
 import time
 import torch
 import soundfile as sf
+import io
+from scipy.io.wavfile import write
 
 class TTS:
   def __init__(self) -> None:
@@ -30,17 +32,25 @@ class TTS:
 
   def synthesizer(self, text, filename):
     # synthesis
+    print(f"TTS: {text}")
     with torch.no_grad():
       start = time.time()
       wav = self.text2speech(text)["wav"]
     rtf = (time.time() - start) / (len(wav) / self.text2speech.fs)
     print(f"RTF = {rtf:5f}")
     # let us listen to generated samples
-    sf.write(filename, wav.cpu().numpy(), self.text2speech.fs, "PCM_16")
-    return filename
+    # sf.write(filename, wav.cpu().numpy(), self.text2speech.fs, "PCM_16")
+
+    bytes_wav = bytes()
+    byte_io = io.BytesIO(bytes_wav)
+    write(byte_io, self.text2speech.fs, wav.cpu().numpy())
+    wav_bytes = byte_io.read()
+    print(len(wav_bytes))
+    return wav_bytes
 
 if __name__ == "__main__":
   # Create an instance of the TTS class
   tts = TTS()
   # Call the speech function
-  tts.speech("Hello, I am a text-to-speech system.", "hello.wav")
+  wav_bytes = tts.synthesizer("Hello, I am a text-to-speech system.", "hello.wav")
+  print(f"TEST PASS: {len(wav_bytes) == 247866}")
