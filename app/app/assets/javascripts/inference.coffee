@@ -25,9 +25,7 @@ sendInferenceRequest = (url, text) ->
       robot_name: $("#robot-name-input").val()
       authenticity_token: window._token
     success: (response) ->
-     `import(/* webpackChunkName: "vnd-forms" */ 'js/vendor/forms')`.then(() ->
-        getTTS(response["text"])
-      )
+      getTTS(response["text"])
       $('.chat-history').append "<li><p>#{$("#robot-name-input").val()}: #{response["text"]} </p></li>"
       $('.thought-history').append "<li><p>Thought: #{response["thoughts"]} </p></li>" if response["thoughts"] != ""
       $("#spinner").remove()
