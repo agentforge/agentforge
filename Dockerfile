@@ -17,42 +17,15 @@ RUN mkdir -p /root/.ssh && \
 
 RUN ssh-keyscan github.com >> /root/.ssh/known_hosts
 
-# elder-link API
+# agent_n API
 RUN git clone "$REPO_URL"
-
-# Stable Diffusion - Fun Times
-RUN git clone git@github.com:CompVis/stable-diffusion.git
-RUN git clone git@github.com:jquesnelle/txt2imghd.git
 
 RUN pip install gTTS flask pytest accelerate bitsandbytes trl pip install flair flask_cors fuzzywuzzy fuzzysearch python-Levenshtein
 RUN pip install --upgrade diffusers[torch]
 RUN apt-get update && apt-get install -y git openssh-client
 RUN pip install 'langchain @ git+https://github.com/fragro/langchain.git'
-
-# RUN . /root/.bashrc && \
-#     conda init bash && \
-#     conda env create -f stable-diffusion/environment.yaml && \
-#     conda update -n base conda
-
-# RUN conda init bash
-# RUN conda env create -f stable-diffusion/environment.yaml
-# RUN source ~/.bashrc && conda activate ldm
-
-# RUN wget -P /app/cache/ https://huggingface.co/runwayml/stable-diffusion-v1-5/resolve/main/v1-5-pruned-emaonly.ckpt
-
-# RUN mkdir -p /root/stable-diffusion/models/ldm/stable-diffusion-v1
-# RUN ln -s /app/cache/v1-5-pruned-emaonly.ckpt /root/stable-diffusion/models/ldm/stable-diffusion-v1/model.ckpt 
-
-# Bust that cache
-# RUN python cache.py
-
-# COPY app.py /app/
-# COPY speech /app/speech
-# COPY inference /app/inference
-
-# FIX FOR packaging.version.InvalidVersion: Invalid version: '0.10.1,<0.11'
-# Run twice to grab all version
 RUN pip uninstall -y packaging transformers torchmetrics
+
 # Reinstall with specific versions
 RUN pip install transformers==4.26.1
 RUN pip install packaging==21.3
@@ -68,6 +41,7 @@ RUN pip install numpy==1.23.5
 RUN apt-get install -y tig ffmpeg
 RUN rm /usr/lib/x86_64-linux-gnu/libstdc++.so.6 && ln -s /opt/conda/x86_64-conda-linux-gnu/lib/libstdc++.so.6.0.30 /usr/lib/x86_64-linux-gnu/libstdc++.so.6
 RUN pip install --upgrade pip
+RUN pip install redis rq
 
 # Expose port 3000
 EXPOSE 3000

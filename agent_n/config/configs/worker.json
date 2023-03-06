@@ -1,0 +1,4 @@
+{
+  "llm_host": "llm",
+  "llm_port": 3000
+}

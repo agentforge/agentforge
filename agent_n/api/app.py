@@ -1,39 +1,39 @@
-# Import necessary libraries
+### RESTful API for the LLM worker
+
 from flask import Flask, request, jsonify, send_file, Response
 # from inference.gpt_neo_chat import GPTChatbot
 from inference.langchain_bot import GPTChatbot
-from speech.speech import TTS
+from agent_n.speech.speech import TTS
 from speech.whisper import Whisper
 import io
 import torch
 from flask_cors import CORS
 
 import logging
-logging.basicConfig(filename='gpt.log', level=logging.DEBUG)
+logging.basicConfig(filename='api.log', level=logging.DEBUG)
 
 # Create an instance of the Flask class
 app = Flask(__name__)
 CORS(app)
 
 # Create an instance of the GPTChatbot class
-chatbot = GPTChatbot()
-tts_pipeline = TTS()
+# chatbot = GPTChatbot()
+# tts = TTS()
 
 # Create a Whisper instance
-whisper = Whisper()
+# whisper = Whisper()
 
 print("CUDA AVAILABLE: ", torch.cuda.is_available())
 
-# Define the API endpoint for generating a wav file from text
-@app.route("/tts", methods=["POST"])
+# Given the following text request generate a wav file and return to the client
+@app.route("/speech", methods=["POST"])
 def tts():
   # Get the text and filename from the request
   text = request.json["text"]
   filename = "out.wav"
 
-  # Use the gTTS library to generate a wav file from the given text
-  # Call the speech function
-  filename = tts_pipeline.synthesizer(text, filename)
+  # Enqueue a job in the TTS pipeline
+  filename = tts.synthesizer(text, filename)
 
   # Return the wav file in the response
   print(filename)
