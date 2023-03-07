@@ -2,7 +2,7 @@ import json
 
 class Config:
   def __init__(self, config_name):
-    config_name = config_name if config_name is not None else "config.json"
+    config_name = config_name + ".json" if config_name is not None else "config.json"
     with open("configs/" + config_name) as f:
       self._config = json.load(f)
 

@@ -1,12 +1,9 @@
 # Import necessary libraries
 from espnet2.bin.tts_inference import Text2Speech
 from espnet2.utils.types import str_or_none
-from pathlib import Path
 import time
 import torch
 import soundfile as sf
-import io
-from scipy.io.wavfile import write
 
 class TTS():
   def __init__(self) -> None:

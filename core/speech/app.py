@@ -6,9 +6,10 @@ from speech.whisper import Whisper
 app = Flask(__name__)
 CORS(app)
 tts = TTS()
+whisper = Whisper()
 
 # Given the following text request generate a wav file and return to the client
-@app.route("/speech", methods=["POST"])
+@app.route("/tts", methods=["POST"])
 def tts():
   # Get the text and filename from the request
   text = request.json["text"]

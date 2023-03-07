@@ -5,7 +5,7 @@
 ### Imports ###
 from flask import Flask, request, jsonify, send_file, Response
 from flask_cors import CORS
-from llm import LLM
+from core.llm.transformer import LLM
 
 app = Flask(__name__)
 CORS(app)
@@ -24,7 +24,5 @@ if __name__ == '__main__':
   parser.add_argument('-model', dest='model', default='gpt2')
   args = parser.parse_args()
   model = args.model
-  llm.load(model)
+  llm.load(model, "llm")
   app.run()
-
-
