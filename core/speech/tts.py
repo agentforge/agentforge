@@ -8,7 +8,7 @@ import soundfile as sf
 import io
 from scipy.io.wavfile import write
 
-class TTS:
+class TTS():
   def __init__(self) -> None:
     model_tag = "espnet/kan-bayashi_ljspeech_vits"
     vocoder_tag = None

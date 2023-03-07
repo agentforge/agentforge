@@ -6,13 +6,15 @@
 ### Imports ###
 from transformers import AutoModelForCausalLM, AutoTokenizer
 import torch
-from agent_n.config import Config
+from core.config.config import Config
+import logging
 
 ### Class Definition ###
 class LLM():
   def __init__(self, opts) -> None:
     self.opts = {} if opts == None else opts
     self.device = opts.get("device", "cuda")
+    logging.info("LLM CUDA enabled: ", self.device == "cuda" and torch.cuda.is_available())
 
   def gpu(self) -> bool:
     return self.device == "cuda" and torch.cuda.is_available()
@@ -57,7 +59,7 @@ class LLM():
         **self.config.to_dict()
     )
     self.result = self.tokenizer.decode(response[0])
-    self.result = self.result.replace("\n", "<br>")
+    # self.result = self.result.replace("\n", "<br>")
     # self.opts = opts
     # stop_words = ["Human:", "human:", "AI:", "Assistant:", "assistant:"]
     # self.result = self.llm_chain.predict(stop=stop_words, question=input_str)
