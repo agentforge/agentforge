@@ -22,7 +22,7 @@ class LLM():
     # create a shared dictionary to store the model to be used by other workers
     self.manager = Manager()
     self.shared_dict = self.manager.dict()
-    logging.info("LLM CUDA enabled: ", self.device == "cuda" and torch.cuda.is_available())
+    logging.info(f"LLM CUDA enabled: {self.device == 'cuda' and torch.cuda.is_available()}")
 
   def gpu(self) -> bool:
     return self.device == "cuda" and torch.cuda.is_available()
