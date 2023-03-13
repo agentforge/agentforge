@@ -13,7 +13,7 @@ from redis import Redis
 from rq import Queue
 import logging
 from core.agent.cognition import Agent
-from core.lib.parser import Parser
+from core.helpers.parser import Parser
 
 queue = Queue(connection=Redis())
 worker = Worker()
