@@ -15,8 +15,8 @@ SEARX_HOST = "https://searx.work/"
 
 ### Inherits from the LLM class giving the agent access to its own LLM
 class Agent(LLM):
-  def __init__(self, opts) -> None:
-    super().__init__(opts)
+  def __init__(self) -> None:
+    pass
 
   # Setup Agent and load models
   def setup(self, model_name, config_name):
