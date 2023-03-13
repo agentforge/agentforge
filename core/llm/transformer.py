@@ -9,14 +9,13 @@ import torch
 from core.config.config import Config
 import logging
 from torch.multiprocessing import Manager, Process
-import pickle
 
 ### Class Definition ###
 class LLM():
   def __init__(self,  opts) -> None:
     self.opts = {} if opts == None else opts
     self.model_name = opts.get("model_name", "gpt2")
-    self.config_name = opts.get("config_name", "llm.json")
+    self.config_name = opts.get("config_name", "llm")
     self.model = None # default states
     self.tokenizer = None # default state
     self.device = opts.get("device", "cuda")

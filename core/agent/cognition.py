@@ -11,7 +11,7 @@ from langchain.agents import initialize_agent
 
 SEARX_HOST = "https://searx.work/"
 AGENT_MODEL = "EleutherAI/gpt-j-6B"
-CONFIG_NAME = "llm.json"
+CONFIG_NAME = "llm"
 
 ### Inherits from the LLM class giving the agent access to its own LLM
 class Agent(LLM):

@@ -10,7 +10,7 @@ import logging
 class Worker():
 
   def __init__(self) -> None:
-    self.config = Config("worker.json")
+    self.config = Config("worker")
 
   ## Sends a POST request to the given URL with the given data
   def post(self, url: str, data: dict, **kwargs) -> str:
