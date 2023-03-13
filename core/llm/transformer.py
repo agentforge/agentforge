@@ -47,8 +47,8 @@ class LLM():
     self.config = Config(self.config_name)
 
     # Sets the model revision and torch dtype
-    revision = kwargs["opts"].get("revision", "float16")
-    torch_dtype = kwargs["opts"].get("torch_dtype", torch.float16)
+    revision = opts.get("revision", "float16")
+    torch_dtype = opts.get("torch_dtype", torch.float16)
 
     args = {
       "revision": revision,
