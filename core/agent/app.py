@@ -59,3 +59,22 @@ def prompt():
   # Return the response
   return jsonify(response)
 
+# Run the web server
+if __name__ == '__main__':
+  from argparse import ArgumentParser
+  parser = ArgumentParser()
+  parser.add_argument('--model', dest='model', default='gpt2')
+  parser.add_argument('--config', dest='config', default='gpt2')
+
+  queue = Queue(connection=Redis())
+  worker = Worker()
+
+  # Create an instance of the Flask class
+  app = Flask(__name__)
+  CORS(app)
+
+  agent_instance = Agent()
+  agent_instance.setup()
+  parser = Parser()
+
+  app.run()

@@ -37,7 +37,7 @@ class Agent(LLM):
 
   def agent(self):
     # Loads the model and tokenizer into langchain compatible agent class
-    self.hfm = HuggingFaceModel(model=self.model, tokenizer=self.tokenizer, device=1)
+    self.hfm = HuggingFaceModel(model=self.model, tokenizer=self.tokenizer, device=1, model_kwargs=self.config.to_dict())
     memory = ConversationBufferMemory(memory_key="chat_history")
     self.llm_chain = LLMChain(
         prompt=self.prompt,
