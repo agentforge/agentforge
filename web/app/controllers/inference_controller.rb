@@ -10,14 +10,14 @@ class InferenceController < ApplicationController
     robot_name = params[:robot_name]
     host = Settings.inference_api.host
     port = Settings.inference_api.port
-    uri = URI("http://#{host}:#{port}/chat")
+    uri = URI("http://#{host}:#{port}/agent/prompt")
     http = Net::HTTP.new(uri.host, uri.port)
 
     http.read_timeout = 600
   
     request = Net::HTTP::Post.new(uri)
     request["Content-Type"] = "application/json"
-    request.body = JSON.dump(message: text, context: context, name: name, robot_name: robot_name)
+    request.body = JSON.dump(prompt: text, context: context, name: name, robot_name: robot_name)
   
     response = http.request(request)
     text = JSON.parse(response.body)["response"]

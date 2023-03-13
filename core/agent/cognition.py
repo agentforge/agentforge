@@ -12,11 +12,13 @@ from langchain.utilities import SearxSearchWrapper
 from langchain.agents import initialize_agent
 
 SEARX_HOST = "https://searx.work/"
+AGENT_MODEL = "EleutherAI/gpt-j-6B"
+CONFIG_NAME = "llm.json"
 
 ### Inherits from the LLM class giving the agent access to its own LLM
 class Agent(LLM):
   def __init__(self) -> None:
-    pass
+    self.setup(AGENT_MODEL, CONFIG_NAME)
 
   # Setup Agent and load models
   def setup(self, model_name, config_name):
