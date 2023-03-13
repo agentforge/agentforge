@@ -49,7 +49,7 @@ class Agent(LLM):
 
   def run(self, question):
     # Run the agent
-    response = self.agent_chain.run(question)
+    response = self.llm_chain.run(question)
     return response
   
   def init_tools(self):
