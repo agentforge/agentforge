@@ -2,10 +2,10 @@
 from transformers import AutoModelForSeq2SeqLM, AutoTokenizer, AutoModelForCausalLM, GPTJForCausalLM
 import re
 import torch
-from core.lib.history import History
-from core.lib.tagger import Tagger
+from core.helpers.history import History
+from core.helpers.tagger import Tagger
 from config import Config
-from core.lib.helpers import str_to_class
+from core.helpers.helpers import str_to_class
 import random
 
 class GPTChatbot:

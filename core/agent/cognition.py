@@ -31,7 +31,6 @@ class Agent(LLM):
     {chat_history}
     Human: {human_input}
     AI:"""
-
     self.prompt = PromptTemplate(
         input_variables=["chat_history", "human_input"], 
         template=template

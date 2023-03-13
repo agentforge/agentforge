@@ -1,9 +1,11 @@
 import json
+import os
 
 class Config:
   def __init__(self, config_name):
+    CONFIG_DIR = os.getenv('CONFIG_DIR')
     config_name = config_name + ".json" if config_name is not None else "config.json"
-    with open("configs/" + config_name) as f:
+    with open(CONFIG_DIR + config_name) as f:
       self._config = json.load(f)
 
   def __getitem__(self, key):
