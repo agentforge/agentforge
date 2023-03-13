@@ -50,15 +50,11 @@ class LLM():
     revision = opts.get("revision", "float16")
     torch_dtype = opts.get("torch_dtype", torch.float16)
 
-    args = {
-      "revision": revision,
-      "torch_dtype": torch_dtype,
-    }
-
     # Given the model name, loads the requested revision model and transfomer
     self.model = AutoModelForCausalLM.from_pretrained(
       self.model_name,
-      **args
+      revision = revision,
+      torch_dtype = torch_dtype,
     )
 
     self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
