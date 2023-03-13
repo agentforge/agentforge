@@ -43,7 +43,7 @@ def prompt():
   parser.parse(prompt)
 
   # Run the agent
-  agent_instance.run(prompt)
+  response = agent_instance.run(prompt)
 
   # Run text classification and intent detection
   ## TODO: Implement this
@@ -51,7 +51,7 @@ def prompt():
   # Convert text to speech and cache the wav file
 
   # Use the chatbot to generate a response
-  response = queue.enqueue(worker.generate, prompt)
+  # response = queue.enqueue(worker.generate, prompt)
 
   print(response)
   # Return the response
