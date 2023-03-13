@@ -13,7 +13,9 @@ import pickle
 
 ### Class Definition ###
 class LLM():
-  def __init__(self, opts) -> None:
+  def __init__(self, model_name, config_name, opts) -> None:
+    self.model_name = model_name
+    self.config_name = config_name
     self.opts = {} if opts == None else opts
     self.model = None # default states
     self.tokenizer = None # default state
@@ -27,7 +29,7 @@ class LLM():
     return self.device == "cuda" and torch.cuda.is_available()
 
   # Loads the model and transfomer given the model name
-  def load(self, model_name, config_name, **kwargs) -> None:
+  def load(self, **kwargs) -> None:
     # Check shared dict to see if model_name has been loaded, if we haven't already
     if self.get_model() is not None and self.get_tokenizer() is not None:
       if self.model is None:
@@ -36,11 +38,11 @@ class LLM():
         self.tokenizer = self.get_tokenizer()
 
     # Validate that both model_name and config_name exist
-    if model_name == None or config_name == None:
+    if self.model_name == None or self.config_name == None:
       raise ValueError("model_name and config_name must be defined")
 
     # Loads the model configuration
-    self.config = Config(config_name)
+    self.config = Config(self.config_name)
 
     # Sets the model revision and torch dtype
     revision = kwargs["opts"].get("revision", "float16")
@@ -53,11 +55,11 @@ class LLM():
 
     # Given the model name, loads the requested revision model and transfomer
     self.model = AutoModelForCausalLM.from_pretrained(
-      model_name,
+      self.model_name,
       **args
     )
 
-    self.tokenizer = AutoTokenizer.from_pretrained(model_name)
+    self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
 
     # Loads the model into GPU if available
     device = torch.device("cuda") if self.gpu() else torch.device("cpu")
