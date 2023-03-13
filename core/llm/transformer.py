@@ -74,11 +74,11 @@ class LLM():
 
   # Gets the model
   def get_tokenizer(self):
-    return self.shared_dict[self.tokenizer_key] if self.tokenizer_key in self.shared_dict else None
+    return self.shared_dict[self.tokenizer_key()] if self.tokenizer_key() in self.shared_dict else None
 
   # Gets the model
   def get_model(self):
-    return self.shared_dict[self.model_key] if self.model_key in self.shared_dict else None
+    return self.shared_dict[self.model_key()] if self.model_key() in self.shared_dict else None
 
   ### Inits the model pointer in a shared dict for other torch processes that have access to this GPU ###
   def fanout(self) -> None:
@@ -95,7 +95,6 @@ class LLM():
     p_args = (self.shared_dict,self.model, self.tokenizer, self.model_key(), self.tokenizer_key(),)
     # start a separate process to create and store the model
     p = Process(target=store_model, args=p_args)
-    pickle.dumps(p._config['authkey'])
     p.start()
 
     # wait for the process to finish
