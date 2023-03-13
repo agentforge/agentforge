@@ -13,10 +13,10 @@ import pickle
 
 ### Class Definition ###
 class LLM():
-  def __init__(self, model_name, config_name, opts) -> None:
-    self.model_name = model_name
-    self.config_name = config_name
+  def __init__(self,  opts) -> None:
     self.opts = {} if opts == None else opts
+    self.model_name = opts.get("model_name", "gpt2")
+    self.config_name = opts.get("config_name", "llm.json")
     self.model = None # default states
     self.tokenizer = None # default state
     self.device = opts.get("device", "cuda")
@@ -30,6 +30,8 @@ class LLM():
 
   # Loads the model and transfomer given the model name
   def load(self, **kwargs) -> None:
+    # get opts if it is available
+    opts = kwargs.get("opts", self.opts)
     # Check shared dict to see if model_name has been loaded, if we haven't already
     if self.get_model() is not None and self.get_tokenizer() is not None:
       if self.model is None:
