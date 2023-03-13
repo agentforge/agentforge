@@ -45,7 +45,7 @@ class Agent(LLM):
         verbose=True,
         memory=memory,
     )
-    self.agent_chain = initialize_agent(self.tools, self.llm_chain, agent="conversational-react-description", verbose=True, memory=memory)
+    self.agent_chain = initialize_agent(self.tools, self.hfm, agent="conversational-react-description", verbose=True, memory=memory)
 
   def run(self, question):
     # Run the agent
