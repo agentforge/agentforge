@@ -28,8 +28,6 @@ agent_instance = Agent()
 agent_instance.setup()
 parser = Parser()
 
-app.run()
-
 ### Main endpoint of the Agent API
 ### Agent API is responsible for managing the queue of requests
 ### and uses a ReAct/MERKL LLM to determine what tool service to use
