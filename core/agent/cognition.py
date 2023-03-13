@@ -18,13 +18,13 @@ CONFIG_NAME = "llm.json"
 ### Inherits from the LLM class giving the agent access to its own LLM
 class Agent(LLM):
   def __init__(self) -> None:
-    super().__init__({})
-    self.setup(AGENT_MODEL, CONFIG_NAME)
+    super().__init__(AGENT_MODEL, CONFIG_NAME, {})
+    self.setup()
 
   # Setup Agent and load models
-  def setup(self, model_name, config_name):
+  def setup(self):
     self.setup_tools()
-    self.load(model_name, config_name)
+    self.load()
 
     # Loads the model and tokenizer into langchain compatible class
 
