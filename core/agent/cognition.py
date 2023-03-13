@@ -20,10 +20,10 @@ class Agent(LLM):
 
   # Setup Agent and load models
   def setup(self):
-    self.setup_tools()
+    self.init_tools()
     self.load()
     self.create_prompt()
-    self.setup_agent()
+    self.agent()
 
   def create_prompt(self):
     template = """You are an AI having a friendy chat with a human.
@@ -35,7 +35,7 @@ class Agent(LLM):
         template=template
     )
 
-  def setup_agent(self):
+  def agent(self):
     # Loads the model and tokenizer into langchain compatible agent class
     self.hfm = HuggingFaceModel(model=self.model, tokenizer=self.tokenizer, device=1)
     memory = ConversationBufferMemory(memory_key="chat_history")
@@ -52,7 +52,7 @@ class Agent(LLM):
     response = self.agent_chain.run(question)
     return response
   
-  def setup_tools(self):
+  def init_tools(self):
     self.search = SearxSearchWrapper(searx_host=SEARX_HOST)
     self.tools = [
       Tool(
@@ -61,3 +61,7 @@ class Agent(LLM):
           description="useful for when you need to answer questions about current events or the current state of the world"
       ),
     ]
+
+  def test_agent(self):
+    a = Agent()
+    a.setup()
