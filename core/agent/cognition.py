@@ -13,11 +13,10 @@ SEARX_HOST = "https://searx.work/"
 AGENT_MODEL = "EleutherAI/gpt-j-6B"
 CONFIG_NAME = "llm"
 
-### Inherits from the LLM class giving the agent access to its own LLM
+### Inherits from the LLM class gi  ving the agent access to its own LLM
 class Agent(LLM):
   def __init__(self) -> None:
     super().__init__({"model_name": AGENT_MODEL, "config_name": CONFIG_NAME})
-    self.setup()
 
   # Setup Agent and load models
   def setup(self):

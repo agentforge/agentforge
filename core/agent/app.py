@@ -25,6 +25,7 @@ app = Flask(__name__)
 CORS(app)
 
 agent_instance = Agent()
+agent_instance.setup()
 parser = Parser()
 
 ### Main endpoint of the Agent API
