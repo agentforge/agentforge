@@ -9,6 +9,7 @@ import torch
 from core.config.config import Config
 import logging
 from torch.multiprocessing import Manager, Process
+import pickle
 
 ### Class Definition ###
 class LLM():
@@ -94,6 +95,7 @@ class LLM():
     p_args = (self.shared_dict,self.model, self.tokenizer, self.model_key(), self.tokenizer_key(),)
     # start a separate process to create and store the model
     p = Process(target=store_model, args=p_args)
+    pickle.dumps(p._config['authkey'])
     p.start()
 
     # wait for the process to finish
