@@ -60,7 +60,8 @@ def prompt():
 if __name__ == '__main__':
   from argparse import ArgumentParser
   parser = ArgumentParser()
-  parser.add_argument('-model', dest='model', default='gpt2')
+  parser.add_argument('--model', dest='model', default='gpt2')
+  parser.add_argument('--config', dest='config', default='gpt2')
   args = parser.parse_args()
   model = args.model
   agent_instance.load(model, "llm")
