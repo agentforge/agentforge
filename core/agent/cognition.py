@@ -34,11 +34,21 @@ class Agent(LLM):
     # summary_memory = ConversationSummaryMemory(llm=self.hf, input_key="question")
     # prompt_template = PromptTemplate(input_variables=["history","chat_history","question"], template=template)
     # conv_memory = ConversationBufferWindowMemory(k=5, memory_key="chat_history", input_key="question", ai_prefix="Sydney", human_prefix="Human")
+   
+    template = """You are an AI having a friendy chat with a human.
+    {chat_history}
+    Human: {human_input}
+    AI:"""
 
+    prompt = PromptTemplate(
+        input_variables=["chat_history", "human_input"], 
+        template=template
+    )
     # memory = CombinedMemory(memories=[conv_memory, summary_memory])
     memory = ConversationBufferMemory(memory_key="chat_history")
 
     self.llm_chain = LLMChain(
+        prompt=prompt,
         llm=self.hfm,
         verbose=True,
         # memory=conv_memory,
