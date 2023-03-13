@@ -65,6 +65,7 @@ class LLM():
 
     # Store model reference in shared dict if necessary
     self.fanout()
+    print("Model loaded and online...")
 
   def tokenizer_key(self):
     return f"{self.model_name}-tokenizer"
