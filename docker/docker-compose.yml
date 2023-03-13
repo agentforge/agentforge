@@ -1,0 +1,36 @@
+version: '3'
+
+services:
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    networks:
+      main-net:
+        aliases:
+          - redis 
+  llm:
+    image: llm
+    environment:
+      - MODEL_SIZE=medium
+    ports:
+      - "3002:3002"
+    ipc: host
+    networks:
+      main-net:
+        aliases:
+          - llm
+  worker:
+    image: worker
+    environment:
+      - CONFIG_DIR=""
+    ports:
+      - "3000:3000"
+    ipc: host
+    depends_on:
+      - llm
+    networks:
+      main-net:
+
+networks:
+  main-net:
