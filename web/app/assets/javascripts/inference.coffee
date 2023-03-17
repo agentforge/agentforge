@@ -38,7 +38,7 @@ sendMessage = () ->
   port = window.Settings["rails"]["port"]
   text = $("#user-input").val()
   $("#user-input").val("")
-  $('.chat-history').append "<li><p>#{$("#name-input").val()}: #{text} </p></li>"
+  $('.chat-history').append "<li class='human'><p>#{$("#name-input").val()}: #{text} </p></li>"
   $('.chat-history').append '<li id="spinner"><p><i class="fas fa-spinner fa-pulse"></p></i>'
   $(".chat-history").scrollTop($(".chat-history")[0].scrollHeight);
   console.log("#send-message #{text}")

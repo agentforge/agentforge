@@ -17,7 +17,6 @@ To run the Agent flask server:
 
 ```CONFIG_DIR="/app/agent_n/core/config/configs/" flask run --host=0.0.0.0 --port=3000```
 
-
 To run the Cognition/LLM flask server:
 
 ```CONFIG_DIR="/app/agent_n/core/config/configs/" flask run --host=0.0.0.0 --port=3002```

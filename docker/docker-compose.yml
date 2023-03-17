@@ -11,8 +11,6 @@ services:
           - redis 
   llm:
     image: llm
-    environment:
-      - MODEL_SIZE=medium
     ports:
       - "3002:3002"
     ipc: host
@@ -20,6 +18,22 @@ services:
       main-net:
         aliases:
           - llm
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+  speech:
+    image: speech
+    ports:
+      - "3003:3003"
+    ipc: host
+    networks:
+      main-net:
+        aliases:
+          - speech
     deploy:
       resources:
         reservations:
