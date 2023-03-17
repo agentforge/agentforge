@@ -19,7 +19,6 @@ class Alpaca(LLM):
   # Setup Agent and load models
   def setup(self):
     self.load()
-    self.create_prompt()
 
   def load(self):
     self.tokenizer = LlamaTokenizer.from_pretrained("decapoda-research/llama-7b-hf")
