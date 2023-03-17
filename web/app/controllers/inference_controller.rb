@@ -20,11 +20,12 @@ class InferenceController < ApplicationController
     request.body = JSON.dump(prompt: text, context: context, name: name, robot_name: robot_name)
   
     response = http.request(request)
-    text = JSON.parse(response.body)["response"]
-    thoughts = JSON.parse(response.body)["thoughts"]
-    full_phrase = JSON.parse(response.body)["full_phrase"]
+    puts response
+    text = JSON.parse(response.body)["output"]
+    # thoughts = JSON.parse(response.body)["thoughts"]
+    # full_phrase = JSON.parse(response.body)["full_phrase"]
     text.gsub("\\n", "<br/>")
-    render json: { text: text, thoughts: thoughts, full_phrase: full_phrase}
+    render json: { text: text }
   end
 
   def reset_history

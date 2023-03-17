@@ -31,3 +31,4 @@ class ExecutiveCognition():
     else:
         # The request failed
         print(f"Request failed with status code {response.status_code}")
+        return "ERROR PLEASE TRY AGAIN LATER"
