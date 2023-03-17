@@ -12,7 +12,7 @@ from core.worker.worker import Worker
 from redis import Redis
 from rq import Queue
 import logging
-from core.agent.cognition import Agent
+from core.agency.executive import ExecutiveCognition
 from core.helpers.parser import Parser
 
 queue = Queue(connection=Redis())
@@ -24,9 +24,7 @@ logging.basicConfig(filename='agent.log', level=logging.DEBUG)
 app = Flask(__name__)
 CORS(app)
 
-agent_instance = Agent()
-agent_instance.setup()
-parser = Parser()
+executive_functionality = ExecutiveCognition()
 
 ### Main endpoint of the Agent API
 ### Agent API is responsible for managing the queue of requests
@@ -43,7 +41,7 @@ def prompt():
   parser.parse(prompt)
 
   # Run the agent
-  response = agent_instance.run(prompt)
+  response = executive_functionality.run(prompt)
 
   # Run text classification and intent detection
   ## TODO: Implement this
