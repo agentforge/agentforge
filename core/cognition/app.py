@@ -12,14 +12,15 @@ sys.path.append(str(path_root))
 from flask import Flask, request, jsonify, send_file, Response
 from flask_cors import CORS
 from core.cognition.agent import Agent
+from core.cognition.alpaca import Alpaca
 import logging
 
 logging.basicConfig(filename='agent.log', level=logging.DEBUG)
 
 app = Flask(__name__)
 CORS(app)
-llm = Agent()
-
+#llm = Agent()
+llm = Alpaca()
 # Given the following text request generate a wav file and return to the client
 @app.route("/llm/inference", methods=["POST"])
 def output():
