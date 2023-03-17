@@ -56,6 +56,7 @@ class Alpaca(LLM):
           num_beams=num_beams,
           **kwargs,
       )
+      print("GENERATE...")
       with torch.no_grad():
           generation_output = self.model.generate(
               input_ids=input_ids,
@@ -64,7 +65,8 @@ class Alpaca(LLM):
               output_scores=True,
               max_new_tokens=2048,
           )
+      print("GENERATED...")
       s = generation_output.sequences[0]
       output = self.tokenizer.decode(s)
-      return output.split("### Response:")[1].strip()
+      return output
 
