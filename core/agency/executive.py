@@ -26,8 +26,8 @@ class ExecutiveCognition():
     if response.status_code == 200:
         # The request was successful
         print("Response content:")
-        print(response.content)
-        return response.content
+        print(response.json())
+        return response.json()
     else:
         # The request failed
         print(f"Request failed with status code {response.status_code}")
