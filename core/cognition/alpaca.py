@@ -73,5 +73,5 @@ class Alpaca(LLM):
       print("GENERATED...")
       s = generation_output.sequences[0]
       output = self.tokenizer.decode(s)
-      return output
+      return output.split("### Response:")[1].strip()
 
