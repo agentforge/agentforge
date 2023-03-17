@@ -20,6 +20,13 @@ services:
       main-net:
         aliases:
           - llm
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
   worker:
     image: worker
     environment:
@@ -31,6 +38,8 @@ services:
       - llm
     networks:
       main-net:
+        aliases:
+          - worker
 
 networks:
   main-net:

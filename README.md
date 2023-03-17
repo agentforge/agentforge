@@ -6,15 +6,22 @@ To build the Docker image, run the following command:
 
 To run the Docker container, run the following command:
 
-```nvidia-docker run --ipc=host -p 3000:3000 worker .```
+```nvidia-docker run --ipc=host -p 3000:3000 worker &```
+```nvidia-docker run --ipc=host -p 3000:3000 llm &```
 
 To run an interactive shell use this instead:
 
 ```nvidia-docker run -it --ipc=host -p 3000:3000 worker /bin/bash```
 
-To run the flask server:
+To run the Agent flask server:
 
 ```CONFIG_DIR="/app/agent_n/core/config/configs/" flask run --host=0.0.0.0 --port=3000```
+
+
+To run the Cognition/LLM flask server:
+
+```CONFIG_DIR="/app/agent_n/core/config/configs/" flask run --host=0.0.0.0 --port=3002```
+
 
 To run the rails server:
 
