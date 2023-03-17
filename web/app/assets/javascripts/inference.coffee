@@ -50,13 +50,10 @@ $(document).on('turbolinks:load', ->
     event.preventDefault()
 
   $("textarea").keydown (e) ->
-    if (e.keyCode == 13 && !e.shiftKey)
+    if (e.keyCode == 13 && e.shiftKey)
+      $(this).val($(this).val() + "\n");
       e.preventDefault()
-
-  # Capture the enter key press event
-  $(document).on 'keypress', (event) ->
-    # Check if the enter key was pressed
-    if event.which is 13
-      # Trigger the someFunction function
+    if (e.keyCode == 13 && !e.shiftKey)
       sendMessage()
+      e.preventDefault()
 )
