@@ -15,6 +15,7 @@ CONFIG_NAME = "llm"
 class Agent(LLM):
   def __init__(self) -> None:
     super().__init__({"model_name": AGENT_MODEL, "config_name": CONFIG_NAME})
+    self.setup()
 
   # Setup Agent and load models
   def setup(self):
