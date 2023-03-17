@@ -60,6 +60,7 @@ class LLM():
 
     # Loads the model into GPU if available
     device = torch.device("cuda") if self.gpu() else torch.device("cpu")
+    print("gpu: ", self.gpu())
     self.model = self.model.to(device)
 
     # Store model reference in shared dict if necessary
