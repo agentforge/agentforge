@@ -47,7 +47,10 @@ class Alpaca(LLM):
           instruction,
           temperature=0.1,
           top_p=0.75,
-          top_k=40,
+          top_k=64,
+          repetition_penalty=1.5,
+          no_repeat_ngram_size=3,
+          do_sample=True,
           num_beams=4,
           **kwargs,
   ):
@@ -56,8 +59,12 @@ class Alpaca(LLM):
       input_ids = inputs["input_ids"].cuda()
       generation_config = GenerationConfig(
           temperature=temperature,
-          top_p=top_p,
+          #top_p=top_p,
           top_k=top_k,
+          do_sample=do_sample,
+          no_repeat_ngram_size=no_repeat_ngram_size,
+          repetition_penalty=repetition_penalty,
+          renormalize_logits=True,
           num_beams=num_beams,
           **kwargs,
       )
