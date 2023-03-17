@@ -30,7 +30,6 @@ class Alpaca(LLM):
       torch_dtype=torch.float16,
       device_map="auto",
     )
-    self.model.to("cuda")
 
   def generate_prompt(self, instruction):
     return f"""Below is an instruction that describes a task. Write a response that appropriately completes the request.

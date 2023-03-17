@@ -20,14 +20,15 @@ RUN ssh-keyscan github.com >> /root/.ssh/known_hosts
 # agent_n API
 RUN git clone "$REPO_URL"
 
-RUN pip install gTTS flask pytest accelerate bitsandbytes trl pip install flair flask_cors fuzzywuzzy fuzzysearch python-Levenshtein
+RUN pip install gTTS flask pytest accelerate bitsandbytes trl pip install flask_cors fuzzywuzzy fuzzysearch python-Levenshtein
 RUN pip install --upgrade diffusers[torch]
 RUN apt-get update && apt-get install -y git openssh-client
 RUN pip install 'langchain @ git+https://github.com/fragro/langchain.git'
 RUN pip uninstall -y packaging transformers torchmetrics
-
+s
 # Reinstall with specific versions
-RUN pip install transformers==4.26.1
+# RUN pip install transformers==4.26.1
+RUN pip install git+https://github.com/huggingface/transformers.git"
 RUN pip install packaging==21.3
 RUN pip install 'torchmetrics<0.8'
 RUN pip install espnet
