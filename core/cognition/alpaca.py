@@ -1,5 +1,6 @@
 import torch
 import transformers
+from peft import PeftModel
 from transformers import LlamaTokenizer, LlamaForCausalLM, GenerationConfig
 
 from langchain import PromptTemplate, LLMChain
@@ -28,6 +29,10 @@ class Alpaca(LLM):
       load_in_8bit=True,
       torch_dtype=torch.float16,
       device_map="auto",
+    )
+
+    self.model = PeftModel.from_pretrained(
+        self.model, "tloen/alpaca-lora-7b", torch_dtype=torch.float16
     )
 
   def generate_prompt(self, instruction):
