@@ -25,7 +25,7 @@ RUN pip install --upgrade diffusers[torch]
 RUN apt-get update && apt-get install -y git openssh-client
 RUN pip install 'langchain @ git+https://github.com/fragro/langchain.git'
 RUN pip uninstall -y packaging transformers torchmetrics
-s
+
 # Reinstall with specific versions
 # RUN pip install transformers==4.26.1
 RUN pip install git+https://github.com/huggingface/transformers.git"
