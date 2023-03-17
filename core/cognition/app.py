@@ -1,3 +1,9 @@
+### Ensure local libs are available for Flask
+from pathlib import Path
+import sys
+path_root = Path(__file__).parents[2]
+sys.path.append(str(path_root))
+
 ### RESTful API for the LLM services
 ### Maintains any necessary queue and rate limiting for
 ### accessing GPU/TPU resources
@@ -5,14 +11,17 @@
 ### Imports ###
 from flask import Flask, request, jsonify, send_file, Response
 from flask_cors import CORS
-from core.llm.transformer import LLM
+from core.cognition.agent import Agent
+import logging
+
+logging.basicConfig(filename='agent.log', level=logging.DEBUG)
 
 app = Flask(__name__)
 CORS(app)
-llm = LLM()
+llm = Agent()
 
 # Given the following text request generate a wav file and return to the client
-@app.route("/llm/output", methods=["POST"])
+@app.route("/llm/inference", methods=["POST"])
 def output():
   prompt = request.json["prompt"]
   output = llm.generate(prompt)

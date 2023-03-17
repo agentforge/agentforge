@@ -63,7 +63,7 @@ class LLM():
     self.model = self.model.to(device)
 
     # Store model reference in shared dict if necessary
-    self.fanout()
+    # self.fanout()
     print("Model loaded and online...")
 
   def tokenizer_key(self):

@@ -1,22 +1,21 @@
-### Primary Class for Agent Executor 
 
+from langchain import PromptTemplate, LLMChain
+from langchain.agents import initialize_agent
+from core.cognition.base import LLM
 from langchain.agents import Tool
 from langchain.chains.conversation.memory import ConversationBufferMemory
-from core.llm.transformer import LLM
-from langchain.agents import ZeroShotAgent, Tool, AgentExecutor
 from langchain.llms import HuggingFaceModel
-from langchain import PromptTemplate, LLMChain
 from langchain.utilities import SearxSearchWrapper
-from langchain.agents import initialize_agent
 
 SEARX_HOST = "https://searx.work/"
 AGENT_MODEL = "EleutherAI/gpt-j-6B"
 CONFIG_NAME = "llm"
 
-### Inherits from the LLM class gi  ving the agent access to its own LLM
+### Agent -- Layer over LLMChain Agent system to provide a more user friendly interface
 class Agent(LLM):
   def __init__(self) -> None:
     super().__init__({"model_name": AGENT_MODEL, "config_name": CONFIG_NAME})
+    self.setup()
 
   # Setup Agent and load models
   def setup(self):
@@ -46,6 +45,10 @@ class Agent(LLM):
         memory=memory,
     )
     self.agent_chain = initialize_agent(self.tools, self.hfm, agent="conversational-react-description", verbose=True, memory=memory)
+
+  def generate(self, prompt):
+    response = self.llm_chain.run(prompt)
+    return response
 
   def run(self, question):
     # Run the agent
