@@ -3,7 +3,7 @@
 from core.helpers.parser import Parser
 import requests
 
-URL="llm:3002"
+URL="http://llm:3002"
 
 class ExecutiveCognition():
   def __init__(self) -> None:
