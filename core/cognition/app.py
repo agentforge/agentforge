@@ -18,7 +18,7 @@ CORS(app)
 llm = Agent()
 
 # Given the following text request generate a wav file and return to the client
-@app.route("/llm/output", methods=["POST"])
+@app.route("/llm/inference", methods=["POST"])
 def output():
   prompt = request.json["prompt"]
   output = llm.generate(prompt)
