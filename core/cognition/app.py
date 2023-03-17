@@ -12,6 +12,9 @@ sys.path.append(str(path_root))
 from flask import Flask, request, jsonify, send_file, Response
 from flask_cors import CORS
 from core.cognition.agent import Agent
+import logging
+
+logging.basicConfig(filename='agent.log', level=logging.DEBUG)
 
 app = Flask(__name__)
 CORS(app)
