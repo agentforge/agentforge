@@ -14,15 +14,15 @@ from langchain.llms import HuggingFaceModel
 AGENT_MODEL="decapoda-research/llama-7b-hf"
 CONFIG_NAME="llm"
 
-class Alpaca(LLM):
+class Alpaca(Agent):
   def __init__(self) -> None:
     super().__init__({"model_name": AGENT_MODEL, "config_name": CONFIG_NAME})
 
-  # Setup Agent and load models
-  def setup(self):
-    self.load()
+  # Setup alpaca and load models
+  def setup_alpaca(self):
+    self.load_alpaca()
 
-  def load(self):
+  def load_alpaca(self):
     self.tokenizer = LlamaTokenizer.from_pretrained("decapoda-research/llama-7b-hf")
 
     self.model = LlamaForCausalLM.from_pretrained(

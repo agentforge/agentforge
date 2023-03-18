@@ -17,11 +17,11 @@ class Agent(LLM):
     super().__init__({"model_name": AGENT_MODEL, "config_name": CONFIG_NAME})
 
   # Setup Agent and load models
-  def setup(self):
+  def setup_agent(self):
     self.init_tools()
-    self.load()
+    self.load_agent()
     self.create_prompt()
-    self.agent()
+    self.load_agent()
 
   def create_prompt(self):
     template = """You are an AI having a friendy chat with a human.
@@ -33,7 +33,7 @@ class Agent(LLM):
         template=template
     )
 
-  def agent(self):
+  def load_agent(self):
     # Loads the model and tokenizer into langchain compatible agent class
     self.hfm = HuggingFaceModel(model=self.model, tokenizer=self.tokenizer, device=1, model_kwargs=self.config.to_dict())
     memory = ConversationBufferMemory(memory_key="chat_history")
