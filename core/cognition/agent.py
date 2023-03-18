@@ -17,7 +17,7 @@ class Agent(LLM):
     super().__init__({"model_name": AGENT_MODEL, "config_name": CONFIG_NAME})
 
   # Setup Agent and load models
-  def setup_agent(self):
+  def setup(self):
     self.init_tools()
     self.load()
     self.create_prompt()

@@ -14,24 +14,12 @@ from langchain.llms import HuggingFaceModel
 AGENT_MODEL="decapoda-research/llama-7b-hf"
 CONFIG_NAME="llm"
 
-# Alpaca agentized model
-class AlpacaAgent(Agent):
-   # Setup Agent and load models
-  def __init__(self) -> None:
-    super().__init__({"model_name": AGENT_MODEL, "config_name": CONFIG_NAME})
-
-  def setup_alpaca_agent(self):
-    self.load()
-    self.init_tools()
-    self.create_prompt()
-    self.agent()
-
 class Alpaca(LLM):
   def __init__(self) -> None:
     super().__init__({"model_name": AGENT_MODEL, "config_name": CONFIG_NAME})
 
   # Setup Agent and load models
-  def setup_alpaca(self):
+  def setup(self):
     self.load()
 
   def load(self):
