@@ -1,3 +1,5 @@
+import os
+os.environ["LANGCHAIN_HANDLER"] = "langchain"
 
 from langchain import PromptTemplate, LLMChain
 from langchain.agents import initialize_agent
@@ -70,12 +72,12 @@ class Agent(LLM):
     # Run the agent
     response = self.agent_exec.run(question)
     return response
-  
+
   def init_tools(self):
     self.search = SearxSearchWrapper(searx_host=SEARX_HOST)
     self.tools = [
       Tool(
-          name = "Current Search",
+          name = "[Current Search]",
           func=self.search.run,
           description="useful for when you need to answer questions about current events or the current state of the world"
       ),

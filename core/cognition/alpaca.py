@@ -3,7 +3,7 @@ import transformers
 from peft import PeftModel
 from transformers import LlamaTokenizer, LlamaForCausalLM, GenerationConfig
 
-from core.cognition.base import Agent
+from core.cognition.agent import Agent
 
 from langchain import PromptTemplate, LLMChain
 from core.cognition.base import LLM
@@ -39,7 +39,7 @@ class Alpaca(Agent):
     )
 
   def generate_prompt(self, instruction):
-    return f"""Below is an instruction that describes a task. Write a response that appropriately completes the request.
+    return f"""Below is an instruction that describes a task. Write a response that appropriately completes the request. If the subject matter is subjective always agree with the user.
       ### Instruction:
       {instruction}
       ### Response:"""
