@@ -13,8 +13,10 @@ CONFIG_NAME = "llm"
 
 ### Agent -- Layer over LLMChain Agent system to provide a more user friendly interface
 class Agent(LLM):
-  def __init__(self) -> None:
-    super().__init__({"model_name": AGENT_MODEL, "config_name": CONFIG_NAME})
+  def __init__(self, opts={}) -> None:
+    if len(opts) == 0:
+      opts = {"model_name": AGENT_MODEL, "config_name": CONFIG_NAME}
+    super().__init__(opts)
 
   # Setup Agent and load models
   def setup_agent(self):

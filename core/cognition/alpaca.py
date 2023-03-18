@@ -15,8 +15,10 @@ AGENT_MODEL="decapoda-research/llama-7b-hf"
 CONFIG_NAME="llm"
 
 class Alpaca(Agent):
-  def __init__(self) -> None:
-    super().__init__({"model_name": AGENT_MODEL, "config_name": CONFIG_NAME})
+  def __init__(self, opts={}) -> None:
+    if len(opts) == 0:
+      opts = {"model_name": AGENT_MODEL, "config_name": CONFIG_NAME}
+    super().__init__(opts)
 
   # Setup alpaca and load models
   def setup_alpaca(self):
