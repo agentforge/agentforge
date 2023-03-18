@@ -16,6 +16,8 @@ class LLM():
     self.opts = {} if opts == None else opts
     self.model_name = opts.get("model_name", "gpt2")
     self.config_name = opts.get("config_name", "llm")
+    # Loads the model configuration
+    self.config = Config(self.config_name)
     self.model = None # default states
     self.tokenizer = None # default state
     self.device = opts.get("device", "cuda")
@@ -41,9 +43,6 @@ class LLM():
     # Validate that both model_name and config_name exist
     if self.model_name == None or self.config_name == None:
       raise ValueError("model_name and config_name must be defined")
-
-    # Loads the model configuration
-    self.config = Config(self.config_name)
 
     # Sets the model revision and torch dtype
     revision = opts.get("revision", "float16")
