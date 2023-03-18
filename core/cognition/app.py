@@ -29,12 +29,3 @@ def output():
   prompt = request.json["prompt"]
   output = llm.generate(prompt)
   return jsonify({"output": output})
-
-if __name__ == '__main__':
-  from argparse import ArgumentParser
-  parser = ArgumentParser()
-  parser.add_argument('-model', dest='model', default='gpt2')
-  args = parser.parse_args()
-  model = args.model
-  llm.load(model, "llm")
-  app.run()

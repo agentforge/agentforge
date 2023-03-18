@@ -6,6 +6,7 @@ from langchain.agents import Tool
 from langchain.chains.conversation.memory import ConversationBufferMemory
 from langchain.llms import HuggingFaceModel
 from langchain.utilities import SearxSearchWrapper
+from langchain.agents import ZeroShotAgent, AgentExecutor
 
 SEARX_HOST = "https://searx.work/"
 AGENT_MODEL = "EleutherAI/gpt-j-6B"
@@ -26,13 +27,25 @@ class Agent(LLM):
     self.load_agent()
 
   def create_prompt(self):
-    template = """You are an AI having a friendy chat with a human.
-    {chat_history}
-    Human: {human_input}
-    AI:"""
-    self.prompt = PromptTemplate(
-        input_variables=["chat_history", "human_input"], 
-        template=template
+    # template = """You are an AI having a friendy chat with a human.
+    # {chat_history}
+    # Human: {human_input}
+    # AI:"""
+    # self.prompt = PromptTemplate(
+    #     input_variables=["chat_history", "human_input"], 
+    #     template=template
+    # )
+    prefix = """Answer the following questions as best you can. You have access to the following tools:"""
+    suffix = """be polite!
+
+    Question: {input}
+    {agent_scratchpad}"""
+
+    self.prompt = ZeroShotAgent.create_prompt(
+        self.tools, 
+        prefix=prefix, 
+        suffix=suffix, 
+        input_variables=["input", "agent_scratchpad"]
     )
 
   def load_agent(self):
@@ -46,6 +59,8 @@ class Agent(LLM):
         memory=memory,
     )
     self.agent_chain = initialize_agent(self.tools, self.hfm, agent="conversational-react-description", verbose=True, memory=memory)
+    tool_names = [tool.name for tool in self.tools]
+    self.agent_exec = ZeroShotAgent(llm_chain=self.llm_chain, allowed_tools=tool_names)
 
   def generate(self, prompt):
     response = self.llm_chain.run(prompt)
@@ -53,7 +68,7 @@ class Agent(LLM):
 
   def run(self, question):
     # Run the agent
-    response = self.agent_chain.run(question)
+    response = self.agent_exec.run(question)
     return response
   
   def init_tools(self):
