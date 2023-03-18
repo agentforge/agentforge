@@ -3,6 +3,8 @@ import transformers
 from peft import PeftModel
 from transformers import LlamaTokenizer, LlamaForCausalLM, GenerationConfig
 
+from core.cognition.base import Agent
+
 from langchain import PromptTemplate, LLMChain
 from core.cognition.base import LLM
 from langchain.chains.conversation.memory import ConversationBufferMemory
@@ -12,13 +14,24 @@ from langchain.llms import HuggingFaceModel
 AGENT_MODEL="decapoda-research/llama-7b-hf"
 CONFIG_NAME="llm"
 
+# Alpaca agentized model
+class AlpacaAgent(Agent):
+   # Setup Agent and load models
+  def __init__(self) -> None:
+    super().__init__({"model_name": AGENT_MODEL, "config_name": CONFIG_NAME})
+
+  def setup_alpaca_agent(self):
+    self.load()
+    self.init_tools()
+    self.create_prompt()
+    self.agent()
+
 class Alpaca(LLM):
   def __init__(self) -> None:
     super().__init__({"model_name": AGENT_MODEL, "config_name": CONFIG_NAME})
-    self.setup()
 
   # Setup Agent and load models
-  def setup(self):
+  def setup_alpaca(self):
     self.load()
 
   def load(self):
