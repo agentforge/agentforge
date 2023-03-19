@@ -1,7 +1,7 @@
 class WhisperController < ApplicationController
 
   def text_to_speech
-    text = params[:text]
+    prompt = params[:text]
     
     host = Settings.inference_api.host
     port = Settings.inference_api.port
@@ -12,7 +12,7 @@ class WhisperController < ApplicationController
   
     request = Net::HTTP::Post.new(uri)
     request["Content-Type"] = "application/json"
-    request.body = JSON.dump(text: text)
+    request.body = JSON.dump(prompt: prompt)
     
     # response should be a raw wav file
     response = http.request(request)
