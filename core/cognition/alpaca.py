@@ -1,9 +1,10 @@
 import torch
 import transformers
+import time
 from peft import PeftModel
 from transformers import LlamaTokenizer, LlamaForCausalLM, GenerationConfig
 
-from core.cognition.base import Agent
+from core.cognition.agent import Agent
 
 from langchain import PromptTemplate, LLMChain
 from core.cognition.base import LLM
@@ -38,26 +39,20 @@ class Alpaca(Agent):
         self.model, "tloen/alpaca-lora-7b", torch_dtype=torch.float16
     )
 
-  def generate_prompt(self, instruction):
-    return f"""Below is an instruction that describes a task. Write a response that appropriately completes the request.
-      ### Instruction:
-      {instruction}
-      ### Response:"""
-
-
   def generate(
           self,
-          instruction,
+          instruct,
           temperature=0.1,
           top_p=0.75,
-          top_k=64,
-          repetition_penalty=1.5,
+          top_k=24,
+          repetition_penalty=1.2,
           no_repeat_ngram_size=3,
           do_sample=True,
           num_beams=4,
           **kwargs,
   ):
-      prompt = self.generate_prompt(instruction)
+      prompt = self.instruct_prompt_w_memory(instruct)
+      self.memory.chat_memory.add_user_message(instruct)
       inputs = self.tokenizer(prompt, return_tensors="pt")
       input_ids = inputs["input_ids"].cuda()
       generation_config = GenerationConfig(
@@ -71,7 +66,9 @@ class Alpaca(Agent):
           num_beams=num_beams,
           **kwargs,
       )
+      # print(prompt)
       print("GENERATE...")
+      start_time = time.time()
       with torch.no_grad():
           generation_output = self.model.generate(
               input_ids=input_ids,
@@ -80,8 +77,13 @@ class Alpaca(Agent):
               output_scores=True,
               max_new_tokens=2048,
           )
-      print("GENERATED...")
+      end_time = time.time()
+      execution_time = end_time - start_time
+      print(f"Execution time: {execution_time:.6f} seconds")
       s = generation_output.sequences[0]
       output = self.tokenizer.decode(s)
-      return output.split("### Response:")[1].strip()
+      # print(output)
+      out = self.parse(output)
+      self.memory.chat_memory.add_ai_message(out.response)
+      return out
 

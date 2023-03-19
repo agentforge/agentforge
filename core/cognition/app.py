@@ -23,9 +23,14 @@ CORS(app)
 llm = Alpaca()
 llm.setup_alpaca()
 
+llm.init_tools()
+llm.create_prompt()
+llm.load_agent()
+
 # Given the following text request generate a wav file and return to the client
 @app.route("/llm/inference", methods=["POST"])
 def output():
   prompt = request.json["prompt"]
-  output = llm.generate(prompt)
-  return jsonify({"output": output})
+  response = llm.generate(prompt)
+  print(response.response)
+  return jsonify({"response": response.response, "output": response.output, "thought": response.thought})
