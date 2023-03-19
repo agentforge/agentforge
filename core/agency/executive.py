@@ -3,7 +3,8 @@
 from core.helpers.parser import Parser
 import requests
 
-URL="http://speech:3003"
+TTS_URL="http://speech:3003"
+LLM_URL="http://llm:3002"
 
 class ExecutiveCognition():
   def __init__(self) -> None:
@@ -11,7 +12,7 @@ class ExecutiveCognition():
 
   def speak(self, prompt):
     # Contacts the llm/inference and gets a response
-    url = f"{URL}/tts/speech"
+    url = f"{TTS_URL}/tts/speech"
 
     # Parse the input message to remove any unnecessary spaces
     prompt = self.parser.parse(prompt)
@@ -33,7 +34,7 @@ class ExecutiveCognition():
 
   def respond(self, prompt):
     # Contacts the llm/inference and gets a response
-    url = f"{URL}/llm/inference"
+    url = f"{LLM_URL}/llm/inference"
 
     # Parse the input message to remove any unnecessary spaces
     prompt = self.parser.parse(prompt)
