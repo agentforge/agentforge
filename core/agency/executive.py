@@ -26,7 +26,7 @@ class ExecutiveCognition():
     # Check the response status code
     if response.status_code == 200:
         # The request was successful
-        filename = response["filename"]
+        filename = response.json()["filename"]
         return filename
     else:
         # The request failed
