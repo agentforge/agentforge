@@ -53,7 +53,7 @@ def prompt():
 
 # Define the API endpoint for hearing the agent speak
 @app.route("/tts", methods=["POST"])
-def prompt():
+def tts():
   # Get the message for the request
   prompt = request.json["prompt"]
 
