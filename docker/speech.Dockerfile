@@ -28,7 +28,7 @@ RUN pip uninstall -y packaging transformers torchmetrics
 
 # Reinstall with specific versions
 # RUN pip install transformers==4.26.1
-RUN pip install git+https://github.com/huggingface/transformers.git"
+RUN pip install 'git+https://github.com/huggingface/transformers.git'
 RUN pip install packaging==21.3
 RUN pip install 'torchmetrics<0.8'
 RUN pip install espnet

@@ -31,5 +31,6 @@ llm.load_agent()
 @app.route("/llm/inference", methods=["POST"])
 def output():
   prompt = request.json["prompt"]
-  output = llm.agent_chain.run(prompt)
-  return jsonify({"output": output})
+  response = llm.generate(prompt)
+  print(response.response)
+  return jsonify({"response": response.response, "output": response.output, "thought": response.thought})
