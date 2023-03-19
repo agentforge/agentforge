@@ -13,7 +13,7 @@ getTTS = (text) ->
   host = window.Settings["rails"]["host"]
   port = window.Settings["rails"]["port"]
   console.log("#send-message #{text}")
-  sendTTSRequest("http://#{host}:#{port}/whisper/text_to_speech", text)
+  sendTTSRequest("http://#{host}:#{port}/tts/speech", text)
 
 sendInferenceRequest = (url, text) ->
   $.ajax

@@ -19,3 +19,4 @@ class Config:
 
   def to_dict(self):
     return self._config
+  

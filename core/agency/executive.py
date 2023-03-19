@@ -2,7 +2,6 @@
 
 from core.helpers.parser import Parser
 import requests
-from flask import send_file
 
 URL="http://speech:3003"
 
@@ -27,10 +26,6 @@ class ExecutiveCognition():
     if response.status_code == 200:
         # The request was successful
         filename = response["filename"]
-        return send_file(
-          filename,
-          mimetype="audio/wav",
-        )
     else:
         # The request failed
         print(f"Request failed with status code {response.status_code}")

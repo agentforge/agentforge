@@ -3,7 +3,7 @@ Rails.application.routes.draw do
   get 'home/index'
   get 'home/show'
 
-  post 'whisper/text_to_speech' => 'whisper#text_to_speech'
+  post 'tts/speech' => 'whisper#text_to_speech'
   post 'whisper/speech_to_text' => 'whisper#speech_to_text'
 
   post 'inference/interpret' => 'inference#interpret'

@@ -6,7 +6,7 @@ sys.path.append(str(path_root))
 
 ### RESTful API for the LLM worker
 
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
 from core.worker.worker import Worker
 from redis import Redis
@@ -50,3 +50,17 @@ def prompt():
   print(response)
   # Return the response
   return jsonify(response)
+
+# Define the API endpoint for hearing the agent speak
+@app.route("/tts", methods=["POST"])
+def prompt():
+  # Get the message for the request
+  prompt = request.json["prompt"]
+
+  # Run the agent
+  filename = executive.speak(prompt)
+  print(filename)
+  return send_file(
+    filename,
+    mimetype="audio/wav",
+  )
