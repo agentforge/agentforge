@@ -1,12 +1,12 @@
 from transformers import AutoProcessor, AutoModelForSpeechSeq2Seq
-from config import Config
+from core.config.config import Config
 
 class Whisper:
   def __init__(self):
     # Initialize the AutoProcessor and AutoModelForSpeechSeq2Seq instances
-    config = Config()
-    self.processor = AutoProcessor.from_pretrained(config.config["processor_cache"])
-    self.model = AutoModelForSpeechSeq2Seq.from_pretrained(config.config["whisper_model_cache"])
+    config = Config("config")
+    self.processor = AutoProcessor.from_pretrained(config["processor_cache"])
+    self.model = AutoModelForSpeechSeq2Seq.from_pretrained(config["whisper_model_cache"])
 
   def interpret(self, wav_file_path):
     # Use the openai/whisper transformers API to interpret the wav file
