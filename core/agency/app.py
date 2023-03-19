@@ -61,6 +61,6 @@ def tts():
   filename = executive.speak(prompt)
   print(filename)
   return send_file(
-    filename,
+    '/app/files/' + filename,
     mimetype="audio/wav",
   )
