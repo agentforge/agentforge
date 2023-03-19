@@ -18,18 +18,15 @@ whisper = Whisper()
 @app.route("/tts/speech", methods=["POST"])
 def tts():
   # Get the text and filename from the request
-  text = request.json["text"]
+  prompt = request.json["prompt"]
   filename = "out.wav"
 
   # Enqueue a job in the TTS pipeline
-  filename = tts.synthesizer(text, filename)
+  filename = tts.synthesizer(prompt, filename)
 
   # Return the wav file in the response
   print(filename)
-  return send_file(
-    filename,
-    mimetype="audio/wav",
-  )
+  return filename
 
 # Define the /interpret endpoint
 @app.route("/interpret", methods=["POST"])
