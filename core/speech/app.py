@@ -11,22 +11,22 @@ from speech.whisper import Whisper
 
 app = Flask(__name__)
 CORS(app)
-tts = TTS()
+tts_inst = TTS()
 whisper = Whisper()
 
 # Given the following text request generate a wav file and return to the client
 @app.route("/tts/speech", methods=["POST"])
-def tts():
+def text_to_speech():
   # Get the text and filename from the request
   prompt = request.json["prompt"]
   filename = "out.wav"
 
   # Enqueue a job in the TTS pipeline
-  filename = tts.synthesizer(prompt, filename)
+  filename = tts_inst.synthesizer(prompt, filename)
 
   # Return the wav file in the response
   print(filename)
-  return filename
+  return jsonify({"filename": filename})
 
 # Define the /interpret endpoint
 @app.route("/interpret", methods=["POST"])
