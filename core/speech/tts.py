@@ -1,3 +1,9 @@
+### Ensure local libs are available for Flask
+from pathlib import Path
+import sys
+path_root = Path(__file__).parents[2]
+sys.path.append(str(path_root))
+
 # Import necessary libraries
 from espnet2.bin.tts_inference import Text2Speech
 from espnet2.utils.types import str_or_none

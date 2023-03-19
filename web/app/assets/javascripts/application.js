@@ -15,3 +15,5 @@
 //= require jquery
 //= require turbolinks
 //= require_tree .
+//= require markdown-it.min
+//= require highlight.min

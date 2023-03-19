@@ -21,6 +21,9 @@ To run the Cognition/LLM flask server:
 
 ```CONFIG_DIR="/app/agent_n/core/config/configs/" flask run --host=0.0.0.0 --port=3002```
 
+TTS Service
+
+```CONFIG_DIR="/app/agent_n/core/config/configs/" flask run --host=0.0.0.0 --port=3003```
 
 To run the rails server:
 

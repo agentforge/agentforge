@@ -25,10 +25,14 @@ sendInferenceRequest = (url, text) ->
       name: $("#name-input").val()
       robot_name: $("#robot-name-input").val()
       authenticity_token: window._token
-    success: (response) ->
+    success: (response) =>
+      md = markdownit()
+      formattedOutput = md.render(response["text"]);
       getTTS(response["text"])
-      $('.chat-history').append "<li class='ai'><md-block>#{$("#robot-name-input").val()}: #{response["text"]}</li>"
-      $('.thought-history').append "<li><p>Thought: #{response["thoughts"]} </p></li>" if response["thoughts"] != null
+      $('.chat-history').append "<li class='ai'><div>#{$("#robot-name-input").val()}: #{formattedOutput}</div></li>"
+      $('pre code').each ->
+        hljs.highlightElement(this)
+      # $('.thought-history').append "<li><p>Thought: #{response["thoughts"]} </p></li>" if response["thoughts"] != null
       $("#spinner").remove()
     error: () ->
       $("#spinner").remove()
