@@ -26,7 +26,7 @@ def text_to_speech():
 
   # Return the wav file in the response
   print(filename)
-  return filename
+  return jsonify({"filename": filename})
 
 # Define the /interpret endpoint
 @app.route("/interpret", methods=["POST"])
