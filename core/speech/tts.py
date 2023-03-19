@@ -36,7 +36,7 @@ class TTS():
     rtf = (time.time() - start) / (len(wav) / self.text2speech.fs)
     print(f"RTF = {rtf:5f}")
     # let us listen to generated samples
-    sf.write(filename, wav.cpu().numpy(), self.text2speech.fs, "PCM_16")
+    sf.write('/app/files/' + filename, wav.cpu().numpy(), self.text2speech.fs, "PCM_16")
 
     return filename
 

@@ -43,7 +43,7 @@ RUN apt-get install -y tig ffmpeg
 RUN rm /usr/lib/x86_64-linux-gnu/libstdc++.so.6 && ln -s /opt/conda/x86_64-conda-linux-gnu/lib/libstdc++.so.6.0.30 /usr/lib/x86_64-linux-gnu/libstdc++.so.6
 RUN pip install --upgrade pip
 RUN pip install redis rq
-RUN pip install pygments
+RUN pip install pygments peft
 
 
 # Expose port 3000

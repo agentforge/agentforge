@@ -18,6 +18,8 @@ services:
       main-net:
         aliases:
           - llm
+    volumes:
+      - shared-files:/app/files
     deploy:
       resources:
         reservations:
@@ -34,6 +36,8 @@ services:
       main-net:
         aliases:
           - speech
+    volumes:
+      - shared-files:/app/files
     deploy:
       resources:
         reservations:
@@ -54,6 +58,11 @@ services:
       main-net:
         aliases:
           - worker
+    volumes:
+      - shared-files:/app/files
 
 networks:
   main-net:
+
+volumes:
+  shared-files:
