@@ -43,6 +43,7 @@ WORKDIR /workspace
 RUN chmod -R a+w /workspace
 RUN git clone https://github.com/Rudrabha/Wav2Lip
 WORKDIR /workspace/Wav2Lip
+RUN pip3 install --upgrade pip
 RUN pip3 install -r requirements.txt
 
 RUN mkdir -p /root/.cache/torch/checkpoints && \
