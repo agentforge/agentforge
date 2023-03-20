@@ -39,4 +39,4 @@ if __name__ == "__main__":
     input_video = sys.argv[1]
     input_audio = sys.argv[2]
     
-    wav.run(input_video, input_audio)
+    wav.run(input_video, input_audio, "test.mp4")
