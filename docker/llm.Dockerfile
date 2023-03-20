@@ -45,8 +45,6 @@ RUN pip install redis rq
 RUN pip install pygments peft
 RUN pip uninstall transformers && pip install 'git+https://github.com/huggingface/transformers.git'
 
-
-
 # Expose port 3000
 EXPOSE 3000
 
