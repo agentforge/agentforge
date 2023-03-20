@@ -28,7 +28,6 @@ RUN pip uninstall -y packaging transformers torchmetrics
 
 # Reinstall with specific versions
 # RUN pip install transformers==4.26.1
-RUN pip install 'git+https://github.com/huggingface/transformers.git'
 RUN pip install packaging==21.3
 RUN pip install 'torchmetrics<0.8'
 RUN pip install espnet
@@ -44,6 +43,8 @@ RUN rm /usr/lib/x86_64-linux-gnu/libstdc++.so.6 && ln -s /opt/conda/x86_64-conda
 RUN pip install --upgrade pip
 RUN pip install redis rq
 RUN pip install pygments peft
+RUN pip uninstall transformers && pip install 'git+https://github.com/huggingface/transformers.git'
+
 
 
 # Expose port 3000
