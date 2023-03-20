@@ -45,6 +45,9 @@ RUN pip install --upgrade pip
 RUN pip install redis rq
 RUN pip install typeguard==2.7.0
 
+# Clone wave2lip
+RUN git clone git@github.com:Rudrabha/Wav2Lip.gits
+
 # Expose port 3000
 EXPOSE 3000
 

@@ -17,7 +17,7 @@ from core.agency.executive import ExecutiveCognition
 queue = Queue(connection=Redis())
 worker = Worker()
 
-logging.basicConfig(filename='agent.log', level=logging.DEBUG)
+#logging.basicConfig(filename='agent.log', level=logging.DEBUG)
 
 # Create an instance of the Flask class
 app = Flask(__name__)
