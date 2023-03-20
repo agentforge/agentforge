@@ -58,3 +58,9 @@ RUN export DEBIAN_FRONTEND=noninteractive RUNLEVEL=1 ; \
 # create the working directory, to be mounted with the bind option
 RUN mkdir /workspace/src
 WORKDIR /workspace/src
+
+# Expose port 3000
+EXPOSE 3004
+
+#CMD ["flask", "run", "--host=0.0.0.0", "--port=3000"]
+CMD tail -f /dev/null
