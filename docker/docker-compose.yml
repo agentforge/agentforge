@@ -50,6 +50,26 @@ services:
               count: 1
               capabilities: [gpu]
 
+  wav2lip:
+    image: wav2lip
+    ports:
+      - "3004:3004"
+    ipc: host
+    networks:
+      main-net:
+        aliases:
+          - wav2lip
+    volumes:
+      - shared-files:/app/files
+      - cache-volume:/app/cache
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
   worker:
     image: worker
     environment:
