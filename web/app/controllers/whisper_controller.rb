@@ -17,7 +17,6 @@ class WhisperController < ApplicationController
     request["Content-Type"] = "application/json"
     request.body = JSON.dump(prompt: prompt)
     
-    puts request
     # response should be a raw wav file
     response = http.request(request)
     # base64_data = Base64.encode64(response.body)
@@ -27,7 +26,6 @@ class WhisperController < ApplicationController
     uuid = SecureRandom.uuid
     filename = "#{uuid}.wav"
     save_path = Rails.root.join("public/#{filename}")
-    puts save_path
 
     File.open(save_path, 'wb') do |f|
       f.write response.body
