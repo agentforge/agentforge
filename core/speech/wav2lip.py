@@ -7,7 +7,7 @@ class Wav2Lip():
 
   def run(self, mp4_file, wav_file, output_file):
       wav2lip_path = "/app/Wav2Lip/inference.py"
-      checkpoint_path = "/app/checkpoints/your-checkpoint.pth"  # Replace with your checkpoint path
+      checkpoint_path = "/app/cache/wav2lip_gan.pth"  # Replace with your checkpoint path
       
       cmd = [
           "python",
