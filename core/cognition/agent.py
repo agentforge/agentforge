@@ -21,6 +21,7 @@ class AgentResponse():
     self.response = response
     self.output = output
     self.thought = thought
+    self.is_code = False
 
 ### Agent -- Layer over LLMChain Agent system to provide a more user friendly interface
 class Agent(LLM):
