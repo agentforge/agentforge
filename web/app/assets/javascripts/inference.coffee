@@ -6,7 +6,8 @@ sendTTSRequest = (url, text) ->
       text: text
       authenticity_token: window._token
     success: (response) ->
-      snd = new Audio('/out.wav');
+      filename = response["filename"]
+      snd = new Audio('/' + filename)
       snd.play()
 
 getTTS = (text) ->
@@ -34,6 +35,7 @@ sendInferenceRequest = (url, text) ->
         hljs.highlightElement(this)
       # $('.thought-history').append "<li><p>Thought: #{response["thoughts"]} </p></li>" if response["thoughts"] != null
       $("#spinner").remove()
+      $('.chat-history').scrollTop($('.chat-history')[0].scrollHeight);
     error: () ->
       $("#spinner").remove()
 
