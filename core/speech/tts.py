@@ -4,7 +4,7 @@
 import soundfile as sf
 from TTS.api import TTS
 
-class TTS():
+class TextToSpeech():
   def __init__(self) -> None:
     # Init TTS
     self.tts = TTS(model_name="tts_models/en/ek1/tacotron2", progress_bar=False, gpu=True)

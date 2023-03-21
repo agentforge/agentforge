@@ -6,13 +6,13 @@ sys.path.append(str(path_root))
 
 from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
-from core.speech.tts import TTS
+from core.speech.tts import TextToSpeech
 from core.helpers.helpers import measure_time
 from speech.whisper import Whisper
 
 app = Flask(__name__)
 CORS(app)
-tts_inst = TTS()
+tts_inst = TextToSpeech()
 whisper = Whisper()
 
 # Given the following text request generate a wav file and return to the client
