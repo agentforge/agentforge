@@ -6,12 +6,12 @@ sys.path.append(str(path_root))
 
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from core.wav2lip.wav2lip import Wav2Lip
+from core.wav2lip.wav2lip2 import Wav2LipModel
 from core.helpers.helpers import measure_time
 
 app = Flask(__name__)
 CORS(app)
-wav2lip = Wav2Lip()
+wav2lip = Wav2LipModel()
 
 # Define the /interpret endpoint
 @app.route("/v1/lipsync", methods=["POST"])
