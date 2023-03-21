@@ -8,14 +8,14 @@ class WhisperController < ApplicationController
     
     host = Settings.inference_api.host
     port = Settings.inference_api.port
-    uri = URI("http://#{host}:#{port}/tts")
+    uri = URI("http://#{host}:#{port}/v1/tts")
     http = Net::HTTP.new(uri.host, uri.port)
 
     http.read_timeout = 600
   
     request = Net::HTTP::Post.new(uri)
     request["Content-Type"] = "application/json"
-    request.body = JSON.dump(prompt: prompt)
+    request.body = JSON.dump(prompt: prompt, generate_lip_sync: "true")
     
     # response should be a raw wav file
     response = http.request(request)

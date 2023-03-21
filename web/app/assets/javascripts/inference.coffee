@@ -14,7 +14,7 @@ getTTS = (text) ->
   host = window.Settings["rails"]["host"]
   port = window.Settings["rails"]["port"]
   console.log("#send-message #{text}")
-  sendTTSRequest("http://#{host}:#{port}/tts/speech", text)
+  sendTTSRequest("http://#{host}:#{port}/v1/tts", text)
 
 sendInferenceRequest = (url, text) ->
   $.ajax
@@ -48,7 +48,7 @@ sendMessage = () ->
   $('.chat-history').append '<li id="spinner"><p><i class="fas fa-spinner fa-pulse"></p></i>'
   $(".chat-history").scrollTop($(".chat-history")[0].scrollHeight);
   console.log("#send-message #{text}")
-  sendInferenceRequest("http://#{host}:#{port}/inference/interpret", text)
+  sendInferenceRequest("http://#{host}:#{port}/v1/completions", text)
 
 $(document).on('turbolinks:load', ->
   $('#send-message').on 'click', (event) ->

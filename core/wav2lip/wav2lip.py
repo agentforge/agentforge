@@ -28,7 +28,7 @@ class Wav2Lip():
           output_file,
           "--pads 0 20 0 0",
       ]
-      
+
       try:
           subprocess.run(cmd, check=True)
           print("Wav2Lip completed successfully.")

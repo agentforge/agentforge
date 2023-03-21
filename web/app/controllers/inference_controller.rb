@@ -1,7 +1,7 @@
 class InferenceController < ApplicationController
   require 'net/http'
 
-  def interpret
+  def completions
     # Calls interpret API and takes request data and called inference engine to produce
     # an automated response
     text = params[:text]
@@ -10,7 +10,7 @@ class InferenceController < ApplicationController
     robot_name = params[:robot_name]
     host = Settings.inference_api.host
     port = Settings.inference_api.port
-    uri = URI("http://#{host}:#{port}/agent/prompt")
+    uri = URI("http://#{host}:#{port}/v1/completions")
     http = Net::HTTP.new(uri.host, uri.port)
 
     http.read_timeout = 600
@@ -24,8 +24,7 @@ class InferenceController < ApplicationController
     text = JSON.parse(response.body)["response"]
     output = JSON.parse(response.body)["output"]
     thought = JSON.parse(response.body)["thought"]
-    # thoughts = JSON.parse(response.body)["thoughts"]
-    # full_phrase = JSON.parse(response.body)["full_phrase"]
+
     text.gsub("\n", "<br/>")
     render json: { text: text, output: output, thought: thought }
   end

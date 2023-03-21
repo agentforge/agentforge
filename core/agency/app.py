@@ -13,6 +13,7 @@ from redis import Redis
 from rq import Queue
 import logging
 from core.agency.executive import ExecutiveCognition
+import datetime
 
 queue = Queue(connection=Redis())
 worker = Worker()
@@ -49,18 +50,22 @@ def prompt():
 # Define the API endpoint for hearing the agent speak
 @app.route("/v1/tts", methods=["POST"])
 def tts():
-  # Get the message for the request
-  prompt = request.json["prompt"]
-  generate_lip_sync = request.json["generate_lip_sync"]
-  generate_lip_sync = True if generate_lip_sync == "true" else False
-  # Run the agent
-  filename = executive.speak(prompt, generate_lip_sync)
-  if generate_lip_sync:
-    # Return the mp4 file in the response
-    pass
-  else:
-    print(filename)
-    return send_file(
-      '/app/files/' + filename,
-      mimetype="audio/wav",
+    # Get the message for the request
+    prompt = request.json["prompt"]
+    generate_lip_sync = request.json["generate_lip_sync"]
+    generate_lip_sync = True if generate_lip_sync == "true" else False
+    
+    # Run the agent
+    response = executive.speak(prompt, generate_lip_sync)
+    filename = response["filename"]
+    
+    # Create a response object with the file data
+    response_obj = send_file(
+        '/app/files/' + filename,
+        mimetype=response["type"],
+        as_attachment=True
     )
+    # Set the headers
+    response_obj.headers['Content-Disposition'] = f'attachment; filename="{filename}"'
+    response_obj.headers['X-Generated-On'] = str(datetime.now())
+    return response_obj
