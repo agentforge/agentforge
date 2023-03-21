@@ -56,7 +56,7 @@ RUN export DEBIAN_FRONTEND=noninteractive RUNLEVEL=1 ; \
 	rm -rf /var/lib/apt/lists/*
 
 RUN pip3 uninstall opencv-python && pip3 install opencv-python==4.6.0.6
-RUN pip3 install flask flask_cors
+RUN pip3 install flask flask_cors pygments
 
 # create the working directory, to be mounted with the bind option
 RUN mkdir /workspace/src
