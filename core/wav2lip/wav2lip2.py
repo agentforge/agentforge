@@ -262,4 +262,5 @@ class Wav2LipModel():
     subprocess.call(command, shell=platform.system() != 'Windows')
 
 if __name__ == '__main__':
+  pass
   # w2lip = Wav2Lip2()
