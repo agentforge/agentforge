@@ -4,7 +4,8 @@ import cv2, os
 from core.wav2lip import audio
 import subprocess
 from tqdm import tqdm
-import torch, face_detection
+import torch
+from core.wav2lip import face_detection
 from models import Wav2Lip
 import platform
 
