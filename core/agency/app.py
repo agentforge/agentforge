@@ -67,5 +67,4 @@ def tts():
     )
     # Set the headers
     response_obj.headers['Content-Disposition'] = f'attachment; filename="{filename}"'
-    response_obj.headers['X-Generated-On'] = str(datetime.now())
     return response_obj
