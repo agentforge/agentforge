@@ -19,20 +19,24 @@ class WhisperController < ApplicationController
     
     # response should be a raw wav file
     response = http.request(request)
-    # base64_data = Base64.encode64(response.body)
+
+    content_type = response.headers['Content-Type']
+    file_type = content_type.splut('/').last
+
+    # base64_dtata = Base64.encode64(response.body)
     # send_data response.body, :type => 'audio/wav'
 
     # puts response
     uuid = SecureRandom.uuid
-    filename = "#{uuid}.wav"
-    save_path = Rails.root.join("public/#{filename}")
+    filename = "#{uuid}.#{file_type}"
+    save_path = Rails.root.join("public/#{file_type}/#{filename}")
 
     File.open(save_path, 'wb') do |f|
       f.write response.body
     end
     response_data = {
       filename: filename,
-      # file_data: base64_data
+      file_type: file_type
     }
     # # parse the response wave file and send it back to the client
     render json: response_data
