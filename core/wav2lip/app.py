@@ -13,22 +13,19 @@ CORS(app)
 wav2lip = Wav2Lip()
 
 # Define the /interpret endpoint
-@app.route("/lip_sync", methods=["POST"])
+@app.route("/v1/lipsync", methods=["POST"])
 def interpret():
   # Get the wav file from the request
-  wav_file = request.files["wav_file"]
-  mp4_file = request.files["mp4_file"]
+  wav_file = request.json["wav_file"]
+  mp4_file = '/app/cache/loop.mp4'
 
-  output_file = "lipsync.mp4"
+  output_file = "/app/files/lipsync.mp4"
 
   # Interpret the wav file
-  output_vid = wav2lip.run(mp4_file, wav_file, output_file)
+  wav2lip.run(mp4_file, wav_file, output_file)
 
   # Return the text in the response
-  return jsonify({"text": output_file})
-
-if __name__ == '__main__':
-  app.run()
+  return jsonify({"filename": output_file})
 
 if __name__ == '__main__':
   app.run()

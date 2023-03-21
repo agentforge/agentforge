@@ -56,11 +56,16 @@ def prompt():
 def tts():
   # Get the message for the request
   prompt = request.json["prompt"]
-
+  generate_lip_sync = request.json["generate_lip_sync"]
+  generate_lip_sync = True if generate_lip_sync == "true" else False
   # Run the agent
-  filename = executive.speak(prompt)
-  print(filename)
-  return send_file(
-    '/app/files/' + filename,
-    mimetype="audio/wav",
-  )
+  filename = executive.speak(prompt, generate_lip_sync)
+  if generate_lip_sync:
+    # Return the mp4 file in the response
+    pass
+  else:
+    print(filename)
+    return send_file(
+      '/app/files/' + filename,
+      mimetype="audio/wav",
+    )
