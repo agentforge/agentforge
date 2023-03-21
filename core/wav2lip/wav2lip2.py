@@ -13,28 +13,28 @@ class Wav2LipModel():
   def __init__(self, checkpoint_path, opts={}) -> None:
     MyNamespace = type('MyNamespace', (object,), {})
     self.args = MyNamespace()
-    self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    self.checkpoint_path = checkpoint_path
-    self.outfile = opts['outfile'] if 'outfile' in opts else 'results/result_voice.mp4'
+    self.args.device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    self.args.checkpoint_path = checkpoint_path
+    self.args.outfile = opts['outfile'] if 'outfile' in opts else 'results/result_voice.mp4'
     
-    self.static = False if 'static' not in opts else opts['static']
-    self.fps = 25.0 if 'fps' not in opts else opts['fps']
+    self.args.static = False if 'static' not in opts else opts['static']
+    self.args.fps = 25.0 if 'fps' not in opts else opts['fps']
     
-    self.pads = opts['pads'] if 'pads' in opts else [0, 10, 0, 0]
+    self.args.pads = opts['pads'] if 'pads' in opts else [0, 10, 0, 0]
     
-    self.face_det_batch_size = 16 if 'face_det_batch_size' not in opts else opts['face_det_batch_size']
-    self.wav2lip_batch_size = 128 if 'wav2lip_batch_size' not in opts else opts['wav2lip_batch_size']
+    self.args.face_det_batch_size = 16 if 'face_det_batch_size' not in opts else opts['face_det_batch_size']
+    self.args.wav2lip_batch_size = 128 if 'wav2lip_batch_size' not in opts else opts['wav2lip_batch_size']
     
-    self.resize_factor = 1 if 'resize_factor' not in opts else opts['resize_factor']
+    self.args.resize_factor = 1 if 'resize_factor' not in opts else opts['resize_factor']
     
-    self.crop = opts['crop'] if 'crop' in opts else [0, -1, 0, -1]
+    self.args.crop = opts['crop'] if 'crop' in opts else [0, -1, 0, -1]
     
-    self.box = opts['box'] if 'box' in opts else [-1, -1, -1, -1]
+    self.args.box = opts['box'] if 'box' in opts else [-1, -1, -1, -1]
     
-    self.rotate = False if 'rotate' not in opts else opts['rotate']
-    self.nosmooth = False if 'nosmooth' not in opts else opts['nosmooth']
+    self.args.rotate = False if 'rotate' not in opts else opts['rotate']
+    self.args.nosmooth = False if 'nosmooth' not in opts else opts['nosmooth']
 
-    self.mel_step_size = 16
+    self.args.mel_step_size = 16
     print('Using {} for inference.'.format(self.device))
 
     self.model = self.load_model(self.args.checkpoint_path)
