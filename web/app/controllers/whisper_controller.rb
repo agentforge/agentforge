@@ -21,7 +21,7 @@ class WhisperController < ApplicationController
     response = http.request(request)
 
     content_type = response.content_type
-    file_type = content_type.splut('/').last
+    file_type = content_type.split('/').last
 
     # base64_dtata = Base64.encode64(response.body)
     # send_data response.body, :type => 'audio/wav'

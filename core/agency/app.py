@@ -13,7 +13,7 @@ from redis import Redis
 from rq import Queue
 import logging
 from core.agency.executive import ExecutiveCognition
-import datetime
+from core.helpers.helpers import measure_time
 
 queue = Queue(connection=Redis())
 worker = Worker()
@@ -33,6 +33,7 @@ executive = ExecutiveCognition()
 
 # Define the API endpoint for prompting the agent
 @app.route("/v1/completions", methods=["POST"])
+@measure_time
 def prompt():
   # Get the message for the request
   prompt = request.json["prompt"]
@@ -49,6 +50,7 @@ def prompt():
 
 # Define the API endpoint for hearing the agent speak
 @app.route("/v1/tts", methods=["POST"])
+@measure_time
 def tts():
     # Get the message for the request
     prompt = request.json["prompt"]

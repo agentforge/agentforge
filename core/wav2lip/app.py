@@ -7,6 +7,7 @@ sys.path.append(str(path_root))
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from core.wav2lip.wav2lip import Wav2Lip
+from core.helpers.helpers import measure_time
 
 app = Flask(__name__)
 CORS(app)
@@ -16,7 +17,8 @@ FILES_DIR = "/app/files/"
 
 # Define the /interpret endpoint
 @app.route("/v1/lipsync", methods=["POST"])
-def interpret():
+@measure_time
+def lipsync():
   # Get the wav file from the request
   wav_file = FILES_DIR + request.json["wav_file"]
   mp4_file = '/app/cache/loop.mp4'

@@ -5,6 +5,23 @@ from pygments.lexers import PythonLexer, get_lexer_by_name
 from pygments.token import Token
 from collections import Counter
 from pygments import highlight
+import time
+from functools import wraps
+from flask import request
+
+def measure_time(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        start_time = time.time()
+        response = func(*args, **kwargs)
+        end_time = time.time()
+        elapsed_time = end_time - start_time
+        print(f"API call: {request.path} took {elapsed_time:.4f} seconds")
+        return response
+    return wrapper
+
+if __name__ == "__main__":
+    app.run(debug=True)
 
 def str_to_class(classname):
   my_module = importlib.import_module("transformers")

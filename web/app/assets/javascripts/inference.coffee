@@ -6,9 +6,43 @@ sendTTSRequest = (url, text) ->
       text: text
       authenticity_token: window._token
     success: (response) ->
-      filename = response["filename"]
-      snd = new Audio('/' + filename)
-      snd.play()
+      file_type = response["file_type"]
+      if file_type == "wav"
+        playAudio(response)
+      else
+        playMp4(response)
+
+# playAudio uses Audio object to play wav file
+playAudio = (response) ->
+  file_type = response["file_type"]
+  filename = response["filename"]
+  audio = new Audio('/wav/' + filename)
+  audio.play()
+
+# playMp4 uses video object to play mp4 file
+# by replacing the source of the video object
+# and loading and playing the video
+playMp4 = (response) ->
+  file_type = response["file_type"]
+  filename = response["filename"]
+  video = document.getElementById("hero-video")
+  
+  # Event listener for when the video ends
+  video.addEventListener 'ended', (event) ->
+    video.src = '/videos/loop.mp4'
+    video.loop = true
+    video.load()
+    video.play()
+    # Remove the event listener once the looping video is loaded
+    video.removeEventListener 'ended', arguments.callee
+  
+  if filename == "/videos/loop.mp4"
+    video.src = "/videos/loop.mp4"
+  else
+    video.src = '/mp4/' + filename
+    video.loop = false
+  video.load()
+  video.play()
 
 getTTS = (text) ->
   host = window.Settings["rails"]["host"]
@@ -51,6 +85,7 @@ sendMessage = () ->
   sendInferenceRequest("http://#{host}:#{port}/v1/completions", text)
 
 $(document).on('turbolinks:load', ->
+  playMp4({file_type: "mp4", filename: "/videos/loop.mp4"})
   $('#send-message').on 'click', (event) ->
     sendMessage(event)
     event.preventDefault()

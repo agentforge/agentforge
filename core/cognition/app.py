@@ -14,6 +14,7 @@ from flask_cors import CORS
 from core.cognition.agent import Agent
 from core.cognition.alpaca import Alpaca
 import logging
+from core.helpers.helpers import measure_time
 
 logging.basicConfig(filename='agent.log', level=logging.DEBUG)
 
@@ -29,6 +30,7 @@ llm.load_agent()
 
 # Given the following text request generate a wav file and return to the client
 @app.route("/v1/completions", methods=["POST"])
+@measure_time
 def output():
   prompt = request.json["prompt"]
   response = llm.generate(prompt)

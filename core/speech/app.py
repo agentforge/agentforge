@@ -7,6 +7,7 @@ sys.path.append(str(path_root))
 from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
 from core.speech.tts import TTS
+from core.helpers.helpers import measure_time
 from speech.whisper import Whisper
 
 app = Flask(__name__)
@@ -16,6 +17,7 @@ whisper = Whisper()
 
 # Given the following text request generate a wav file and return to the client
 @app.route("/v1/tts", methods=["POST"])
+@measure_time
 def text_to_speech():
   # Get the text and filename from the request
   prompt = request.json["prompt"]
@@ -30,6 +32,7 @@ def text_to_speech():
 
 # Define the /interpret endpoint
 @app.route("/v1/interpret", methods=["POST"])
+@measure_time
 def interpret():
   # Get the wav file from the request
   wav_file = request.files["wav_file"]
