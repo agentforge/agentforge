@@ -13,7 +13,7 @@ class Wav2LipModel():
   def __init__(self, checkpoint_path, opts={}) -> None:
     MyNamespace = type('MyNamespace', (object,), {})
     self.args = MyNamespace()
-    self.device = 'cuda'
+    self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
     self.args.checkpoint_path = checkpoint_path
     self.args.outfile = opts['outfile'] if 'outfile' in opts else 'results/result_voice.mp4'
     
@@ -39,7 +39,8 @@ class Wav2LipModel():
 
     self.model = self.load_model(self.args.checkpoint_path)
     print ("Model loaded")
-    self.args.static = False
+
+    self.args.static = True
 
   def run(self, opts={}):
     self.args.face = opts['face'] if 'face' in opts else 'results/test.mp4'
