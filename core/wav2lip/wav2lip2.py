@@ -6,7 +6,7 @@ import subprocess
 from tqdm import tqdm
 import torch
 from core.wav2lip import face_detection
-from models import Wav2Lip
+from core.wav2lip.models import Wav2Lip
 import platform
 
 class Wav2LipModel():
