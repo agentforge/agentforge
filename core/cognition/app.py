@@ -28,7 +28,7 @@ llm.create_prompt()
 llm.load_agent()
 
 # Given the following text request generate a wav file and return to the client
-@app.route("/llm/inference", methods=["POST"])
+@app.route("/v1/completions", methods=["POST"])
 def output():
   prompt = request.json["prompt"]
   response = llm.generate(prompt)
