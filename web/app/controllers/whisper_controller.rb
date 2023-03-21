@@ -20,7 +20,7 @@ class WhisperController < ApplicationController
     # response should be a raw wav file
     response = http.request(request)
 
-    content_type = response.headers['Content-Type']
+    content_type = response.content_type
     file_type = content_type.splut('/').last
 
     # base64_dtata = Base64.encode64(response.body)
