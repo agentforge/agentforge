@@ -27,7 +27,10 @@ class Wav2Lip():
           "--outfile",
           output_file,
           "--pads",
-          "0 20 0 0",
+          "0",
+          "20",
+          "0",
+          "0",
       ]
 
       try:

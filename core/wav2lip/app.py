@@ -12,11 +12,13 @@ app = Flask(__name__)
 CORS(app)
 wav2lip = Wav2Lip()
 
+FILES_DIR = "/app/files/"
+
 # Define the /interpret endpoint
 @app.route("/v1/lipsync", methods=["POST"])
 def interpret():
   # Get the wav file from the request
-  wav_file = request.json["wav_file"]
+  wav_file = FILES_DIR + request.json["wav_file"]
   mp4_file = '/app/cache/loop.mp4'
 
   output_file = "lipsync.mp4"
