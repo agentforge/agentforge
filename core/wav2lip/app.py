@@ -1,3 +1,6 @@
+#!/usr/bin/python3
+# Path: core/wav2lip/app.py
+
 ### Ensure local libs are available for Flask
 from pathlib import Path
 import sys
