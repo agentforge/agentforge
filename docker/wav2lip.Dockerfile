@@ -56,13 +56,31 @@ RUN export DEBIAN_FRONTEND=noninteractive RUNLEVEL=1 ; \
 	rm -rf /var/lib/apt/lists/*
 
 RUN pip3 uninstall opencv-python && pip3 install opencv-python==4.6.0.6
+RUN pip3 install flask flask_cors
 
 # create the working directory, to be mounted with the bind option
 RUN mkdir /workspace/src
 WORKDIR /workspace/src
 
+ARG REPO_URL
+ARG SSH_PRIVATE_KEY
+
+ENV REPO_URL=$REPO_URL
+ENV SSH_PRIVATE_KEY=$SSH_PRIVATE_KEY
+
+# Set the working directory to /app
+WORKDIR /app
+
+# Copy over git repos
+RUN mkdir -p /root/.ssh && \
+    echo "$SSH_PRIVATE_KEY" > /root/.ssh/id_rsa && \
+    chmod 600 /root/.ssh/id_rsa
+
+RUN ssh-keyscan github.com >> /root/.ssh/known_hosts
 # agent_n API
 RUN git clone "$REPO_URL"
+#   export LC_ALL=C.UTF-8
+#   export LANG=C.UTF-8
 
 # Expose port 3000
 EXPOSE 3004
