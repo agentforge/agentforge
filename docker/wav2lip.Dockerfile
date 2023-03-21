@@ -52,7 +52,7 @@ RUN mkdir -p /root/.cache/torch/checkpoints && \
 # !!! NOTE !!! nvidia-driver version must match the version installed on the host(/docker server)
 RUN export DEBIAN_FRONTEND=noninteractive RUNLEVEL=1 ; \
 	apt-get update && apt-get install -y --no-install-recommends \
-          nvidia-driver-450 mesa-utils && \
+          nvidia-driver-525 mesa-utils && \
 	rm -rf /var/lib/apt/lists/*
 
 RUN pip3 uninstall opencv-python && pip3 install opencv-python==4.6.0.6
