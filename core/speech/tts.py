@@ -1,13 +1,11 @@
 # Import necessary libraries
 # from espnet2.bin.tts_inference import Text2Speech
 # from espnet2.utils.types import str_or_none
-import time
-import torch
 import soundfile as sf
+from TTS.api import TTS
 
 class TTS():
   def __init__(self) -> None:
-    model_name = TTS.list_models()[0]
     # Init TTS
     self.tts = TTS(model_name="tts_models/en/ek1/tacotron2", progress_bar=False, gpu=True)
 
