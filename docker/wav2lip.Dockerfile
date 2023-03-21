@@ -61,6 +61,9 @@ RUN pip3 uninstall opencv-python && pip3 install opencv-python==4.6.0.6
 RUN mkdir /workspace/src
 WORKDIR /workspace/src
 
+# agent_n API
+RUN git clone "$REPO_URL"
+
 # Expose port 3000
 EXPOSE 3004
 

@@ -31,28 +31,23 @@ executive = ExecutiveCognition()
 ### and what parameters to use for the request
 
 # Define the API endpoint for prompting the agent
-@app.route("/agent/prompt", methods=["POST"])
+@app.route("/v1/completions", methods=["POST"])
 def prompt():
   # Get the message for the request
   prompt = request.json["prompt"]
 
-  # Run the agent
+  # Run the LLM agent
   response = executive.respond(prompt)
 
   # Run text classification and intent detection
   ## TODO: Implement this
-
-  # Convert text to speech and cache the wav file
-
-  # Use the chatbot to generate a response
-  # response = queue.enqueue(worker.generate, prompt)
 
   print(response)
   # Return the response
   return jsonify(response)
 
 # Define the API endpoint for hearing the agent speak
-@app.route("/tts", methods=["POST"])
+@app.route("/v1/tts", methods=["POST"])
 def tts():
   # Get the message for the request
   prompt = request.json["prompt"]

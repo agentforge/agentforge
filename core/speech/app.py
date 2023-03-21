@@ -15,7 +15,7 @@ tts_inst = TTS()
 whisper = Whisper()
 
 # Given the following text request generate a wav file and return to the client
-@app.route("/tts/speech", methods=["POST"])
+@app.route("/v1/tts", methods=["POST"])
 def text_to_speech():
   # Get the text and filename from the request
   prompt = request.json["prompt"]
@@ -29,7 +29,7 @@ def text_to_speech():
   return jsonify({"filename": filename})
 
 # Define the /interpret endpoint
-@app.route("/interpret", methods=["POST"])
+@app.route("/v1/interpret", methods=["POST"])
 def interpret():
   # Get the wav file from the request
   wav_file = request.files["wav_file"]
