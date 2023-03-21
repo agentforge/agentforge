@@ -61,7 +61,7 @@ def tts():
     
     # Create a response object with the file data
     response_obj = send_file(
-        '/app/files/' + filename,
+        filename,
         mimetype=response["type"],
         as_attachment=True
     )

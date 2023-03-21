@@ -8,8 +8,10 @@ class InferenceController < ApplicationController
     context = params[:context]
     name = params[:name]
     robot_name = params[:robot_name]
+
     host = Settings.inference_api.host
     port = Settings.inference_api.port
+    
     uri = URI("http://#{host}:#{port}/v1/completions")
     http = Net::HTTP.new(uri.host, uri.port)
 
@@ -32,6 +34,7 @@ class InferenceController < ApplicationController
   def reset_history
     host = Settings.inference_api.host
     port = Settings.inference_api.port
+
     uri = URI("http://#{host}:#{port}/reset_history")
     http = Net::HTTP.new(uri.host, uri.port)
 
