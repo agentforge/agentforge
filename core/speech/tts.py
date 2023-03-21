@@ -37,7 +37,6 @@ class TTS():
     print(f"RTF = {rtf:5f}")
     # let us listen to generated samples
     sf.write('/app/files/' + filename, wav.cpu().numpy(), self.text2speech.fs, "PCM_16")
-
     return filename
 
 if __name__ == "__main__":
