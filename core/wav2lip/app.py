@@ -11,7 +11,8 @@ from core.helpers.helpers import measure_time
 
 app = Flask(__name__)
 CORS(app)
-wav2lip = Wav2LipModel()
+CHKPT_PTH = "/app/cache/wav2lip_gan.pth"
+wav2lip = Wav2LipModel(CHKPT_PTH)
 
 # Define the /interpret endpoint
 @app.route("/v1/lipsync", methods=["POST"])
@@ -24,7 +25,7 @@ def lipsync():
   output_file = "/app/files/lipsync.mp4"
 
   # Interpret the wav file
-  wav2lip.run(mp4_file, wav_file, output_file)
+  wav2lip.run({"face": mp4_file, "audio": wav_file, "outfile": output_file})
 
   # Return the text in the response
   return jsonify({"filename": output_file})

@@ -9,11 +9,11 @@ from models import Wav2Lip
 import platform
 
 class Wav2LipModel():
-  def __init__(self, opts={}) -> None:
+  def __init__(self, checkpoint_path, opts={}) -> None:
     MyNamespace = type('MyNamespace', (object,), {})
     self.args = MyNamespace()
     self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    self.checkpoint_path = opts['checkpoint_path']
+    self.checkpoint_path = checkpoint_path
     self.outfile = opts['outfile'] if 'outfile' in opts else 'results/result_voice.mp4'
     
     self.static = False if 'static' not in opts else opts['static']
@@ -43,8 +43,9 @@ class Wav2LipModel():
       self.args.static = True
 
   def run(self, opts={}):
-    self.face = opts['face'] if 'face' in opts else 'results/result.mp4'
-    self.audio = opts['audio'] if 'audio' in opts else 'results/result.wav'
+    self.args.face = opts['face'] if 'face' in opts else 'results/test.mp4'
+    self.args.audio = opts['audio'] if 'audio' in opts else 'results/test.wav'
+    self.args.outfile = opts['outfile'] if 'outfile' in opts else 'results/result_voice.mp4'
     self.main()
 
   def get_smoothened_boxes(boxes, T):
