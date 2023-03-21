@@ -21,7 +21,7 @@ def interpret():
   wav_file = FILES_DIR + request.json["wav_file"]
   mp4_file = '/app/cache/loop.mp4'
 
-  output_file = "lipsync.mp4"
+  output_file = "/app/files/lipsync.mp4"
 
   # Interpret the wav file
   wav2lip.run(mp4_file, wav_file, output_file)
