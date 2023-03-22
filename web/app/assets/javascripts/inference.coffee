@@ -1,5 +1,13 @@
+# Max New Tokens Slider
+
+updateMaxTokensValue = () ->
+  slider = document.getElementById("max_new_tokens")
+  console.log slider.value
+  document.getElementById("max_new_tokens_value").textContent = slider.value
+
 getAvatar = () ->
   avatar = $("#avatar-dropdown").val()
+  console.log(avatar)
   if avatar ==  "default"
     avatar = "loop"
   return avatar
@@ -92,11 +100,16 @@ sendMessage = () ->
   console.log("#send-message #{text}")
   sendInferenceRequest("http://#{host}:#{port}/v1/completions", text)
 
-$(document).on('turbolinks:load', ->
-  playMp4({file_type: "mp4", filename: "/videos/#{getAvatar()}.mp4"})
 
+# Events!
+$(document).on('turbolinks:load', ->
+  # init video and other elements
+  playMp4({file_type: "mp4", filename: "/videos/#{getAvatar()}.mp4"})
+  updateMaxTokensValue()
+
+  # Set change events
   $("#avatar-dropdown").change -> 
-    selectedAvatar = $(this).val()
+    selectedAvatar = getAvatar()
     $("#hero-video").attr("src", "/videos/" + selectedAvatar + ".mp4")
 
   $('#send-message').on 'click', (event) ->
@@ -110,4 +123,7 @@ $(document).on('turbolinks:load', ->
     if (e.keyCode == 13 && !e.shiftKey)
       sendMessage()
       e.preventDefault()
+
+  $("#max_new_tokens").on "input change", () =>
+    updateMaxTokensValue()
 )
