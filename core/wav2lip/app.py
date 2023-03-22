@@ -14,10 +14,12 @@ CORS(app)
 CHKPT_PTH = "/app/cache/wav2lip_gan.pth"
 # Default face loop
 # TODO: When we introduce multiple avatars this will need refactoring
-opts = {
-  'face': '/app/cache/loop.mp4',
-}
-wav2lip = Wav2LipModel(CHKPT_PTH, opts)
+faces = [
+  ("loop", "/app/cache/loop.mp4"),
+  ("maknho", "/app/cache/maknho.mp4"),
+]
+opts = {}
+wav2lip = Wav2LipModel(CHKPT_PTH, opts, faces)
 # wav2lip = Wav2Lip()
 # Define the /interpret endpoint
 @app.route("/v1/lipsync", methods=["POST"])
@@ -31,7 +33,7 @@ def lipsync():
   output_file = "/app/files/lipsync.mp4"
 
   # Interpret the wav file
-  wav2lip.run({"face": mp4_file, "audio": wav_file, "outfile": output_file})
+  wav2lip.run({"face": mp4_file, "audio": wav_file, "outfile": output_file, "avatar": avatar})
 
   # Return the text in the response
   return jsonify({"filename": output_file})

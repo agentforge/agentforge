@@ -10,13 +10,12 @@ from core.wav2lip.models import Wav2Lip
 import platform
 
 class Wav2LipModel():
-  def __init__(self, checkpoint_path, opts={}) -> None:
+  def __init__(self, checkpoint_path, opts={}, faces=["loop"]) -> None:
     MyNamespace = type('MyNamespace', (object,), {})
     self.args = MyNamespace()
     self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
     self.args.checkpoint_path = checkpoint_path
     self.args.outfile = opts['outfile'] if 'outfile' in opts else 'results/result_voice.mp4'
-    self.args.face = opts['face'] if 'face' in opts else 'results/test.mp4'
     
     self.args.static = False if 'static' not in opts else opts['static']
     self.args.fps = 25.0 if 'fps' not in opts else opts['fps']
@@ -44,7 +43,9 @@ class Wav2LipModel():
     self.args.static = True
     self.args.img_size = 96
 
-    self.load_face()
+    self.args.avatar = "loop" if opts['avatar'] == None else opts['avatar']
+
+    self.load_face(faces)
 
   def run(self, opts={}):
     self.args.face = opts['face'] if 'face' in opts else 'results/test.mp4'
@@ -170,41 +171,44 @@ class Wav2LipModel():
     model = model.to(self.device)
     return model.eval()
 
-  def load_face(self):
-    if not os.path.isfile(self.args.face):
-      raise ValueError('--face argument must be a valid path to video/image file')
+  def load_face(self, faces):
+    self.faces = {}
+    for avatar, face in faces:
+      self.args.face = face
+      if not os.path.isfile(self.args.face):
+        raise ValueError('--face argument must be a valid path to video/image file')
 
-    elif self.args.face.split('.')[1] in ['jpg', 'png', 'jpeg']:
-      self.full_frames = [cv2.imread(self.args.face)]
-      self.fps = self.args.fps
+      elif self.args.face.split('.')[1] in ['jpg', 'png', 'jpeg']:
+        self.full_frames = [cv2.imread(self.args.face)]
+        self.fps = self.args.fps
 
-    else:
-      video_stream = cv2.VideoCapture(self.args.face)
-      self.fps = video_stream.get(cv2.CAP_PROP_FPS)
+      else:
+        video_stream = cv2.VideoCapture(self.args.face)
+        self.fps = video_stream.get(cv2.CAP_PROP_FPS)
 
-      print('Reading video frames...')
+        print('Reading video frames...')
 
-      self.full_frames = []
-      while 1:
-        still_reading, frame = video_stream.read()
-        if not still_reading:
-          video_stream.release()
-          break
-        if self.args.resize_factor > 1:
-          frame = cv2.resize(frame, (frame.shape[1]//self.args.resize_factor, frame.shape[0]//self.args.resize_factor))
+        self.full_frames = []
+        while 1:
+          still_reading, frame = video_stream.read()
+          if not still_reading:
+            video_stream.release()
+            break
+          if self.args.resize_factor > 1:
+            frame = cv2.resize(frame, (frame.shape[1]//self.args.resize_factor, frame.shape[0]//self.args.resize_factor))
 
-        if self.args.rotate:
-          frame = cv2.rotate(frame, cv2.cv2.ROTATE_90_CLOCKWISE)
+          if self.args.rotate:
+            frame = cv2.rotate(frame, cv2.cv2.ROTATE_90_CLOCKWISE)
 
-        y1, y2, x1, x2 = self.args.crop
-        if x2 == -1: x2 = frame.shape[1]
-        if y2 == -1: y2 = frame.shape[0]
+          y1, y2, x1, x2 = self.args.crop
+          if x2 == -1: x2 = frame.shape[1]
+          if y2 == -1: y2 = frame.shape[0]
 
-        frame = frame[y1:y2, x1:x2]
+          frame = frame[y1:y2, x1:x2]
 
-        self.full_frames.append(frame)
-
-    print ("Number of frames available for inference: "+str(len(self.full_frames)))
+          self.full_frames.append(frame)
+      self.faces[avatar] = self.full_frames.copy()
+      print (f"Number of frames available for {avatar} inference: " +str(len(self.faces[avatar])))
 
   def main(self):
     # Assume Face Data is already loaded
@@ -235,15 +239,15 @@ class Wav2LipModel():
 
     print("Length of mel chunks: {}".format(len(mel_chunks)))
 
-    self.full_frames = self.full_frames[:len(mel_chunks)]
+    self.faces[self.avatar] = self.faces[self.avatar][:len(mel_chunks)]
 
     batch_size = self.args.wav2lip_batch_size
-    gen = self.datagen(self.full_frames.copy(), mel_chunks)
+    gen = self.datagen(self.faces[self.avatar].copy(), mel_chunks)
 
     for i, (img_batch, mel_batch, frames, coords) in enumerate(tqdm(gen, 
                         total=int(np.ceil(float(len(mel_chunks))/batch_size)))):
       if i == 0:
-        frame_h, frame_w = self.full_frames[0].shape[:-1]
+        frame_h, frame_w = self.faces[self.avatar][0].shape[:-1]
         out = cv2.VideoWriter('temp/result.avi', 
                     cv2.VideoWriter_fourcc(*'DIVX'), self.fps, (frame_w, frame_h))
 
