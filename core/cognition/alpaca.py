@@ -13,6 +13,11 @@ from langchain.llms import HuggingFaceModel
 
 ### Alpaca -- Stanford's davinci-003 model
 AGENT_MODEL="decapoda-research/llama-7b-hf"
+PEFT_MODEL="tloen/alpaca-lora-7b"
+
+# AGENT_MODEL="decapoda-research/llama-13b-hf"
+# PEFT_MODEL="mattreid/alpaca-lora-13b"
+
 CONFIG_NAME="llm"
 
 class Alpaca(Agent):
@@ -26,17 +31,17 @@ class Alpaca(Agent):
     self.load_alpaca()
 
   def load_alpaca(self):
-    self.tokenizer = LlamaTokenizer.from_pretrained("decapoda-research/llama-7b-hf")
+    self.tokenizer = LlamaTokenizer.from_pretrained(AGENT_MODEL)
 
     self.model = LlamaForCausalLM.from_pretrained(
-      "decapoda-research/llama-7b-hf",
+      AGENT_MODEL,
       load_in_8bit=True,
       torch_dtype=torch.float16,
       device_map="auto",
     )
 
     self.model = PeftModel.from_pretrained(
-        self.model, "tloen/alpaca-lora-7b", torch_dtype=torch.float16
+        self.model, PEFT_MODEL, torch_dtype=torch.float16
     )
 
   def generate(
@@ -48,7 +53,7 @@ class Alpaca(Agent):
           repetition_penalty=1.2,
           no_repeat_ngram_size=3,
           do_sample=True,
-          num_beams=1,
+          num_beams=4,
           **kwargs,
   ):
       prompt = self.instruct_prompt_w_memory(instruct)
