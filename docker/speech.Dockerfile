@@ -44,6 +44,7 @@ RUN rm /usr/lib/x86_64-linux-gnu/libstdc++.so.6 && ln -s /opt/conda/x86_64-conda
 RUN pip install --upgrade pip
 RUN pip install redis rq
 RUN pip install typeguard==2.7.0
+RUN pip install TTS
 
 # Clone wave2lip
 RUN git clone https://github.com/Rudrabha/Wav2Lip.git

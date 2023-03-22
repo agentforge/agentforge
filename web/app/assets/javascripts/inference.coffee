@@ -1,11 +1,19 @@
-sendTTSRequest = (url, text) ->
+getAvatar = () ->
+  avatar = $("#avatar-dropdown").val()
+  if avatar ==  "default"
+    avatar = "loop"
+  return avatar
+
+sendTTSRequest = (url, text, avatar) ->
   $.ajax
     url: url
     type: 'POST'
     data: 
       text: text
       authenticity_token: window._token
+      avatar: avatar
     success: (response) ->
+      console.log(response)
       file_type = response["file_type"]
       if file_type == "wav"
         playAudio(response)
@@ -29,26 +37,26 @@ playMp4 = (response) ->
   
   # Event listener for when the video ends
   video.addEventListener 'ended', (event) ->
-    video.src = '/videos/loop.mp4'
+    video.src = "/videos/#{getAvatar()}.mp4"
     video.loop = true
     video.load()
     video.play()
     # Remove the event listener once the looping video is loaded
     video.removeEventListener 'ended', arguments.callee
   
-  if filename == "/videos/loop.mp4"
-    video.src = "/videos/loop.mp4"
+  if filename == "/videos/#{getAvatar()}.mp4"
+    video.src = "/videos/#{getAvatar()}.mp4"
   else
     video.src = '/mp4/' + filename
     video.loop = false
   video.load()
   video.play()
 
-getTTS = (text) ->
+getTTS = (text, avatar) ->
   host = window.Settings["rails"]["host"]
   port = window.Settings["rails"]["port"]
   console.log("#send-message #{text}")
-  sendTTSRequest("http://#{host}:#{port}/v1/tts", text)
+  sendTTSRequest("http://#{host}:#{port}/v1/tts", text, avatar)
 
 sendInferenceRequest = (url, text) ->
   $.ajax
@@ -63,7 +71,7 @@ sendInferenceRequest = (url, text) ->
     success: (response) =>
       md = markdownit()
       formattedOutput = md.render(response["text"]);
-      getTTS(response["text"])
+      getTTS(response["text"], getAvatar())
       $('.chat-history').append "<li class='ai'><div>#{$("#robot-name-input").val()}: #{formattedOutput}</div></li>"
       $('pre code').each ->
         hljs.highlightElement(this)
@@ -85,7 +93,12 @@ sendMessage = () ->
   sendInferenceRequest("http://#{host}:#{port}/v1/completions", text)
 
 $(document).on('turbolinks:load', ->
-  playMp4({file_type: "mp4", filename: "/videos/loop.mp4"})
+  playMp4({file_type: "mp4", filename: "/videos/#{getAvatar()}.mp4"})
+
+  $("#avatar-dropdown").change -> 
+    selectedAvatar = $(this).val()
+    $("#hero-video").attr("src", "/videos/" + selectedAvatar + ".mp4")
+
   $('#send-message').on 'click', (event) ->
     sendMessage(event)
     event.preventDefault()
