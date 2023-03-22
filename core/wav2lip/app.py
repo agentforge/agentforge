@@ -1,6 +1,3 @@
-#!/usr/bin/python3
-# Path: core/wav2lip/app.py
-
 ### Ensure local libs are available for Flask
 from pathlib import Path
 import sys
@@ -11,12 +8,17 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from core.wav2lip.wav2lip2 import Wav2LipModel
 from core.helpers.helpers import measure_time
-
+from core.wav2lip.wav2lip import Wav2Lip
 app = Flask(__name__)
 CORS(app)
 CHKPT_PTH = "/app/cache/wav2lip_gan.pth"
-wav2lip = Wav2LipModel(CHKPT_PTH)
-
+# Default face loop
+# TODO: When we introduce multiple avatars this will need refactoring
+opts = {
+  'face': '/app/cache/loop.mp4',
+}
+wav2lip = Wav2LipModel(CHKPT_PTH, opts)
+# wav2lip = Wav2Lip()
 # Define the /interpret endpoint
 @app.route("/v1/lipsync", methods=["POST"])
 @measure_time
