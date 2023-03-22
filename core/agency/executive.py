@@ -26,9 +26,7 @@ class ExecutiveCognition:
         return requests.post(url, json=json_data)
 
     def get_tts(self, form_data):
-        url = f"{TTS_URL}/v1/tts"
-        prompt = self.parser.parse(prompt)
-        
+        url = f"{TTS_URL}/v1/tts"        
         return self.post_request(url, form_data)
 
     def lipsync(self, form_data):
@@ -37,6 +35,8 @@ class ExecutiveCognition:
 
     # Either return a wav file or a mp4 file based on flag
     def speak(self, prompt, opts):
+        # Get wav/tts file
+        prompt = self.parser.parse(prompt)
         form_data = {"prompt": prompt}
         wav_response = self.get_tts(form_data)
 
