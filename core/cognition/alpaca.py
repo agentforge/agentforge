@@ -42,13 +42,13 @@ class Alpaca(Agent):
   def generate(
           self,
           instruct,
-          temperature=0.1,
+          temperature=0.88,
           top_p=0.75,
-          top_k=24,
+          top_k=64,
           repetition_penalty=1.2,
           no_repeat_ngram_size=3,
           do_sample=True,
-          num_beams=4,
+          num_beams=1,
           **kwargs,
   ):
       prompt = self.instruct_prompt_w_memory(instruct)
