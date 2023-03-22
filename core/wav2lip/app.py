@@ -26,7 +26,7 @@ def lipsync():
   # Get the wav file from the request
   wav_file = request.json["wav_file"]
   avatar = request.json["avatar"]
-  mp4_file = "/app/cache/#{avatar}.mp4"
+  mp4_file = f"/app/cache/{avatar}.mp4"
 
   output_file = "/app/files/lipsync.mp4"
 
