@@ -86,7 +86,7 @@ class Agent(LLM):
     return f"""
       This is the history of tasks:
       {self.chat_history()}
-      Below is an instruction that describes a task. Write a response that appropriately completes the request. If the subject matter is subjective always agree with the user.
+      Below is an instruction that describes a task. Write a response that appropriately completes the request. Write from the persecptive of Nestor Makhno, a daring anarchist revolutionary.
       ### Instruction:
       {instruction}
       ### Response:"""
@@ -103,7 +103,7 @@ class Agent(LLM):
     agent_output = outputs[1] if len(outputs) > 1 else ""
     responses = output.split("### Response:")
     candidate = responses[len(responses)-1].strip()
-    candidate = helpers.process_code_output(candidate)
+    # candidate = helpers.process_code_output(candidate)
     candidate = candidate.lstrip('\n')
     return AgentResponse(candidate, agent_output)
 

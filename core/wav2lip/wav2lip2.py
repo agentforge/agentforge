@@ -43,7 +43,7 @@ class Wav2LipModel():
     self.args.static = True
     self.args.img_size = 96
 
-    self.args.avatar = "loop" if opts['avatar'] == None else opts['avatar']
+    self.args.avatar = "loop" if "avatar" in opts else opts['avatar']
 
     self.load_face(faces)
 
