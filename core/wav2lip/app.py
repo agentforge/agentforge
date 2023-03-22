@@ -23,7 +23,8 @@ wav2lip = Wav2LipModel(CHKPT_PTH)
 def lipsync():
   # Get the wav file from the request
   wav_file = request.json["wav_file"]
-  mp4_file = '/app/cache/loop.mp4'
+  avatar = request.json["avatar"]
+  mp4_file = "/app/cache/#{avatar}.mp4"
 
   output_file = "/app/files/lipsync.mp4"
 

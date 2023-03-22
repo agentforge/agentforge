@@ -16,6 +16,11 @@
       .form-group
         %h5 Robot Name
         %input#robot-name-input.form-control  
+      .form-group
+        %label Avatars
+        %select#avatar-dropdown.form-control
+          %option{value: "default"} default
+          %option{value: "makhno"} makhno
       = video_tag("/videos/loop.mp4", :controls => false, :autobuffer => true, :size => "256x256", :id => "hero-video")
       .form-group
         %h5 Context
@@ -41,3 +46,4 @@
     .container
       -# %h1 Thoughts
       %ul.thought-history{style:"max-height: 500px;overflow: scroll;font-size: 10px"}
+

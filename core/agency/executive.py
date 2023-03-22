@@ -25,23 +25,28 @@ class ExecutiveCognition:
     def post_request(self, url, json_data):
         return requests.post(url, json=json_data)
 
-    def get_tts(self, prompt):
+    def get_tts(self, form_data):
         url = f"{TTS_URL}/v1/tts"
         prompt = self.parser.parse(prompt)
-        form_data = {"prompt": prompt}
+        
         return self.post_request(url, form_data)
 
-    def lipsync(self, wav_file):
+    def lipsync(self, form_data):
         url = f"{W2L_URL}/v1/lipsync"
-        form_data = {"wav_file": wav_file, "avatar": "alpha"}
         return self.post_request(url, form_data)
 
     # Either return a wav file or a mp4 file based on flag
-    def speak(self, prompt, generate_lip_sync):
-        wav_response = self.get_tts(prompt)
-        if generate_lip_sync:
-            lipsync_response = self.lipsync(wav_response["filename"])
+    def speak(self, prompt, opts):
+        form_data = {"prompt": prompt}
+        wav_response = self.get_tts(form_data)
+
+        # if we want to generate lipsync
+        if opts["generate_lip_sync"]:
+            form_data = {"wav_file": wav_response["filename"], "avatar": opts["avatar"]}
+            lipsync_response = self.lipsync(form_data)
             return {"filename": lipsync_response["filename"], "type": "video/mp4"}
+        
+        # else just return the wav file
         return {"file_name": wav_response["filename"], "type": "audio/wav"}
 
     def respond(self, prompt):
