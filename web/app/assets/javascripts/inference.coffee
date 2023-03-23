@@ -1,3 +1,9 @@
+# Max New Tokens Slider
+
+updateMaxTokensValue = () ->
+  slider = document.getElementById("max_new_tokens")
+  document.getElementById("max_new_tokens_value").textContent = slider.value
+
 getAvatar = () ->
   avatar = $("#avatar-dropdown").val()
   if avatar ==  "default"
@@ -13,7 +19,6 @@ sendTTSRequest = (url, text, avatar) ->
       authenticity_token: window._token
       avatar: avatar
     success: (response) ->
-      console.log(response)
       file_type = response["file_type"]
       if file_type == "wav"
         playAudio(response)
@@ -55,7 +60,6 @@ playMp4 = (response) ->
 getTTS = (text, avatar) ->
   host = window.Settings["rails"]["host"]
   port = window.Settings["rails"]["port"]
-  console.log("#send-message #{text}")
   sendTTSRequest("http://#{host}:#{port}/v1/tts", text, avatar)
 
 sendInferenceRequest = (url, text) ->
@@ -65,8 +69,8 @@ sendInferenceRequest = (url, text) ->
     data: 
       text: text
       context: $("#context-input").val()
-      name: $("#name-input").val()
-      robot_name: $("#robot-name-input").val()
+      avatar: getAvatar()
+      model_config: $("#model-config").val()
       authenticity_token: window._token
     success: (response) =>
       md = markdownit()
@@ -89,14 +93,17 @@ sendMessage = () ->
   $('.chat-history').append "<li class='human'><p>#{$("#name-input").val()}: #{text} </p></li>"
   $('.chat-history').append '<li id="spinner"><p><i class="fas fa-spinner fa-pulse"></p></i>'
   $(".chat-history").scrollTop($(".chat-history")[0].scrollHeight);
-  console.log("#send-message #{text}")
   sendInferenceRequest("http://#{host}:#{port}/v1/completions", text)
 
+# Events!
 $(document).on('turbolinks:load', ->
+  # init video and other elements
   playMp4({file_type: "mp4", filename: "/videos/#{getAvatar()}.mp4"})
+  updateMaxTokensValue()
 
+  # Set change events
   $("#avatar-dropdown").change -> 
-    selectedAvatar = $(this).val()
+    selectedAvatar = getAvatar()
     $("#hero-video").attr("src", "/videos/" + selectedAvatar + ".mp4")
 
   $('#send-message').on 'click', (event) ->
@@ -110,4 +117,7 @@ $(document).on('turbolinks:load', ->
     if (e.keyCode == 13 && !e.shiftKey)
       sendMessage()
       e.preventDefault()
+
+  $("#max_new_tokens").on "input change", () =>
+    updateMaxTokensValue()
 )

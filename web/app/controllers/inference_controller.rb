@@ -6,8 +6,15 @@ class InferenceController < ApplicationController
     # an automated response
     text = params[:text]
     context = params[:context]
-    name = params[:name]
-    robot_name = params[:robot_name]
+    model_config = params[:model_config]
+    avatar = params[:avatar]
+
+    request = {
+      prompt: text,
+      context: context,
+      model_config: model_config,
+      avatar: avatar
+    }
 
     host = Settings.inference_api.host
     port = Settings.inference_api.port
@@ -19,7 +26,7 @@ class InferenceController < ApplicationController
   
     request = Net::HTTP::Post.new(uri)
     request["Content-Type"] = "application/json"
-    request.body = JSON.dump(prompt: text, context: context, name: name, robot_name: robot_name)
+    request.body = JSON.dump(request)
   
     response = http.request(request)
     puts JSON.parse(response.body)
