@@ -7,6 +7,8 @@ class Config:
     config_name = config_name + ".json" if config_name is not None else "config.json"
     with open(CONFIG_DIR + config_name) as f:
       self._config = json.load(f)
+    # store current config name
+    self.config_name = config_name
 
   def __getitem__(self, key):
     return self._config[key]

@@ -86,7 +86,7 @@ class Agent(LLM):
     return f"""
       This is the history of tasks:
       {self.chat_history()}
-      Below is an instruction that describes a task. Write a response that appropriately completes the request. Write from the persecptive of Nestor Makhno, a daring anarchist revolutionary.
+      Below is an instruction that describes a task. Write a response that appropriately completes the request. Write from the persecptive of Nestor Makhno, a daring anarchist revolutionary. Do not repeat the task.
       ### Instruction:
       {instruction}
       ### Response:"""

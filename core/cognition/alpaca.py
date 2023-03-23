@@ -1,29 +1,27 @@
 import torch
-import transformers
 import time
 from peft import PeftModel
 from transformers import LlamaTokenizer, LlamaForCausalLM, GenerationConfig
+from core.config.config import Config
 
 from core.cognition.agent import Agent
 
-from langchain import PromptTemplate, LLMChain
-from core.cognition.base import LLM
-from langchain.chains.conversation.memory import ConversationBufferMemory
-from langchain.llms import HuggingFaceModel
-
 ### Alpaca -- Stanford's davinci-003 model
-AGENT_MODEL="decapoda-research/llama-7b-hf"
+LLM_MODEL="decapoda-research/llama-7b-hf"
 PEFT_MODEL="tloen/alpaca-lora-7b"
 
-# AGENT_MODEL="decapoda-research/llama-13b-hf"
-# PEFT_MODEL="mattreid/alpaca-lora-13b"
+#AGENT_MODEL="decapoda-research/llama-13b-hf"
+#PEFT_MODEL="samwit/alpaca13B-lora"
 
-CONFIG_NAME="llm"
+CONFIG_NAME="logical"
 
 class Alpaca(Agent):
   def __init__(self, opts={}) -> None:
     if len(opts) == 0:
-      opts = {"model_name": AGENT_MODEL, "config_name": CONFIG_NAME}
+      self.opts = {"llm_model": LLM_MODEL, "config": CONFIG_NAME, "peft_model": PEFT_MODEL }
+    else:
+      self.opts = opts
+    self.config = Config(self.opts["config"])
     super().__init__(opts)
 
   # Setup alpaca and load models
@@ -31,20 +29,27 @@ class Alpaca(Agent):
     self.load_alpaca()
 
   def load_alpaca(self):
-    self.tokenizer = LlamaTokenizer.from_pretrained(AGENT_MODEL)
+    self.tokenizer = LlamaTokenizer.from_pretrained(self.opts["llm_model"])
 
     self.model = LlamaForCausalLM.from_pretrained(
-      AGENT_MODEL,
+      self.opts["llm_model"],
       load_in_8bit=True,
       torch_dtype=torch.float16,
       device_map="auto",
     )
 
     self.model = PeftModel.from_pretrained(
-        self.model, PEFT_MODEL, torch_dtype=torch.float16
+        self.model, self.opts["peft_model"], torch_dtype=torch.float16, device_map={'':0}
     )
 
-  def generate(
+  def generate(self, config_name=None):
+     # grab the config
+     if config_name != None and self.config.config_name != config_name:
+        self.config = Config(config_name)
+     kwargs = self.config.to_dict()
+     self._generate(**kwargs)
+
+  def _generate(
           self,
           instruct,
           temperature=0.88,

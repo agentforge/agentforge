@@ -37,9 +37,10 @@ executive = ExecutiveCognition()
 def prompt():
   # Get the message for the request
   prompt = request.json["prompt"]
+  config = request.json["config"] if "config" in request.json else None
 
   # Run the LLM agent
-  response = executive.respond(prompt)
+  response = executive.respond(prompt, config)
 
   # Run text classification and intent detection
   ## TODO: Implement this
