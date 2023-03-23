@@ -53,23 +53,23 @@ def prompt():
 @app.route("/v1/tts", methods=["POST"])
 @measure_time
 def tts():
-    # Get the message for the request
-    prompt = request.json["prompt"]
-    avatar = request.json["avatar"]
-    generate_lip_sync = request.json["generate_lip_sync"]
-    generate_lip_sync = True if generate_lip_sync == "true" else False
-    
-    # Run the agent
-    opts = {"avatar": avatar, "generate_lip_sync": generate_lip_sync}
-    response = executive.speak(prompt, opts)
-    filename = response["filename"]
-    
-    # Create a response object with the file data
-    response_obj = send_file(
-        filename,
-        mimetype=response["type"],
-        as_attachment=True
-    )
-    # Set the headers
-    response_obj.headers['Content-Disposition'] = f'attachment; filename="{filename}"'
-    return response_obj
+  # Get the message for the request
+  prompt = request.json["prompt"]
+  avatar = request.json["avatar"]
+  generate_lip_sync = request.json["generate_lip_sync"]
+  generate_lip_sync = True if generate_lip_sync == "true" else False
+  
+  # Run the agent
+  opts = {"avatar": avatar, "generate_lip_sync": generate_lip_sync}
+  response = executive.speak(prompt, opts)
+  filename = response["filename"]
+  
+  # Create a response object with the file data
+  response_obj = send_file(
+      filename,
+      mimetype=response["type"],
+      as_attachment=True
+  )
+  # Set the headers
+  response_obj.headers['Content-Disposition'] = f'attachment; filename="{filename}"'
+  return response_obj

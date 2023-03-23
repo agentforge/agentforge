@@ -9,7 +9,7 @@ class InferenceController < ApplicationController
     model_config = params[:model_config]
     avatar = params[:avatar]
 
-    request = {
+    request_json = {
       prompt: text,
       context: context,
       model_config: model_config,
@@ -26,7 +26,7 @@ class InferenceController < ApplicationController
   
     request = Net::HTTP::Post.new(uri)
     request["Content-Type"] = "application/json"
-    request.body = JSON.dump(request)
+    request.body = JSON.dump(request_json)
   
     response = http.request(request)
     puts JSON.parse(response.body)
