@@ -21,8 +21,17 @@ from core.helpers.helpers import measure_time
 app = Flask(__name__)
 CORS(app)
 
+### Alpaca -- Stanford's davinci-003 model
+LLM_MODEL="decapoda-research/llama-7b-hf"
+PEFT_MODEL="tloen/alpaca-lora-7b"
+
+#AGENT_MODEL="decapoda-research/llama-13b-hf"
+#PEFT_MODEL="samwit/alpaca13B-lora"
+
+CONFIG_NAME="logical"
+
 #llm = Agent()
-llm = Alpaca({"model_name": "tloen/alpaca-lora-7b", "config_name": "tloen/alpaca-lora-7b"})
+llm = Alpaca({"model_name": LLM_MODEL, "config": CONFIG_NAME, "peft_model": PEFT_MODEL })
 llm.setup_alpaca()
 
 llm.init_tools()
@@ -45,7 +54,8 @@ def update_model():
     global llm
     model_name = request.json["model_name"]
     config_name = request.json["config_name"]
-    llm = Alpaca({"model_name": model_name, "config_name": config_name})
+    peft_name = request.json["peft_name"]
+    llm = Alpaca({"model_name": model_name, "config": config_name, "peft_name": peft_name})
     llm.setup_alpaca()
     return jsonify({"message": f"Model state updated to {model_name}"})
 
