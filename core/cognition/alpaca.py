@@ -13,7 +13,7 @@ PEFT_MODEL="tloen/alpaca-lora-7b"
 #AGENT_MODEL="decapoda-research/llama-13b-hf"
 #PEFT_MODEL="samwit/alpaca13B-lora"
 
-CONFIG_NAME="logical"
+CONFIG_NAME="llm/logical"
 
 class Alpaca(Agent):
   def __init__(self, opts={}) -> None:
