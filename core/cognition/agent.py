@@ -13,7 +13,7 @@ from langchain.agents import ZeroShotAgent, AgentExecutor
 
 SEARX_HOST = "https://searx.work/"
 AGENT_MODEL = "EleutherAI/gpt-j-6B"
-CONFIG_NAME = "llm"
+CONFIG_NAME = "logical"
 
 # AgentResponse class returned from the Agent parser
 class AgentResponse():
@@ -27,7 +27,7 @@ class AgentResponse():
 class Agent(LLM):
   def __init__(self, opts={}) -> None:
     if len(opts) == 0:
-      opts = {"model_name": AGENT_MODEL, "config_name": CONFIG_NAME}
+      opts = {"model_name": AGENT_MODEL, "config": CONFIG_NAME}
     super().__init__(opts)
 
   # Setup Agent and load models

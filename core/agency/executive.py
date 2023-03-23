@@ -49,8 +49,8 @@ class ExecutiveCognition:
         # else just return the wav file
         return {"file_name": wav_response["filename"], "type": "audio/wav"}
 
-    def respond(self, prompt):
+    def respond(self, prompt, config):
         url = f"{LLM_URL}/v1/completions"
         prompt = self.parser.parse(prompt)
-        form_data = {"prompt": prompt}
+        form_data = {"prompt": prompt, "config": config}
         return self.post_request(url, form_data)

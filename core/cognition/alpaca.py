@@ -6,22 +6,10 @@ from core.config.config import Config
 
 from core.cognition.agent import Agent
 
-### Alpaca -- Stanford's davinci-003 model
-LLM_MODEL="decapoda-research/llama-7b-hf"
-PEFT_MODEL="tloen/alpaca-lora-7b"
-
-#AGENT_MODEL="decapoda-research/llama-13b-hf"
-#PEFT_MODEL="samwit/alpaca13B-lora"
-
-CONFIG_NAME="llm/logical"
-
 class Alpaca(Agent):
   def __init__(self, opts={}) -> None:
-    if len(opts) == 0:
-      self.opts = {"llm_model": LLM_MODEL, "config": CONFIG_NAME, "peft_model": PEFT_MODEL }
-    else:
-      self.opts = opts
-    self.config = Config(self.opts["config"])
+    self.opts = opts
+    self.config = Config("llm/" + self.opts["config"])
     super().__init__(opts)
 
   # Setup alpaca and load models
@@ -29,10 +17,10 @@ class Alpaca(Agent):
     self.load_alpaca()
 
   def load_alpaca(self):
-    self.tokenizer = LlamaTokenizer.from_pretrained(self.opts["llm_model"])
+    self.tokenizer = LlamaTokenizer.from_pretrained(self.opts["model_name"])
 
     self.model = LlamaForCausalLM.from_pretrained(
-      self.opts["llm_model"],
+      self.opts["model_name"],
       load_in_8bit=True,
       torch_dtype=torch.float16,
       device_map="auto",
@@ -45,7 +33,7 @@ class Alpaca(Agent):
   def generate(self, config_name=None):
      # grab the config
      if config_name != None and self.config.config_name != config_name:
-        self.config = Config(config_name)
+        self.config = Config("llm/" + config_name)
      kwargs = self.config.to_dict()
      self._generate(**kwargs)
 
