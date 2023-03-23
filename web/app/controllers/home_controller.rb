@@ -1,6 +1,6 @@
 class HomeController < ApplicationController
   def index
-    @model_configs = ["creative-alpaca-lora-7b"]
+    @model_configs = ["creative", "logical", "moderate"]
     @models = ["alpaca-lora-7b"]
     @avatars = ["default", "makhno"]  
     render 'home/index'

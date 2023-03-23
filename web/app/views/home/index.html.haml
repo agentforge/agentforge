@@ -37,9 +37,9 @@
       .dropdown-container
         %label Avatars
         %select.custom-select#avatar-dropdown
-          %option{value: "default"} default
-          %option{value: "makhno"} makhno
-     
+          - @avatars.each do |avatar| 
+            %option{value: avatar}= avatar
+          
       .dropdown-container
         %label{for: "model-config"} Model Config
         %select.custom-select#model-config
@@ -63,7 +63,7 @@
           #chat-input.row
             //%input#user-input.col.form-control{type: "text"}
             .col-9
-              %textarea#user-input.form-control{rows: "3", style:"width:100%"}
+              %textarea#user-input.form-control{rows: "4", style:"width:100%"}
             .col-3
               %button#send-message.btn.btn-primary.btn-lg
                 %i.fa.fa-rocket

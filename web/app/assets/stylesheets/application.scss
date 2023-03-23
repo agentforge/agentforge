@@ -223,3 +223,29 @@ pre code .comment {
   display: inline-block;
   text-align: center;
 }
+
+/* Container for the chat widget */
+.chat-widget {
+  position: fixed;
+  left: 50%; /* Center the chat widget horizontally */
+  bottom: 64px; /* Adjust this value to set the distance from the bottom of the page */
+  width: 40%; /* Set the width of the chat widget to be 25% of the page */
+  min-width: 300px; /* Set the minimum width of the chat widget to 300px */
+  transform: translateX(-50%); /* Shift the chat widget left by half its width to truly center it */
+  z-index: 1000; /* Set a high z-index value to keep the chat widget on top of other elements */
+  border-radius: 8px; /* Add rounded corners to the chat widget */
+  overflow: hidden; /* Hide overflowing content, if any */
+}
+
+/* Shadow and style for the user input element */
+#user-input {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Add a subtle shadow to the user input element */
+}
+
+/* Media query to adjust the chat widget size on smaller screens */
+@media (max-width: 480px) {
+  .chat-widget {
+    width: 100%; /* Set the width of the chat widget to 100% of the viewport width */
+    border-radius: 0; /* Remove rounded corners on smaller screens */
+  }
+}
