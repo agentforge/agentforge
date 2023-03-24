@@ -51,7 +51,7 @@ class LLM():
     # Given the model name, loads the requested revision model and transfomer
     self.model = AutoModelForCausalLM.from_pretrained(
       self.model_name,
-      revision = revision,
+      # revision = revision,
       torch_dtype = torch_dtype,
     )
 

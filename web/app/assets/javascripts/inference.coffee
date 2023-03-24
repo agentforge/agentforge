@@ -1,5 +1,4 @@
 # Max New Tokens Slider
-
 updateMaxTokensValue = () ->
   slider = document.getElementById("max_new_tokens")
   document.getElementById("max_new_tokens_value").textContent = slider.value
@@ -9,6 +8,21 @@ getAvatar = () ->
   if avatar ==  "default"
     avatar = "loop"
   return avatar
+
+getConfigValues = ->
+  configs = {}
+  
+  configs.tts = $("#tts").prop("checked")
+  configs.lipsync = $("#lipsync").prop("checked")
+  configs.streaming = $("#streaming").prop("checked")
+  
+  configs.max_new_tokens = parseInt($("#max_new_tokens").val(), 128)
+  
+  configs.avatar = getAvatar()
+  configs.model_config = $("#model-config").val()
+  configs.model = $("#model").val()
+  
+  return configs
 
 sendTTSRequest = (url, text, avatar) ->
   $.ajax

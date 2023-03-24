@@ -23,30 +23,24 @@ class Alpaca(Agent):
       self.opts["model_name"],
       load_in_8bit=True,
       torch_dtype=torch.float16,
-      device_map="auto",
+      device_map={'':0},
     )
 
     self.model = PeftModel.from_pretrained(
         self.model, self.opts["peft_model"], torch_dtype=torch.float16, device_map={'':0}
     )
 
-  def generate(self, config_name=None):
+  def generate(self, prompt, config=None):
      # grab the config
-     if config_name != None and self.config.config_name != config_name:
-        self.config = Config("llm/" + config_name)
+     if config != None and self.config.config_name != config:
+        self.config = Config("llm/" + config)
      kwargs = self.config.to_dict()
-     self._generate(**kwargs)
+     print(f"Rendering with {kwargs}")
+     return self._generate(prompt, **kwargs)
 
   def _generate(
           self,
           instruct,
-          temperature=0.88,
-          top_p=0.75,
-          top_k=64,
-          repetition_penalty=1.2,
-          no_repeat_ngram_size=3,
-          do_sample=True,
-          num_beams=4,
           **kwargs,
   ):
       prompt = self.instruct_prompt_w_memory(instruct)
@@ -54,14 +48,6 @@ class Alpaca(Agent):
       inputs = self.tokenizer(prompt, return_tensors="pt")
       input_ids = inputs["input_ids"].cuda()
       generation_config = GenerationConfig(
-          temperature=temperature,
-          #top_p=top_p,
-          top_k=top_k,
-          do_sample=do_sample,
-          no_repeat_ngram_size=no_repeat_ngram_size,
-          repetition_penalty=repetition_penalty,
-          renormalize_logits=True,
-          num_beams=num_beams,
           **kwargs,
       )
       # print(prompt)

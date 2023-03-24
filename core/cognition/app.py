@@ -25,12 +25,13 @@ CORS(app)
 LLM_MODEL="decapoda-research/llama-7b-hf"
 PEFT_MODEL="tloen/alpaca-lora-7b"
 
-#AGENT_MODEL="decapoda-research/llama-13b-hf"
-#PEFT_MODEL="samwit/alpaca13B-lora"
+#LLM_MODEL="decapoda-research/llama-13b-hf-int4"
+#PEFT_MODEL="chansung/alpaca-lora-13b"
 
 CONFIG_NAME="logical"
 
-#llm = Agent()
+# llm = Agent()
+# llm.setup_agent()
 llm = Alpaca({"model_name": LLM_MODEL, "config": CONFIG_NAME, "peft_model": PEFT_MODEL })
 llm.setup_alpaca()
 
@@ -44,7 +45,7 @@ llm.load_agent()
 def output():
   prompt = request.json["prompt"]
   config = request.json["config"] 
-  response = llm.generate(prompt, config)
+  response = llm.generate(prompt, config=config)
   print(response.response)
   return jsonify({"response": response.response, "output": response.output, "thought": response.thought})
 
