@@ -32,6 +32,25 @@ def remove_hanging(phrase):
   phrase = re.match("(^.*[\.\?!]|^\S[^.\?!]*)", phrase)
   phrase = phrase.group()
 
+import inflect
+
+def convert_numbers_in_sentence(sentence):
+    p = inflect.engine()
+    
+    # Split the sentence into words
+    words = sentence.split()
+    
+    # Iterate through the words and convert numbers to their word representation
+    converted_words = []
+    for word in words:
+        if word.isdigit():
+            word = p.number_to_words(int(word))
+        converted_words.append(word)
+    
+    # Join the words back into a sentence
+    converted_sentence = ' '.join(converted_words)
+    return converted_sentence
+
 import math
 from pygments import highlight
 from pygments.lexers import PythonLexer, get_lexer_by_name
