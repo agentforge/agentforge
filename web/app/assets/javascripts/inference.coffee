@@ -88,7 +88,8 @@ sendInferenceRequest = (url, text) ->
       authenticity_token: window._token
     success: (response) =>
       md = markdownit()
-      formattedOutput = md.render(response["text"]);
+      # formattedOutput = md.render(response["text"])
+      formattedOutput = response["text"]
       getTTS(response["text"], getAvatar())
       $('.chat-history').append "<li class='ai'><div>#{$("#robot-name-input").val()}: #{formattedOutput}</div></li>"
       $('pre code').each ->
