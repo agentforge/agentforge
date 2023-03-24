@@ -5,9 +5,7 @@ class InferenceController < ApplicationController
     # Calls interpret API and takes request data and called inference engine to produce
     # an automated response
     text = params[:text]
-    context = params[:context]
-    model_config = params[:model_config]
-    avatar = params[:avatar]
+    config = params[:config]
 
     request_json = {
       prompt: text,
