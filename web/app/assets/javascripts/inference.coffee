@@ -38,6 +38,7 @@ class App
     configs.avatar = @getAvatar()
     configs.model_config = $("#model-config").val()
     configs.model = $("#model").val()
+    configs.context = $("#context-input").val()
     configs
 
   sendTTSRequest: (url, text, avatar) ->
@@ -58,6 +59,7 @@ class App
     filename = response["filename"]
     audio = new Audio('/wav/' + filename)
     audio.play()
+<<<<<<< HEAD
 
   playMp4: (response) ->
     filename = response["filename"]
