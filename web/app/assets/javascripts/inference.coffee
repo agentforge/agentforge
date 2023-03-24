@@ -59,7 +59,6 @@ class App
     filename = response["filename"]
     audio = new Audio('/wav/' + filename)
     audio.play()
-<<<<<<< HEAD
 
   playMp4: (response) ->
     filename = response["filename"]
