@@ -29,10 +29,10 @@ class Alpaca(Agent):
         self.model, self.opts["peft_model"], torch_dtype=torch.float16, device_map={'':0}
     )
 
-  def generate(self, prompt, config=None):
+  def generate(self, prompt, generation_config=None):
      # grab the config
-     if config != None and self.config.config_name != config:
-        self.config = Config("llm/" + config)
+     if generation_config != None and self.config.config_name != generation_config:
+        self.config = Config("llm/" + generation_config)
      kwargs = self.config.to_dict()
      print(f"Rendering with {kwargs}")
      return self._generate(prompt, **kwargs)

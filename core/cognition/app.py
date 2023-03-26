@@ -42,8 +42,8 @@ llm.load_agent()
 @measure_time
 def output():
   prompt = request.json["prompt"]
-  config = request.json["config"] 
-  response = llm.generate(prompt, config=config)
+  generation_config = request.json["generation_config"] 
+  response = llm.generate(prompt, generation_config=generation_config)
   print(response.response)
   return jsonify({"response": response.response, "output": response.output, "thought": response.thought})
 

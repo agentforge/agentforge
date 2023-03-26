@@ -55,38 +55,7 @@ class LLM():
   def load(self, **kwargs) -> None:
     # get opts if it is available
     opts = kwargs.get("opts", self.opts)
-    # Check shared dict to see if model_name has been loaded, if we haven't already
-    if self.get_model() is not None and self.get_tokenizer() is not None:
-      if self.model is None:
-        self.model = self.get_model()
-      if self.tokenizer is None:
-        self.tokenizer = self.get_tokenizer()
-
-    # Validate that both model_name and config_name exist
-    if self.model_name == None or self.config_name == None:
-      raise ValueError("model_name and config_name must be defined")
-
-    # Sets the model revision and torch dtype
-    revision = opts.get("revision", "float16")
-    torch_dtype = opts.get("torch_dtype", torch.float16)
-
-    # Given the model name, loads the requested revision model and transfomer
-    self.model = AutoModelForCausalLM.from_pretrained(
-      self.model_name,
-      # revision = revision,
-      torch_dtype = torch_dtype,
-    )
-
-    self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
-
-    # Loads the model into GPU if available
-    device = torch.device("cuda") if self.gpu() else torch.device("cpu")
-    print("gpu: ", self.gpu())
-    self.model = self.model.to(device)
-
-    # Store model reference in shared dict if necessary
-    # self.fanout()
-    print("Model loaded and online...")
+    
 
   def tokenizer_key(self):
     return f"{self.model_name}-tokenizer"
