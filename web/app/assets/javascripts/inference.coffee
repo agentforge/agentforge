@@ -85,9 +85,7 @@ class App
       type: 'POST'
       data:
         text: text
-        context: $("#context-input").val()
-        avatar: @getAvatar()
-        model_config: $("#model-config").val()
+        config: getConfigValues()
         authenticity_token: window._token
       success: (response) =>
         md = markdownit()
