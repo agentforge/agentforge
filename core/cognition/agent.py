@@ -35,11 +35,11 @@ class Agent(LLM):
     self.load_agent()
 
     # create a new prompt loaded with memory
-    self.prompt_manager = Prompt(self.memory)
+    # self.prompt_manager = Prompt(self.memory)
 
   def load_agent(self):
     # Loads the model and tokenizer into langchain compatible agent class
-    self.hfm = HuggingFaceModel(model=self.model, tokenizer=self.tokenizer, device=1, model_kwargs=self.config.to_dict())
+    self.hfm = HuggingFaceModel(model=self.model, tokenizer=self.tokenizer, device=1, model_kwargs=self.generation_config.to_dict())
 
   def think(self):
     pass

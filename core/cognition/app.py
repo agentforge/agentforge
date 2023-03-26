@@ -9,6 +9,7 @@ sys.path.append(str(path_root))
 ### accessing GPU/TPU resources
 
 ### Imports ###
+import json
 from flask import Flask, request, jsonify, send_file, Response
 from flask_cors import CORS
 from core.cognition.alpaca import Alpaca
@@ -27,11 +28,11 @@ PEFT_MODEL="tloen/alpaca-lora-7b"
 #LLM_MODEL="decapoda-research/llama-13b-hf-int4"
 #PEFT_MODEL="chansung/alpaca-lora-13b"
 
-CONFIG_NAME="logical"
+CONFIG_NAME="llm/logical"
 
 # llm = Agent()
 # llm.setup_agent()
-llm = Alpaca({"model_name": LLM_MODEL, "config": CONFIG_NAME, "peft_model": PEFT_MODEL })
+llm = Alpaca({"model_name": LLM_MODEL, "generation_config": CONFIG_NAME, "peft_model": PEFT_MODEL })
 llm.setup_alpaca()
 
 llm.init_tools()
@@ -42,8 +43,12 @@ llm.load_agent()
 @measure_time
 def output():
   prompt = request.json["prompt"]
-  generation_config = request.json["generation_config"] 
-  response = llm.generate(prompt, generation_config=generation_config)
+  config = request.json["config"]
+  config = config.replace("=>", ":") # Fix for ruby hash syntax
+  print(f"Prompt: {prompt}")
+  print(f"Config: {config }")
+  llm.configure(json.loads(config))
+  response = llm.generate(prompt)
   print(response.response)
   return jsonify({"response": response.response, "output": response.output, "thought": response.thought})
 

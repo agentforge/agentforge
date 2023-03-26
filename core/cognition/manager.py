@@ -9,18 +9,18 @@ CONFIG_DIR = os.environ["CONFIG_DIR"]
 CONFIG_FILE = os.path.join(CONFIG_DIR, "models.json")
 
 class LLMModelManager:
-    def __init__(self, config):
-        self.config = config
+    def __init__(self):
         self.key = None
-        self._loaded_configs = {}
+        with open(CONFIG_FILE, "r") as f:
+            self._loaded_configs = json.load(f)
 
     def load_model(self, key):
         # Check key and load logic according to key
         self.config = self.load_config(key)
-        if key == "Alpaca":
-            self.load_alpaca(self.config)
+        if key == "alpaca":
+            self.load_alpaca()
         else:
-            self.load_huggingface(self.config)
+            self.load_huggingface()
         self.key = key
 
     def unload_model(self):
@@ -36,6 +36,7 @@ class LLMModelManager:
 
     # Switches model to a new model
     def switch_model(self, key):
+        self.key = key
         self.unload_model()
         self.config = self.load_config(key)
         self.load_model()
@@ -49,6 +50,7 @@ class LLMModelManager:
         return self._loaded_configs[key]
 
     def load_alpaca(self):
+        print("Loading alpaca...")
         self.tokenizer = LlamaTokenizer.from_pretrained(self.config["model_name"])
 
         self.model = LlamaForCausalLM.from_pretrained(
@@ -59,7 +61,7 @@ class LLMModelManager:
         )
 
         self.model = PeftModel.from_pretrained(
-            self.model, self.current_config["peft_model"], torch_dtype=torch.float16, device_map={'':0}
+            self.model, self.config["peft_model"], torch_dtype=torch.float16, device_map={'':0}
         )
 
     def load_huggingface(self):
