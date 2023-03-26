@@ -9,9 +9,7 @@ class InferenceController < ApplicationController
 
     request_json = {
       prompt: text,
-      context: context,
-      model_config: model_config,
-      avatar: avatar
+      config: config
     }
 
     host = Settings.inference_api.host
