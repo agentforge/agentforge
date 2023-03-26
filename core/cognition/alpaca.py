@@ -9,7 +9,6 @@ from core.cognition.agent import Agent
 class Alpaca(Agent):
   def __init__(self, opts={}) -> None:
     self.opts = opts
-    self.config = Config("llm/" + self.opts["config"])
     super().__init__(opts)
 
   # Setup alpaca and load models
@@ -43,7 +42,7 @@ class Alpaca(Agent):
           instruct,
           **kwargs,
   ):
-      prompt = self.instruct_prompt_w_memory(instruct)
+      prompt = self.get_prompt(instruction=instruct)
       self.memory.chat_memory.add_user_message(instruct)
       inputs = self.tokenizer(prompt, return_tensors="pt")
       input_ids = inputs["input_ids"].cuda()

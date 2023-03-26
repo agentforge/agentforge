@@ -55,13 +55,10 @@ def prompt():
 def tts():
   # Get the message for the request
   prompt = request.json["prompt"]
-  avatar = request.json["avatar"]
-  generate_lip_sync = request.json["generate_lip_sync"]
-  generate_lip_sync = True if generate_lip_sync == "true" else False
+  config = request.json["config"]
   
   # Run the agent
-  opts = {"avatar": avatar, "generate_lip_sync": generate_lip_sync}
-  response = executive.speak(prompt, opts)
+  response = executive.speak(prompt, config)
   filename = response["filename"]
   
   # Create a response object with the file data
