@@ -1,0 +1,18 @@
+{
+    "gpt3": {
+        "class_name": "GPT-3",
+        "model_name": "openai/gpt-3",
+        "tokenizer_name": "openai/gpt-3",
+        "perf_model": "gpt-3",
+        "prompt_type": "instruct_w_memory",
+        "class_type": "class_type"
+    },
+    "gpt2": {
+        "class_name": "GPT-2",
+        "model_name": "gpt2",
+        "tokenizer_name": "gpt2",
+        "perf_model": "gpt-2",
+        "prompt_type": "instruct_w_memory",
+        "class_type": "class_type"
+    }
+}

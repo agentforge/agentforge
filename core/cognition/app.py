@@ -11,7 +11,6 @@ sys.path.append(str(path_root))
 ### Imports ###
 from flask import Flask, request, jsonify, send_file, Response
 from flask_cors import CORS
-from core.cognition.agent import Agent
 from core.cognition.alpaca import Alpaca
 import logging
 from core.helpers.helpers import measure_time
@@ -36,7 +35,6 @@ llm = Alpaca({"model_name": LLM_MODEL, "config": CONFIG_NAME, "peft_model": PEFT
 llm.setup_alpaca()
 
 llm.init_tools()
-llm.create_prompt()
 llm.load_agent()
 
 # Given the following text request generate a wav file and return to the client
