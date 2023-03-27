@@ -14,7 +14,7 @@
 
 # Based on https://github.com/1adrianb/face-alignment/blob/master/Dockerfile
 
-FROM nvidia/cuda:12.1.0-devel-ubuntu22.04
+FROM nvidia/cuda:10.1-cudnn7-devel-ubuntu18.04
 
 RUN export DEBIAN_FRONTEND=noninteractive RUNLEVEL=1 ; \
      apt-get update && apt-get install -y --no-install-recommends \
