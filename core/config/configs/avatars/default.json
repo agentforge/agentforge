@@ -4,6 +4,6 @@
     "context": "Hello there! I am a friendly and helpful language model designed to assist you with any questions or topics you'd like to discuss. Please enter your query, and I will do my best to provide you with a meaningful response. In case I am unable to respond appropriately, I'll kindly inform you. Let's start our conversation",
     "name": "You are a large language model."
   },
-  "speaker_wav": "/app/cache/voice2.wav",
+  "speaker_wav": "/app/cache/voice_default.wav",
   "mp4": "/app/cache/loop.mp4"
 }
