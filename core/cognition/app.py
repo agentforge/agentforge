@@ -34,10 +34,9 @@ llm = Alpaca()
 def output():
   prompt = request.json["prompt"]
   config = request.json["config"]
-  config = config.replace("=>", ":") # Fix for ruby hash syntax
   print(f"Prompt: {prompt}")
   print(f"Config: {config }")
-  llm.configure(json.loads(config))
+  llm.configure(config)
   response = llm.generate(prompt)
   print(response.response)
   return jsonify({"response": response.response, "output": response.output, "thought": response.thought})
