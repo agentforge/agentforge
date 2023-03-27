@@ -41,7 +41,7 @@ class ExecutiveCognition:
         wav_response = self.get_tts(form_data)
 
         # if we want to generate lipsync
-        if opts["generate_lip_sync"]:
+        if opts["lipsync"]:
             form_data = {"wav_file": wav_response["filename"], "avatar": opts["avatar"]}
             lipsync_response = self.lipsync(form_data)
             return {"filename": lipsync_response["filename"], "type": "video/mp4"}
