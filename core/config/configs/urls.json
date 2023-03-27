@@ -1,0 +1,5 @@
+{
+  "TTS_URL": "http://speech:3003",
+  "LLM_URL": "http://llm:3002",
+  "W2L_URL": "http://wav2lip:3004"
+}
