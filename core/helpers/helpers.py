@@ -61,12 +61,12 @@ def process_date_sentence(sentence):
         year = int(year)
         day_str = p.ordinal(day)
         month_map = month_abbr.replace('.', '').replace(',', '').strip()
-        month_str = month_mapping[month_map]
+        month_str = month_mapping[month_map] if month_map in month_mapping else month_map
         year_str = process_year(year)
 
         if day_abbr:
             day_val = day_abbr.replace('.', '').replace(',', '').strip()
-            day_map = day_mapping[day_val]
+            day_map = day_mapping[day_val] if day_val in day_mapping else day_val
             day_str = f'{day_map}, {day_str}'
 
         return f'{month_str} {day_str}, {year_str}'
