@@ -28,12 +28,18 @@ def lipsync():
   # Get the wav file from the request
   wav_file = request.json["wav_file"]
   avatar = request.json["avatar"]
-  mp4_file = f"/app/cache/{avatar}.mp4"
 
   output_file = "/app/files/lipsync.mp4"
 
   # Interpret the wav file
-  wav2lip.run({"face": mp4_file, "audio": wav_file, "outfile": output_file, "avatar": avatar})
+  opts = {
+    "face": avatar["mp4"],
+    "audio": wav_file,
+    "outfile": output_file,
+    "avatar": avatar["avatar"]
+  }
+
+  wav2lip.run(opts)
 
   # Return the text in the response
   return jsonify({"filename": output_file})

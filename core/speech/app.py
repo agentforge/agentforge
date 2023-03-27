@@ -21,10 +21,12 @@ whisper = Whisper()
 def text_to_speech():
   # Get the text and filename from the request
   prompt = request.json["prompt"]
+  avatar = request.json["avatar"]
+
   filename = "/app/files/out.wav"
 
   # Enqueue a job in the TTS pipeline
-  filename = tts_inst.synthesizer(prompt, filename)
+  filename = tts_inst.synthesizer(prompt, filename, avatar["speaker_wav"])
 
   # Return the wav file in the response
   print(filename)
