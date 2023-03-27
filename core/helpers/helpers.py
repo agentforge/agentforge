@@ -33,9 +33,45 @@ def remove_hanging(phrase):
 def clean_word(word):
     return word.replace('.', '').replace(',', '').strip()
 
-def process_date_sentence(sentence):
-    p = inflect.engine()
+def tokenize(sentence):
+    return re.findall(r'\b\w+\b', sentence)
 
+def is_year(token):
+    year_pattern = re.compile(r'(\d{4})')
+    if year_pattern.match(token):
+        year = int(token)
+        return 1000 <= year <= 2100
+    return False
+
+def process_year(year, p):
+    if 1000 <= year < 2000:
+        tens = year % 100
+        if tens == 0:
+            return f'{p.number_to_words(year // 100)} hundred'
+        else:
+            return f'{p.number_to_words(year // 100)}-{p.number_to_words(tens, group=2)}'
+    else:
+        return p.number_to_words(year, group=2)
+
+def process_year_fragments(sentence, p = inflect.engine()):
+    tokens = tokenize(sentence)
+    processed_tokens = []
+
+    for i, token in enumerate(tokens):
+        if is_year(token):
+            prev_token = tokens[i - 1] if i > 0 else ""
+            next_token = tokens[i + 1] if i < len(tokens) - 1 else ""
+
+            if not (re.match(r'\d', prev_token) or re.match(r'\d', next_token) or re.match(r'[\+\-\*/]', prev_token) or re.match(r'[\+\-\*/]', next_token)):
+                year = int(token)
+                processed_year = process_year(year, p)
+                token = processed_year
+
+        processed_tokens.append(token)
+
+    return " ".join(processed_tokens)
+
+def process_date_sentence(sentence, p = inflect.engine()):
     # Define mappings for month and day abbreviations
     month_mapping = {
         'Jan': 'January', 'Feb': 'February', 'Mar': 'March', 'Apr': 'April',
@@ -51,12 +87,8 @@ def process_date_sentence(sentence):
     # Regular expression to match date patterns
     date_pattern = re.compile(r'(\b(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)\b[.,]? ?)?(\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\b[.,]? ?)(\d{1,2})(?:st|nd|rd|th)?,? (\d{4})')
     date_pattern2 = re.compile(r'(\b(?:Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\b[.,]? ?)?(\b(?:January|February|March|April|May|June|July|August|September|October|November|December)\b[.,]? ?)(\d{1,2})?(?:st|nd|rd|th)?,? ?(\d{4})?')
-    
-    def process_year(year):
-        if 1000 <= year < 2000:
-            return f'{p.number_to_words(year // 100)}-{p.number_to_words(year % 100, group=2)}'
-        else:
-            return p.number_to_words(year, group=2)
+        
+    p = inflect.engine()
 
     def replace_date(match):
         day_abbr, month_abbr, day, year = match.groups()
@@ -95,8 +127,7 @@ def add_date_postfix(date_string):
     else:
         return date_string
 
-def process_date_terms(sentence):
-    p = inflect.engine()
+def process_date_terms(sentence, p = inflect.engine()):
     words = sentence.split()
 
     processed_words = []
@@ -114,7 +145,7 @@ def check_math_tokens(left_word, right_word):
     pattern = re.compile(r'^\d|\s|\(|\)$')
     return (bool(pattern.match(left_word)) or left_word == '') and (bool(pattern.match(right_word)) or right_word == '')
 
-def convert_numbers_in_sentence(sentence):
+def convert_numbers_in_sentence(sentence, p = inflect.engine()):
     def convert_word_recursive(word):
         # Find the first occurrence of a math symbol in the word
         math_symbol = next((symbol for symbol in math_symbol_map if symbol in word), None)
@@ -133,8 +164,6 @@ def convert_numbers_in_sentence(sentence):
                 return [p.number_to_words(int(cleaned_word))]
             else:
                 return [word]
-
-    p = inflect.engine()
 
     # Define a dictionary to map mathematical symbols to their English language equivalents
     math_symbol_map = {
