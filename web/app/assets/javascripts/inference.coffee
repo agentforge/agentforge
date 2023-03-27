@@ -20,6 +20,11 @@ class App
     $("#max_new_tokens").on "input change", () =>
       @updateMaxTokensValue()
 
+    $('#tts, #streaming').on 'change', (e) =>
+      console.log "change"
+      e.preventDefault()
+      @updateStates()
+
   updateMaxTokensValue: () ->
     slider = document.getElementById("max_new_tokens")
     document.getElementById("max_new_tokens_value").textContent = slider.value
@@ -49,7 +54,6 @@ class App
         text: text
         config: @getConfigValues()
         authenticity_token: window._token
-        avatar: avatar
       success: (response) =>
         if response["file_type"] == "wav"
           @playAudio(response)
@@ -75,23 +79,40 @@ class App
     video.load()
     video.play()
 
+  updateStates: () ->
+    ttsChecked = $('#tts').prop('checked')
+    streamingChecked = $('#streaming').prop('checked')
+
+    if ttsChecked
+      if streamingChecked
+        $('#lipsync').prop('checked', false)
+        $('#lipsync').prop('disabled', true)
+      else
+        $('#lipsync').prop('checked', true)
+        $('#lipsync').prop('disabled', false)
+    else
+      $('#lipsync').prop('checked', false)
+      $('#lipsync').prop('disabled', true)
+
   getTTS: (text, avatar) ->
     host = window.Settings["rails"]["host"]
     port = window.Settings["rails"]["port"]
     @sendTTSRequest("http://#{host}:#{port}/v1/tts", text, avatar)
 
   sendInferenceRequest: (url, text) =>
+    config = @getConfigValues()
     $.ajax
       url: url
       type: 'POST'
       data:
         text: text
-        config: @getConfigValues()
+        config: config
         authenticity_token: window._token
       success: (response) =>
         md = markdownit()
         formattedOutput = response["text"].replace(/\n/g, '<br>')
-        @getTTS(response["text"], @getAvatar())
+        if config["tts"] == true
+          @getTTS(response["text"], @getAvatar())
         $('.chat-history').append "<li class='ai'><div>#{$("#robot-name-input").val()}: #{formattedOutput}</div></li>"
         $('pre code').each ->
           hljs.highlightElement(this)
@@ -115,4 +136,5 @@ $(document).on('turbolinks:load', ->
   app = new App()
   app.playMp4({file_type: "mp4", filename: "/videos/#{app.getAvatar()}.mp4"})
   app.updateMaxTokensValue()
+  app.updateStates()
 )
