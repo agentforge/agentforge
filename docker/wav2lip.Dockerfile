@@ -55,8 +55,8 @@ RUN export DEBIAN_FRONTEND=noninteractive RUNLEVEL=1 ; \
           nvidia-driver-525 mesa-utils && \
 	rm -rf /var/lib/apt/lists/*
 
-RUN pip3 uninstall opencv-python && pip3 install opencv-python==4.6.0.6
-RUN pip3 install flask flask_cors pygments
+RUN pip3 uninstall opencv-python && pip3 install opencv-python==4.6.0.66
+RUN pip3 install flask flask_cors pygments inflect
 
 # create the working directory, to be mounted with the bind option
 RUN mkdir /workspace/src
