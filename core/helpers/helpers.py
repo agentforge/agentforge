@@ -73,6 +73,22 @@ def process_date_sentence(sentence):
     processed_sentence = date_pattern.sub(replace_date, sentence)
     return processed_sentence
 
+def get_postfix(day):
+    if 10 <= day % 100 <= 20:
+        return 'th'
+    else:
+        return {1: 'st', 2: 'nd', 3: 'rd'}.get(day % 10, 'th')
+
+def add_date_postfix(date_string):
+    date_pattern = re.compile(r'(\b(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)\b[.,]? ?)?(\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\b[.,]? ?)(\d{1,2})(?:st|nd|rd|th)?,? (\d{4})')
+    match = date_pattern.match(date_string)
+    if match:
+        day = int(match.group(3))
+        postfix = get_postfix(day)
+        formatted_date = f"{match.group(2)} {day}{postfix}, {match.group(4)}"
+        return formatted_date
+    else:
+        return date_string
 
 def process_date_terms(sentence):
     p = inflect.engine()
