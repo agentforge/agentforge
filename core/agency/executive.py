@@ -46,11 +46,11 @@ class ExecutiveCognition:
 
         config = self.parse_config(config)
         # if we want to generate lipsync
-        if opts["lipsync"]:
+        if config["lipsync"]:
             form_data = {"wav_file": wav_response["filename"], "avatar": config["avatar"]}
             lipsync_response = self.lipsync(form_data)
             return {"filename": lipsync_response["filename"], "type": "video/mp4"}
-        
+
         # else just return the wav file
         return {"file_name": wav_response["filename"], "type": "audio/wav"}
 
