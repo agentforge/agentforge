@@ -5,9 +5,10 @@ from pygments.lexers import PythonLexer, get_lexer_by_name
 from pygments.token import Token
 from collections import Counter
 from pygments import highlight
-import time
+import time, re, math
 from functools import wraps
 from flask import request
+import inflect
 
 def measure_time(func):
     @wraps(func)
@@ -20,9 +21,6 @@ def measure_time(func):
         return response
     return wrapper
 
-if __name__ == "__main__":
-    app.run(debug=True)
-
 def str_to_class(classname):
   my_module = importlib.import_module("transformers")
   return getattr(my_module, classname)
@@ -31,31 +29,23 @@ def str_to_class(classname):
 def remove_hanging(phrase):
   phrase = re.match("(^.*[\.\?!]|^\S[^.\?!]*)", phrase)
   phrase = phrase.group()
-
-import inflect
-
+  
 def convert_numbers_in_sentence(sentence):
     p = inflect.engine()
     
-    # Split the sentence into words
-    words = sentence.split()
+    # Split the sentence into words and delimiters
+    words_and_delimiters = re.split(r'(\s+)', sentence)
     
     # Iterate through the words and convert numbers to their word representation
     converted_words = []
-    for word in words:
+    for word in words_and_delimiters:
         if word.isdigit():
             word = p.number_to_words(int(word))
         converted_words.append(word)
     
-    # Join the words back into a sentence
-    converted_sentence = ' '.join(converted_words)
+    # Join the words and delimiters back into a sentence
+    converted_sentence = ''.join(converted_words)
     return converted_sentence
-
-import math
-from pygments import highlight
-from pygments.lexers import PythonLexer, get_lexer_by_name
-from pygments.token import Token
-from collections import Counter
 
 def is_code_segment(text, threshold=0.85, outer_weight=2):
     try:

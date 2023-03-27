@@ -50,7 +50,7 @@ class Alpaca(Agent):
               generation_config=generation_config,
               return_dict_in_generate=True,
               output_scores=True,
-              max_new_tokens=2048,
+              max_new_tokens=self.max_new_tokens,
           )
       end_time = time.time()
       execution_time = end_time - start_time

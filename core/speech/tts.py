@@ -11,13 +11,17 @@ class TextToSpeech():
     self.tts = TTS(model_name="tts_models/multilingual/multi-dataset/your_tts", progress_bar=False, gpu=True)
 
 
-  def synthesizer(self, text, filename):
+  # Some parsing is really only appropriate for the TTS so we do it here
+  def parse_for_tts(self) -> None:
+    
+
+  def synthesizer(self, text, filename, speaker_wav="/app/cache/voice.wav"):
     # synthesis
     print(f"TTS: {text}")
     # with torch.no_grad():
     # start = time.time()
     # self.tts.tts_to_file(text=text, file_path=filename)
-    self.tts.tts_to_file(text=text, file_path=filename, speaker_wav="/app/cache/voice.wav", language="en")
+    self.tts.tts_to_file(text=text, file_path=filename, speaker_wav=speaker_wav, language="en")
 
     # wav = self.text2speech(text)["wav"]
     # rtf = (time.time() - starts) / (len(wav) / self.text2speech.fs)
