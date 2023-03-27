@@ -30,6 +30,9 @@ def remove_hanging(phrase):
   phrase = re.match("(^.*[\.\?!]|^\S[^.\?!]*)", phrase)
   phrase = phrase.group()
 
+def clean_word(word):
+    return word.replace('.', '').replace(',', '').strip()
+
 def process_date_sentence(sentence):
     p = inflect.engine()
 
@@ -60,12 +63,12 @@ def process_date_sentence(sentence):
         day = int(day)
         year = int(year)
         day_str = p.ordinal(day)
-        month_map = month_abbr.replace('.', '').replace(',', '').strip()
+        month_map = clean_word(month_abbr)
         month_str = month_mapping[month_map] if month_map in month_mapping else month_map
         year_str = process_year(year)
 
         if day_abbr:
-            day_val = day_abbr.replace('.', '').replace(',', '').strip()
+            day_val = clean_word(day_abbr)
             day_map = day_mapping[day_val] if day_val in day_mapping else day_val
             day_str = f'{day_map}, {day_str}'
 
@@ -98,7 +101,7 @@ def process_date_terms(sentence):
 
     processed_words = []
     for word in words:
-        clean_word = word.replace('.', '').replace(',', '').strip()
+        clean_word = clean_word(word)
         match = re.match(r'(\d+)(st|nd|rd|th)', clean_word)
         if match:
             processed_words.append(p.number_to_words(clean_word))
@@ -115,10 +118,13 @@ def convert_numbers_in_sentence(sentence):
         if math_symbol:
             # If a math symbol is found, split the word and convert recursively
             left_word, right_word = word.split(math_symbol, 1)
-            return convert_word_recursive(left_word) + [math_symbol_map[math_symbol]] + convert_word_recursive(right_word)
+            if clean_word(left_word).isdigit() and clean_word(right_word).isdigit():
+                return convert_word_recursive(left_word) + [math_symbol_map[math_symbol]] + convert_word_recursive(right_word)
+            else:
+                return [word]
         else:
             # Remove ',' and '.' characters
-            cleaned_word = word.replace(',', '').replace('.', '')
+            cleaned_word = clean_word(word)
             if cleaned_word.isdigit():
                 return [p.number_to_words(int(cleaned_word))]
             else:
