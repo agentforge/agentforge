@@ -30,15 +30,60 @@ def remove_hanging(phrase):
   phrase = re.match("(^.*[\.\?!]|^\S[^.\?!]*)", phrase)
   phrase = phrase.group()
 
+def process_date_sentence(sentence):
+    p = inflect.engine()
+
+    # Define mappings for month and day abbreviations
+    month_mapping = {
+        'Jan': 'January', 'Feb': 'February', 'Mar': 'March', 'Apr': 'April',
+        'May': 'May', 'Jun': 'June', 'Jul': 'July', 'Aug': 'August',
+        'Sep': 'September', 'Oct': 'October', 'Nov': 'November', 'Dec': 'December'
+    }
+
+    day_mapping = {
+        'Mon': 'Monday', 'Tue': 'Tuesday', 'Wed': 'Wednesday',
+        'Thu': 'Thursday', 'Fri': 'Friday', 'Sat': 'Saturday', 'Sun': 'Sunday'
+    }
+
+    # Regular expression to match date patterns
+    date_pattern = re.compile(r'(\b(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)\b[.,]? ?)?(\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\b[.,]? ?)(\d{1,2})(?:st|nd|rd|th)?,? (\d{4})')
+
+    def process_year(year):
+        if 1000 <= year < 2000:
+            return f'{p.number_to_words(year // 100)}-{p.number_to_words(year % 100, group=2)}'
+        else:
+            return p.number_to_words(year, group=2)
+
+    def replace_date(match):
+        day_abbr, month_abbr, day, year = match.groups()
+        day = int(day)
+        year = int(year)
+        day_str = p.ordinal(day)
+        month_map = month_abbr.replace('.', '').replace(',', '').strip()
+        month_str = month_mapping[month_map]
+        year_str = process_year(year)
+
+        if day_abbr:
+            day_val = day_abbr.replace('.', '').replace(',', '').strip()
+            day_map = day_mapping[day_val]
+            day_str = f'{day_map}, {day_str}'
+
+        return f'{month_str} {day_str}, {year_str}'
+
+    processed_sentence = date_pattern.sub(replace_date, sentence)
+    return processed_sentence
+
+
 def process_date_terms(sentence):
     p = inflect.engine()
     words = sentence.split()
 
     processed_words = []
     for word in words:
-        match = re.match(r'(\d+)(st|nd|rd|th)', word)
+        clean_word = word.replace('.', '').replace(',', '').strip()
+        match = re.match(r'(\d+)(st|nd|rd|th)', clean_word)
         if match:
-            processed_words.append(p.number_to_words(word))
+            processed_words.append(p.number_to_words(clean_word))
         else:
             processed_words.append(word)
 
