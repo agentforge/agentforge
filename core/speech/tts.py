@@ -3,6 +3,7 @@
 # from espnet2.utils.types import str_or_none
 import soundfile as sf
 from TTS.api import TTS
+from core.helpers.helpers import convert_numbers_in_sentence
 
 class TextToSpeech():
   def __init__(self) -> None:
@@ -13,7 +14,7 @@ class TextToSpeech():
 
   # Some parsing is really only appropriate for the TTS so we do it here
   def parse_for_tts(self) -> None:
-    
+    return convert_numbers_in_sentence(text)
 
   def synthesizer(self, text, filename, speaker_wav="/app/cache/voice.wav"):
     # synthesis
