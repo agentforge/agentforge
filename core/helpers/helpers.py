@@ -122,6 +122,7 @@ def convert_numbers_in_sentence(sentence):
         if math_symbol:
             # If a math symbol is found, split the word and convert recursively
             left_word, right_word = word.split(math_symbol, 1)
+            print(f"'{left_word}' - '{right_word}'")
             if check_math_tokens(left_word, right_word):
                 return convert_word_recursive(left_word) + [math_symbol_map[math_symbol]] + convert_word_recursive(right_word)
             else:
