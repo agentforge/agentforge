@@ -55,7 +55,7 @@ class ExecutiveCognition:
             return {"filename": lipsync_response["filename"], "type": "video/mp4"}
 
         # else just return the wav file
-        return {"file_name": wav_response["filename"], "type": "audio/wav"}
+        return {"filename": wav_response["filename"], "type": "audio/wav"}
 
     def respond(self, prompt, config):
         url = self.urls["LLM_URL"]

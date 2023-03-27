@@ -31,7 +31,6 @@ class App
 
   getAvatar: () ->
     avatar = $("#avatar-dropdown").val()
-    avatar = "loop" if avatar ==  "default"
     avatar
 
   getConfigValues: () ->

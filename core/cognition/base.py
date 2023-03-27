@@ -44,7 +44,7 @@ class LLM():
   def set_max_new_tokens(self, max_new_tokens):
     # grab the config
     if max_new_tokens != 'NaN':
-      self.max_new_tokens = max_new_tokens
+      self.max_new_tokens = int(max_new_tokens)
     else:
       self.max_new_tokens = DEFAULT_MAX_NEW_TOKENS
 
