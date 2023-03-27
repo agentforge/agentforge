@@ -101,10 +101,10 @@ def process_date_terms(sentence):
 
     processed_words = []
     for word in words:
-        clean_word = clean_word(word)
-        match = re.match(r'(\d+)(st|nd|rd|th)', clean_word)
+        fixed = clean_word(word)
+        match = re.match(r'(\d+)(st|nd|rd|th)', fixed)
         if match:
-            processed_words.append(p.number_to_words(clean_word))
+            processed_words.append(p.number_to_words(fixed))
         else:
             processed_words.append(word)
 
