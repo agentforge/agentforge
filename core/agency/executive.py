@@ -1,5 +1,5 @@
 from core.helpers.parser import Parser
-import requests
+import requests, json
 
 TTS_URL = "http://speech:3003"
 LLM_URL = "http://llm:3002"
@@ -33,24 +33,29 @@ class ExecutiveCognition:
         url = f"{W2L_URL}/v1/lipsync"
         return self.post_request(url, form_data)
 
+    def parse_config(self, config):
+        config = config.replace("=>", ":") # Fix for ruby hash syntax
+        return json.loads(config)
+
     # Either return a wav file or a mp4 file based on flag
-    def speak(self, prompt, opts):
+    def speak(self, prompt, config):
         # Get wav/tts file
         prompt = self.parser.parse(prompt)
         form_data = {"prompt": prompt}
         wav_response = self.get_tts(form_data)
 
+        config = self.parse_config(config)
         # if we want to generate lipsync
-        if opts["generate_lip_sync"]:
-            form_data = {"wav_file": wav_response["filename"], "avatar": opts["avatar"]}
+        if config["lipsync"]:
+            form_data = {"wav_file": wav_response["filename"], "avatar": config["avatar"]}
             lipsync_response = self.lipsync(form_data)
             return {"filename": lipsync_response["filename"], "type": "video/mp4"}
-        
+
         # else just return the wav file
         return {"file_name": wav_response["filename"], "type": "audio/wav"}
 
     def respond(self, prompt, config):
         url = f"{LLM_URL}/v1/completions"
         prompt = self.parser.parse(prompt)
-        form_data = {"prompt": prompt, "config": config}
+        form_data = {"prompt": prompt, "config": self.parse_config(config)}
         return self.post_request(url, form_data)

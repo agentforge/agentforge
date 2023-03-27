@@ -6,36 +6,26 @@ from core.config.config import Config
 
 from core.cognition.agent import Agent
 
+MODEL_KEY="alpaca-lora-7b"
+
 class Alpaca(Agent):
   def __init__(self, opts={}) -> None:
     self.opts = opts
+    if len(opts) == 0:
+      opts = {"model_key": MODEL_KEY }
     super().__init__(opts)
+    self.setup_alpaca()
 
   # Setup alpaca and load models
   def setup_alpaca(self):
-    self.load_alpaca()
+    self.llm.load_model(self.model_key)
 
-  def load_alpaca(self):
-    self.tokenizer = LlamaTokenizer.from_pretrained(self.opts["model_name"])
-
-    self.model = LlamaForCausalLM.from_pretrained(
-      self.opts["model_name"],
-      load_in_8bit=True,
-      torch_dtype=torch.float16,
-      device_map={'':0},
-    )
-
-    self.model = PeftModel.from_pretrained(
-        self.model, self.opts["peft_model"], torch_dtype=torch.float16, device_map={'':0}
-    )
-
-  def generate(self, prompt, config=None):
-     # grab the config
-     if config != None and self.config.config_name != config:
-        self.config = Config("llm/" + config)
-     kwargs = self.config.to_dict()
-     print(f"Rendering with {kwargs}")
-     return self._generate(prompt, **kwargs)
+  def generate(self, prompt, gc_name=None):
+    if gc_name is not None:
+      self.set_generation_config(gc_name)
+    kwargs = self.generation_config.to_dict()
+    print(f"Rendering with {kwargs}")
+    return self._generate(prompt, **kwargs)
 
   def _generate(
           self,
@@ -44,7 +34,9 @@ class Alpaca(Agent):
   ):
       prompt = self.get_prompt(instruction=instruct)
       self.memory.chat_memory.add_user_message(instruct)
-      inputs = self.tokenizer(prompt, return_tensors="pt")
+      print(self.llm.tokenizer)
+      # print(prompt)
+      inputs = self.llm.tokenizer(prompt, return_tensors="pt")
       input_ids = inputs["input_ids"].cuda()
       generation_config = GenerationConfig(
           **kwargs,
@@ -53,7 +45,7 @@ class Alpaca(Agent):
       print("GENERATE...")
       start_time = time.time()
       with torch.no_grad():
-          generation_output = self.model.generate(
+          generation_output = self.llm.model.generate(
               input_ids=input_ids,
               generation_config=generation_config,
               return_dict_in_generate=True,
@@ -64,7 +56,7 @@ class Alpaca(Agent):
       execution_time = end_time - start_time
       print(f"Execution time: {execution_time:.6f} seconds")
       s = generation_output.sequences[0]
-      output = self.tokenizer.decode(s)
+      output = self.llm.tokenizer.decode(s)
       # print(output)
       out = self.parse(output)
       self.memory.chat_memory.add_ai_message(out.response)

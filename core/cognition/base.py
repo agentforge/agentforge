@@ -4,11 +4,9 @@
 ### accessing GPU/TPU resources ###
 
 ### Imports ###
-from transformers import AutoModelForCausalLM, AutoTokenizer
 import torch
 from core.config.config import Config
 import logging
-from torch.multiprocessing import Manager, Process
 from core.cognition.prompt import Prompt
 from core.cognition.manager import LLMModelManager
 from langchain.chains.conversation.memory import ConversationBufferMemory
@@ -18,30 +16,42 @@ from langchain.chains.conversation.memory import ConversationBufferMemory
 class LLM():
   def __init__(self,  opts) -> None:
     self.opts = {} if opts == None else opts
-    self.model_name = opts.get("model_name", "gpt2")
-    self.config_name = opts.get("config_name", "llm/logical")
+    self.model_key = opts.get("model_key", "base")
+    self.gc_name = opts.get("generation_config", "llm/logical")
     
     # Loads the model configuration
-    self.config = Config(self.config_name)
+    self.generation_config = Config(self.gc_name)
     self.model = None # default states
     self.tokenizer = None # default state
     self.device = opts.get("device", "cuda")
 
     # create a shared dictionary to store the model to be used by other workers
-    self.manager = Manager()
-    self.shared_dict = self.manager.dict()
     logging.info(f"LLM CUDA enabled: {self.device == 'cuda' and torch.cuda.is_available()}")
 
     # Load memory, prompt, and LLM Model Manager
     self.memory = ConversationBufferMemory(return_messages=True)
     self.prompt_manager = Prompt(self.memory)
-    self.llm_manager = LLMModelManager(self.config)
+    self.llm = LLMModelManager()
+
+  def configure(self, config) -> None:
+    self.set_generation_config(config.get("generation_config", self.gc_name))
+    self.set_model_config(config.get("model_key", self.llm.key))
+
+  def set_generation_config(self, generation_config):
+    # grab the config
+    if self.gc_name != generation_config:
+      self.generation_config = Config("llm/" + generation_config)
+      self.gc_name = generation_config
+
+  def set_model_config(self, model_key):
+    # grab the config
+    if self.llm.key != model_key:
+      self.llm.switch_model(model_key)
 
   # Get the prompt based on the current model key
   def get_prompt(self, **kwargs):
     # If memory is an argument let's extract relevant information from it
-    prompt_func = self.prompt_manager.get_prompt(self.llm_manager.key)
-    return prompt_func(**kwargs)
+    return self.prompt_manager.get_prompt(self.llm.config["prompt_type"], **kwargs)
 
   # Get the name of the class
   def name(self):
@@ -52,75 +62,8 @@ class LLM():
     return self.device == "cuda" and torch.cuda.is_available()
 
   # Loads the model and transfomer given the model name
-  def load(self, **kwargs) -> None:
-    # get opts if it is available
-    opts = kwargs.get("opts", self.opts)
-    # Check shared dict to see if model_name has been loaded, if we haven't already
-    if self.get_model() is not None and self.get_tokenizer() is not None:
-      if self.model is None:
-        self.model = self.get_model()
-      if self.tokenizer is None:
-        self.tokenizer = self.get_tokenizer()
-
-    # Validate that both model_name and config_name exist
-    if self.model_name == None or self.config_name == None:
-      raise ValueError("model_name and config_name must be defined")
-
-    # Sets the model revision and torch dtype
-    revision = opts.get("revision", "float16")
-    torch_dtype = opts.get("torch_dtype", torch.float16)
-
-    # Given the model name, loads the requested revision model and transfomer
-    self.model = AutoModelForCausalLM.from_pretrained(
-      self.model_name,
-      # revision = revision,
-      torch_dtype = torch_dtype,
-    )
-
-    self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
-
-    # Loads the model into GPU if available
-    device = torch.device("cuda") if self.gpu() else torch.device("cpu")
-    print("gpu: ", self.gpu())
-    self.model = self.model.to(device)
-
-    # Store model reference in shared dict if necessary
-    # self.fanout()
-    print("Model loaded and online...")
-
-  def tokenizer_key(self):
-    return f"{self.model_name}-tokenizer"
-
-  def model_key(self):
-    return f"{self.model_name}-model"
-
-  # Gets the model
-  def get_tokenizer(self):
-    return self.shared_dict[self.tokenizer_key()] if self.tokenizer_key() in self.shared_dict else None
-
-  # Gets the model
-  def get_model(self):
-    return self.shared_dict[self.model_key()] if self.model_key() in self.shared_dict else None
-
-  ### Inits the model pointer in a shared dict for other torch processes that have access to this GPU ###
-  def fanout(self) -> None:
-
-    # async function to store the model in the shared dict
-    def store_model(shared_dict, model, tokenizer, m_key, t_key):
-      if m_key not in shared_dict:
-        # create the model and store it in the shared 
-        shared_dict[m_key] = model
-      if t_key not in shared_dict:
-        shared_dict[t_key] = tokenizer
-
-    p_args = (self.shared_dict,self.model, self.tokenizer, self.model_key(), self.tokenizer_key(),)
-
-    # start a separate process to create and store the model
-    p = Process(target=store_model, args=p_args)
-    p.start()
-
-    # wait for the process to finish
-    p.join()
+  def load(self, model_key, **kwargs) -> None:
+    self.llm.load_model(model_key)
 
   # Given a prompt, generates a response
   def generate(self, prompt: str, **kwargs) -> str:
