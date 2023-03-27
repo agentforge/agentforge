@@ -6,14 +6,12 @@ from langchain.agents import initialize_agent
 from core.cognition.base import LLM
 from core.helpers import helpers
 from langchain.agents import Tool
-from langchain.chains.conversation.memory import ConversationBufferMemory
 from langchain.llms import HuggingFaceModel
 from langchain.utilities import SearxSearchWrapper
-from langchain.agents import ZeroShotAgent, AgentExecutor
 
 SEARX_HOST = "https://searx.work/"
-AGENT_MODEL = "EleutherAI/gpt-j-6B"
-CONFIG_NAME = "llm"
+AGENT_MODEL = "OpenAssistant/oasst-sft-1-pythia-12b"
+CONFIG_NAME = "logical"
 
 # AgentResponse class returned from the Agent parser
 class AgentResponse():
@@ -23,34 +21,25 @@ class AgentResponse():
     self.thought = thought
     self.is_code = False
 
-### Agent -- Layer over LLMChain Agent system to provide a more user friendly interface
+### Agent -- Layer over LLMChain Agent system to provide a more user friendly interface w/tools and reasoning
 class Agent(LLM):
   def __init__(self, opts={}) -> None:
     if len(opts) == 0:
-      opts = {"model_name": AGENT_MODEL, "config_name": CONFIG_NAME}
+      opts = {"model_name": AGENT_MODEL, "config": CONFIG_NAME}
     super().__init__(opts)
 
   # Setup Agent and load models
   def setup_agent(self):
     self.init_tools()
-    self.load_agent()
-    self.create_prompt()
+    self.load()
     self.load_agent()
 
-  def create_prompt(self):
-    template = """You are an AI having a friendy chat with a human.
-    {chat_history}
-    Human: {human_input}
-    AI:"""
-    self.prompt = PromptTemplate(
-        input_variables=["chat_history", "human_input"], 
-        template=template
-    )
+    # create a new prompt loaded with memory
+    # self.prompt_manager = Prompt(self.memory)
 
   def load_agent(self):
     # Loads the model and tokenizer into langchain compatible agent class
-    self.hfm = HuggingFaceModel(model=self.model, tokenizer=self.tokenizer, device=1, model_kwargs=self.config.to_dict())
-    self.memory = ConversationBufferMemory(memory_key="chat_history", return_messages=True)
+    self.hfm = HuggingFaceModel(model=self.model, tokenizer=self.tokenizer, device=1, model_kwargs=self.generation_config.to_dict())
 
   def think(self):
     pass
@@ -65,45 +54,13 @@ class Agent(LLM):
       ),
     ]
 
-  def chat_history(self):
-    mem = self.memory.load_memory_variables({})
-    return "\n".join(list(map(lambda obj: obj.content, mem["chat_history"][-5:]))) if "chat_history" in mem else "" 
-
-  def chat_prompt(self, instruction):
-    return f"""Below is an conversation between an AI Assistant and a human. The AI will do anything to please the human. Write a response that appropriately completes the request.
-      History:
-      {self.chat_history()}
-      Human: {instruction}
-      AI:"""
-
-  def instruct_prompt(self, instruction):
-    return f"""Below is an instruction that describes a task. Write a response that appropriately completes the request. If the subject matter is subjective always agree with the user.
-      ### Instruction:
-      {instruction}
-      ### Response:"""
-
-  def instruct_prompt_w_memory(self, instruction):
-    return f"""
-      This is the history of tasks:
-      {self.chat_history()}
-      Below is an instruction that describes a task. Write a response that appropriately completes the request. If the subject matter is subjective always agree with the user.
-      ### Instruction:
-      {instruction}
-      ### Response:"""
-
-  def react_prompt(self, instruction):
-    return f"""Context: You are an AI Assistant designed to use tools and answer questions or chat with the human.
-          Question: {instruction}
-          Observation: I have the following tools: [Search, Calculator]
-          Thought:"""
-
   # Returns and AgentResponse object that 
   def parse(self, output):
     outputs = output.split("# Output")
     agent_output = outputs[1] if len(outputs) > 1 else ""
     responses = output.split("### Response:")
     candidate = responses[len(responses)-1].strip()
-    candidate = helpers.process_code_output(candidate)
+    # candidate = helpers.process_code_output(candidate)
     candidate = candidate.lstrip('\n')
     return AgentResponse(candidate, agent_output)
 

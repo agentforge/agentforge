@@ -1,0 +1,11 @@
+{
+  "do_sample": false,
+  "no_repeat_ngram_size": 3,
+  "max_new_tokens": 512,
+  "renormalize_logits": true,
+  "temperature": 0.1,
+  "top_k": 64,
+  "use_cache": true,
+  "num_beams": 1,
+  "repetition_penalty": 1
+}

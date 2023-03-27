@@ -3,8 +3,9 @@
   "no_repeat_ngram_size": 3,
   "max_new_tokens": 512,
   "renormalize_logits": true,
-  "temperature": 0.01,
+  "temperature": 0.5,
   "top_k": 64,
-  "pad_token_id": null,
-  "use_cache": true
+  "use_cache": true,
+  "num_beams": 1,
+  "repetition_penalty": 1
 }

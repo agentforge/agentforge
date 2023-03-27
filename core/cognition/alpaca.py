@@ -1,76 +1,51 @@
 import torch
-import transformers
 import time
 from peft import PeftModel
 from transformers import LlamaTokenizer, LlamaForCausalLM, GenerationConfig
+from core.config.config import Config
 
 from core.cognition.agent import Agent
 
-from langchain import PromptTemplate, LLMChain
-from core.cognition.base import LLM
-from langchain.chains.conversation.memory import ConversationBufferMemory
-from langchain.llms import HuggingFaceModel
-
-### Alpaca -- Stanford's davinci-003 model
-AGENT_MODEL="decapoda-research/llama-7b-hf"
-CONFIG_NAME="llm"
+MODEL_KEY="alpaca-lora-7b"
 
 class Alpaca(Agent):
   def __init__(self, opts={}) -> None:
+    self.opts = opts
     if len(opts) == 0:
-      opts = {"model_name": AGENT_MODEL, "config_name": CONFIG_NAME}
+      opts = {"model_key": MODEL_KEY }
     super().__init__(opts)
+    self.setup_alpaca()
 
   # Setup alpaca and load models
   def setup_alpaca(self):
-    self.load_alpaca()
+    self.llm.load_model(self.model_key)
 
-  def load_alpaca(self):
-    self.tokenizer = LlamaTokenizer.from_pretrained("decapoda-research/llama-7b-hf")
+  def generate(self, prompt, gc_name=None):
+    if gc_name is not None:
+      self.set_generation_config(gc_name)
+    kwargs = self.generation_config.to_dict()
+    print(f"Rendering with {kwargs}")
+    return self._generate(prompt, **kwargs)
 
-    self.model = LlamaForCausalLM.from_pretrained(
-      "decapoda-research/llama-7b-hf",
-      load_in_8bit=True,
-      torch_dtype=torch.float16,
-      device_map="auto",
-    )
-
-    self.model = PeftModel.from_pretrained(
-        self.model, "tloen/alpaca-lora-7b", torch_dtype=torch.float16
-    )
-
-  def generate(
+  def _generate(
           self,
           instruct,
-          temperature=0.1,
-          top_p=0.75,
-          top_k=24,
-          repetition_penalty=1.2,
-          no_repeat_ngram_size=3,
-          do_sample=True,
-          num_beams=4,
           **kwargs,
   ):
-      prompt = self.instruct_prompt_w_memory(instruct)
+      prompt = self.get_prompt(instruction=instruct)
       self.memory.chat_memory.add_user_message(instruct)
-      inputs = self.tokenizer(prompt, return_tensors="pt")
+      print(self.llm.tokenizer)
+      # print(prompt)
+      inputs = self.llm.tokenizer(prompt, return_tensors="pt")
       input_ids = inputs["input_ids"].cuda()
       generation_config = GenerationConfig(
-          temperature=temperature,
-          #top_p=top_p,
-          top_k=top_k,
-          do_sample=do_sample,
-          no_repeat_ngram_size=no_repeat_ngram_size,
-          repetition_penalty=repetition_penalty,
-          renormalize_logits=True,
-          num_beams=num_beams,
           **kwargs,
       )
       # print(prompt)
       print("GENERATE...")
       start_time = time.time()
       with torch.no_grad():
-          generation_output = self.model.generate(
+          generation_output = self.llm.model.generate(
               input_ids=input_ids,
               generation_config=generation_config,
               return_dict_in_generate=True,
@@ -81,7 +56,7 @@ class Alpaca(Agent):
       execution_time = end_time - start_time
       print(f"Execution time: {execution_time:.6f} seconds")
       s = generation_output.sequences[0]
-      output = self.tokenizer.decode(s)
+      output = self.llm.tokenizer.decode(s)
       # print(output)
       out = self.parse(output)
       self.memory.chat_memory.add_ai_message(out.response)

@@ -5,9 +5,12 @@ class InferenceController < ApplicationController
     # Calls interpret API and takes request data and called inference engine to produce
     # an automated response
     text = params[:text]
-    context = params[:context]
-    name = params[:name]
-    robot_name = params[:robot_name]
+    config = params[:config]
+
+    request_json = {
+      prompt: text,
+      config: config
+    }
 
     host = Settings.inference_api.host
     port = Settings.inference_api.port
@@ -19,7 +22,7 @@ class InferenceController < ApplicationController
   
     request = Net::HTTP::Post.new(uri)
     request["Content-Type"] = "application/json"
-    request.body = JSON.dump(prompt: text, context: context, name: name, robot_name: robot_name)
+    request.body = JSON.dump(request_json)
   
     response = http.request(request)
     puts JSON.parse(response.body)
