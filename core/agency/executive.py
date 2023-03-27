@@ -31,7 +31,7 @@ class ExecutiveCognition:
         return self.post_request(url, form_data)
 
     def lipsync(self, form_data):
-        url = self.urls["TTS_URL"]
+        url = self.urls["W2L_URL"]
         url = f"{url}/v1/lipsync"
         return self.post_request(url, form_data)
 
@@ -42,12 +42,12 @@ class ExecutiveCognition:
     # Either return a wav file or a mp4 file based on flag
     def speak(self, prompt, config):
         # Get wav/tts file
+        config = self.parse_config(config)
         avatar = self.avatar.get_avatar(config["avatar"])
         prompt = self.parser.parse(prompt)
         form_data = {"prompt": prompt, "avatar": avatar}
         wav_response = self.get_tts(form_data)
 
-        config = self.parse_config(config)
         # if we want to generate lipsync
         if config["lipsync"]:
             form_data = {"wav_file": wav_response["filename"], "avatar": avatar}
