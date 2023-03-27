@@ -43,11 +43,12 @@ class Wav2LipModel():
     self.args.static = True
     self.args.img_size = 96
 
-    self.args.avatar = "loop" if "avatar" in opts else opts['avatar']
+    self.avatar = opts['box'] if "avatar" in opts else "loop"
 
     self.load_face(faces)
 
   def run(self, opts={}):
+    self.avatar = opts['avatar'] if 'avatar' in opts else 'loop'
     self.args.face = opts['face'] if 'face' in opts else 'results/test.mp4'
     self.args.audio = opts['audio'] if 'audio' in opts else 'results/test.wav'
     self.args.outfile = opts['outfile'] if 'outfile' in opts else 'results/result_voice.mp4'
@@ -176,7 +177,7 @@ class Wav2LipModel():
     for avatar, face in faces:
       self.args.face = face
       if not os.path.isfile(self.args.face):
-        raise ValueError('--face argument must be a valid path to video/image file')
+        raise ValueError(f"--face argument must be a valid path to video/image file, got {self.args.face}")
 
       elif self.args.face.split('.')[1] in ['jpg', 'png', 'jpeg']:
         self.full_frames = [cv2.imread(self.args.face)]
