@@ -11,7 +11,7 @@ class TextToSpeech():
     self.tts = TTS(model_name="tts_models/multilingual/multi-dataset/your_tts", progress_bar=False, gpu=True)
 
 
-  def synthesizer(self, text, filename, speaker_wav="/app/cache/voice.wav""):
+  def synthesizer(self, text, filename, speaker_wav="/app/cache/voice.wav"):
     # synthesis
     print(f"TTS: {text}")
     # with torch.no_grad():
