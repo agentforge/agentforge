@@ -11,6 +11,10 @@ class TextToSpeech():
     self.tts = TTS(model_name="tts_models/multilingual/multi-dataset/your_tts", progress_bar=False, gpu=True)
 
 
+  # Some parsing is really only appropriate for the TTS so we do it here
+  def parse_for_tts(self) -> None:
+    
+
   def synthesizer(self, text, filename, speaker_wav="/app/cache/voice.wav"):
     # synthesis
     print(f"TTS: {text}")

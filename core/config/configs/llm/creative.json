@@ -1,7 +1,6 @@
 {
   "do_sample": true,
   "no_repeat_ngram_size": 3,
-  "max_new_tokens": 512,
   "renormalize_logits": true,
   "temperature": 0.88,
   "top_k": 64,
