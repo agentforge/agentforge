@@ -15,36 +15,36 @@ class Prompt:
         mem = self.memory.load_memory_variables({})
         return "\n".join(list(map(lambda obj: obj.content, mem["chat_history"][-5:]))) if "chat_history" in mem else ""
 
-    def simple_template(self, instruction=""):
+    def simple_template(self, instruction="", **kwargs):
         template = f"""You are an AI having a friendly chat with a human.
         {self.chat_history()}
         Human: {instruction}
         AI:"""
         return template
 
-    def open_assistant_prompt(self, instruction=""):
+    def open_assistant_prompt(self, instruction="", **kwargs):
         template = f"{instruction}"
         return template
 
-    def chat_prompt(self, instruction=""):
+    def chat_prompt(self, instruction="", **kwargs):
         return f"""Below is a conversation between an AI Assistant and a human. The AI will do anything to please the human. Write a response that appropriately completes the request.
         History:
         {self.chat_history()}
         Human: {instruction}
         AI:"""
 
-    def instruct_prompt(self, instruction=""):
+    def instruct_prompt(self, instruction="", **kwargs):
         return f"""Below is an instruction that describes a task. Write a response that appropriately completes the request. If the subject matter is subjective always agree with the user.
         ### Instruction:
         {instruction}
         ### Response:"""
 
-    def instruct_prompt_w_memory(self, instruction="", context=""):
+    def instruct_prompt_w_memory(self, instruction="", context="", name="", **kwargs):
         return f"""
         This is the history of tasks:
         {self.chat_history()}
         ### Context:
-        {context}
+        {context} {name}
         ### Instruction:
         {instruction}
         ### Response:"""
