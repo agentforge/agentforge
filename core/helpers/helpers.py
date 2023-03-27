@@ -47,7 +47,8 @@ def process_date_sentence(sentence):
 
     # Regular expression to match date patterns
     date_pattern = re.compile(r'(\b(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)\b[.,]? ?)?(\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\b[.,]? ?)(\d{1,2})(?:st|nd|rd|th)?,? (\d{4})')
-
+    date_pattern2 = re.compile(r'(\b(?:Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday)\b[.,]? ?)?(\b(?:January|February|March|April|May|June|July|August|September|October|November|December)\b[.,]? ?)(\d{1,2})?(?:st|nd|rd|th)?,? ?(\d{4})?')
+    
     def process_year(year):
         if 1000 <= year < 2000:
             return f'{p.number_to_words(year // 100)}-{p.number_to_words(year % 100, group=2)}'
@@ -69,8 +70,9 @@ def process_date_sentence(sentence):
             day_str = f'{day_map}, {day_str}'
 
         return f'{month_str} {day_str}, {year_str}'
-
-    processed_sentence = date_pattern.sub(replace_date, sentence)
+    
+    processed_sentence = date_pattern2.sub(replace_date, sentence)
+    processed_sentence = date_pattern.sub(replace_date, processed_sentence)
     return processed_sentence
 
 def get_postfix(day):
