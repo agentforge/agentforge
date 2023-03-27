@@ -31,18 +31,42 @@ def remove_hanging(phrase):
   phrase = phrase.group()
   
 def convert_numbers_in_sentence(sentence):
+    def convert_word_recursive(word):
+        # Find the first occurrence of a math symbol in the word
+        math_symbol = next((symbol for symbol in math_symbol_map if symbol in word), None)
+
+        if math_symbol:
+            # If a math symbol is found, split the word and convert recursively
+            left_word, right_word = word.split(math_symbol, 1)
+            return convert_word_recursive(left_word) + [math_symbol_map[math_symbol]] + convert_word_recursive(right_word)
+        else:
+            # Remove ',' and '.' characters
+            cleaned_word = word.replace(',', '').replace('.', '')
+            if cleaned_word.isdigit():
+                return [p.number_to_words(int(cleaned_word))]
+            else:
+                return [word]
+
     p = inflect.engine()
-    
+
+    # Define a dictionary to map mathematical symbols to their English language equivalents
+    math_symbol_map = {
+        '+': ' plus ',
+        '=': ' equals ',
+        '-': ' minus ',
+        '*': ' times ',
+        '/': ' divided by ',
+        '^': ' to the power of '
+    }
+
     # Split the sentence into words and delimiters
     words_and_delimiters = re.split(r'(\s+)', sentence)
-    
-    # Iterate through the words and convert numbers to their word representation
+
+    # Iterate through the words and convert numbers and mathematical symbols to their word representation
     converted_words = []
     for word in words_and_delimiters:
-        if word.isdigit():
-            word = p.number_to_words(int(word))
-        converted_words.append(word)
-    
+        converted_words.extend(convert_word_recursive(word))
+
     # Join the words and delimiters back into a sentence
     converted_sentence = ''.join(converted_words)
     return converted_sentence
