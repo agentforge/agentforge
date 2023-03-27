@@ -6,17 +6,19 @@ from core.config.config import Config
 
 from core.cognition.agent import Agent
 
+MODEL_KEY="alpaca-lora-7b"
+
 class Alpaca(Agent):
   def __init__(self, opts={}) -> None:
     self.opts = opts
+    if len(opts) == 0:
+      opts = {"model_key": MODEL_KEY }
     super().__init__(opts)
+    self.setup_alpaca()
 
   # Setup alpaca and load models
   def setup_alpaca(self):
-    self.load()
-
-  def load(self):
-    self.llm.load_model("alpaca")
+    self.llm.load_model(self.model_key)
 
   def generate(self, prompt, gc_name=None):
     if gc_name is not None:

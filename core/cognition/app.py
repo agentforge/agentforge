@@ -21,22 +21,12 @@ from core.helpers.helpers import measure_time
 app = Flask(__name__)
 CORS(app)
 
-### Alpaca -- Stanford's davinci-003 model
-LLM_MODEL="decapoda-research/llama-7b-hf"
-PEFT_MODEL="tloen/alpaca-lora-7b"
-
-#LLM_MODEL="decapoda-research/llama-13b-hf-int4"
-#PEFT_MODEL="chansung/alpaca-lora-13b"
-
-CONFIG_NAME="llm/logical"
-
 # llm = Agent()
 # llm.setup_agent()
-llm = Alpaca({"model_name": LLM_MODEL, "generation_config": CONFIG_NAME, "peft_model": PEFT_MODEL })
-llm.setup_alpaca()
+# llm.load_agent()
 
-llm.init_tools()
-llm.load_agent()
+### Alpaca -- Stanford's davinci-003 model
+llm = Alpaca()
 
 # Given the following text request generate a wav file and return to the client
 @app.route("/v1/completions", methods=["POST"])
@@ -52,17 +42,12 @@ def output():
   print(response.response)
   return jsonify({"response": response.response, "output": response.output, "thought": response.thought})
 
-
 @app.route("/v1/update_model", methods=["POST"])
 def update_model():
     global llm
     model_name = request.json["model_name"]
-    config_name = request.json["config_name"]
-    peft_name = request.json["peft_name"]
-    llm = Alpaca({"model_name": model_name, "config": config_name, "peft_name": peft_name})
-    llm.setup_alpaca()
+    llm.llm.switch_model(model_name)
     return jsonify({"message": f"Model state updated to {model_name}"})
-
 
 if __name__ == "__main__":
     app.run(debug=True)

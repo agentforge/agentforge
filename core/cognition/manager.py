@@ -17,7 +17,7 @@ class LLMModelManager:
     def load_model(self, key):
         # Check key and load logic according to key
         self.config = self.load_config(key)
-        if key == "alpaca":
+        if "alpaca" in key:
             self.load_alpaca()
         else:
             self.load_huggingface()
@@ -38,8 +38,7 @@ class LLMModelManager:
     def switch_model(self, key):
         self.key = key
         self.unload_model()
-        self.config = self.load_config(key)
-        self.load_model()
+        self.load_model(key)
     
     def load_config(self, key):
         if key not in self._loaded_configs:
@@ -65,16 +64,17 @@ class LLMModelManager:
         )
 
     def load_huggingface(self):
+        print("Loading huggingface...")
         if self.config["model_name"] == None:
             raise ValueError("model_name must be defined")
 
-        revision = self.config.get("revision", "float16")
+        revision = self.config.get("revision", "main")
         torch_dtype = self.config.get("torch_dtype", torch.float16)
 
         self.model = AutoModelForCausalLM.from_pretrained(
             self.config["model_name"],
             torch_dtype=torch_dtype,
-            revision=revision,
+            # revision=revision,
         )
 
         self.tokenizer = AutoTokenizer.from_pretrained(self.config["tokenizer_name"])

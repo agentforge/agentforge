@@ -1,5 +1,5 @@
 {
-    "alpaca": {
+    "alpaca-lora-7b": {
         "class_name": "Alpaca",
         "model_name": "decapoda-research/llama-7b-hf",
         "tokenizer_name": "openai/gpt-3",

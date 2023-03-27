@@ -35,7 +35,7 @@ class LLM():
 
   def configure(self, config) -> None:
     self.set_generation_config(config.get("generation_config", self.gc_name))
-    self.set_model_config(config.get("model_key", self.model_key))
+    self.set_model_config(config.get("model_key", self.llm.key))
 
   def set_generation_config(self, generation_config):
     # grab the config
@@ -45,7 +45,7 @@ class LLM():
 
   def set_model_config(self, model_key):
     # grab the config
-    if self.model_key != model_key:
+    if self.llm.key != model_key:
       self.llm.switch_model(model_key)
 
   # Get the prompt based on the current model key
@@ -62,10 +62,8 @@ class LLM():
     return self.device == "cuda" and torch.cuda.is_available()
 
   # Loads the model and transfomer given the model name
-  def load(self, **kwargs) -> None:
-    # get opts if it is available
-    opts = kwargs.get("opts", self.opts)
-    self.llm_manager.load_model(self.model_key)
+  def load(self, model_key, **kwargs) -> None:
+    self.llm.load_model(model_key)
 
   # Given a prompt, generates a response
   def generate(self, prompt: str, **kwargs) -> str:
