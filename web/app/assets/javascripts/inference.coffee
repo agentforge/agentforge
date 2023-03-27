@@ -34,19 +34,20 @@ class App
     configs.tts = $("#tts").prop("checked")
     configs.lipsync = $("#lipsync").prop("checked")
     configs.streaming = $("#streaming").prop("checked")
-    configs.max_new_tokens = parseInt($("#max_new_tokens").val(), 128)
+    configs.max_new_tokens = parseInt($("#max_new_tokens").val(), 2048)
     configs.avatar = @getAvatar()
-    configs.model_config = $("#model-config").val()
-    configs.model = $("#model").val()
+    configs.generation_config = $("#model-config").val()
+    configs.model_key = $("#model").val()
     configs.context = $("#context-input").val()
     configs
 
-  sendTTSRequest: (url, text, avatar) ->
+  sendTTSRequest: (url, text, avatar) =>
     $.ajax
       url: url
       type: 'POST'
       data:
         text: text
+        config: @getConfigValues()
         authenticity_token: window._token
         avatar: avatar
       success: (response) =>
@@ -79,13 +80,13 @@ class App
     port = window.Settings["rails"]["port"]
     @sendTTSRequest("http://#{host}:#{port}/v1/tts", text, avatar)
 
-  sendInferenceRequest: (url, text) ->
+  sendInferenceRequest: (url, text) =>
     $.ajax
       url: url
       type: 'POST'
       data:
         text: text
-        config: getConfigValues()
+        config: @getConfigValues()
         authenticity_token: window._token
       success: (response) =>
         md = markdownit()
