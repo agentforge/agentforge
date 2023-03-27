@@ -38,7 +38,7 @@ class App
     configs.tts = $("#tts").prop("checked")
     configs.lipsync = $("#lipsync").prop("checked")
     configs.streaming = $("#streaming").prop("checked")
-    configs.max_new_tokens = parseInt($("#max_new_tokens").val(), 2048)
+    configs.max_new_tokens = parseInt($("#max_new_tokens").val())
     configs.avatar = @getAvatar()
     configs.generation_config = $("#model-config").val()
     configs.model_key = $("#model").val()
