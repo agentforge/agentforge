@@ -55,7 +55,7 @@ RUN export DEBIAN_FRONTEND=noninteractive RUNLEVEL=1 ; \
           nvidia-driver-525 mesa-utils && \
 	rm -rf /var/lib/apt/lists/*
 
-RUN pip3 uninstall opencv-python && pip3 install opencv-python==4.6.0.6
+#RUN pip3 uninstall opencv-python && pip3 install opencv-python==4.6.0.6
 RUN pip3 install flask flask_cors pygments
 
 # create the working directory, to be mounted with the bind option
@@ -75,6 +75,9 @@ WORKDIR /app
 RUN mkdir -p /root/.ssh && \
     echo "$SSH_PRIVATE_KEY" > /root/.ssh/id_rsa && \
     chmod 600 /root/.ssh/id_rsa
+
+RUN  apt-get -yq update && \
+     apt-get -yqq install ssh
 
 RUN ssh-keyscan github.com >> /root/.ssh/known_hosts
 # agent_n API
