@@ -23,7 +23,6 @@ class Avatar:
     def set_avatar(self, avatar_key, avatar_data):
         self.avatar_config[avatar_key] = avatar_data
 
-
 def main():
     avatar_instance = Avatar()
     makhno_avatar = avatar_instance.get_avatar('makhno')
