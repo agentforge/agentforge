@@ -111,8 +111,8 @@ def process_date_terms(sentence):
     return ' '.join(processed_words)
 
 def check_math_tokens(left_word, right_word):
-    pattern = re.compile(r'^[\d\s]+$')
-    return bool(pattern.match(left_word)) and bool(pattern.match(right_word))
+    pattern = re.compile(r'^\d|\s|\(|\)$')
+    return (bool(pattern.match(left_word)) or left_word == '') and (bool(pattern.match(right_word)) or right_word == '')
 
 def convert_numbers_in_sentence(sentence):
     def convert_word_recursive(word):
