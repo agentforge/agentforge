@@ -29,7 +29,21 @@ def str_to_class(classname):
 def remove_hanging(phrase):
   phrase = re.match("(^.*[\.\?!]|^\S[^.\?!]*)", phrase)
   phrase = phrase.group()
-  
+
+def process_date_terms(sentence):
+    p = inflect.engine()
+    words = sentence.split()
+
+    processed_words = []
+    for word in words:
+        match = re.match(r'(\d+)(st|nd|rd|th)', word)
+        if match:
+            processed_words.append(p.number_to_words(word))
+        else:
+            processed_words.append(word)
+
+    return ' '.join(processed_words)
+
 def convert_numbers_in_sentence(sentence):
     def convert_word_recursive(word):
         # Find the first occurrence of a math symbol in the word
