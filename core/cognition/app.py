@@ -34,6 +34,7 @@ llm = Alpaca()
 def output():
   prompt = request.json["prompt"]
   config = request.json["config"]
+
   print(f"Prompt: {prompt}")
   print(f"Config: {config }")
   llm.configure(config)

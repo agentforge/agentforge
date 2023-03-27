@@ -62,6 +62,6 @@ class ExecutiveCognition:
         url = f"{url}/v1/completions"
         prompt = self.parser.parse(prompt)
         config = self.parse_config(config)
-        avatar = self.avatar.get_avatar(config["avatar"])
-        form_data = {"prompt": prompt, "config": config, "avatar": avatar}
+        config["avatar"] = self.avatar.get_avatar(config["avatar"])
+        form_data = {"prompt": prompt, "config": config}
         return self.post_request(url, form_data)
