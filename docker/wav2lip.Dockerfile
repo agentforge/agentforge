@@ -15,6 +15,9 @@ RUN mkdir -p /root/.ssh && \
     echo "$SSH_PRIVATE_KEY" > /root/.ssh/id_rsa && \
     chmod 600 /root/.ssh/id_rsa
 
+RUN  apt-get -yq update && \
+     apt-get -yqq install ssh
+
 RUN ssh-keyscan github.com >> /root/.ssh/known_hosts
 
 # agent_n API
