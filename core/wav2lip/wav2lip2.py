@@ -19,6 +19,7 @@ class Wav2LipModel():
     
     self.args.static = False if 'static' not in opts else opts['static']
     self.args.fps = 25.0 if 'fps' not in opts else opts['fps']
+    self.fps = self.args.fps # make sure it gets set
     
     self.args.pads = opts['pads'] if 'pads' in opts else [0, 10, 0, 0]
     
@@ -40,7 +41,7 @@ class Wav2LipModel():
     self.model = self.load_model(self.args.checkpoint_path)
     print ("Model loaded")
 
-    self.args.static = True
+    self.args.static = False
     self.args.img_size = 96
 
     self.avatar = opts['box'] if "avatar" in opts else "loop"
@@ -122,7 +123,7 @@ class Wav2LipModel():
       face, coords = face_det_results[idx].copy()
 
       face = cv2.resize(face, (self.args.img_size, self.args.img_size))
-        
+
       img_batch.append(face)
       mel_batch.append(m)
       frame_batch.append(frame_to_save)
@@ -184,8 +185,13 @@ class Wav2LipModel():
         self.fps = self.args.fps
 
       else:
+        print(self.args.face)
         video_stream = cv2.VideoCapture(self.args.face)
+        success,frame=video_stream.read()
+        print(success)
         self.fps = video_stream.get(cv2.CAP_PROP_FPS)
+
+        print(video_stream)
 
         print('Reading video frames...')
 
@@ -243,11 +249,14 @@ class Wav2LipModel():
     self.faces[self.avatar] = self.faces[self.avatar][:len(mel_chunks)]
 
     batch_size = self.args.wav2lip_batch_size
-    gen = self.datagen(self.faces[self.avatar].copy(), mel_chunks)
+    print(f"{len(self.faces)}")
+    print(f"{len(self.faces['default'])}")
+    gen = self.datagen(self.faces[self.avatar], mel_chunks)
 
     for i, (img_batch, mel_batch, frames, coords) in enumerate(tqdm(gen, 
                         total=int(np.ceil(float(len(mel_chunks))/batch_size)))):
       if i == 0:
+        print("write first frame")
         frame_h, frame_w = self.faces[self.avatar][0].shape[:-1]
         out = cv2.VideoWriter('temp/result.avi', 
                     cv2.VideoWriter_fourcc(*'DIVX'), self.fps, (frame_w, frame_h))
