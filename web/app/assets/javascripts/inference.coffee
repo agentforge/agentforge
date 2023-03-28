@@ -131,10 +131,81 @@ class App
     $(".chat-history").scrollTop($(".chat-history")[0].scrollHeight);
     @sendInferenceRequest("http://#{host}:#{port}/v1/completions", text)
 
+  toggleVideo: () =>
+    if @isFullScreen
+      @restoreVideo()
+    else
+      @expandVideo()
+    return
+
+  expandVideo: () =>
+    chatHistory = document.querySelector '.chat-history'
+    chatHistoryRect = chatHistory.getBoundingClientRect()
+    video = document.getElementById 'hero-video-wrapper'
+    inner = document.getElementById 'hero-video'
+    userInput = document.getElementById 'user-input'
+    userInputRect = userInput.getBoundingClientRect()
+    distanceFromTop = userInputRect.top
+    
+    @originalVideoStyle =
+      position: video.style.position
+      width: video.style.width
+      height: video.style.height
+      top: video.style.top
+      left: video.style.left
+      objectFit: video.style.objectFit
+      zIndex: video.style.zIndex
+      innerVideoPosition: inner.style.position
+
+    inner.style.position = 'fixed'
+    inner.style.width = chatHistoryRect.width + 'px'
+    inner.style.height = distanceFromTop - 10 + 'px'
+
+    video.style.position = 'absolute'
+    video.style.width = chatHistoryRect.width + 'px'
+    video.style.height = 'auto'
+    video.style.top = 0
+    video.style.left = chatHistoryRect.left + 'px'
+    video.style.zIndex = 1001
+    @isFullScreen = true
+
+    # video.classList.add 'fullscreen'
+    toggleButton = document.getElementById 'toggle-button'
+    toggleButton.classList.add 'centered'
+    toggleButton.classList.remove 'fa-expand'
+    toggleButton.classList.add 'fa-compress'
+    @isFullScreen = true
+    return
+
+  restoreVideo: () =>
+    video = document.getElementById 'hero-video'
+    videoWrapper = document.getElementById 'hero-video-wrapper'
+    toggleButton = document.getElementById 'toggle-button'
+    
+    videoWrapper.style.position = @originalVideoStyle.innerVideoPosition
+    videoWrapper.style.top = @originalVideoStyle.top
+    videoWrapper.style.left = @originalVideoStyle.left
+    videoWrapper.style.zIndex = @originalVideoStyle.zIndex
+    videoWrapper.style.width = "100%"
+
+    video.style.position = @originalVideoStyle.position
+    video.style.width = @originalVideoStyle.width
+    video.style.height = @originalVideoStyle.height
+    video.style.objectFit = @originalVideoStyle.objectFit
+
+    toggleButton.classList.remove 'centered'
+    toggleButton.classList.remove 'fa-compress'
+    toggleButton.classList.add 'fa-expand'
+    @isFullScreen = false
+    return
+
 # Events!
 $(document).on('turbolinks:load', ->
   app = new App()
   app.playMp4({file_type: "mp4", filename: "/videos/#{app.getAvatar()}.mp4"})
   app.updateMaxTokensValue()
   app.updateStates()
+  app.originalVideoStyle = {}
+  app.isFullScreen = false
+  window.app = app # for debugging
 )
