@@ -44,7 +44,7 @@ class ExecutiveCognition:
         # Get wav/tts file
         config = self.parse_config(config)
         avatar = self.avatar.get_avatar(config["avatar"])
-        prompt = self.parser.parse(prompt)
+        prompt = self.parser.parse_prompt(prompt)
         form_data = {"prompt": prompt, "avatar": avatar}
         wav_response = self.get_tts(form_data)
 
@@ -60,8 +60,13 @@ class ExecutiveCognition:
     def respond(self, prompt, config):
         url = self.urls["LLM_URL"]
         url = f"{url}/v1/completions"
-        prompt = self.parser.parse(prompt)
+        prompt = self.parser.parse_prompt(prompt)
         config = self.parse_config(config)
         config["avatar"] = self.avatar.get_avatar(config["avatar"])
         form_data = {"prompt": prompt, "config": config}
-        return self.post_request(url, form_data)
+        response = self.post_request(url, form_data)
+        return self.parse_response(response)
+    
+    def parse_response(self, response):
+        response["response"] = self.parser.parse_response(response["response"])
+        return response
