@@ -8,10 +8,31 @@ from core.helpers import helpers
 from langchain.agents import Tool
 from langchain.llms import HuggingFaceModel
 from langchain.utilities import SearxSearchWrapper
+from langchain.chains.conversation.memory import ConversationBufferMemory
+from core.cognition.prompt import Prompt
 
 SEARX_HOST = "https://searx.work/"
 AGENT_MODEL = "OpenAssistant/oasst-sft-1-pythia-12b"
 CONFIG_NAME = "logical"
+
+# Dectorator to enable chat memory for the agent and get the prompt
+def chat_memory_enabled(func):
+  def wrapper(self, instruct, **kwargs):
+      # Get the prompt from the prompt manager
+      instruct = self.get_prompt(instruction=instruct)
+
+      # Call add_user_message before the function is called
+      self.memory.chat_memory.add_user_message(instruct)
+      
+      # Call the original function
+      out = func(self, instruct, **kwargs)
+      
+      # Call add_ai_message after the function returns
+      self.memory.chat_memory.add_ai_message(out.response)
+      
+      # Return the function's original return value
+      return out
+  return wrapper
 
 # AgentResponse class returned from the Agent parser
 class AgentResponse():
@@ -27,6 +48,23 @@ class Agent(LLM):
     if len(opts) == 0:
       opts = {"model_name": AGENT_MODEL, "config": CONFIG_NAME}
     super().__init__(opts)
+    self.memories = {}
+
+  # Stores memory for various agent avatars
+  def setup_memory(self, ai_prefix = "AI", human_prefix = "Human"):
+    if ai_prefix in self.memories:
+      self.memory = self.memories[ai_prefix]
+    else:
+      self.memory = ConversationBufferMemory(return_messages=True)
+      self.memory.human_prefix = human_prefix
+      self.memory.ai_prefix = ai_prefix
+      self.memories[ai_prefix] = self.memory
+    # Rebuild the prompt manager
+    self.prompt_manager = Prompt(self.memory)
+
+  def configure(self, config):
+    super().configure(config)
+    self.setup_memory(ai_prefix=self.prompt_context["name"], human_prefix=config["human_name"])
 
   # Setup Agent and load models
   def setup_agent(self):

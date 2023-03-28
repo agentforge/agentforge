@@ -25,6 +25,14 @@ TTS Service
 
 ```CONFIG_DIR="/app/agent_n/core/config/configs/" flask run --host=0.0.0.0 --port=3003```
 
+WAV2LIP:
+
+```LC_ALL=C.UTF-8 LANG=C.UTF-8 CONFIG_DIR="/app/agent_n/core/config/configs/" flask run --host=0.0.0.0 --port=3004```
+
+To test local inference:
+
+```python3 inference.py --checkpoint_path /app/cache/wav2lip_gan.pth --face /app/cache/loop.mp4 --audio /app/cache/hello.wav```
+
 To run the rails server:
 
 ```rails server -p 3001```

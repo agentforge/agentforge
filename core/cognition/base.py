@@ -7,9 +7,7 @@
 import torch
 from core.config.config import Config
 import logging
-from core.cognition.prompt import Prompt
 from core.cognition.manager import LLMModelManager
-from langchain.chains.conversation.memory import ConversationBufferMemory
 
 
 DEFAULT_MAX_NEW_TOKENS = 2048
@@ -30,9 +28,7 @@ class LLM():
     # create a shared dictionary to store the model to be used by other workers
     logging.info(f"LLM CUDA enabled: {self.device == 'cuda' and torch.cuda.is_available()}")
 
-    # Load memory, prompt, and LLM Model Manager
-    self.memory = ConversationBufferMemory(return_messages=True)
-    self.prompt_manager = Prompt(self.memory)
+    # Load LLM Model Manager
     self.llm = LLMModelManager()
 
   def configure(self, config) -> None:
