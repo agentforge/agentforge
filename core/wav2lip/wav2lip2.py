@@ -246,18 +246,18 @@ class Wav2LipModel():
 
     print("Length of mel chunks: {}".format(len(mel_chunks)))
 
-    self.faces[self.avatar] = self.faces[self.avatar][:len(mel_chunks)]
+    frame_chunk = self.faces[self.avatar][:len(mel_chunks)]
 
     batch_size = self.args.wav2lip_batch_size
     print(f"{len(self.faces)}")
     print(f"{len(self.faces['default'])}")
-    gen = self.datagen(self.faces[self.avatar], mel_chunks)
+    gen = self.datagen(frame_chunk, mel_chunks)
 
     for i, (img_batch, mel_batch, frames, coords) in enumerate(tqdm(gen, 
                         total=int(np.ceil(float(len(mel_chunks))/batch_size)))):
       if i == 0:
         print("write first frame")
-        frame_h, frame_w = self.faces[self.avatar][0].shape[:-1]
+        frame_h, frame_w = frame_chunk[0].shape[:-1]
         out = cv2.VideoWriter('temp/result.avi', 
                     cv2.VideoWriter_fourcc(*'DIVX'), self.fps, (frame_w, frame_h))
 
