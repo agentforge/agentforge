@@ -8,5 +8,8 @@ class Parser:
     return text.strip()
 
   def parse_response(self, text):
-    text = text.split("## Output:")
-    return text[0].strip()
+    bad_output_delimeters = ['"""', "## Output:", "# End of Instruction.", "### End", "### Instruction", "### Response", "# Python Responses"]
+    for i in bad_output_delimeters:
+      text = text.split(i)
+      text = text[0]    
+    return text.strip()
