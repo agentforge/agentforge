@@ -8,8 +8,8 @@ from core.helpers.helpers import convert_numbers_in_sentence, process_date_terms
 class TextToSpeech():
   def __init__(self) -> None:
     # Init TTS
-    # self.tts = TTS(model_name="tts_models/en/ek1/tacotron2", progress_bar=False, gpu=True)
-    self.tts = TTS(model_name="tts_models/multilingual/multi-dataset/your_tts", progress_bar=False, gpu=True)
+    self.tts = TTS(model_name="tts_models/en/vctk/vits", progress_bar=False, gpu=True)
+    # self.tts = TTS(model_name="tts_models/multilingual/multi-dataset/your_tts", progress_bar=False, gpu=True)
 
   # Some parsing is really only appropriate for the TTS so we do it here
   def parse_for_tts(self, text) -> None:
@@ -20,13 +20,13 @@ class TextToSpeech():
     print(text)
     return convert_numbers_in_sentence(text)
 
-  def synthesizer(self, text, filename, speaker_wav="/app/cache/voice.wav"):
+  def synthesizer(self, text, filename, speaker_wav="/app/cache/voice.wav", speaker_idx=0):
     # synthesis
     print(f"TTS: {text}")
     # with torch.no_grad():
     # start = time.time()
-    # self.tts.tts_to_file(text=text, file_path=filename)
-    self.tts.tts_to_file(text=self.parse_for_tts(text), file_path=filename, speaker_wav=speaker_wav, language="en")
+    self.tts.tts_to_file(text=text, speaker=self.tts.speakers[speaker_idx], file_path=filename)
+    # self.tts.tts_to_file(text=self.parse_for_tts(text), file_path=filename, speaker_wav=speaker_wav, language="en")
 
     # wav = self.text2speech(text)["wav"]
     # rtf = (time.time() - starts) / (len(wav) / self.text2speech.fs)
