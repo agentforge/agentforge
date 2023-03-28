@@ -45,9 +45,10 @@ class Prompt:
 
     def instruct_prompt_w_memory(self, instruction="", context="", name="", **kwargs):
         return f"""
-        ### Context:
-        {context} You are {name}. Write from the perspective of {name}.
+        ### History:
         {self.chat_history()}
+        ### Context:
+        {context} You are {name} conversing with a Human. Write from the perspective of {name}.
         ### Instruction:
         {instruction}
         ### Response:"""
