@@ -17,7 +17,7 @@ class Prompt:
             prefix = "### Instruction: " if obj.__class__.__name__ == "HumanMessage" else "### Response: "
             print(obj.__class__.__name__)
             return prefix + obj.content
-        return "\n".join(list(map(lambda obj: get_content(obj), mem["history"][-5:]))) if "history" in mem else ""
+        return "\n".join(list(map(lambda obj: get_content(obj), mem["history"][-1:]))) if "history" in mem else ""
 
     def simple_template(self, instruction="", **kwargs):
         template = f"""You are an AI having a friendly chat with a human.
@@ -45,9 +45,10 @@ class Prompt:
 
     def instruct_prompt_w_memory(self, instruction="", context="", name="", **kwargs):
         return f"""
-        ### Context:
-        {context} You are {name}. Write from the perspective of {name}.
+        ### History:
         {self.chat_history()}
+        ### Context:
+        {context} You are {name} conversing with a Human. Write from the perspective of {name}.
         ### Instruction:
         {instruction}
         ### Response:"""
