@@ -26,7 +26,7 @@ def text_to_speech():
   filename = "/app/files/out.wav"
 
   # Enqueue a job in the TTS pipeline
-  filename = tts_inst.synthesizer(prompt, filename, avatar["speaker_wav"])
+  filename = tts_inst.synthesizer(prompt, filename, speaker_wav=avatar["speaker_wav"], speaker_idx=avatar["speaker_idx"])
 
   # Return the wav file in the response
   print(filename)
