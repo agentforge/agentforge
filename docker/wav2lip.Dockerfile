@@ -49,8 +49,13 @@ RUN pip install TTS inflect
 
 RUN pip uninstall -y numpy && pip install numpy
 
+RUN mkdir -p /root/.cache/torch/checkpoints && \
+     curl -SL -o /root/.cache/torch/checkpoints/s3fd-619a316812.pth "https://www.adrianbulat.com/downloads/python-fan/s3fd-619a316812.pth"
+
 # Clone wave2lip
 RUN git clone https://github.com/Rudrabha/Wav2Lip.git
+
+RUN mkdir /app/agent_n/core/wav2lip/temp
 
 # Expose port 3000
 EXPOSE 3000

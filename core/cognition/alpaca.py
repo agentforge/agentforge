@@ -4,7 +4,7 @@ from peft import PeftModel
 from transformers import LlamaTokenizer, LlamaForCausalLM, GenerationConfig
 from core.config.config import Config
 
-from core.cognition.agent import Agent
+from core.cognition.agent import Agent, chat_memory_enabled
 
 MODEL_KEY="alpaca-lora-7b"
 
@@ -26,16 +26,15 @@ class Alpaca(Agent):
     kwargs = self.generation_config.to_dict()
     print(f"Rendering with {kwargs}")
     return self._generate(prompt, **kwargs)
-
+  
+  @chat_memory_enabled
   def _generate(
           self,
           instruct,
           **kwargs,
   ):
       prompt = self.get_prompt(instruction=instruct)
-      self.memory.chat_memory.add_user_message(instruct)
-      print(self.llm.tokenizer)
-      # print(prompt)
+      print(prompt)
       inputs = self.llm.tokenizer(prompt, return_tensors="pt")
       input_ids = inputs["input_ids"].cuda()
       generation_config = GenerationConfig(
@@ -59,6 +58,5 @@ class Alpaca(Agent):
       output = self.llm.tokenizer.decode(s)
       # print(output)
       out = self.parse(output)
-      self.memory.chat_memory.add_ai_message(out.response)
       return out
 

@@ -35,6 +35,7 @@ class App
 
   getConfigValues: () ->
     configs = {}
+    configs.human_name = $("#name-input").val()
     configs.tts = $("#tts").prop("checked")
     configs.lipsync = $("#lipsync").prop("checked")
     configs.streaming = $("#streaming").prop("checked")

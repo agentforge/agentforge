@@ -13,7 +13,9 @@ class Prompt:
 
     def chat_history(self):
         mem = self.memory.load_memory_variables({})
-        return "\n".join(list(map(lambda obj: obj.content, mem["chat_history"][-5:]))) if "chat_history" in mem else ""
+        def get_content(obj):
+            return obj.content
+        return "\n".join(list(map(lambda obj: get_content(obj), mem["chat_history"][-5:]))) if "chat_history" in mem else ""
 
     def simple_template(self, instruction="", **kwargs):
         template = f"""You are an AI having a friendly chat with a human.
