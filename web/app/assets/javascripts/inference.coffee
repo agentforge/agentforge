@@ -25,6 +25,8 @@ class App
       e.preventDefault()
       @updateStates()
 
+    window.addEventListener 'resize', @resizeVideo
+
   updateMaxTokensValue: () ->
     slider = document.getElementById("max_new_tokens")
     document.getElementById("max_new_tokens_value").textContent = slider.value
@@ -158,26 +160,27 @@ class App
       innerVideoPosition: inner.style.position
 
     inner.style.position = 'fixed'
-    inner.style.width = chatHistoryRect.width + 'px'
-    inner.style.height = distanceFromTop - 10 + 'px'
+    inner.style.width = userInputRect.width + 'px'
+    inner.style.height = distanceFromTop + 'px'
 
     video.style.position = 'absolute'
-    video.style.width = chatHistoryRect.width + 'px'
+    video.style.width = userInputRect.width + 'px'
     video.style.height = 'auto'
     video.style.top = 0
-    video.style.left = chatHistoryRect.left + 'px'
+    video.style.left = userInputRect.left + 16 + 'px'
     video.style.zIndex = 1001
-    @isFullScreen = true
 
     # video.classList.add 'fullscreen'
     toggleButton = document.getElementById 'toggle-button'
-    toggleButton.classList.add 'centered'
+    toggleButton.classList.add 'centered' 
     toggleButton.classList.remove 'fa-expand'
     toggleButton.classList.add 'fa-compress'
+    @moveChatHistory()
     @isFullScreen = true
     return
 
   restoreVideo: () =>
+    @restoreChatHistory()
     video = document.getElementById 'hero-video'
     videoWrapper = document.getElementById 'hero-video-wrapper'
     toggleButton = document.getElementById 'toggle-button'
@@ -199,6 +202,43 @@ class App
     @isFullScreen = false
     return
 
+  resizeVideo: () ->
+    video = document.getElementById 'hero-video'
+    videoWrapper = document.getElementById 'hero-video-wrapper'
+    chatHistory = document.querySelector '.chat-history'
+    chatHistoryRect = chatHistory.getBoundingClientRect()
+    userInput = document.getElementById 'user-input'
+    userInputRect = userInput.getBoundingClientRect()
+    distanceFromTop = userInputRect.top
+
+    if videoWrapper.style.position == 'absolute'
+      videoWrapper.style.top = '0'
+      videoWrapper.style.left = userInput.left + 'px'
+      video.style.width = userInput.width + 'px'
+      video.style.height = distanceFromTop + 'px'
+    return
+
+  restoreChatHistory: () ->
+    chatHistory = document.querySelector '.chat-history'
+
+    if @originalParent
+      @originalParent.prepend(chatHistory)
+      chatHistory.style.fontSize = @originalChatHistoryStyle.fontSize
+      @originalParent = null
+      @originalChatHistoryStyle = {}
+
+  moveChatHistory: () ->
+    chatHistory = document.querySelector '.chat-history'
+    secondaryControl = document.querySelector '.secondary-control'
+
+    if not @originalParent
+      @originalParent = chatHistory.parentElement
+      @originalChatHistoryStyle =
+        fontSize: chatHistory.style.fontSize
+
+    chatHistory.style.fontSize = '0.8em' # Adjust the size of the text here
+    secondaryControl.appendChild(chatHistory)
+
 # Events!
 $(document).on('turbolinks:load', ->
   app = new App()
@@ -207,5 +247,7 @@ $(document).on('turbolinks:load', ->
   app.updateStates()
   app.originalVideoStyle = {}
   app.isFullScreen = false
+  app.originalParent = null
+  app.originalChatHistoryStyle = {}
   window.app = app # for debugging
 )
