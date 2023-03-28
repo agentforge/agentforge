@@ -16,7 +16,7 @@ CHKPT_PTH = "/app/cache/wav2lip_gan.pth"
 # Default face loop
 # TODO: When we introduce multiple avatars this will need refactoring
 faces = [
-  ("loop", "/app/cache/loop.mp4"),
+  ("default", "/app/cache/default.mp4"),
   ("makhno", "/app/cache/makhno.mp4"),
 ]
 opts = {}
