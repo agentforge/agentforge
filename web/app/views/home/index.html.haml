@@ -18,7 +18,9 @@
       .form-group
         %h5 Robot Name
         %input#robot-name-input.form-control{type: "text", value: "Robot"}
-      = video_tag("", :controls => false, :autobuffer => true, :size => "256x256", :id => "hero-video")
+      %div#hero-video-wrapper
+        = video_tag("", :controls => false, :autobuffer => true, :size => "256x256", :id => "hero-video")
+        %i#toggle-button.fa.fa-expand{:onclick=>"window.app['toggleVideo']()"}
       .custom-control.custom-checkbox
         %input.custom-control-input{type: "checkbox", id: "tts", checked: "checked"}/
         %label.custom-control-label{for: "tts"} TTS
@@ -33,7 +35,7 @@
         %label{for: "max_new_tokens"} Max New Tokens
         %input.custom-range{type: "range", id: "max_new_tokens", min: "1", max: "2048"}/
         %span#max_new_tokens_value
-          
+
       .dropdown-container
         %label Avatars
         %select.custom-select#avatar-dropdown
