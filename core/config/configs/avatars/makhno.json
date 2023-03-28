@@ -5,5 +5,6 @@
     "name": "Nestor Makhno"
   },
   "speaker_wav": "/app/cache/voice.wav",
+  "speaker_idx": 4,
   "mp4": "/app/cache/makhno.mp4"
 }
