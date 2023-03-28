@@ -33,9 +33,8 @@ class Alpaca(Agent):
           instruct,
           **kwargs,
   ):
-      prompt = self.get_prompt(instruction=instruct)
-      print(prompt)
-      inputs = self.llm.tokenizer(prompt, return_tensors="pt")
+      print(instruct)
+      inputs = self.llm.tokenizer(instruct, return_tensors="pt")
       input_ids = inputs["input_ids"].cuda()
       generation_config = GenerationConfig(
           **kwargs,

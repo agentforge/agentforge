@@ -15,9 +15,12 @@ SEARX_HOST = "https://searx.work/"
 AGENT_MODEL = "OpenAssistant/oasst-sft-1-pythia-12b"
 CONFIG_NAME = "logical"
 
-# Dectorator to enable chat memory for the agent
+# Dectorator to enable chat memory for the agent and get the prompt
 def chat_memory_enabled(func):
   def wrapper(self, instruct, **kwargs):
+      # Get the prompt from the prompt manager
+      instruct = self.get_prompt(instruction=instruct)
+
       # Call add_user_message before the function is called
       self.memory.chat_memory.add_user_message(instruct)
       
