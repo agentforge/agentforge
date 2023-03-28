@@ -47,6 +47,8 @@ RUN pip install redis rq
 RUN pip install typeguard==2.7.0
 RUN pip install TTS inflect
 
+RUN pip uninstall -y numpy && pip install numpy
+
 # Clone wave2lip
 RUN git clone https://github.com/Rudrabha/Wav2Lip.git
 
