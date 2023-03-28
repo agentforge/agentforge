@@ -17,12 +17,12 @@ CONFIG_NAME = "logical"
 
 # Dectorator to enable chat memory for the agent
 def chat_memory_enabled(func):
-  def wrapper(self, instruct):
+  def wrapper(self, instruct, **kwargs):
       # Call add_user_message before the function is called
       self.memory.chat_memory.add_user_message(instruct)
       
       # Call the original function
-      out = func(self, instruct)
+      out = func(self, instruct, **kwargs)
       
       # Call add_ai_message after the function returns
       self.memory.chat_memory.add_ai_message(out.response)
