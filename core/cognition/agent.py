@@ -15,6 +15,22 @@ SEARX_HOST = "https://searx.work/"
 AGENT_MODEL = "OpenAssistant/oasst-sft-1-pythia-12b"
 CONFIG_NAME = "logical"
 
+# Dectorator to enable chat memory for the agent
+def chat_memory_enabled(func):
+  def wrapper(self, instruct):
+      # Call add_user_message before the function is called
+      self.memory.chat_memory.add_user_message(instruct)
+      
+      # Call the original function
+      out = func(self, instruct)
+      
+      # Call add_ai_message after the function returns
+      self.memory.chat_memory.add_ai_message(out.response)
+      
+      # Return the function's original return value
+      return out
+  return wrapper
+
 # AgentResponse class returned from the Agent parser
 class AgentResponse():
   def __init__(self, response, output="", thought=""):
@@ -42,21 +58,6 @@ class Agent(LLM):
       self.memories[ai_prefix] = self.memory
     # Rebuild the prompt manager
     self.prompt_manager = Prompt(self.memory)
-
-  def chat_memory_enabled(func):
-    def wrapper(self, instruct):
-        # Call add_user_message before the function is called
-        self.memory.chat_memory.add_user_message(instruct)
-        
-        # Call the original function
-        out = func(self, instruct)
-        
-        # Call add_ai_message after the function returns
-        self.memory.chat_memory.add_ai_message(out.response)
-        
-        # Return the function's original return value
-        return out
-    return wrapper
 
   def configure(self, config):
     super().configure(config)
