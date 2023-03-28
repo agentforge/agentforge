@@ -47,6 +47,11 @@ RUN pip install redis rq
 RUN pip install typeguard==2.7.0
 RUN pip install TTS inflect
 
+RUN apt update && apt install -y libsm6 libxext6
+RUN apt-get install -y libxrender-dev
+RUN pip uninstall -y opencv-python && pip install opencv-python==4.1.2.30
+RUN pip uninstall -y opencv-contrib-python && pip install opencv-contrib-python>=4.2.0.34
+
 RUN pip uninstall -y numpy && pip install numpy
 
 RUN mkdir -p /root/.cache/torch/checkpoints && \
