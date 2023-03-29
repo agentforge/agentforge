@@ -65,19 +65,21 @@ def process_date_sentence(sentence, p = inflect.engine()):
 
     def replace_date(match):
         day_abbr, month_abbr, day, year = match.groups()
-        day = int(day)
-        year = int(year)
-        day_str = p.ordinal(day)
-        month_map = clean_word(month_abbr)
+        
+        day = int(day) if day is not None else None
+        year = int(year) if year is not None else None
+        
+        day_str = p.ordinal(day) if day is not None else ""
+        month_map = clean_word(month_abbr) if month_abbr is not None else ""
         month_str = month_mapping[month_map] if month_map in month_mapping else month_map
-        year_str = process_year(year)
+        year_str = process_year(year) if year is not None else ""
 
         if day_abbr:
             day_val = clean_word(day_abbr)
             day_map = day_mapping[day_val] if day_val in day_mapping else day_val
-            day_str = f'{day_map}, {day_str}'
+            day_str = f'{day_map}, {day_str}' if day_str else day_map
 
-        return f'{month_str} {day_str}, {year_str}'
+        return f'{month_str} {day_str}, {year_str}'.strip()
     
     processed_sentence = date_pattern2.sub(replace_date, sentence)
     processed_sentence = date_pattern.sub(replace_date, processed_sentence)
