@@ -9,7 +9,6 @@ from core.config.config import Config
 import logging
 from core.cognition.manager import LLMModelManager
 
-
 DEFAULT_MAX_NEW_TOKENS = 2048
 
 ### Manages Base LLM functions ###
