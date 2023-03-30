@@ -1,5 +1,5 @@
-from core.helpers.parser import Parser
 from core.agency.avatar import Avatar
+from core.agency.agent import Agent
 from core.config.config import Config
 import requests, json, os
 
@@ -15,10 +15,13 @@ def handle_response_error(func):
             return "ERROR PLEASE TRY AGAIN LATER"
     return wrapper
 
+### Executive Cognition
+### Handles Model Ensemble Coordination
+### Higher level memory and reasoning loops
 class ExecutiveCognition:
     def __init__(self) -> None:
-        self.parser = Parser()
-        self.avatar = Avatar()
+        self.avatar = Avatar() # personality
+        self.agent = Agent() # agency, reason, memory, prompt engineering
         self.urls = Config("urls")
 
     @handle_response_error
@@ -27,7 +30,7 @@ class ExecutiveCognition:
 
     def get_tts(self, form_data):
         url = self.urls["TTS_URL"]
-        url = f"{url}/v1/tts"        
+        url = f"{url}/v1/tts"
         return self.post_request(url, form_data)
 
     def lipsync(self, form_data):
@@ -44,7 +47,7 @@ class ExecutiveCognition:
         # Get wav/tts file
         config = self.parse_config(config)
         avatar = self.avatar.get_avatar(config["avatar"])
-        prompt = self.parser.parse_prompt(prompt)
+        prompt = self.agent.parser.parse_prompt(prompt)
         form_data = {"prompt": prompt, "avatar": avatar}
         wav_response = self.get_tts(form_data)
 
@@ -58,15 +61,30 @@ class ExecutiveCognition:
         return {"filename": wav_response["filename"], "type": "audio/wav"}
 
     def respond(self, prompt, config):
-        url = self.urls["LLM_URL"]
-        url = f"{url}/v1/completions"
-        prompt = self.parser.parse_prompt(prompt)
+        # Configure agent with new config
         config = self.parse_config(config)
         config["avatar"] = self.avatar.get_avatar(config["avatar"])
-        form_data = {"prompt": prompt, "config": config}
+        self.agent.configure(config)
+
+        # Create new prompt
+        formatted_prompt = self.agent.get_prompt(instruction=prompt, config=config)
+
+        # Capture prompt in memory
+
+        url = self.urls["LLM_URL"]
+        url = f"{url}/v1/completions"
+
+        form_data = {"prompt": formatted_prompt, "config": config, "stream": False}
         response = self.post_request(url, form_data)
         return self.parse_response(response)
     
     def parse_response(self, response):
-        response["response"] = self.parser.parse_response(response["response"])
+        response["response"] = self.parse_llm_response(response["choices"][0]["text"])
         return response
+
+    def parse_llm_response(self, text):
+        bad_output_delimeters = ['"""', "### Input:", "#noinstantiation", "## Output:", "# End of Instruction", "### End", "### Instruction", "### Response", "# Python Responses", "# Output:", "#if __name__ == '__main__':", "#end document"]
+        for i in bad_output_delimeters:
+            text = text.split(i)
+            text = text[0]    
+        return text.strip()

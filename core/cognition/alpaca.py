@@ -8,7 +8,7 @@ from core.cognition.agent import Agent, chat_memory_enabled
 
 MODEL_KEY="alpaca-lora-7b"
 
-class Alpaca(Agent):
+class Alpaca(LLM):
   def __init__(self, opts={}) -> None:
     self.opts = opts
     if len(opts) == 0:
@@ -27,7 +27,6 @@ class Alpaca(Agent):
     print(f"Rendering with {kwargs}")
     return self._generate(prompt, **kwargs)
   
-  @chat_memory_enabled
   def _generate(
           self,
           instruct,

@@ -13,6 +13,7 @@ from redis import Redis
 from rq import Queue
 import logging
 from core.agency.executive import ExecutiveCognition
+from core.agency.startup import startup
 from core.helpers.helpers import measure_time
 
 queue = Queue(connection=Redis())
@@ -25,6 +26,7 @@ app = Flask(__name__)
 CORS(app)
 
 executive = ExecutiveCognition()
+startup()
 
 ### Main endpoint of the Agent API
 ### Agent API is responsible for managing the queue of requests

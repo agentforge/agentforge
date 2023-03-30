@@ -20,7 +20,7 @@ class TextToSpeech():
     print(text)
     return convert_numbers_in_sentence(text)
 
-  def synthesizer(self, text, filename, speaker_wav="/app/cache/voice.wav", speaker_idx=0):
+  def synthesizer(self, text, filename, speaker_wav="/app/cache/audio/voice.wav", speaker_idx=0):
     # synthesis
     print(f"TTS: {text}")
     # with torch.no_grad():

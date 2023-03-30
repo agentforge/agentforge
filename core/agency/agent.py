@@ -3,19 +3,21 @@ os.environ["LANGCHAIN_HANDLER"] = "langchain"
 
 from langchain import PromptTemplate, LLMChain
 from langchain.agents import initialize_agent
-from core.cognition.base import LLM
 from core.helpers import helpers
 from langchain.agents import Tool
 from langchain.llms import HuggingFaceModel
 from langchain.utilities import SearxSearchWrapper
 from langchain.chains.conversation.memory import ConversationBufferMemory
-from core.cognition.prompt import Prompt
+from core.agency.prompt import Prompt
+from core.helpers.parser import Parser
 
 SEARX_HOST = "https://searx.work/"
 AGENT_MODEL = "OpenAssistant/oasst-sft-1-pythia-12b"
 CONFIG_NAME = "logical"
 
 # Dectorator to enable chat memory for the agent and get the prompt
+## Future access to tools/plugins/retrieval
+
 def chat_memory_enabled(func):
   def wrapper(self, instruct, **kwargs):
       # Get the prompt from the prompt manager
@@ -43,12 +45,10 @@ class AgentResponse():
     self.is_code = False
 
 ### Agent -- Layer over LLMChain Agent system to provide a more user friendly interface w/tools and reasoning
-class Agent(LLM):
+class Agent():
   def __init__(self, opts={}) -> None:
-    if len(opts) == 0:
-      opts = {"model_name": AGENT_MODEL, "config": CONFIG_NAME}
-    super().__init__(opts)
     self.memories = {}
+    self.parser = Parser()  # brain soup
 
   # Stores memory for various agent avatars
   def setup_memory(self, ai_prefix = "AI", human_prefix = "Human"):
@@ -62,8 +62,27 @@ class Agent(LLM):
     # Rebuild the prompt manager
     self.prompt_manager = Prompt(self.memory)
 
+  def set_avatar_context(self, avatar):
+    # grab the config
+    if "prompt_context" in avatar:
+      self.prompt_context = avatar["prompt_context"]
+    else:
+      raise Exception(f"Should contain prompt_context: {avatar}")
+
+  def get_prompt_type(self):
+    # TODO: Grab data using Config(models.json) and return the prompt type based on model
+    # from the UI
+    return "instruct_w_memory"
+
+  # Get the prompt based on the current model key
+  def get_prompt(self, **kwargs):
+    # If memory is an argument let's extract relevant information from it
+    kwargs.update(self.prompt_context)
+    prompt_type = self.get_prompt_type()
+    return self.prompt_manager.get_prompt(prompt_type, **kwargs)
+
   def configure(self, config):
-    super().configure(config)
+    self.set_avatar_context(config["avatar"])
     self.setup_memory(ai_prefix=self.prompt_context["name"], human_prefix=config["human_name"])
 
   # Setup Agent and load models
@@ -78,9 +97,6 @@ class Agent(LLM):
   def load_agent(self):
     # Loads the model and tokenizer into langchain compatible agent class
     self.hfm = HuggingFaceModel(model=self.model, tokenizer=self.tokenizer, device=1, model_kwargs=self.generation_config.to_dict())
-
-  def think(self):
-    pass
 
   def init_tools(self):
     self.search = SearxSearchWrapper(searx_host=SEARX_HOST)

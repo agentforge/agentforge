@@ -35,7 +35,6 @@ class LLM():
     self.set_generation_config(config.get("generation_config", self.gc_name))
     self.set_max_new_tokens(config.get("max_new_tokens", DEFAULT_MAX_NEW_TOKENS))
     self.set_model_config(config.get("model_key", self.llm.key))
-    self.set_avatar_context(config.get("avatar", {}))
 
   def set_max_new_tokens(self, max_new_tokens):
     # grab the config
@@ -50,23 +49,10 @@ class LLM():
       self.generation_config = Config("llm/" + generation_config)
       self.gc_name = generation_config
 
-  def set_avatar_context(self, avatar):
-    # grab the config
-    if "prompt_context" in avatar:
-      self.prompt_context = avatar["prompt_context"]
-    else:
-      raise Exception(f"SHould contain prompt_context: {avatar}")
-
   def set_model_config(self, model_key):
     # grab the config
     if self.llm.key != model_key:
       self.llm.switch_model(model_key)
-
-  # Get the prompt based on the current model key
-  def get_prompt(self, **kwargs):
-    # If memory is an argument let's extract relevant information from it
-    kwargs.update(self.prompt_context)
-    return self.prompt_manager.get_prompt(self.llm.config["prompt_type"], **kwargs)
 
   # Get the name of the class
   def name(self):
