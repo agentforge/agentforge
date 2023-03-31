@@ -50,10 +50,10 @@ stream_model = load_model(
 
 # Create and configure application.
 app = Flask(__name__)
-app.json.ensure_ascii = False
-app.json.sort_keys = False
-app.json.compact = True
-app.url_map.strict_slashes = False
+# app.json.ensure_ascii = False
+# app.json.sort_keys = False
+# app.json.compact = True
+# app.url_map.strict_slashes = False
 
 
 def parse_options(schema):
@@ -121,6 +121,7 @@ def create_completion():
         "echo": bool,
     }
     options = parse_options(schema)
+    print(options)
     if "prompt" not in options:
         options["prompt"] = ""
 

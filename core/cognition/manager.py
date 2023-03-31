@@ -50,7 +50,7 @@ class LLMModelManager:
 
     def load_alpaca(self):
         print("Loading alpaca...")
-        self.tokenizer = LlamaTokenizer.from_pretrained(self.config["model_name"])
+        self.tokenizer = LlamaTokenizer.from_pretrained(self.config["model_name"],decode_with_prefix_space=True, clean_up_tokenization_spaces=True)
 
         self.model = LlamaForCausalLM.from_pretrained(
             self.config["model_name"],
