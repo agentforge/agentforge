@@ -1,5 +1,33 @@
 class InferenceController < ApplicationController
   require 'net/http'
+  require 'redis'
+
+  include ActionController::Live
+  @@redis = Redis.new
+
+  def stream
+    response.headers['Content-Type'] = 'text/event-stream'
+    sse = ActionController::Live::SSE.new(response.stream, retry: 3000, event: "message")
+    begin
+      @@redis.subscribe(params[:channel]) do |on|
+        on.message do |_channel, message|
+          sse.write(message)
+        end
+      end
+    rescue IOError
+      # Client disconnected
+    ensure
+      sse.close
+      @@redis.quit
+    end
+  end
+
+  def publish
+    channel = params[:channel]
+    message = params[:message]
+    @@redis.publish(channel, message)
+    render plain: 'Message received from Flask API and sent to the JS client.'
+  end  
 
   def completions
     # Calls interpret API and takes request data and called inference engine to produce

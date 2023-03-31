@@ -249,5 +249,8 @@ $(document).on('turbolinks:load', ->
   app.isFullScreen = false
   app.originalParent = null
   app.originalChatHistoryStyle = {}
+  app.source = new EventSource('/inference/stream?channel=my_channel');
+  app.source.onmessage = (event) =>
+    console.log('Received event:', event)
   window.app = app # for debugging
 )

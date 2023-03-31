@@ -3,13 +3,15 @@ Rails.application.routes.draw do
   get 'home/index'
   get 'home/show'
 
+  # API
   post 'v1/tts' => 'whisper#text_to_speech'
+  post 'v1/completions' => 'inference#completions'
   
   post 'whisper/speech_to_text' => 'whisper#speech_to_text'
-
-  post 'v1/completions' => 'inference#completions'
-
   post 'inference/reset_history' => 'inference#reset_history'
 
-  # For details on the DSL available within this file, see http://guides.rubyonrails.org/routing.html
+  # Streaming
+  post 'inference/publish'
+  get 'inference/stream'
+
 end
