@@ -68,7 +68,7 @@ services:
           devices:
             - driver: nvidia
               count: 1
-              capabilities: [gpu]
+              capabilities: [gpu] 
 
   worker:
     image: worker
@@ -83,6 +83,19 @@ services:
       main-net:
         aliases:
           - worker
+    volumes:
+      - shared-files:/app/files
+      - cache-volume:/app/cache
+
+  web:
+    image: web
+    ports:
+      - "3005:3000"
+    ipc: host
+    networks:
+      main-net:
+        aliases:
+          - web
     volumes:
       - shared-files:/app/files
       - cache-volume:/app/cache
