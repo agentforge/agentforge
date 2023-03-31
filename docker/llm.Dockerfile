@@ -42,7 +42,7 @@ RUN apt-get install -y tig ffmpeg
 RUN rm /usr/lib/x86_64-linux-gnu/libstdc++.so.6 && ln -s /opt/conda/x86_64-conda-linux-gnu/lib/libstdc++.so.6.0.30 /usr/lib/x86_64-linux-gnu/libstdc++.so.6
 RUN pip install --upgrade pip
 RUN pip install redis rq
-RUN pip install pygments peft
+RUN pip install pygments peft flask-sse
 RUN pip uninstall transformers && pip install 'git+https://github.com/huggingface/transformers.git'
 
 # Expose port 3000

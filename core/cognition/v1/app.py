@@ -12,9 +12,12 @@ sys.path.append(str(path_root))
 import json
 from flask import Flask, request, jsonify, send_file, Response
 from flask_cors import CORS
+from flask_sse import sse
 from core.cognition.alpaca import Alpaca
 import logging
 from core.helpers.helpers import measure_time
+import redis
+import requests
 
 #logging.basicConfig(filename='agent.log', level=logging.DEBUG)
 
@@ -28,19 +31,39 @@ CORS(app)
 ### Alpaca -- Stanford's davinci-003 model
 llm = Alpaca()
 
+app = Flask(__name__)
+app.config["REDIS_URL"] = "redis://redis:6379/0"
+app.register_blueprint(sse, url_prefix='/stream')
+
+redis_store = redis.StrictRedis().from_url(app.config["REDIS_URL"])
+
+def send_to_rails_api(channel, message):
+    rails_api_url = "http://your_rails_api_domain.com/publish"
+    payload = {"channel": channel, "message": message}
+    response = requests.post(rails_api_url, data=payload)
+    return response
+
+# Publish streaming data to the client
+@app.route('/publish', methods=['POST'])
+def publish():
+    channel = request.form.get('channel')
+    message = request.form.get('message')
+    redis_store.publish(channel, message)
+    return "Message sent to the channel."
+
 # Given the following text request generate a wav file and return to the client
 @app.route("/v1/completions", methods=["POST"])
 @measure_time
 def output():
+  print(request.json)
   prompt = request.json["prompt"]
-  config = request.json["config"]
-
+  config = request.json
   print(f"Prompt: {prompt}")
   print(f"Config: {config }")
   llm.configure(config)
   response = llm.generate(prompt)
-  print(response.response)
-  return jsonify({"choices": [response.response]})
+  print(response)
+  return jsonify({"choices": [{"text": response}]})
 
 @app.route("/v1/update_model", methods=["POST"])
 def update_model():
