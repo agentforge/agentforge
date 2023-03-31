@@ -63,4 +63,6 @@ Rails.application.configure do
   config.assets.compile = true
 
   config.serve_static_assets = false
+
+  config.action_mailer.default_url_options = { host: 'localhost', port: 3000 }
 end

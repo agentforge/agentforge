@@ -68,3 +68,4 @@ gem 'jquery-rails'
 gem "font-awesome-sass", "~> 6.2.1"
 gem 'config'
 gem 'redis'
+gem 'devise'
