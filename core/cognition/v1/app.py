@@ -40,7 +40,7 @@ def output():
   llm.configure(config)
   response = llm.generate(prompt)
   print(response.response)
-  return jsonify({"response": response.response})
+  return jsonify({"choices": [response.response]})
 
 @app.route("/v1/update_model", methods=["POST"])
 def update_model():
