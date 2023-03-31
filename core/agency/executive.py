@@ -69,8 +69,6 @@ class ExecutiveCognition:
         # Create new prompt
         formatted_prompt = self.agent.get_prompt(instruction=prompt, config=config)
 
-        # Capture prompt in memory
-
         url = self.urls["LLM_URL"]
         url = f"{url}/v1/completions"
 
