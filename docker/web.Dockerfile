@@ -2,7 +2,6 @@
 FROM ruby:3.2.1
 
 # Set environment variables
-ENV APP_HOME /app
 ENV RAILS_ENV development
 ENV RAILS_SERVE_STATIC_FILES true
 ENV RAILS_LOG_TO_STDOUT true
@@ -25,10 +24,6 @@ RUN  apt-get -yq update && \
 
 RUN ssh-keyscan github.com >> /root/.ssh/known_hosts
 
-# Set the working directory
-RUN mkdir $APP_HOME
-WORKDIR $APP_HOME
-
 # agent_n API
 RUN git clone "$REPO_URL"
 
@@ -37,7 +32,7 @@ RUN apt-get update -qq && \
     apt-get install -y nodejs npm && \
     npm install --global yarn
 
-WORKDIR $APP_HOME/agent_n/web
+WORKDIR /app/agent_n/web
 
 # Install bundler and gems
 RUN gem install bundler && \
