@@ -36,14 +36,6 @@ def chat_memory_enabled(func):
       return out
   return wrapper
 
-# AgentResponse class returned from the Agent parser
-class AgentResponse():
-  def __init__(self, response, output="", thought=""):
-    self.response = response
-    self.output = output
-    self.thought = thought
-    self.is_code = False
-
 ### Agent -- Layer over LLMChain Agent system to provide a more user friendly interface w/tools and reasoning
 class Agent():
   def __init__(self, opts={}) -> None:
@@ -107,16 +99,6 @@ class Agent():
           description="useful for when you need to answer questions about current events or the current state of the world"
       ),
     ]
-
-  # Returns and AgentResponse object that 
-  def parse(self, output):
-    outputs = output.split("# Output")
-    agent_output = outputs[1] if len(outputs) > 1 else ""
-    responses = output.split("### Response:")
-    candidate = responses[len(responses)-1].strip()
-    # candidate = helpers.process_code_output(candidate)
-    candidate = candidate.lstrip('\n')
-    return AgentResponse(candidate, agent_output)
 
   def test_agent(self):
     a = Agent()
