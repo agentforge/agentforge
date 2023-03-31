@@ -1,5 +1,5 @@
 """
-A text generation model with stream decoding.
+A text generation model with stream decoding. Thanks to https://github.com/hyperonym/basaran
 """
 import copy
 
@@ -191,6 +191,13 @@ class StreamModel:
         pad_token_id = config.pad_token_id
         bos_token_id = config.bos_token_id
         eos_token_id = config.eos_token_id
+
+        print(pad_token_id)
+        print(bos_token_id)
+        print(eos_token_id)
+        print(self.tokenizer.eos_token_id)
+        print(self.model.config)
+
         if isinstance(eos_token_id, int):
             eos_token_id = [eos_token_id]
         if pad_token_id is None and eos_token_id is not None:
@@ -326,9 +333,10 @@ def load_model(
         if half_precision or load_in_8bit:
             kwargs["torch_dtype"] = torch.float16
 
+    # Hacks to load LLAMA alpaca
     llm = LLMModelManager()
-    if name_or_path == "alpaca":
-        llm.load_model("alpaca")
+    if name_or_path == "alpaca-lora-7b":
+        llm.load_model("alpaca-lora-7b")
         model = llm.model
         tokenizer = llm.tokenizer
     else:

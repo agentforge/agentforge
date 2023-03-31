@@ -20,6 +20,7 @@ class StreamTokenizer:
 
         # <unk>, <pad> and other special tokens will be decoded into ''.
         text = self.tokenizer.decode(token, skip_special_tokens=True)
+        # print(text)
 
         # Handle replacement characters caused by multi-byte-pair-encoding or
         # Unicode surrogates or multi-code-point graphemes like emojis.
@@ -27,7 +28,6 @@ class StreamTokenizer:
             n = -self.surrogates if self.surrogates > 0 else len(self.buffer)
             tokens = self.buffer[n:] + [token]
             text = self.tokenizer.decode(tokens, skip_special_tokens=True)
-
             # Check whether the last grapheme was successfully decoded.
             if text and text[-1] != self.replacement:
                 text = text.replace(self.replacement, "")
