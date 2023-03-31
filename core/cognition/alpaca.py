@@ -4,7 +4,7 @@ from peft import PeftModel
 from transformers import LlamaTokenizer, LlamaForCausalLM, GenerationConfig
 from core.config.config import Config
 
-from core.cognition.agent import Agent, chat_memory_enabled
+from core.cognition.base import LLM
 
 MODEL_KEY="alpaca-lora-7b"
 
