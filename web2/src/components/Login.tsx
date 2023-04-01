@@ -1,6 +1,7 @@
 import { useState, FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import config from "../config/config";
 
 interface LoginProps {}
 
@@ -12,7 +13,7 @@ const Login: React.FC<LoginProps> = () => {
   const handleLogin = async (e: FormEvent) => {
     try {
       e.preventDefault()
-      const response = await axios.post("/login", {
+      const response = await axios.post(`${config.host}:${config.port}/login`, {
         username,
         password,
       });
