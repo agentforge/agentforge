@@ -1,8 +1,7 @@
 import bcrypt
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import validates
-
-db = SQLAlchemy()
+from historica import db
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
