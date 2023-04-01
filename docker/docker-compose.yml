@@ -88,14 +88,14 @@ services:
       - cache-volume:/app/cache
 
   web:
-    image: web
+    image: web2
     ports:
       - "3005:3000"
     ipc: host
     networks:
       main-net:
         aliases:
-          - web
+          - web2
     volumes:
       - shared-files:/app/files
       - cache-volume:/app/cache
