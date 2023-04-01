@@ -29,7 +29,8 @@ class App
 
   updateMaxTokensValue: () ->
     slider = document.getElementById("max_new_tokens")
-    document.getElementById("max_new_tokens_value").textContent = slider.value
+    if slider != null
+      document.getElementById("max_new_tokens_value").textContent = slider.value
 
   getAvatar: () ->
     avatar = $("#avatar-dropdown").val()
@@ -70,16 +71,17 @@ class App
   playMp4: (response) ->
     filename = response["filename"]
     video = document.getElementById("hero-video")
-    video.addEventListener 'ended', (event) =>
-      video.src = "/videos/#{@getAvatar()}.mp4"
-      video.loop = true
+    if video != null
+      video.addEventListener 'ended', (event) =>
+        video.src = "/videos/#{@getAvatar()}.mp4"
+        video.loop = true
+        video.load()
+        video.play()
+        video.removeEventListener 'ended', arguments.callee
+      video.src = if filename == "/videos/#{@getAvatar()}.mp4" then "/videos/#{@getAvatar()}.mp4" else '/mp4/' + filename
+      video.loop = false
       video.load()
       video.play()
-      video.removeEventListener 'ended', arguments.callee
-    video.src = if filename == "/videos/#{@getAvatar()}.mp4" then "/videos/#{@getAvatar()}.mp4" else '/mp4/' + filename
-    video.loop = false
-    video.load()
-    video.play()
 
   updateStates: () ->
     ttsChecked = $('#tts').prop('checked')
@@ -249,8 +251,8 @@ $(document).on('turbolinks:load', ->
   app.isFullScreen = false
   app.originalParent = null
   app.originalChatHistoryStyle = {}
-  app.source = new EventSource('/inference/stream?channel=my_channel');
-  app.source.onmessage = (event) =>
-    console.log('Received event:', event)
+  # app.source = new EventSource('/inference/stream?channel=my_channel');
+  # app.source.onmessage = (event) =>
+  #   console.log('Received event:', event)
   window.app = app # for debugging
 )

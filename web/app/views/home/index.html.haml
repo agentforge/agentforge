@@ -12,6 +12,8 @@
       -#   %label.form-check-label{for: "checkbox2"} Checkbox 2
       .form-group
         %button#reset-history.btn.btn-primary{type: "button"} Reset History
+        = link_to destroy_user_session_path, method: :delete, class: "button btn btn-primary" do
+          Logout
       .form-group
         %h5 Name
         %input#name-input.form-control{type: "text", value: "User"}
