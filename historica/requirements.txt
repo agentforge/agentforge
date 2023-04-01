@@ -1,0 +1,19 @@
+gTTS
+flask
+pytest
+accelerate
+bitsandbytes
+trl
+flask_cors
+fuzzywuzzy
+fuzzysearch
+python-Levenshtein
+diffusers[torch]
+espnet
+espnet_model_zoo
+langchain @ git+https://github.com/fragro/langchain.git
+packaging==21.3
+torchmetrics<0.8
+numpy==1.23.5
+redis
+rq

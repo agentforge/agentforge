@@ -3,9 +3,10 @@
 ### Runs via rq worker and listens to a queue for requests
 ### Sends requests to the appropriate service and returns the response
 
-from core.config.config import Config
+# from historica import Config
 import requests
 import logging
+from historica.config import Config
 
 class Worker():
 

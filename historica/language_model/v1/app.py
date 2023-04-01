@@ -1,25 +1,24 @@
 ### Ensure local libs are available for Flask
 from pathlib import Path
 import sys
-path_root = Path(__file__).parents[2]
-sys.path.append(str(path_root))
 
 ### RESTful API for the LLM services
 ### Maintains any necessary queue and rate limiting for
 ### accessing GPU/TPU resources
 
 ### Imports ###
-import json
+import requests, json, redis
 from flask import Flask, request, jsonify, send_file, Response
 from flask_cors import CORS
 from flask_sse import sse
-from core.cognition.alpaca import Alpaca
 import logging
-from core.helpers.helpers import measure_time
-import redis
-import requests
+
+from historica import Alpaca
+from historica import measure_time
 
 #logging.basicConfig(filename='agent.log', level=logging.DEBUG)
+path_root = Path(__file__).parents[2]
+sys.path.append(str(path_root))
 
 app = Flask(__name__)
 CORS(app)
@@ -30,7 +29,6 @@ CORS(app)
 
 ### Alpaca -- Stanford's davinci-003 model
 llm = Alpaca()
-
 app = Flask(__name__)
 app.config["REDIS_URL"] = "redis://redis:6379/0"
 app.register_blueprint(sse, url_prefix='/stream')

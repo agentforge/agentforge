@@ -1,6 +1,6 @@
-from core.agency.avatar import Avatar
-from core.agency.agent import Agent
-from core.config.config import Config
+from historica.agent import Avatar
+from historica.agent import Agent
+from historica.config import Config
 import requests, json, os
 
 def handle_response_error(func):

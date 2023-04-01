@@ -1,15 +1,16 @@
 ### Ensure local libs are available for Flask
 from pathlib import Path
 import sys
-path_root = Path(__file__).parents[2]
-sys.path.append(str(path_root))
-
 from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
-from core.speech.tts import TextToSpeech
-from core.helpers.helpers import measure_time
-from speech.whisper import Whisper
 
+from historica import measure_time
+
+from . import Whisper
+from . import TextToSpeech
+
+path_root = Path(__file__).parents[2]
+sys.path.append(str(path_root))
 app = Flask(__name__)
 CORS(app)
 tts_inst = TextToSpeech()

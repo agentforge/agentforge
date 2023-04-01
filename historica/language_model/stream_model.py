@@ -16,7 +16,7 @@ from transformers import (
 
 from .choice import map_choice
 from .stream_tokenizer import StreamTokenizer
-from core.cognition.manager import LLMModelManager
+from . import LLMModelManager
 
 class StreamModel:
     """StreamModel wraps around a language model to provide stream decoding."""

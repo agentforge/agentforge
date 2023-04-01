@@ -12,8 +12,8 @@ import waitress
 from flask import Flask, Response, abort, jsonify, render_template, request
 
 from . import is_true
-from core.cognition.choice  import reduce_choice
-from core.cognition.stream_model import load_model
+from historica  import reduce_choice
+from historica import load_model
 
 # Configurations from environment variables.
 from . import MODEL

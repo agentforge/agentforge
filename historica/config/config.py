@@ -3,9 +3,9 @@ import os
 
 class Config:
   def __init__(self, config_name):
-    CONFIG_DIR = os.getenv('CONFIG_DIR')
+    self.CONFIG_DIR = os.getenv('CONFIG_DIR')
     config_name = config_name + ".json" if config_name is not None else "config.json"
-    with open(CONFIG_DIR + config_name) as f:
+    with open(self.CONFIG_DIR + config_name) as f:
       self._config = json.load(f)
     # store current config name
     self.config_name = config_name

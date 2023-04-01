@@ -1,21 +1,7 @@
-from .worker.worker import Worker
-from .agency.prompt import Prompt
-from .helpers.parser import Parser
-from .config.config import Config
-from .helpers import helpers
-from .agency.avatar import Avatar
-from .agency.agent import Agent
-from .config.config import Config
-from .cognition.manager import LLMModelManager
+import os
 
-__all__ = [
-    'Worker',
-    'Prompt',
-    'Parser',
-    'Config',
-    'helpers',
-    'Avatar',
-    'Agent',
-    'Config',
-    'LLMModelManager',
-]
+CONFIG_DIR = os.environ.get("CONFIG_DIR", "/app/historica/config")
+VIDEO_SRC_PATH = os.environ.get("SRC_PATH", "/app/agent_n/web/public/videos")
+VIDEO_DST_PATH = os.environ.get("DST_PATH", "/app/cache")
+DEFAULT_MAX_NEW_TOKENS = os.environ.get("DEFAULT_MAX_NEW_TOKENS", 2048)
+CONFIG_FILE = os.path.join(CONFIG_DIR, "models.json")

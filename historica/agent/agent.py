@@ -3,13 +3,13 @@ os.environ["LANGCHAIN_HANDLER"] = "langchain"
 
 from langchain import PromptTemplate, LLMChain
 from langchain.agents import initialize_agent
-from core.helpers import helpers
+from historica import helpers
 from langchain.agents import Tool
 from langchain.llms import HuggingFaceModel
 from langchain.utilities import SearxSearchWrapper
 from langchain.chains.conversation.memory import ConversationBufferMemory
-from core.agency.prompt import Prompt
-from core.helpers.parser import Parser
+from .prompt import Prompt
+from historica.helpers import Parser
 
 SEARX_HOST = "https://searx.work/"
 AGENT_MODEL = "OpenAssistant/oasst-sft-1-pythia-12b"
