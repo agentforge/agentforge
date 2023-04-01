@@ -1,5 +1,4 @@
 import os
-os.environ["LANGCHAIN_HANDLER"] = "langchain"
 
 from langchain import PromptTemplate, LLMChain
 from langchain.agents import initialize_agent
@@ -14,6 +13,8 @@ from historica.helpers import Parser
 SEARX_HOST = "https://searx.work/"
 AGENT_MODEL = "OpenAssistant/oasst-sft-1-pythia-12b"
 CONFIG_NAME = "logical"
+
+os.environ["LANGCHAIN_HANDLER"] = "langchain"
 
 # Dectorator to enable chat memory for the agent and get the prompt
 ## Future access to tools/plugins/retrieval

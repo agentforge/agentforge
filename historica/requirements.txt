@@ -17,3 +17,6 @@ torchmetrics<0.8
 numpy==1.23.5
 redis
 rq
+flask-sqlalchemy
+flask-migrate
+psycopg2-binary
