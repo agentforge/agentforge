@@ -20,7 +20,6 @@ const Login: React.FC<LoginProps> = ({ setIsLoggedIn }) => {
         password,
       });
       localStorage.setItem("token", response.data.token);
-      console.log("LOGCAL S");
       setIsLoggedIn && setIsLoggedIn(true); // Set isLoggedIn to true
       navigate("/");
     } catch (error) {
