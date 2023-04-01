@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
@@ -9,8 +9,9 @@ const Login: React.FC<LoginProps> = () => {
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
-  const handleLogin = async () => {
+  const handleLogin = async (e: FormEvent) => {
     try {
+      e.preventDefault()
       const response = await axios.post("/login", {
         username,
         password,
