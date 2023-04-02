@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import config from "../config/config";
 
 interface RegisterProps {}
 
@@ -9,9 +10,10 @@ const Register: React.FC<RegisterProps> = () => {
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
-  const handleRegister = async () => {
+  const handleRegister = async (e: FormEvent) => {
     try {
-      const response = await axios.post("/register", {
+      e.preventDefault()
+      const response = await axios.post(`${config.host}:${config.port}/register`, {
         username,
         password,
       });
