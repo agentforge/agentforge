@@ -1,5 +1,5 @@
-from .wav2lip.wav2lip2 import Wav2LipModel
-from .wav2lip.wav2lip import Wav2Lip
+from .wav2lip2 import Wav2LipModel
+from .wav2lip import Wav2Lip
 from .hparams import hparams as hp
 from .wav2lip import audio
 from .wav2lip import face_detection
