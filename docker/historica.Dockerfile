@@ -20,17 +20,18 @@ RUN ssh-keyscan github.com >> /root/.ssh/known_hosts
 # agent_n API
 RUN git clone "$REPO_URL"
 
-WORKDIR /app/agent_n/historica
-
-RUN add-apt-repository ppa:ubuntu-toolchain-r/test
 RUN apt-get update
-RUN DEBIAN_FRONTEND=noninteractiveapt-get install -y libstdc++6-7-dbg software-properties-common ffmpeg git openssh-client tig
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y software-properties-common
+RUN add-apt-repository ppa:ubuntu-toolchain-r/test
+RUN apt-get install -y libstdc++6-7-dbg ffmpeg git openssh-client tig
 
-RUN rm /usr/lib/x86_64-linux-gnu/libstdc++.so.6 && ln -s /opt/conda/x86_64-conda-linux-gnu/lib/libstdc++.so.6.0.30 /usr/lib/x86_64-linux-gnu/libstdc++.so.6
+# RUN rm /usr/lib/x86_64-linux-gnu/libstdc++.so.6 && ln -s /opt/conda/x86_64-conda-linux-gnu/lib/libstdc++.so.6.0.30 /usr/lib/x86_64-linux-gnu/libstdc++.so.6
 
 RUN pip install --upgrade pip
-RUN pip install llvmlite --ignore installed
-RUN pip install -r requirements.txt
+RUN pip install llvmlite --ignore-installed
+
+WORKDIR /app/agent_n/historica/
+RUN pip install -r /app/agent_n/historica/requirements.txt
 
 # RUN pip install gTTS flask pytest accelerate bitsandbytes trl pip install flask_cors fuzzywuzzy fuzzysearch python-Levenshtein
 # RUN pip install --upgrade diffusers[torch]
@@ -59,4 +60,4 @@ RUN pip install -r requirements.txt
 # EXPOSE 3000
 
 # #CMD ["flask", "run", "--host=0.0.0.0", "--port=3000"]
-# CMD tail -f /dev/null
+CMD tail -f /dev/null
