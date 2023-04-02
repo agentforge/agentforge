@@ -3,7 +3,7 @@
 # from espnet2.utils.types import str_or_none
 import soundfile as sf
 from TTS.api import TTS
-from . import normalize_transcription
+from .normalize import normalize_transcription
 
 class TextToSpeech():
   def __init__(self) -> None:
