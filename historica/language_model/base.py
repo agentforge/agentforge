@@ -5,9 +5,9 @@
 
 ### Imports ###
 import torch
-from historica import Config
+from historica.config import Config
 import logging
-from historica.config import DEFAULT_MAX_NEW_TOKENS
+from historica import DEFAULT_MAX_NEW_TOKENS
 from .manager import LLMModelManager
 
 ### Manages Base LLM functions ###

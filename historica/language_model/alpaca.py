@@ -1,8 +1,6 @@
 import torch
 import time
-from peft import PeftModel
-from transformers import LlamaTokenizer, LlamaForCausalLM, GenerationConfig, TextStreamer
-from historica import Config
+from transformers import  GenerationConfig, TextStreamer
 from . import LLM
 
 MODEL_KEY="alpaca-lora-7b"
