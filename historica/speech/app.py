@@ -4,7 +4,7 @@ import sys
 from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
 
-from historica import measure_time
+from historica.helpers import measure_time
 
 from . import Whisper
 from . import TextToSpeech
@@ -14,7 +14,7 @@ sys.path.append(str(path_root))
 app = Flask(__name__)
 CORS(app)
 tts_inst = TextToSpeech()
-whisper = Whisper()
+# whisper = Whisper()
 
 # Given the following text request generate a wav file and return to the client
 @app.route("/v1/tts", methods=["POST"])
