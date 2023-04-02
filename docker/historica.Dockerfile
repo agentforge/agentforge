@@ -20,44 +20,27 @@ RUN ssh-keyscan github.com >> /root/.ssh/known_hosts
 # agent_n API
 RUN git clone "$REPO_URL"
 
+<<<<<<< HEAD
 WORKDIR /app/agent_n/historica
 
 RUN apt-get update
 RUN sudo apt-get install software-properties-common
 RUN add-apt-repository ppa:ubuntu-toolchain-r/test
 RUN DEBIAN_FRONTEND=noninteractiveapt-get install -y libstdc++6-7-dbg software-properties-common ffmpeg git openssh-client tig
+=======
+RUN apt-get update
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y software-properties-common
+RUN add-apt-repository ppa:ubuntu-toolchain-r/test
+RUN apt-get install -y libstdc++6-7-dbg ffmpeg git openssh-client tig
+>>>>>>> 91b7b0faea69a960e1bcfbaeb2bdcfe43a5ea6b2
 
-RUN rm /usr/lib/x86_64-linux-gnu/libstdc++.so.6 && ln -s /opt/conda/x86_64-conda-linux-gnu/lib/libstdc++.so.6.0.30 /usr/lib/x86_64-linux-gnu/libstdc++.so.6
+# RUN rm /usr/lib/x86_64-linux-gnu/libstdc++.so.6 && ln -s /opt/conda/x86_64-conda-linux-gnu/lib/libstdc++.so.6.0.30 /usr/lib/x86_64-linux-gnu/libstdc++.so.6
 
 RUN pip install --upgrade pip
-RUN pip install llvmlite --ignore installed
-RUN pip install -r requirements.txt
+RUN pip install llvmlite --ignore-installed
 
-# RUN pip install gTTS flask pytest accelerate bitsandbytes trl pip install flask_cors fuzzywuzzy fuzzysearch python-Levenshtein
-# RUN pip install --upgrade diffusers[torch]
-# RUN pip install 'langchain @ git+https://github.com/fragro/langchain.git'
-# RUN pip uninstall -y packaging transformers torchmetrics
-
-# # Reinstall with specific versions
-# # RUN pip install transformers==4.26.1
-# RUN pip install 'git+https://github.com/huggingface/transformers.git'
-# RUN pip install packaging==21.3
-# RUN pip install 'torchmetrics<0.8'
-
-# RUN conda install -c conda-forge gcc=12.1.0
-# RUN pip install numpy==1.23.5
-# RUN pip install redis rq
-
-# RUN pip install --ignore-installed llvmlite
-
-
-# RUN pip install typeguard==2.7.0
-# RUN pip install TTS inflect
-# RUN pip install espnet
-# RUN pip install espnet_model_zoo
-
-# # Expose port 3000
-# EXPOSE 3000
+WORKDIR /app/agent_n/historica/
+RUN pip install -r /app/agent_n/historica/requirements.txt
 
 # #CMD ["flask", "run", "--host=0.0.0.0", "--port=3000"]
-# CMD tail -f /dev/null
+CMD tail -f /dev/null

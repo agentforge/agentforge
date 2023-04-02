@@ -19,3 +19,5 @@ flask-sqlalchemy
 flask-migrate
 psycopg2-binary
 transformers @ git+https://github.com/huggingface/transformers.git
+flask_sse
+psycopg2-binary
