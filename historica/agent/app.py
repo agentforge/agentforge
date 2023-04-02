@@ -60,6 +60,11 @@ def register():
     except Exception as e:
         return jsonify({'message': str(e)}), 400
 
+@app.route('/logout', methods=['POST'])
+def logout():
+    session.pop('user', None)
+    return jsonify({"message": "Logged out successfully"}), 200
+
 # Define the API endpoint for prompting the language_model
 @app.route("/v1/completions", methods=["POST"])
 @measure_time

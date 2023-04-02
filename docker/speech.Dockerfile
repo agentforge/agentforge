@@ -45,6 +45,8 @@ RUN pip install --upgrade pip
 RUN pip install redis rq
 RUN pip install typeguard==2.7.0
 RUN pip install TTS inflect
+RUN pip install --ignore-installed llvmlite
+RUN pip install llvmlite --ignore installed
 
 # Clone wave2lip
 RUN git clone https://github.com/Rudrabha/Wav2Lip.git
