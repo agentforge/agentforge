@@ -1,5 +1,8 @@
 FROM historica:latest
 
+WORKDIR /app/agent_n/historica/language_model
+RUN pip install peft
+
 # Expose port 3000
 EXPOSE 3000
 

@@ -19,4 +19,5 @@ redis
 rq
 flask-sqlalchemy
 flask-migrate
+flask_sse
 psycopg2-binary

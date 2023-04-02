@@ -15,6 +15,8 @@ RUN git clone https://github.com/Rudrabha/Wav2Lip.git
 
 RUN mkdir /app/agent_n/core/wav2lip/temp
 
+WORKDIR /app/agent_n/historica/wav2lip
+
 # Expose port 3000
 EXPOSE 3000
 
