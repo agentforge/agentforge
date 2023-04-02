@@ -22,8 +22,9 @@ RUN git clone "$REPO_URL"
 
 WORKDIR /app/agent_n/historica
 
-RUN add-apt-repository ppa:ubuntu-toolchain-r/test
 RUN apt-get update
+RUN sudo apt-get install software-properties-common
+RUN add-apt-repository ppa:ubuntu-toolchain-r/test
 RUN DEBIAN_FRONTEND=noninteractiveapt-get install -y libstdc++6-7-dbg software-properties-common ffmpeg git openssh-client tig
 
 RUN rm /usr/lib/x86_64-linux-gnu/libstdc++.so.6 && ln -s /opt/conda/x86_64-conda-linux-gnu/lib/libstdc++.so.6.0.30 /usr/lib/x86_64-linux-gnu/libstdc++.so.6
