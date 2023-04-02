@@ -9,8 +9,6 @@ fuzzywuzzy
 fuzzysearch
 python-Levenshtein
 diffusers[torch]
-espnet
-espnet_model_zoo
 langchain @ git+https://github.com/fragro/langchain.git
 packaging==21.3
 torchmetrics<0.8
@@ -19,4 +17,7 @@ redis
 rq
 flask-sqlalchemy
 flask-migrate
+psycopg2-binary
+transformers @ git+https://github.com/huggingface/transformers.git
+flask_sse
 psycopg2-binary

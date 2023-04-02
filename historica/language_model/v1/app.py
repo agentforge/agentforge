@@ -14,7 +14,6 @@ from flask_sse import sse
 import logging
 
 from historica.language_model import Alpaca
-from historica.helpers import measure_time
 
 #logging.basicConfig(filename='agent.log', level=logging.DEBUG)
 path_root = Path(__file__).parents[2]

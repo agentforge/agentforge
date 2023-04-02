@@ -1,6 +1,12 @@
 # Use the official Node.js v14 image as the base image
 FROM node:14
 
+ARG REPO_URL
+ARG SSH_PRIVATE_KEY
+
+ENV REPO_URL=$REPO_URL
+ENV SSH_PRIVATE_KEY=$SSH_PRIVATE_KEY
+
 # Copy over git repos
 RUN mkdir -p /root/.ssh && \
     echo "$SSH_PRIVATE_KEY" > /root/.ssh/id_rsa && \
@@ -16,7 +22,7 @@ WORKDIR /app
 
 RUN git clone "$REPO_URL"
 
-WORKDIR /app/agent_n
+WORKDIR /app/agent_n/web2
 
 # Install the app's dependencies
 RUN npm install
