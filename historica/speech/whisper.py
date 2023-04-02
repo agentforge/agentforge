@@ -1,5 +1,5 @@
 from transformers import AutoProcessor, AutoModelForSpeechSeq2Seq
-from core.config.config import Config
+from historica.config import Config
 
 class Whisper:
   def __init__(self):
