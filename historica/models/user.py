@@ -2,6 +2,7 @@ import bcrypt
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import validates
 from historica import db
+from flask import session
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -33,8 +34,15 @@ class User(db.Model):
         return user
 
     @classmethod
+    def logout(cls, user_id: int):
+        session_key = f"user_{user_id}"
+        session.pop(session_key, None)
+
+    @classmethod
     def authenticate(cls, username: str, password: str) -> 'User':
         user = cls.query.filter_by(username=username).first()
         if user and user.check_password(password):
+            session_key = f"user_{user.id}"
+            session[session_key] = user.id
             return user
         return None
