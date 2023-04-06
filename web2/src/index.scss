@@ -388,6 +388,7 @@ pre code .comment {
 }
 
 .nav-menu {
+  z-index: 10000;
   position: relative;
   background-color: #333;
   display: flex;

@@ -16,6 +16,30 @@ const avatarDropdownRef = useRef<HTMLSelectElement>(null);
   const maxNewTokensRef = useRef<HTMLInputElement>(null);
   const ttsCheckboxRef = useRef<HTMLInputElement>(null);
   const streamingCheckboxRef = useRef<HTMLInputElement>(null);
+  const nameInputRef = useRef<HTMLInputElement>(null);
+  const lipsyncCheckboxRef = useRef<HTMLInputElement>(null);
+
+  const avatarRef = useRef<HTMLSelectElement>(null);
+  const modelConfigInputRef = useRef<HTMLSelectElement>(null);
+  const modelKeyInputRef = useRef<HTMLSelectElement>(null);
+
+  const videoSrc = "/videos/default.mp4";
+  
+
+  const getConfigValues = () => {
+    const configs = {
+      human_name: nameInputRef.current?.value || "",
+      tts: ttsCheckboxRef.current?.checked || false,
+      lipsync: lipsyncCheckboxRef.current?.checked || false,
+      streaming: streamingCheckboxRef.current?.checked || false,
+      max_new_tokens: parseInt(maxNewTokensRef.current?.value || "0", 10),
+      avatar: avatarRef.current?.value || "",
+      generation_config: modelConfigInputRef.current?.value || "",
+      model_key: modelKeyInputRef.current?.value || "",
+    };
+  
+    return configs;
+  };
 
   useEffect(() => {
     const updateMaxTokensValue = () => {
@@ -147,21 +171,21 @@ const avatarDropdownRef = useRef<HTMLSelectElement>(null);
         />
       </div>
       {/* Add your video implementation */}
-      <div id="hero-video-wrapper"></div>
+      <div id="hero-video-wrapper"><video id="hero-video" src={videoSrc} autoPlay loop></video></div>
       <div className="custom-control custom-checkbox">
-        <input type="checkbox" id="tts" className="custom-control-input" defaultChecked />
+        <input type="checkbox" id="tts" className="custom-control-input" ref={ttsCheckboxRef} defaultChecked />
         <label htmlFor="tts" className="custom-control-label">
           TTS
         </label>
       </div>
       <div className="custom-control custom-checkbox">
-        <input type="checkbox" id="lipsync" className="custom-control-input" defaultChecked />
+        <input type="checkbox" id="lipsync" className="custom-control-input" ref={lipsyncCheckboxRef} defaultChecked />
         <label htmlFor="lipsync" className="custom-control-label">
           LipSync
         </label>
       </div>
       <div className="custom-control custom-checkbox">
-        <input type="checkbox" id="streaming" className="custom-control-input" />
+        <input type="checkbox" id="streaming" className="custom-control-input" ref={streamingCheckboxRef} />
         <label htmlFor="streaming" className="custom-control-label">
           Streaming
         </label>
@@ -169,6 +193,7 @@ const avatarDropdownRef = useRef<HTMLSelectElement>(null);
       <div className="slider-container">
         <label htmlFor="max_new_tokens">Max New Tokens</label>
         <input
+          ref={maxNewTokensRef}
           type="range"
           id="max_new_tokens"
           className="custom-range"
@@ -179,7 +204,7 @@ const avatarDropdownRef = useRef<HTMLSelectElement>(null);
       </div>
       <div className="dropdown-container">
         <label>Avatars</label>
-        <select className="custom-select" id="avatar-dropdown">
+        <select className="custom-select" id="avatar-dropdown" ref={avatarRef}>
           {avatars.map((avatar) => (
             <option key={avatar} value={avatar}>
               {avatar}
@@ -189,7 +214,7 @@ const avatarDropdownRef = useRef<HTMLSelectElement>(null);
       </div>
       <div className="dropdown-container">
         <label htmlFor="model-config">Model Config</label>
-        <select className="custom-select" id="model-config">
+        <select className="custom-select" id="model-config" ref={modelConfigInputRef}>
           {modelConfigs.map((config) => (
             <option key={config} value={config}>
               {config}
@@ -199,7 +224,7 @@ const avatarDropdownRef = useRef<HTMLSelectElement>(null);
       </div>
       <div className="dropdown-container">
         <label htmlFor="model">Model</label>
-        <select className="custom-select" id="model">
+        <select className="custom-select" id="model" ref={modelKeyInputRef}>
           {models.map((model) => (
             <option key={model} value={model}>
               {model}
