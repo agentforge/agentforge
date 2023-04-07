@@ -9,6 +9,7 @@ import axios from 'axios';
 import config from "../config/config";
 import Message, {MessageProps} from './Message'
 import { v4 as uuidv4 } from 'uuid';
+import useStateWithCallback from './useStateWithCallback'
 
 interface HomeProps {}
 
@@ -31,7 +32,11 @@ const Home: React.FC<HomeProps> = () => {
   
 
   // useState values
-  const [messages, setMessages] = useState<MessageProps[]>([]);
+  const [messages, setMessages] = useStateWithCallback<MessageProps[]>([], () => {
+    if (chatHistoryRef.current) {
+      chatHistoryRef.current.scrollTop = chatHistoryRef.current.scrollHeight;
+    }
+  });
   const [textAreaValue, setTextAreaValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [currentVideo, setCurrentVideo] = useState<'videoA' | 'videoB'>('videoA');
@@ -97,9 +102,9 @@ const Home: React.FC<HomeProps> = () => {
 
     // Wrap setMessages in a Promise and use await to ensure sequential execution
     await new Promise<void>((resolve) => {
-      setMessages((prevMessages) => {
+      setMessages((prevMessages: any) => {
         resolve();
-        clearTextarea()
+        clearTextarea();
         return [...prevMessages, newMessage];
       });
     });
@@ -199,7 +204,9 @@ const Home: React.FC<HomeProps> = () => {
             videoBRef.current.style.display = 'none';
             // Manually loop the video
             videoBRef.current.currentTime = .1;
-            videoBRef.current.src = videos[avatar];
+            if(!videoBRef.current.src.includes(videos[avatar])){
+              videoBRef.current.src = videos[avatar];
+            }
             videoBRef.current.pause()
             videoARef.current.removeEventListener('canplaythrough', playWhenLoaded);
           }
@@ -223,7 +230,9 @@ const Home: React.FC<HomeProps> = () => {
             videoARef.current.style.display = 'none';
             // Manually loop the video
             videoARef.current.currentTime = .1;
-            videoARef.current.src = videos[avatar];
+            if(!videoARef.current.src.includes(videos[avatar])){
+              videoARef.current.src = videos[avatar];
+            }
             videoARef.current.pause()
             videoBRef.current.removeEventListener('canplaythrough', playWhenLoaded);
           }
@@ -279,8 +288,10 @@ const Home: React.FC<HomeProps> = () => {
             // currentVideoRef.current.currentTime = .1;
             const selectedAvatar = getAvatar();
             const defaultUrl = '/videos/' + selectedAvatar + '.mp4';
-            currentVideoRef.current.src = defaultUrl;
 
+            if(!currentVideoRef.current.src.includes(defaultUrl)){
+              currentVideoRef.current.src = defaultUrl;
+            }
             currentVideoRef.current.pause()
             // setCurrentVideo((prevVideo) => (prevVideo === 'videoA' ? 'videoB' : 'videoA'));
             // switchVideo();
@@ -296,12 +307,8 @@ const Home: React.FC<HomeProps> = () => {
 
   // useEffect Function
   useEffect(() => {
-    if (messages.length > 0) {
-      // Scroll to the bottom of chat-history element
-      if (chatHistoryRef.current) {
-        chatHistoryRef.current.scrollTop = chatHistoryRef.current.scrollHeight;
-      }
-    }
+
+    //Update max tokens
     const updateMaxTokensValue = () => {
       const slider = maxNewTokensRef.current;
       if (slider !== null) {
@@ -422,10 +429,10 @@ const Home: React.FC<HomeProps> = () => {
         <div className="control-panel container">
           <h2>Control Panel</h2>
 
-          <div className="form-group">
+          {/* <div className="form-group">
             <Button id="reset-history" className="btn-main">Reset History</Button>
-          </div>
-          <div className="form-group">
+          </div> */}
+          <div className="form-group config-row">
             <h5>Name</h5>
             <input 
               id="name-input"
@@ -435,7 +442,7 @@ const Home: React.FC<HomeProps> = () => {
               ref={nameInputRef}
             />
           </div>
-          <div className="form-group">
+          <div className="form-group config-row">
             <h5>Robot Name</h5>
             <input
               id="robot-name-input"
@@ -475,65 +482,76 @@ const Home: React.FC<HomeProps> = () => {
               autoPlay
             ></video> */}
           </div>
-          <div className="custom-control custom-checkbox">
-            <input type="checkbox" id="tts" className="custom-control-input" ref={ttsCheckboxRef} defaultChecked />
-            <label htmlFor="tts" className="custom-control-label">
-              TTS
-            </label>
-          </div>
-          <div className="custom-control custom-checkbox">
-            <input type="checkbox" id="lipsync" className="custom-control-input" ref={lipsyncCheckboxRef} defaultChecked />
-            <label htmlFor="lipsync" className="custom-control-label">
-              LipSync
-            </label>
-          </div>
-          <div className="custom-control custom-checkbox">
-            <input type="checkbox" id="streaming" className="custom-control-input" ref={streamingCheckboxRef} />
-            <label htmlFor="streaming" className="custom-control-label">
-              Streaming
-            </label>
+          <div className="row form-group">
+            <div className="custom-control custom-checkbox col-md-6">
+              <input type="checkbox" id="tts" className="custom-control-input" ref={ttsCheckboxRef} defaultChecked />
+              <label htmlFor="tts" className="custom-control-label">
+                Speech
+              </label>
+            </div>
+            <div className="custom-control custom-checkbox col-md-6">
+              <input type="checkbox" id="lipsync" className="custom-control-input" ref={lipsyncCheckboxRef} defaultChecked />
+              <label htmlFor="lipsync" className="custom-control-label">
+                Video
+              </label>
+            </div>
+            <div className="custom-control custom-checkbox col-md-6">
+              <input type="checkbox" id="streaming" className="custom-control-input" ref={streamingCheckboxRef} />
+              <label htmlFor="streaming" className="custom-control-label">
+                Streaming
+              </label>
+            </div>
           </div>
           <div className="slider-container">
             <label htmlFor="max_new_tokens">Max New Tokens</label>
-            <input
-              ref={maxNewTokensRef}
-              type="range"
-              id="max_new_tokens"
-              className="custom-range"
-              min="1"
-              max="2048"
-            />
-            <span id="max_new_tokens_value"></span>
+            <div className="row config-row justify-content-md-center" >
+              <input
+                ref={maxNewTokensRef}
+                type="range"
+                id="max_new_tokens"
+                className="custom-range col-8"
+                min="1"
+                max="2048"
+                defaultValue="1024"
+              />
+              <span id="max_new_tokens_value" className="col-2">1024</span>
+            </div>
           </div>
-          <div className="dropdown-container">
-            <label>Avatars</label>
-            <select className="custom-select" id="avatar-dropdown" ref={avatarRef}>
-              {avatars.map((avatar) => (
-                <option key={avatar} value={avatar}>
-                  {avatar}
-                </option>
-              ))}
-            </select>
+          <div className="row config-row">
+            <div className="form-group">
+              <label htmlFor="avatar-dropdown" className="col-md-6">Avatar</label>
+              <select className="custom-select col-md-6 float-end" id="avatar-dropdown" ref={avatarRef}>
+                {avatars.map((avatar) => (
+                  <option key={avatar} value={avatar}>
+                    {avatar}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
-          <div className="dropdown-container">
-            <label htmlFor="model-config">Model Config</label>
-            <select className="custom-select" id="model-config" ref={modelConfigInputRef}>
-              {modelConfigs.map((config) => (
-                <option key={config} value={config}>
-                  {config}
-                </option>
-              ))}
-            </select>
+          <div className="row config-row">
+            <div className="form-group">
+              <label htmlFor="model-config" className="col-md-6">Personality</label>
+              <select className="custom-select col-md-6 float-end" id="model-config" ref={modelConfigInputRef}>
+                {modelConfigs.map((config) => (
+                  <option key={config} value={config}>
+                    {config}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
-          <div className="dropdown-container">
-            <label htmlFor="model">Model</label>
-            <select className="custom-select" id="model" ref={modelKeyInputRef}>
-              {models.map((model) => (
-                <option key={model} value={model}>
-                  {model}
-                </option>
-              ))}
-            </select>
+          <div className="row config-row">
+            <div className="form-group">
+              <label htmlFor="model" className="col-md-6">Model</label>
+              <select className="custom-select col-md-6 float-end" id="model" ref={modelKeyInputRef}>
+                {models.map((model) => (
+                  <option key={model} value={model}>
+                    {model}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
         </div>
         </div>
