@@ -471,3 +471,18 @@ pre code .comment {
     background-color: #4caf50;
   }
 }
+.animated-ellipsis {
+  animation: ellipsis 1s infinite;
+}
+
+@keyframes ellipsis {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 1;
+  }
+}

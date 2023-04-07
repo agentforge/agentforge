@@ -4,7 +4,7 @@ import ControlPanel from './ControlPanel';
 import Agent from './Agent';
 import Gutter from './Gutter';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faRocket, faSpinner } from '@fortawesome/free-solid-svg-icons';
+import { faRocket, faEllipsisH } from '@fortawesome/free-solid-svg-icons';
 import axios from 'axios';
 import config from "../config/config";
 import Message, {MessageProps} from './Message'
@@ -56,38 +56,53 @@ const Home: React.FC<HomeProps> = () => {
     }
   };
 
+  const addMessage = async (prompt: string | undefined, author: string | undefined, author_type: string | undefined) => {
+    // Validations
+    if(author == null){
+      console.log("ERROR: Must set author.")
+      return
+    }
+    if(prompt == null){
+      console.log("ERROR: Must set prompt.")
+      return
+    }
+    if(author_type == null){
+      console.log("ERROR: Must set author_type.")
+      return      
+    }
+
+    // Create new message
+    const newMessage: MessageProps = {
+      id: uuidv4(),
+      author_type: author_type, //'human',
+      author: author,
+      text: prompt,
+    };
+    // setMessages([...messages, newMessage]);
+    // Wrap setMessages in a Promise and use await to ensure sequential execution
+      await new Promise<void>((resolve) => {
+        setMessages((prevMessages) => {
+          resolve();
+          clearTextarea()
+          return [...prevMessages, newMessage];
+        });
+      });
+  }
+
   // API Functions
   const getCompletion = async () => {
-    var textVal = textareaRef.current?.value
-    if(textVal == null){
+    var prompt = textareaRef.current?.value
+    if(prompt == null){
       return 
     }
     const data = {
-      prompt: textVal,
+      prompt: prompt,
       config: getConfigValues()
     };
     try {
       // Create a human message
       var author = nameInputRef.current?.value;
-      if(author == null){
-        author = "Human"
-      }
-
-      const newMessage: MessageProps = {
-        id: uuidv4(),
-        author_type: 'human',
-        author: author,
-        text: textVal,
-      };
-      // setMessages([...messages, newMessage]);
-       // Wrap setMessages in a Promise and use await to ensure sequential execution
-        await new Promise<void>((resolve) => {
-          setMessages((prevMessages) => {
-            resolve();
-            clearTextarea()
-            return [...prevMessages, newMessage];
-          });
-        });
+      addMessage(prompt, author, 'human');
 
       // Get completion
       setIsLoading(true)
@@ -95,27 +110,15 @@ const Home: React.FC<HomeProps> = () => {
       
       // Create an AI message
       var author = aiInputRef.current?.value;
-      if(author == null){
-        author = "AI"
-      }
-      const AiMessage: MessageProps = {
-        id: uuidv4(),
-        author_type: 'ai',
-        author: author,
-        text: response.data.choices[0]["text"],
-      };
-
-      await new Promise<void>((resolve) => {
-        setMessages((prevMessages) => {
-          resolve();
-          setIsLoading(false)
-          return [...prevMessages, AiMessage];
-        });
-      });
+      addMessage(response.data.choices[0]["text"], author, 'ai');
 
     } catch (error) {
       console.error('Error sending message:', error);
     }
+  };
+
+  const getTTS = async () => {
+
   };
 
   // Getter/Setter Functions
@@ -212,30 +215,6 @@ const Home: React.FC<HomeProps> = () => {
       });
     }
 
-    
-    // if (textareaRef.current) {
-    //     textareaRef.current.addEventListener('keyup', (e) => {
-    //     if (e.key === "Enter" && e.shiftKey) {
-    //       console.log(e.key);
-    //       if (textareaRef.current) {
-    //         textareaRef.current.value += '\n';
-    //         e.preventDefault();
-    //       }
-    //     }
-    //     if (e.key === "Enter" && !e.shiftKey) {
-    //       if (!isCompleting) {
-    //         setIsCompleting(true);
-    //         e.preventDefault();
-    //         console.log(e.key);
-    //         console.log(isCompleting)
-    //         console.log(textareaRef.current?.value)
-    //         // Call sendMessage function here
-    //         // getCompletion();
-    //         console.log("CLICK");
-    //       }
-    //     }
-    //   });
-    // }
     // Add resize event listener (use a method instead of @resizeVideo)
     window.addEventListener('resize', () => {
       const video = document.getElementById('hero-video') as HTMLVideoElement;
@@ -279,7 +258,13 @@ const Home: React.FC<HomeProps> = () => {
           </div>
           <div className="form-group">
             <h5>Name</h5>
-            <input id="name-input" type="text" className="form-control" defaultValue="User" />
+            <input 
+              id="name-input"
+              type="text"
+              className="form-control"
+              defaultValue="User"
+              ref={nameInputRef}
+            />
           </div>
           <div className="form-group">
             <h5>Robot Name</h5>
@@ -288,6 +273,7 @@ const Home: React.FC<HomeProps> = () => {
               type="text"
               className="form-control"
               defaultValue="Robot"
+              ref={aiInputRef}
             />
           </div>
           {/* Add your video implementation */}
@@ -387,7 +373,7 @@ const Home: React.FC<HomeProps> = () => {
                   <div className="col-3">
                     <Button id="send-message" className="btn btn-main" onClick={getCompletion}>
                     {isLoading ? (
-                      <FontAwesomeIcon icon={faSpinner} spin />
+                      <FontAwesomeIcon icon={faEllipsisH} className="animated-ellipsis" />
                     ) : (
                       <FontAwesomeIcon icon={faRocket} />
                     )}
