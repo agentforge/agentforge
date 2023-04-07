@@ -266,9 +266,12 @@ pre code .comment {
 #hero-video-wrapper {
   position: relative;
   display: inline-block;
+  width: 252px;
+  height: 252px;
 }
-#hero-video {
-  max-width: 100%;
+
+.hero-video{
+  width: 252px;
 }
 #toggle-button {
   position: absolute;

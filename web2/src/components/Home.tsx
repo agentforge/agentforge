@@ -20,26 +20,42 @@ const Home: React.FC<HomeProps> = () => {
   const modelConfigs = ["creative", "logical", "moderate"];
   const models = ["alpaca-lora-7b"];
   const videoSrc = "/videos/default.mp4";
+  interface VideoMap {
+    [key: string]: string;
+  }
+  const videos: VideoMap = {
+    default: '/videos/default.mp4',
+    makhno: '/videos/makhno.mp4',
+    fdr: '/videos/fdr.mp4',
+  };
+  
 
   // useState values
   const [messages, setMessages] = useState<MessageProps[]>([]);
   const [textAreaValue, setTextAreaValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [currentVideo, setCurrentVideo] = useState<'videoA' | 'videoB'>('videoA');
 
-  //useRefs
-  const avatarDropdownRef = useRef<HTMLSelectElement>(null);
-  const heroVideoRef = useRef<HTMLVideoElement>(null);
-  const sendMessageRef = useRef<HTMLButtonElement>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  //Config Refs
+  const avatarRef = useRef<HTMLSelectElement>(null);
   const maxNewTokensRef = useRef<HTMLInputElement>(null);
   const ttsCheckboxRef = useRef<HTMLInputElement>(null);
   const streamingCheckboxRef = useRef<HTMLInputElement>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
   const aiInputRef = useRef<HTMLInputElement>(null);
   const lipsyncCheckboxRef = useRef<HTMLInputElement>(null);
+
+  // Video refs
+  const videoARef = useRef<HTMLVideoElement>(null);
+  const videoBRef = useRef<HTMLVideoElement>(null);
+
+  // Text Refs
+  const sendMessageRef = useRef<HTMLButtonElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+
   const chatHistoryRef = useRef<HTMLUListElement>(null);
 
-  const avatarRef = useRef<HTMLSelectElement>(null);
   const modelConfigInputRef = useRef<HTMLSelectElement>(null);
   const modelKeyInputRef = useRef<HTMLSelectElement>(null);
 
@@ -78,18 +94,18 @@ const Home: React.FC<HomeProps> = () => {
       author: author,
       text: prompt,
     };
-    // setMessages([...messages, newMessage]);
+
     // Wrap setMessages in a Promise and use await to ensure sequential execution
-      await new Promise<void>((resolve) => {
-        setMessages((prevMessages) => {
-          resolve();
-          clearTextarea()
-          return [...prevMessages, newMessage];
-        });
+    await new Promise<void>((resolve) => {
+      setMessages((prevMessages) => {
+        resolve();
+        clearTextarea()
+        return [...prevMessages, newMessage];
       });
+    });
   }
 
-  // API Functions
+  // LLM Completion API Functions
   const getCompletion = async () => {
     var prompt = textareaRef.current?.value
     if(prompt == null){
@@ -110,18 +126,30 @@ const Home: React.FC<HomeProps> = () => {
       
       // Create an AI message
       var author = aiInputRef.current?.value;
-      addMessage(response.data.choices[0]["text"], author, 'ai');
+      const output = response.data.choices[0]["text"];
+      addMessage(output, author, 'ai');
+      getTTS(output);
 
     } catch (error) {
       console.error('Error sending message:', error);
     }
   };
 
-  const getTTS = async () => {
-
+  // Calls TTS API
+  const getTTS = async (prompt: string) => {
+    const data = {
+      prompt: prompt,
+      config: getConfigValues()
+    };
+    const response = await axios.post(`${config.host}:${config.port}/v1/tts`, data, {
+      responseType: 'blob',
+    });
+    console.log(response)
+    playVideo(response.data, undefined);
   };
 
-  // Getter/Setter Functions
+  // Getter/Setter Functions for all user configuration variables
+  // present on this screen
   const getConfigValues = () => {
     const configs = {
       human_name: nameInputRef.current?.value || "",
@@ -138,9 +166,136 @@ const Home: React.FC<HomeProps> = () => {
     return configs;
   };
 
+  // Get the current avatar dropdown value
+  const getAvatar = () => {
+    var avatar = avatarRef.current?.value;
+    if(avatar == null){
+      avatar = "default"
+    }
+    return avatar;
+  };
+
+  // Switches between two video contexts for smooth transitions between
+  // Video states allowing us to load tts videos and then discreetly reload loops
+  const switchVideo = () => {
+    setCurrentVideo((prevVideo) => (prevVideo === 'videoA' ? 'videoB' : 'videoA'));
+    if (currentVideo === 'videoA') {
+      if (videoARef.current) {
+        console.log(currentVideo)
+        const avatar = getAvatar();
+        if(!videoARef.current.src.includes(videos[avatar])){
+          videoARef.current.src = videos[avatar];
+        }
+        videoARef.current.currentTime = .1;
+        // videoARef.current.play();
+        // videoARef.current.style.display = 'block';
+
+        const playWhenLoaded = () => {
+          if(videoARef.current != null && videoBRef.current != null){
+            videoARef.current.style.display = 'block';
+            videoARef.current.play();
+
+            // Perform your specific action here
+            videoBRef.current.style.display = 'none';
+            // Manually loop the video
+            videoBRef.current.currentTime = .1;
+            videoBRef.current.src = videos[avatar];
+            videoBRef.current.pause()
+            videoARef.current.removeEventListener('canplaythrough', playWhenLoaded);
+          }
+        };
+        videoARef.current.addEventListener('canplaythrough', playWhenLoaded);
+      }
+    } else {
+      if (videoBRef.current) {
+        console.log(currentVideo)
+        const avatar = getAvatar();
+        if(!videoBRef.current.src.includes(videos[avatar])){
+          videoBRef.current.src = videos[avatar];
+        }
+        videoBRef.current.currentTime = .1;
+        const playWhenLoaded = () => {
+          if(videoBRef.current != null && videoARef.current != null){
+            videoBRef.current.style.display = 'block';
+            videoBRef.current.play();
+
+            // Perform your specific action here
+            videoARef.current.style.display = 'none';
+            // Manually loop the video
+            videoARef.current.currentTime = .1;
+            videoARef.current.src = videos[avatar];
+            videoARef.current.pause()
+            videoBRef.current.removeEventListener('canplaythrough', playWhenLoaded);
+          }
+        };
+        videoBRef.current.addEventListener('canplaythrough', playWhenLoaded);
+        // videoBRef.current.play();
+        // videoBRef.current.style.display = 'block';
+      }
+    }
+  };
+
+  const handleTimeUpdate = (videoRef: React.RefObject<HTMLVideoElement>) => {
+    if(videoRef.current){
+      const timeRemaining = videoRef.current.duration - videoRef.current.currentTime;
+      if (timeRemaining < 0.1) {
+        // videoRef.current.play();
+        console.log("TIME UP SWITCHING")
+        switchVideo();
+      }
+    }
+  };
+
+  // Play a video from blob or url -- setup the non-active video, load it, and play it.
+  // Switch the reference to this video
+  const playVideo = async (blob: Blob | undefined, url: string | undefined) => {
+    const nextVideoRef = currentVideo === 'videoA' ? videoBRef : videoARef;
+    const currentVideoRef = currentVideo === 'videoA' ? videoARef : videoBRef;
+
+    const nextVideo = nextVideoRef.current;
+    if (nextVideo) {
+      if(url == undefined){
+        if(blob == undefined) {
+          console.log("err: Must select url or blob.")
+          return
+        }
+        const videoUrl = URL.createObjectURL(blob);
+        if(!nextVideo.src.includes(videoUrl)){
+          nextVideo.src = videoUrl;
+        }
+      } else {
+        if(!nextVideo.src.includes(url)){
+          nextVideo.src = url;
+        }
+      }
+      const playWhenLoaded = () => {
+          if(currentVideoRef.current != null){
+            // nextVideo.currentTime = .1;
+            nextVideo.play();
+            nextVideo.style.display = 'block';
+            
+            // // Hide prev video
+            currentVideoRef.current.style.display = 'none';
+            // currentVideoRef.current.currentTime = .1;
+            const selectedAvatar = getAvatar();
+            const defaultUrl = '/videos/' + selectedAvatar + '.mp4';
+            currentVideoRef.current.src = defaultUrl;
+
+            currentVideoRef.current.pause()
+            // setCurrentVideo((prevVideo) => (prevVideo === 'videoA' ? 'videoB' : 'videoA'));
+            // switchVideo();
+            nextVideo.removeEventListener('canplaythrough', playWhenLoaded);
+          }
+      };
+      nextVideo.addEventListener('canplaythrough', playWhenLoaded);
+      // await nextVideo.play();
+      // nextVideo.style.display = 'block';
+      // switchVideo();
+    }
+  };
+
   // useEffect Function
   useEffect(() => {
-
     if (messages.length > 0) {
       // Scroll to the bottom of chat-history element
       if (chatHistoryRef.current) {
@@ -152,11 +307,6 @@ const Home: React.FC<HomeProps> = () => {
       if (slider !== null) {
         document.getElementById('max_new_tokens_value')!.textContent = slider.value;
       }
-    };
-
-    const getAvatar = () => {
-      const avatar = avatarDropdownRef.current?.value;
-      return avatar;
     };
 
     const updateStates = () => {
@@ -179,13 +329,11 @@ const Home: React.FC<HomeProps> = () => {
       }
     };
 
-    // More change events
-    if (avatarDropdownRef.current && heroVideoRef.current) {
-      avatarDropdownRef.current.addEventListener('change', () => {
+    // Avatar change event
+    if (avatarRef.current) {
+      avatarRef.current.addEventListener('change', () => {
         const selectedAvatar = getAvatar();
-        if (heroVideoRef.current) {
-          heroVideoRef.current.src = '/videos/' + selectedAvatar + '.mp4';
-        }
+        playVideo(undefined, '/videos/' + selectedAvatar + '.mp4')
       });
     }
 
@@ -237,14 +385,35 @@ const Home: React.FC<HomeProps> = () => {
     return () => {
       // Remove all event listeners here TODO
     };
-  }, [messages]);
-  
+  }, [messages, currentVideo]);
+
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.code === 'Enter') {
-      e.preventDefault()
+      e.preventDefault();
       getCompletion();
     }
   };
+
+  // // Changes the source of the video
+  // const handleVideoEnded = () => {
+  //   var avatar = getAvatar()
+  //   const defaultVideoUrl = videos[avatar];
+  //   if (heroVideoRef.current) {
+  //     // console.log("heroVideoRef.current.src")
+  //     // console.log(heroVideoRef.current.src)
+
+  //     // console.log("defaultVideoUrl")
+  //     // console.log(defaultVideoUrl)
+  //     if(!heroVideoRef.current.src.includes(defaultVideoUrl)){
+  //       console.log(defaultVideoUrl)
+  //       heroVideoRef.current.src = defaultVideoUrl;
+  //     }
+  //     console.log(heroVideoRef.current.currentTime)
+  //     // Manually loop the video
+  //     // heroVideoRef.current.currentTime = 0;
+  //     // heroVideoRef.current.play();
+  //   }
+  // };
 
   return (
     <div>
@@ -277,7 +446,35 @@ const Home: React.FC<HomeProps> = () => {
             />
           </div>
           {/* Add your video implementation */}
-          <div id="hero-video-wrapper"><video id="hero-video" src={videoSrc} autoPlay loop></video></div>
+          <div id="hero-video-wrapper">
+            <div style={{ position: 'relative' }}>
+              <video
+                id="videoA"
+                className="hero-video"
+                ref={videoARef}
+                preload="auto"
+                autoPlay
+                style={{ display: 'none' }}
+                onTimeUpdate={() => handleTimeUpdate(videoARef)}
+              />
+              <video
+                id="videoB"
+                className="hero-video"
+                ref={videoBRef}
+                preload="auto"
+                autoPlay
+                style={{ display: 'none' }}
+                onTimeUpdate={() => handleTimeUpdate(videoBRef)}
+              />
+            </div>
+            {/* <video
+              id="hero-video"
+              src={videoSrc}
+              ref={heroVideoRef}
+              preload="auto"
+              autoPlay
+            ></video> */}
+          </div>
           <div className="custom-control custom-checkbox">
             <input type="checkbox" id="tts" className="custom-control-input" ref={ttsCheckboxRef} defaultChecked />
             <label htmlFor="tts" className="custom-control-label">
