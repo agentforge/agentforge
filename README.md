@@ -4,6 +4,13 @@ Playground for integrating agents with deeplearning micro-services.
 
 ## Features
 
+### Agent
+- [x] RESTful Service proxy
+- [x] Conversational Memory
+- [ ] Toolformer
+- [ ] React
+- [ ] Task Plan Loop
+
 ### Avatars
 - [x] Configurable Avatar System
 - [ ] Avatar Creation Pipeline
