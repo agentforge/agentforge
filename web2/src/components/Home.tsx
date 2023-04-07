@@ -113,12 +113,13 @@ const Home: React.FC<HomeProps> = () => {
   // LLM Completion API Functions
   const getCompletion = async () => {
     var prompt = textareaRef.current?.value
+    const userConfig = getConfigValues();
     if(prompt == null){
       return 
     }
     const data = {
       prompt: prompt,
-      config: getConfigValues()
+      config: userConfig,
     };
     try {
       // Create a human message
@@ -133,8 +134,12 @@ const Home: React.FC<HomeProps> = () => {
       var author = aiInputRef.current?.value;
       const output = response.data.choices[0]["text"];
       addMessage(output, author, 'ai');
-      getTTS(output);
 
+      if(userConfig["tts"]) {
+        getTTS(output);
+      } else {
+        setIsLoading(false);
+      }
     } catch (error) {
       console.error('Error sending message:', error);
     }
@@ -151,6 +156,7 @@ const Home: React.FC<HomeProps> = () => {
     });
     console.log(response)
     playVideo(response.data, undefined);
+    setIsLoading(false);
   };
 
   // Getter/Setter Functions for all user configuration variables
@@ -567,7 +573,7 @@ const Home: React.FC<HomeProps> = () => {
                     <li key={message.id} className={message.author_type}>
                       {message.author}: {message.text}
                     </li>
-                    // <Message id={message.id} author_type={message.author_type} author={message.author} text={message.text} />
+                    // <Message id={message.id} auth`or_type={message.author_type} author={message.author} text={message.text} />
                   ))}
 
               </ul>
