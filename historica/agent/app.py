@@ -4,7 +4,8 @@ from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
 from redis import Redis
 from rq import Queue
-import logging
+import logging, redis, uuid
+from datetime import timedelta
 
 from historica.agent import ExecutiveCognition
 from historica.agent import startup
@@ -14,20 +15,25 @@ from historica.models import User
 from historica import db
 
 # Create the worker queue TODO: Complete implementation
-queue = Queue(connection=Redis())
-worker = Worker()
+# queue = Queue(connection=Redis())
+# worker = Worker()
 
 # Setup logging
 #logging.basicConfig(filename='agent.log', level=logging.DEBUG)
 
 # Create an instance of the Flask class
 app = Flask(__name__)
-CORS(app)
+CORS(app, supports_credentials=True)
 
 # Setup database connection
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////app/cache/test.db'
+app.secret_key = '0e529d8e-31b9-4e54-a63f-55d6b76e6d15'
+app.config['SESSION_TYPE'] = 'filesystem'
 db.init_app(app)
 migrate = Migrate(app, db)
+
+# Setup redis connection
+redis_conn = redis.StrictRedis(host='redis', port=6379, db=0)
 
 # Setup Agent
 executive = ExecutiveCognition()
@@ -41,8 +47,14 @@ def login():
 
     user = User.authenticate(username, password)
     if user:
-        # If authentication is successful, return a token and a success response
-        return jsonify({'message': 'Login successful', 'token': 'your_token'})
+        # Generate a UUID token
+        token = uuid.uuid4().hex
+
+        # Store the token in Redis with a max life of 1 day
+        redis_conn.set(token, user.id, ex=timedelta(days=1))
+
+        # Return the token and a success response
+        return jsonify({'message': 'Login successful', 'token': token})
     else:
         # If authentication fails, return an error response
         return jsonify({'message': 'Invalid username or password'}), 401
@@ -62,8 +74,17 @@ def register():
 
 @app.route('/logout', methods=['POST'])
 def logout():
-    session.pop('user', None)
-    return jsonify({"message": "Logged out successfully"}), 200
+    token = request.headers.get('Authorization')
+    if not token:
+        return jsonify({'message': 'Missing token'}), 401
+
+    token = token.split(' ')[1]  # Remove the 'Bearer' prefix from the token
+    user_id = redis_conn.get(token)
+    if user_id:
+        User.logout(user_id)
+        return jsonify({"message": "Logged out successfully"}), 200
+    else:
+        return jsonify({"error": "User ID is missing"}), 400
 
 # Define the API endpoint for prompting the language_model
 @app.route("/v1/completions", methods=["POST"])

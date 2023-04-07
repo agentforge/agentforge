@@ -13,21 +13,14 @@ To run an interactive shell use this instead:
 
 ```nvidia-docker run -it --ipc=host -p 3000:3000 worker /bin/bash```
 
-To run the Agent flask server:
+To run the flask server(s):
 
-```CONFIG_DIR="/app/agent_n/core/config/configs/" flask run --host=0.0.0.0 --port=3000```
+```CONFIG_DIR="/app/agent_n/historica/config/configs/" flask run --host=0.0.0.0 --port=3000```
 
-To run the Cognition/LLM flask server:
-
-```CONFIG_DIR="/app/agent_n/core/config/configs/" flask run --host=0.0.0.0 --port=3000```
-
-TTS Service
-
-```CONFIG_DIR="/app/agent_n/core/config/configs/" flask run --host=0.0.0.0 --port=3000```
 
 WAV2LIP:
 
-```LC_ALL=C.UTF-8 LANG=C.UTF-8 CONFIG_DIR="/app/agent_n/core/config/configs/" flask run --host=0.0.0.0 --port=3000```
+```LC_ALL=C.UTF-8 LANG=C.UTF-8 CONFIG_DIR="/app/agent_n/historica/config/configs/" flask run --host=0.0.0.0 --port=3000```
 
 To test local inference:
 

@@ -5,7 +5,7 @@ import torch
 from peft import PeftModel
 from transformers import LlamaTokenizer, LlamaForCausalLM
 
-from historica.config import CONFIG_DIR, CONFIG_FILE
+from historica import CONFIG_FILE
 
 class LLMModelManager:
     def __init__(self):
