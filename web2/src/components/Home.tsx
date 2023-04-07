@@ -425,7 +425,7 @@ const Home: React.FC<HomeProps> = () => {
   return (
     <div>
       <div className="row">
-        <div className="col-2 main-control">
+        <div className="col-2 main-control d-none d-md-block">
         <div className="control-panel container">
           <h2>Control Panel</h2>
 
@@ -555,8 +555,8 @@ const Home: React.FC<HomeProps> = () => {
           </div>
         </div>
         </div>
-        <div className="col-8 interaction">
-          <div style={{ marginTop: '32px', width: '100%', height: '100%' }}>
+        <div className="sm-col-12 md-col-8 interaction">
+          <div className="main-control">
             <div style={{ paddingLeft: '18%', paddingRight: '18%' }}>
               <div className="chat-widget">
                 <ul
@@ -599,7 +599,7 @@ const Home: React.FC<HomeProps> = () => {
             </div>
           </div>
         </div>
-        <div className="col-2 secondary-control">
+        <div className="col-2 secondary-control d-none d-md-block">
           <div className="container">
             <ul
               className="thought-history"
