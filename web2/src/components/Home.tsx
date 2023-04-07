@@ -543,8 +543,8 @@ const Home: React.FC<HomeProps> = () => {
           </div>
           <div className="row config-row">
             <div className="form-group">
-              <label htmlFor="model" className="col-md-6">Model</label>
-              <select className="custom-select col-md-6 float-end" id="model" ref={modelKeyInputRef}>
+              <label htmlFor="model" className="col col-md-6">Model</label>
+              <select className="custom-select col col-md-6 float-end" id="model" ref={modelKeyInputRef}>
                 {models.map((model) => (
                   <option key={model} value={model}>
                     {model}
@@ -555,45 +555,43 @@ const Home: React.FC<HomeProps> = () => {
           </div>
         </div>
         </div>
-        <div className="sm-col-12 md-col-8 interaction">
-          <div className="main-control">
-            <div style={{ paddingLeft: '18%', paddingRight: '18%' }}>
-              <div className="chat-widget">
-                <ul
-                  ref={chatHistoryRef}
-                  className="no-bullets chat-history"
-                  style={{ maxHeight: '500px', overflow: 'scroll' }}
-                >
-                  {messages.map((message, _) => (
-                      <li key={message.id} className={message.author_type}>
-                        {message.author}: {message.text}
-                      </li>
-                      // <Message id={message.id} author_type={message.author_type} author={message.author} text={message.text} />
-                    ))}
+        <div className="col interaction main-control">
+          <div style={{ paddingLeft: '18%', paddingRight: '18%' }}>
+            <div className="chat-widget">
+              <ul
+                ref={chatHistoryRef}
+                className="no-bullets chat-history"
+                style={{ maxHeight: '500px', overflow: 'scroll' }}
+              >
+                {messages.map((message, _) => (
+                    <li key={message.id} className={message.author_type}>
+                      {message.author}: {message.text}
+                    </li>
+                    // <Message id={message.id} author_type={message.author_type} author={message.author} text={message.text} />
+                  ))}
 
-                </ul>
-                <div id="chat-input" className="row">
-                  <div className="col-9">
-                    <textarea
-                      onChange={handleTextAreaChange}
-                      value={textAreaValue}
-                      id="user-input"
-                      className="form-control"
-                      rows={4}
-                      style={{ width: '100%' }}
-                      ref={textareaRef}
-                      onKeyDown={handleKeyDown}
-                    ></textarea>
-                  </div>
-                  <div className="col-3">
-                    <Button id="send-message" className="btn btn-main" onClick={getCompletion}>
-                    {isLoading ? (
-                      <FontAwesomeIcon icon={faEllipsisH} className="animated-ellipsis" />
-                    ) : (
-                      <FontAwesomeIcon icon={faRocket} />
-                    )}
-                    </Button>
-                  </div>
+              </ul>
+              <div id="chat-input" className="row">
+                <div className="col col-9">
+                  <textarea
+                    onChange={handleTextAreaChange}
+                    value={textAreaValue}
+                    id="user-input"
+                    className="form-control"
+                    rows={4}
+                    style={{ width: '100%' }}
+                    ref={textareaRef}
+                    onKeyDown={handleKeyDown}
+                  ></textarea>
+                </div>
+                <div className="col col-3">
+                  <Button id="send-message" className="btn btn-main" onClick={getCompletion}>
+                  {isLoading ? (
+                    <FontAwesomeIcon icon={faEllipsisH} className="animated-ellipsis" />
+                  ) : (
+                    <FontAwesomeIcon icon={faRocket} />
+                  )}
+                  </Button>
                 </div>
               </div>
             </div>
