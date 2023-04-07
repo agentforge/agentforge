@@ -10,10 +10,26 @@ services:
         aliases:
           - redis
 
+  historica:
+    image: historica
+    ipc: host
+    networks:
+      main-net:
+        aliases:
+          - historica
+    volumes:
+      - shared-files:/app/files
+      - cache-volume:/app/cache
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+
   llm:
     image: llm
-    ports:
-      - "3002:3002"
     ipc: host
     networks:
       main-net:
@@ -32,8 +48,6 @@ services:
 
   speech:
     image: speech
-    ports:
-      - "3003:3003"
     ipc: host
     networks:
       main-net:
@@ -52,8 +66,6 @@ services:
 
   wav2lip:
     image: wav2lip
-    ports:
-      - "3004:3004"
     ipc: host
     networks:
       main-net:
@@ -88,14 +100,14 @@ services:
       - cache-volume:/app/cache
 
   web:
-    image: web
+    image: web2
     ports:
-      - "3005:3000"
+      - "3000:3000"
     ipc: host
     networks:
       main-net:
         aliases:
-          - web
+          - web2
     volumes:
       - shared-files:/app/files
       - cache-volume:/app/cache
