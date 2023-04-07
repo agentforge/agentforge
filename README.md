@@ -27,7 +27,7 @@ TTS Service
 
 WAV2LIP:
 
-```LC_ALL=C.UTF-8 LANG=C.UTF-8 CONFIG_DIR="/app/agent_n/core/config/configs/" flask run --host=0.0.0.0 --port=3004```
+```LC_ALL=C.UTF-8 LANG=C.UTF-8 CONFIG_DIR="/app/agent_n/core/config/configs/" flask run --host=0.0.0.0 --port=3000```
 
 To test local inference:
 

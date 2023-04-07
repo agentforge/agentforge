@@ -14,7 +14,7 @@ RUN npm install
 RUN npm install -g webpack webpack-cli webpack-dev-server
 
 # Copy the app's source code to the container
-COPY ../../agent_n .
+COPY . .
 
 # Expose the port used by the app (if any)
 EXPOSE 3000
