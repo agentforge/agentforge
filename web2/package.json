@@ -31,7 +31,8 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "lint": "eslint '*/**/*.{js,ts,tsx}' --quiet --fix"
   },
   "eslintConfig": {
     "extends": [
@@ -54,6 +55,9 @@
   "devDependencies": {
     "@types/node-sass": "^4.11.3",
     "@types/react-transition-group": "^4.4.5",
-    "@types/uuid": "^9.0.1"
+    "@types/uuid": "^9.0.1",
+    "eslint-config-prettier": "^8.8.0",
+    "eslint-plugin-prettier": "^4.2.1",
+    "prettier": "2.8.7"
   }
 }

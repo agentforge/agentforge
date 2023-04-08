@@ -7,7 +7,6 @@ export type MessageProps = {
   text: string;
 };
 
-
 const Message: React.FC<MessageProps> = ({ id, author_type, author, text }) => {
   // Return component JSX with ref attributes
   return (
