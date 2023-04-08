@@ -29,8 +29,8 @@ Playground for integrating agents with deeplearning micro-services.
 - [ ] LORA Fine-Tuning
 
 ### Language Model
-- [x] HuggingFaceModel
 - [x] Alpaca-LORA-7B w/ PEFT
+- [x] Streaming
 - [ ] Cerebras-GPT
 - [ ] gpt4all
 - [ ] OpenAI API Integration 
@@ -49,6 +49,7 @@ Playground for integrating agents with deeplearning micro-services.
 
 ### Web Frontend
 - [x] Rails Prototype
+- [ ] SSE Events for Streaming
 - [ ] React/Typescript Production Level App
 - [ ] Mobile-First Approach
 
