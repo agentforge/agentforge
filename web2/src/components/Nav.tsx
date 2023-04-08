@@ -16,9 +16,8 @@ const NavMenu: React.FC<NavMenuProps> = ({ isLoggedIn, handleLogout }) => {
   const navigate = useNavigate();
   const navMenuItems: NavMenuItem[] = isLoggedIn
     ? [
-        { text: 'Logout', onClick: handleLogout },
-        { text: 'New Chat', onClick: () => console.log('/') },
         { text: 'Configure', onClick: () => navigate('/configure') },
+        { text: 'Logout', onClick: handleLogout },
       ]
     : [
         { text: 'Register', onClick: () => navigate('/register') },
