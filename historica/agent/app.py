@@ -135,10 +135,10 @@ def configure():
 def prompt():
   # Get the message for the request
   prompt = request.json["prompt"]
-  config = request.json["config"] if "config" in request.json else None
+  form_data = request.json
 
   # Run the LLM agent
-  response = executive.respond(prompt, config)
+  response = executive.respond(prompt, form_data)
 
   print(response)
   # Return the response
@@ -150,10 +150,10 @@ def prompt():
 def tts():
   # Get the message for the request
   prompt = request.json["prompt"]
-  config = request.json["config"]
+  form_data = request.json
 
   # Run the agent
-  response = executive.speak(prompt, config)
+  response = executive.speak(prompt, form_data)
   filename = response["filename"]
 
   # Create a response object with the file data

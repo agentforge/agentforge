@@ -7,11 +7,10 @@
         "prompt_type": "instruct_w_memory",
         "class_type": "class_type"
     },
-    "base": {
-        "class_name": "LLM",
-        "model_name": "gpt2",
-        "tokenizer_name": "gpt2",
-        "peft_model": "gpt-2",
+    "vicuna-7b": {
+        "class_name": "AutoModelForCausalLM",
+        "model_name": "AlekseyKorshuk/vicuna-7b",
+        "tokenizer_name": "AlekseyKorshuk/vicuna-7b",
         "prompt_type": "instruct_w_memory",
         "class_type": "class_type"
     }

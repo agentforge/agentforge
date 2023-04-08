@@ -13,7 +13,8 @@ from flask_cors import CORS
 from flask_sse import sse
 import logging
 
-from historica.language_model import Alpaca
+from historica.helpers import measure_time
+from historica.language_model import Alpaca, LLM
 
 #logging.basicConfig(filename='agent.log', level=logging.DEBUG)
 path_root = Path(__file__).parents[2]
@@ -27,18 +28,14 @@ CORS(app)
 # llm.load_agent()
 
 ### Alpaca -- Stanford's davinci-003 model
-llm = Alpaca()
+# llm = Alpaca()
+llm = LLM({}) # Start with alpaca model
+llm.load()
 app = Flask(__name__)
 app.config["REDIS_URL"] = "redis://redis:6379/0"
 app.register_blueprint(sse, url_prefix='/stream')
 
 redis_store = redis.StrictRedis().from_url(app.config["REDIS_URL"])
-
-def send_to_rails_api(channel, message):
-    rails_api_url = "http://your_rails_api_domain.com/publish"
-    payload = {"channel": channel, "message": message}
-    response = requests.post(rails_api_url, data=payload)
-    return response
 
 # Publish streaming data to the client
 @app.route('/publish', methods=['POST'])
@@ -52,14 +49,14 @@ def publish():
 @app.route("/v1/completions", methods=["POST"])
 @measure_time
 def output():
-  print(request.json)
+#   print(request.json)
   prompt = request.json["prompt"]
   config = request.json
-  print(f"Prompt: {prompt}")
-  print(f"Config: {config }")
+#   print(f"Prompt: {prompt}")
+#   print(f"Config: {config }")
   llm.configure(config)
   response = llm.generate(prompt)
-  print(response)
+#   print(response)
   return jsonify({"choices": [{"text": response}]})
 
 @app.route("/v1/update_model", methods=["POST"])
