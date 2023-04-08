@@ -1,5 +1,8 @@
 FROM historica:latest
 
+# agent
+WORKDIR /app/agent_n/historica/agent
+
 # Expose port 3000
 EXPOSE 3000
 

@@ -4,7 +4,9 @@ from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
 from redis import Redis
 from rq import Queue
-import logging
+import logging, redis, uuid
+from datetime import timedelta
+from flask_swagger_ui import get_swaggerui_blueprint
 
 from historica.agent import ExecutiveCognition
 from historica.agent import startup
@@ -14,24 +16,41 @@ from historica.models import User
 from historica import db
 
 # Create the worker queue TODO: Complete implementation
-queue = Queue(connection=Redis())
-worker = Worker()
+# queue = Queue(connection=Redis())
+# worker = Worker()
 
 # Setup logging
 #logging.basicConfig(filename='agent.log', level=logging.DEBUG)
 
 # Create an instance of the Flask class
 app = Flask(__name__)
-CORS(app)
+CORS(app, supports_credentials=True)
 
 # Setup database connection
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////app/cache/test.db'
+app.secret_key = '0e529d8e-31b9-4e54-a63f-55d6b76e6d14'
+app.config['SESSION_TYPE'] = 'filesystem'
 db.init_app(app)
 migrate = Migrate(app, db)
+
+# Setup redis connection
+redis_conn = redis.StrictRedis(host='redis', port=6379, db=0)
 
 # Setup Agent
 executive = ExecutiveCognition()
 startup()
+
+# Swagger UI setup
+SWAGGER_URL = '/swagger'
+API_URL = '/static/swagger.json'
+swaggerui_blueprint = get_swaggerui_blueprint(
+    SWAGGER_URL,
+    API_URL,
+    config={
+        'app_name': "Historica Flask API"
+    }
+)
+app.register_blueprint(swaggerui_blueprint, url_prefix=SWAGGER_URL)
 
 @app.route('/login', methods=['POST'])
 def login():
@@ -41,8 +60,14 @@ def login():
 
     user = User.authenticate(username, password)
     if user:
-        # If authentication is successful, return a token and a success response
-        return jsonify({'message': 'Login successful', 'token': 'your_token'})
+        # Generate a UUID token
+        token = uuid.uuid4().hex
+
+        # Store the token in Redis with a max life of 1 day
+        redis_conn.set(token, user.id, ex=timedelta(days=1))
+
+        # Return the token and a success response
+        return jsonify({'message': 'Login successful', 'token': token})
     else:
         # If authentication fails, return an error response
         return jsonify({'message': 'Invalid username or password'}), 401
@@ -62,8 +87,47 @@ def register():
 
 @app.route('/logout', methods=['POST'])
 def logout():
-    session.pop('user', None)
-    return jsonify({"message": "Logged out successfully"}), 200
+    token = request.headers.get('Authorization')
+    if not token:
+        return jsonify({'message': 'Missing token'}), 401
+
+    token = token.split(' ')[1]  # Remove the 'Bearer' prefix from the token
+    user_id = redis_conn.get(token)
+    if user_id:
+        User.logout(user_id)
+        return jsonify({"message": "Logged out successfully"}), 200
+    else:
+        return jsonify({"error": "User ID is missing"}), 400
+
+@app.route('/v1/configure', methods=['POST', 'GET'])
+def configure():
+    ## Verify auth
+    token = request.headers.get('Authorization')
+    if not token:
+        return jsonify({'message': 'Missing token'}), 401
+
+    token = token.split(' ')[1]
+    user_id = redis_conn.get(token)
+    print(user_id)
+    user = User.query.get(int(user_id)) 
+    print(user)
+    ## For GET requests get the configuration
+    if request.method == 'GET':
+        try:
+            config = user.get_config()
+            return jsonify(config)
+        except Exception as e:
+            return jsonify({'message': str(e)}), 400
+
+    ## For POST requests set the configuration
+    if request.method == 'POST':
+        data = request.json
+        print(data["config"])
+        try:
+            config = user.set_config(data["config"])
+            return jsonify(config)
+        except Exception as e:
+            return jsonify({'message': str(e)}), 400
 
 # Define the API endpoint for prompting the language_model
 @app.route("/v1/completions", methods=["POST"])
@@ -76,9 +140,6 @@ def prompt():
   # Run the LLM agent
   response = executive.respond(prompt, config)
 
-  # Run text classification and intent detection
-  ## TODO: Implement this
-
   print(response)
   # Return the response
   return jsonify(response)
@@ -90,11 +151,11 @@ def tts():
   # Get the message for the request
   prompt = request.json["prompt"]
   config = request.json["config"]
-  
+
   # Run the agent
   response = executive.speak(prompt, config)
   filename = response["filename"]
-  
+
   # Create a response object with the file data
   response_obj = send_file(
       filename,

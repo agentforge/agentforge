@@ -39,8 +39,8 @@ class ExecutiveCognition:
         return self.post_request(url, form_data)
 
     def parse_config(self, config):
-        config = config.replace("=>", ":") # Fix for ruby hash syntax
-        return json.loads(config)
+        return config
+        # return json.loads(config)
 
     # Either return a wav file or a mp4 file based on flag
     def speak(self, prompt, config):
@@ -66,18 +66,24 @@ class ExecutiveCognition:
         config["avatar"] = self.avatar.get_avatar(config["avatar"])
         self.agent.configure(config)
 
-        # Create new prompt
+        # Record raw prompt in memory
+        self.agent.save_speech(prompt)
+
+        # Format prompt with our Prompt engineering
         formatted_prompt = self.agent.get_prompt(instruction=prompt, config=config)
 
         url = self.urls["LLM_URL"]
         url = f"{url}/v1/completions"
-
+        
         form_data = {"prompt": formatted_prompt, "config": config, "stream": False}
         response = self.post_request(url, form_data)
-        return self.parse_response(response)
+        return self.parse_and_save_response(response)
     
-    def parse_response(self, response):
-        response["response"] = self.parse_llm_response(response["choices"][0]["text"])
+    def parse_and_save_response(self, response):
+        response["response"] = self.parse_llm_response(response["choices"][0]["text"]) # backwards compatibility
+        
+        # Record response in memory
+        self.agent.save_response(response["response"])
         return response
 
     def parse_llm_response(self, text):

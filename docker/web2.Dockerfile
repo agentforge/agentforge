@@ -33,8 +33,6 @@ RUN npm install -g webpack webpack-cli webpack-dev-server
 RUN apt-get update
 RUN apt-get install -y tig
 
-# Copy the app's source code to the container
-
 # Expose the port used by the app (if any)
 EXPOSE 3005
 

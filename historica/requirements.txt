@@ -21,3 +21,5 @@ psycopg2-binary
 transformers @ git+https://github.com/huggingface/transformers.git
 flask_sse
 psycopg2-binary
+uuid
+flask-swagger-ui
