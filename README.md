@@ -1,34 +1,85 @@
 # agent_n
 
-To build the Docker image, run the following command:
+Playground for integrating agents with deeplearning micro-services.
 
-```docker build --build-arg REPO_URL=git@github.com:fragro/elder-link.git  --build-arg SSH_PRIVATE_KEY="$(cat ~/.ssh/id_rsa)" -t worker .```
+## Features
 
-To run the Docker container, run the following command:
+### Agent
+- [x] RESTful Service proxy
+- [x] Conversational Memory
+- [ ] Toolformer
+- [ ] React
+- [ ] Task Plan Loop
 
-```nvidia-docker run --ipc=host -p 3000:3000 worker &```
-```nvidia-docker run --ipc=host -p 3000:3000 llm &```
+### Avatars
+- [x] Configurable Avatar System
+- [ ] Avatar Creation Pipeline
 
-To run an interactive shell use this instead:
+### Speech To Animation
+- [x] Wav2Lip
+- [ ] Winfredy / SadTalker 
 
-```nvidia-docker run -it --ipc=host -p 3000:3000 worker /bin/bash```
+### Speech Encoding
+- [x] TTS.py
+- [ ] Audio Data Aggregation/Cleanup
+- [ ] LORA Fine-Tuning
 
-To run the flask server(s):
+### Language Model
+- [x] Alpaca-LORA-7B
+- [ ] Cerebras-GPT
+- [ ] gpt4all
+
+#### Fine-Tuning
+- [ ] LORA Fine-Tuning w/ Anarchist Library for Makhno Avatar 
+
+#### RLHF (Reinforcement Learning through Human Feedback)
+- [ ] Integrate RLHF
+
+### Speech Decoding
+- [ ] whisper/large
+
+### Computer Vision
+- [ ] PRISMR Object Detection
+
+## Requirements
+
+Minimalistic requirements.
+
+- Docker
+- CUDA capable nvidia GPU + drivers
+
+## Build
+
+Build the primary Docker image:
+
+```docker build --build-arg REPO_URL=git@github.com:fragro/agent_n.git  --build-arg SSH_PRIVATE_KEY="$(cat ~/.ssh/id_rsa)" -t historica -f ./docker/worker.Dockerfile .```
+
+Now build the rest of the containers:
+
+```make build```
+
+## Run
+
+Run all the services via docker-compose in the docker folder:
+
+```docker-compose up -d```
+
+TODO: Running in prod
+
+## Development
+
+To run the flask server(s) from inside a container:
 
 ```CONFIG_DIR="/app/agent_n/historica/config/configs/" flask run --host=0.0.0.0 --port=3000```
 
-WAV2LIP:
+Wav2Lip (requires additional env vars):
 
 ```LC_ALL=C.UTF-8 LANG=C.UTF-8 CONFIG_DIR="/app/agent_n/historica/config/configs/" flask run --host=0.0.0.0 --port=3000```
 
-To test local inference:
+To run the react typescript server:
 
-```python3 inference.py --checkpoint_path /app/cache/wav2lip_gan.pth --face /app/cache/loop.mp4 --audio /app/cache/hello.wav```
+```PORT=3005 npm start```
 
-To run the rails server:
+Running the rails server (deprecated):
 
 ```rails server -p 3001```
-
-Running redis:
-
-```docker run --name agent-redis -d redis redis-server --save 60 1 --loglevel warning```

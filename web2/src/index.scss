@@ -126,6 +126,12 @@ ul.no-bullets {
   }
 }
 
+.interaction .background {
+  margin-top: '32px';
+  width: '100%';
+  height: '100%';
+}
+
 /* Preformatted text styling */
 pre {
   background-color: transparent;
@@ -172,7 +178,9 @@ pre code .comment {
   color: #707a8c;
   font-style: italic;
 }
-
+.custom-control-label {
+  margin-left:4px;
+}
 .custom-control-input:checked ~ .custom-control-label::before {
   background-color: $accent-color;
   border-color: $accent-color;
@@ -488,4 +496,8 @@ pre code .comment {
   100% {
     opacity: 1;
   }
+}
+.config-row {
+  margin-top:10px;
+  margin-bottom:10px;
 }
