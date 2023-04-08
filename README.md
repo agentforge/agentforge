@@ -17,10 +17,11 @@ Playground for integrating agents with deeplearning micro-services.
 
 ### Speech To Animation
 - [x] Wav2Lip
-- [ ] Winfredy / SadTalker 
+- [ ] Winfredy / SadTalker
 
 ### Speech Encoding
 - [x] TTS.py
+- [ ] Improve text-preprocessing
 - [ ] Audio Data Aggregation/Cleanup
 - [ ] LORA Fine-Tuning
 
@@ -40,6 +41,11 @@ Playground for integrating agents with deeplearning micro-services.
 
 ### Computer Vision
 - [ ] PRISMR Object Detection
+
+### Web Frontend
+- [x] Rails Prototype
+- [ ] React/Typescript Production Level App
+- [ ] Mobile-First Approach
 
 ## Requirements
 
@@ -83,3 +89,11 @@ To run the react typescript server:
 Running the rails server (deprecated):
 
 ```rails server -p 3001```
+
+## Data Engine
+
+Uses SQL Alchemy and Redis to store user credentials, profile, and training data.
+
+To add new columns:
+
+```flask db migrate -m "Migration message"```
