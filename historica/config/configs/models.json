@@ -7,11 +7,10 @@
         "prompt_type": "instruct_w_memory",
         "class_type": "class_type"
     },
-    "base": {
-        "class_name": "LLM",
-        "model_name": "gpt2",
-        "tokenizer_name": "gpt2",
-        "peft_model": "gpt-2",
+    "Cerebras-GPT-6.7B": {
+        "class_name": "AutoModelForCausalLM",
+        "model_name": "cerebras/Cerebras-GPT-6.7B",
+        "tokenizer_name": "erebras/Cerebras-GPT-6.7B",
         "prompt_type": "instruct_w_memory",
         "class_type": "class_type"
     }
