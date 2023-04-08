@@ -39,8 +39,8 @@ class ExecutiveCognition:
         return self.post_request(url, form_data)
 
     def parse_config(self, config):
-        config = config.replace("=>", ":") # Fix for ruby hash syntax
-        return json.loads(config)
+        return config
+        # return json.loads(config)
 
     # Either return a wav file or a mp4 file based on flag
     def speak(self, prompt, config):
@@ -50,6 +50,8 @@ class ExecutiveCognition:
         prompt = self.agent.parser.parse_prompt(prompt)
         form_data = {"prompt": prompt, "avatar": avatar}
         wav_response = self.get_tts(form_data)
+
+        print(config)
 
         # if we want to generate lipsync
         if config["lipsync"] != 'false':

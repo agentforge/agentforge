@@ -1,0 +1,176 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Historica Flask API",
+    "version": "1.0"
+  },
+  "host": "localhost:5000",
+  "basePath": "/",
+  "schemes": ["http"],
+  "consumes": ["application/json"],
+  "produces": ["application/json"],
+  "paths": {
+    "/login": {
+      "post": {
+        "summary": "Authenticate a user",
+        "description": "This endpoint authenticates a user and returns a token if successful.",
+        "parameters": [
+          {
+            "name": "User",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Login successful",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "message": {
+                  "type": "string"
+                },
+                "token": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid username or password"
+          }
+        }
+      }
+    },
+    "/register": {
+      "post": {
+        "summary": "Register a new user",
+        "description": "This endpoint registers a new user.",
+        "parameters": [
+          {
+            "name": "User",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/User"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Registration successful"
+          },
+          "400": {
+            "description": "Registration failed"
+          }
+        }
+      }
+    },
+    "/logout": {
+      "post": {
+        "summary": "Logout a user",
+        "description": "This endpoint logs out a user.",
+        "responses": {
+          "200": {
+            "description": "Logged out successfully"
+          }
+        }
+      }
+    },
+    "/v1/completions": {
+      "post": {
+        "summary": "Prompt the language model",
+        "description": "This endpoint prompts the language model and returns a response.",
+        "parameters": [
+          {
+            "name": "Request",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/PromptRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Language model response",
+            "schema": {
+              "type": "object"
+            }
+          }
+        }
+      }
+    },
+    "/v1/tts": {
+      "post": {
+        "summary": "Text-to-speech",
+        "description": "This endpoint generates speech from text and returns an audio file.",
+        "parameters": [
+          {
+            "name": "Request",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/TextToSpeechRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Audio file",
+            "schema": {
+              "type": "file"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "User": {
+      "type": "object",
+      "properties": {
+        "username": {
+          "type": "string",
+          "description": "The user's username"
+        },
+        "password": {
+          "type": "string",
+          "description": "The user's password"
+        }
+      },
+      "required": ["username", "password"]
+    },
+    "PromptRequest": {
+      "type": "object",
+      "properties": {
+        "prompt": {
+          "type": "string",
+          "description": "The prompt text to be sent to the language model"
+        },
+        "config": {
+          "type": "object",
+          "description": "Optional configuration for the language model"
+        }
+      },
+      "required": ["prompt"]
+    },
+    "TextToSpeechRequest": {
+      "type": "object",
+      "properties": {
+        "prompt": {
+          "type": "string",
+          "description": "The text to be converted to speech"
+        },
+        "config": {
+          "type": "object",
+          "description": "Configuration for the text-to-speech engine"
+        }
+      },
+      "required": ["prompt", "config"]
+    }
+  }
+}    
