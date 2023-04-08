@@ -13,6 +13,7 @@ from flask_cors import CORS
 from flask_sse import sse
 import logging
 
+from historica.helpers import measure_time
 from historica.language_model import Alpaca
 
 #logging.basicConfig(filename='agent.log', level=logging.DEBUG)
