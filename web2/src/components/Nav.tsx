@@ -17,20 +17,18 @@ const NavMenu: React.FC<NavMenuProps> = ({ isLoggedIn, handleLogout }) => {
   const navMenuItems: NavMenuItem[] = isLoggedIn
     ? [
         { text: 'Logout', onClick: handleLogout },
-        { text: 'New Chat', onClick: () => console.log('New Chat') },
-        { text: 'Configure', onClick: () => console.log('Configure') },
+        { text: 'New Chat', onClick: () => console.log('/') },
+        { text: 'Configure', onClick: () => navigate('/configure') },
       ]
     : [
-        { text: 'Register', onClick: () => navigate("/register") },
-        { text: 'Login', onClick: () => navigate("/login") },
+        { text: 'Register', onClick: () => navigate('/register') },
+        { text: 'Login', onClick: () => navigate('/login') },
       ];
 
   return (
     <nav className="nav-menu">
-      <div className="nav-header">
-        Logo
-      </div>
-        <ul className="menu-items">
+      <div className="nav-header">Logo</div>
+      <ul className="menu-items">
         {navMenuItems.map((item, index) => (
           <li key={index} onClick={item.onClick}>
             {item.text}
