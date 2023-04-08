@@ -7,8 +7,11 @@ Playground for integrating agents with deeplearning micro-services.
 ### Agent
 - [x] RESTful Service proxy
 - [x] Conversational Memory
-- [ ] Toolformer
-- [ ] React
+- [ ] Multi-Agent Forum
+
+### Agent Tools
+- [x] Search
+- [ ] REPL
 - [ ] Task Plan Loop
 
 ### Avatars
@@ -26,9 +29,11 @@ Playground for integrating agents with deeplearning micro-services.
 - [ ] LORA Fine-Tuning
 
 ### Language Model
-- [x] Alpaca-LORA-7B
+- [x] Alpaca-LORA-7B w/ PEFT
+- [x] Streaming
 - [ ] Cerebras-GPT
 - [ ] gpt4all
+- [ ] OpenAI API Integration 
 
 #### Fine-Tuning
 - [ ] LORA Fine-Tuning w/ Anarchist Library for Makhno Avatar 
@@ -44,6 +49,7 @@ Playground for integrating agents with deeplearning micro-services.
 
 ### Web Frontend
 - [x] Rails Prototype
+- [ ] SSE Events for Streaming
 - [ ] React/Typescript Production Level App
 - [ ] Mobile-First Approach
 
