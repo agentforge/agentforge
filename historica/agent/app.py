@@ -40,7 +40,6 @@ redis_conn = redis.StrictRedis(host='redis', port=6379, db=0)
 executive = ExecutiveCognition()
 startup()
 
-
 # Swagger UI setup
 SWAGGER_URL = '/swagger'
 API_URL = '/static/swagger.json'
@@ -109,12 +108,13 @@ def configure():
 
     token = token.split(' ')[1]
     user_id = redis_conn.get(token)
-    user = User.query.get(user_id)
-
+    print(user_id)
+    user = User.query.get(int(user_id)) 
+    print(user)
     ## For GET requests get the configuration
     if request.method == 'GET':
         try:
-            config = user.get_config(user_id)
+            config = user.get_config()
             return jsonify(config)
         except Exception as e:
             return jsonify({'message': str(e)}), 400
@@ -122,8 +122,9 @@ def configure():
     ## For POST requests set the configuration
     if request.method == 'POST':
         data = request.json
+        print(data["config"])
         try:
-            config = user.set_config(data)
+            config = user.set_config(data["config"])
             return jsonify(config)
         except Exception as e:
             return jsonify({'message': str(e)}), 400
