@@ -78,18 +78,21 @@ const Configure: React.FC<ConfigureProps> = () => {
   }, []);
 
   return (
-    <div className="row">
+    <div className="row form-interactor">
       <div className="col interaction main-control">
         <Container>
+          <h2>Configuration For the Agent Playground</h2>
           <Form onSubmit={handleSubmit}>
             <Row>
-              <Col md={6}>
+              <Col md={4}>
                 <Form.Group controlId="userEmail">
                   <Form.Label>User Email</Form.Label>
-                  <Form.Control type="email" readOnly ref={emailRef} />
+                  <Form.Control type="email" ref={emailRef} />
                 </Form.Group>
               </Col>
-              <Col md={6}>
+            </Row>
+            <Row>
+              <Col md={4}>
                 <Form.Group controlId="username">
                   <Form.Label>Username</Form.Label>
                   <Form.Control type="text" ref={usernameRef} />
