@@ -7,6 +7,7 @@ import config from '../config/config';
 import { MessageProps } from './Message';
 import { v4 as uuidv4 } from 'uuid';
 import useStateWithCallback from './useStateWithCallback';
+import { getConfiguration, Configuration } from './Configure';
 
 interface HomeProps {}
 
@@ -16,15 +17,15 @@ const Home: React.FC<HomeProps> = () => {
   const avatars = ['default', 'makhno', 'fdr'];
   const modelConfigs = ['creative', 'logical', 'moderate'];
   const models = ['alpaca-lora-7b'];
-  interface VideoMap {
+  interface StringMap {
     [key: string]: string;
   }
-  const videos: VideoMap = {
+  const videos: StringMap = {
     default: '/videos/default.mp4',
     makhno: '/videos/makhno.mp4',
     fdr: '/videos/fdr.mp4',
   };
-  const names: VideoMap = {
+  const names: StringMap = {
     default: 'intelliChild',
     makhno: 'Nestor Makhno',
     fdr: 'Franklin D. Roosevelt',
@@ -33,13 +34,13 @@ const Home: React.FC<HomeProps> = () => {
   const [textAreaValue, setTextAreaValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [currentVideo, setCurrentVideo] = useState<'videoA' | 'videoB'>('videoA');
+  const [userConfiguration, setUserConfiguration] = useState<Configuration>({ username: '', email: '' });
 
   //Config Refs
   const avatarRef = useRef<HTMLSelectElement>(null);
   const maxNewTokensRef = useRef<HTMLInputElement>(null);
   const ttsCheckboxRef = useRef<HTMLInputElement>(null);
   const streamingCheckboxRef = useRef<HTMLInputElement>(null);
-  const nameInputRef = useRef<HTMLInputElement>(null);
   const lipsyncCheckboxRef = useRef<HTMLInputElement>(null);
 
   // Video refs
@@ -121,9 +122,9 @@ const Home: React.FC<HomeProps> = () => {
 
   // Getter/Setter Functions for all user configuration variables
   // present on this screen
-  const getConfigValues = () => {
+  const getLanguageModelConfig = () => {
     const configs = {
-      human_name: nameInputRef.current?.value || '',
+      human_name: userConfiguration.username || '',
       robot_name: names[getAvatar()] || '',
       tts: ttsCheckboxRef.current?.checked || false,
       lipsync: lipsyncCheckboxRef.current?.checked || false,
@@ -191,7 +192,7 @@ const Home: React.FC<HomeProps> = () => {
   const getTTS = async (prompt: string) => {
     const data = {
       prompt: prompt,
-      config: getConfigValues(),
+      config: getLanguageModelConfig(),
     };
     const response = await axios.post(`${config.host}:${config.port}/v1/tts`, data, {
       responseType: 'blob',
@@ -203,7 +204,7 @@ const Home: React.FC<HomeProps> = () => {
   // LLM Completion API Functions
   const getCompletion = async () => {
     const prompt = textareaRef.current?.value;
-    const userConfig = getConfigValues();
+    const userConfig = getLanguageModelConfig();
     if (prompt == null) {
       return;
     }
@@ -213,7 +214,7 @@ const Home: React.FC<HomeProps> = () => {
     };
     try {
       // Create a human message
-      const author = nameInputRef.current?.value;
+      const author = userConfiguration.username;
       addMessage(prompt, author, 'human');
 
       // Get completion
@@ -309,6 +310,14 @@ const Home: React.FC<HomeProps> = () => {
 
   // useEffect Function
   useEffect(() => {
+    // Set user configuration
+    if (userConfiguration.username === '' && userConfiguration.email === '') {
+      const res = getConfiguration();
+      res.then((data: Configuration) => {
+        setUserConfiguration(data);
+      });
+    }
+
     //Update max tokens
     const updateMaxTokensValue = () => {
       const slider = maxNewTokensRef.current;
@@ -431,11 +440,6 @@ const Home: React.FC<HomeProps> = () => {
             {/* <div className="form-group">
             <Button id="reset-history" className="btn-main">Reset History</Button>
           </div> */}
-            <div className="form-group config-row">
-              <h5>Name</h5>
-              <input id="name-input" type="text" className="form-control" defaultValue="User" ref={nameInputRef} />
-            </div>
-            {/* Add your video implementation */}
             <div id="hero-video-wrapper">
               <div style={{ position: 'relative' }}>
                 <video
@@ -465,7 +469,7 @@ const Home: React.FC<HomeProps> = () => {
               autoPlay
             ></video> */}
             </div>
-            <div className="row form-group">
+            <div className="row form-group" style={{ marginTop: '12px' }}>
               <div className="custom-control custom-checkbox col-md-6">
                 <input type="checkbox" id="tts" className="custom-control-input" ref={ttsCheckboxRef} defaultChecked />
                 <label htmlFor="tts" className="custom-control-label">

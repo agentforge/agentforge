@@ -24,6 +24,10 @@ $accent-color: #3f51b5;
 $shadow-color: rgba(0, 0, 0, 0.2);
 $btn-background-color: #4caf50;
 $btn-border-color: darkgrey;
+$input-disabled-bg: #333333;;
+$input-disabled-border-color: darkgrey;
+
+@import "node_modules/bootstrap/scss/bootstrap";
 
  .main-control, .secondary-control {
     display: flex;
@@ -279,6 +283,8 @@ pre code .comment {
 }
 
 .hero-video{
+  margin-top: 12px;
+  margin-bottom: 12px;
   width: 252px;
 }
 #toggle-button {
@@ -353,14 +359,14 @@ pre code .comment {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   border: 1px solid #343a40;
 }
-.login {
+.form-interactor {
   display: flex;
   justify-content: center;
   align-items: center;
   min-height: 100vh;
 }
 
-.login .form-container {
+.form-interactor .form-container {
   background-color: #333333;
   padding: 2rem;
   border-radius: 10px;
@@ -368,14 +374,14 @@ pre code .comment {
   width: 100%;
 }
 
-.login label {
+.form-interactor label {
   display: block;
   margin-bottom: 0.5rem;
 }
 
-.login input[type="text"],
-.login input[type="password"],
-.login input[type="email"] {
+.form-interactor input[type="text"],
+.form-interactor input[type="password"],
+.form-interactor input[type="email"] {
   width: 100%;
   padding: 0.5rem;
   background-color: #1a1a1a;
@@ -385,7 +391,7 @@ pre code .comment {
   margin-bottom: 1rem;
 }
 
-.login button {
+.form-interactor button {
   background-color: $btn-background-color;
   border: none;
   color: white;

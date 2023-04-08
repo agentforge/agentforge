@@ -29,7 +29,7 @@ const Register: React.FC<RegisterProps> = () => {
   };
 
   return (
-    <div className="login">
+    <div className="form-interactor">
       <div className="form-container">
         <h1 className="text-center mb-4">Register</h1>
         <Form onSubmit={handleRegister}>
