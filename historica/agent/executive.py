@@ -74,15 +74,14 @@ class ExecutiveCognition:
         return {"filename": wav_response["filename"], "type": "audio/wav"}
 
     # Takes a sound file and returns a text string
-    def interpret(self, prompt, form_data):
+    def interpret(self, form_data):
         # Get wav/tts file
         form_data = self.parse_config(form_data)
 
-        prompt = self.agent.parser.parse_prompt(prompt)
-        txt_response = self.call_interpret(form_data)
+        json_response = self.call_interpret(form_data)
 
         # else just return the wav file
-        return {"response": txt_response }
+        return json_response
 
     def respond(self, prompt, form_data):
         # Configure agent with new config
