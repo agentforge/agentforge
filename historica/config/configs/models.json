@@ -4,14 +4,12 @@
         "model_name": "decapoda-research/llama-7b-hf",
         "tokenizer_name": "openai/gpt-3",
         "peft_model": "tloen/alpaca-lora-7b",
-        "prompt_type": "instruct_w_memory",
-        "class_type": "class_type"
+        "prompt_type": "instruct_w_memory"
     },
-    "vicuna-7b": {
+    "Cerebras-GPT-111M": {
         "class_name": "AutoModelForCausalLM",
-        "model_name": "AlekseyKorshuk/vicuna-7b",
-        "tokenizer_name": "AlekseyKorshuk/vicuna-7b",
-        "prompt_type": "instruct_w_memory",
-        "class_type": "class_type"
+        "model_name": "cerebras/Cerebras-GPT-111M",
+        "tokenizer_name": "cerebras/Cerebras-GPT-111M",
+        "prompt_type": "instruct_prompt"
     }
 }
