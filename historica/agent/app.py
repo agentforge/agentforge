@@ -8,6 +8,7 @@ import logging, redis, uuid
 from datetime import timedelta
 from flask_swagger_ui import get_swaggerui_blueprint
 
+from historica import AUDIO_DST_PATH
 from historica.agent import ExecutiveCognition
 from historica.agent import startup
 from historica.helpers import measure_time
@@ -130,6 +131,21 @@ def configure():
             return jsonify(config)
         except Exception as e:
             return jsonify({'message': str(e)}), 400
+
+
+@app.route("/v1/whisper", methods=["POST"])
+def whisper_api():
+    # Save the uploaded wav file
+    audio_file = request.files["audio"]
+
+    wav_file_path = secure_filename(audio_file.filename)
+    audio_file.save(AUDIO_DST_PATH + wav_file_path)
+
+    # Interpret the audio using the Whisper class
+    generated_text = executive.interpret(wav_file_path)
+
+    # Return the generated text
+    return {"generated_text": generated_text}
 
 # Define the API endpoint for prompting the language_model
 @app.route("/v1/completions", methods=["POST"])

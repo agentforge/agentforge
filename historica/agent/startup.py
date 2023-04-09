@@ -1,6 +1,6 @@
 import os
 import shutil
-from historica import VIDEO_SRC_PATH, VIDEO_DST_PATH
+from historica import VIDEO_SRC_PATH, DST_PATH
 
 def startup():
   # Iterate through all files in the source directory
@@ -9,7 +9,7 @@ def startup():
     if file.endswith(".mp4"):
         # Create the full source and destination file paths
         src_file = os.path.join(VIDEO_SRC_PATH, file)
-        dst_file = os.path.join(VIDEO_DST_PATH, file)
+        dst_file = os.path.join(DST_PATH, file)
 
         # Copy the file, overwriting if it already exists
         shutil.copy2(src_file, dst_file)
