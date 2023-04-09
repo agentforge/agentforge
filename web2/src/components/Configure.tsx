@@ -88,7 +88,7 @@ const Configure: React.FC<ConfigureProps> = () => {
     <div className="row form-interactor">
       <div className="col interaction main-control">
         <Container>
-          <h2>Configuration For the Agent Playground</h2>
+          <h2>Forum Configuration</h2>
           <Form onSubmit={handleSubmit}>
             <Row>
               <Col md={4}>

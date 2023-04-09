@@ -1,6 +1,6 @@
 // NavMenu.tsx
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 interface NavMenuItem {
   text: string;
@@ -14,9 +14,15 @@ interface NavMenuProps {
 
 const NavMenu: React.FC<NavMenuProps> = ({ isLoggedIn, handleLogout }) => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const isConfigurePage = location.pathname === '/configure';
+
   const navMenuItems: NavMenuItem[] = isLoggedIn
     ? [
-        { text: 'Configure', onClick: () => navigate('/configure') },
+        {
+          text: isConfigurePage ? 'Forum' : 'Configure',
+          onClick: () => navigate(isConfigurePage ? '/' : '/configure'),
+        },
         { text: 'Logout', onClick: handleLogout },
       ]
     : [
@@ -37,5 +43,4 @@ const NavMenu: React.FC<NavMenuProps> = ({ isLoggedIn, handleLogout }) => {
     </nav>
   );
 };
-
 export default NavMenu;

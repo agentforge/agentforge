@@ -16,7 +16,7 @@ const Home: React.FC<HomeProps> = () => {
   // CONSTANTS
   const avatars = ['default', 'makhno', 'fdr'];
   const modelConfigs = ['creative', 'logical', 'moderate'];
-  const models = ['alpaca-lora-7b'];
+  const models = ['alpaca-lora-7b', 'vicuna-7b'];
   interface StringMap {
     [key: string]: string;
   }
@@ -133,6 +133,7 @@ const Home: React.FC<HomeProps> = () => {
       avatar: avatarRef.current?.value || '',
       generation_config: modelConfigInputRef.current?.value || '',
       model_key: modelKeyInputRef.current?.value || '',
+      prompt: '',
     };
 
     return configs;
@@ -190,10 +191,8 @@ const Home: React.FC<HomeProps> = () => {
 
   // Calls TTS API
   const getTTS = async (prompt: string) => {
-    const data = {
-      prompt: prompt,
-      config: getLanguageModelConfig(),
-    };
+    const data = getLanguageModelConfig();
+    data['prompt'] = prompt;
     const response = await axios.post(`${config.host}:${config.port}/v1/tts`, data, {
       responseType: 'blob',
     });
@@ -204,14 +203,11 @@ const Home: React.FC<HomeProps> = () => {
   // LLM Completion API Functions
   const getCompletion = async () => {
     const prompt = textareaRef.current?.value;
-    const userConfig = getLanguageModelConfig();
+    const data = getLanguageModelConfig();
     if (prompt == null) {
       return;
     }
-    const data = {
-      prompt: prompt,
-      config: userConfig,
-    };
+    data['prompt'] = prompt;
     try {
       // Create a human message
       const author = userConfiguration.username;
@@ -226,7 +222,7 @@ const Home: React.FC<HomeProps> = () => {
       const output = response.data.choices[0]['text'];
       addMessage(output, aiAuthor, 'ai');
 
-      if (userConfig['tts']) {
+      if (data['tts']) {
         getTTS(output);
       } else {
         setIsLoading(false);
@@ -387,14 +383,15 @@ const Home: React.FC<HomeProps> = () => {
       // const chatHistory = document.querySelector('.chat-history') as HTMLElement;
       // const chatHistoryRect = chatHistory.getBoundingClientRect();
       const userInput = document.getElementById('user-input') as HTMLElement;
-      const userInputRect = userInput.getBoundingClientRect();
-      const distanceFromTop = userInputRect.top;
-
-      if (videoWrapper.style.position === 'absolute') {
-        videoWrapper.style.top = '0';
-        videoWrapper.style.left = userInputRect.left + 'px';
-        video.style.width = userInputRect.width + 'px';
-        video.style.height = distanceFromTop + 'px';
+      if (userInput) {
+        const userInputRect = userInput.getBoundingClientRect();
+        const distanceFromTop = userInputRect.top;
+        if (videoWrapper.style.position === 'absolute') {
+          videoWrapper.style.top = '0';
+          videoWrapper.style.left = userInputRect.left + 'px';
+          video.style.width = userInputRect.width + 'px';
+          video.style.height = distanceFromTop + 'px';
+        }
       }
     });
 
