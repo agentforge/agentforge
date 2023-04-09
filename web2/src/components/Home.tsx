@@ -1,13 +1,16 @@
 import React, { useEffect, useRef, useState, KeyboardEvent } from 'react';
 import { Button } from 'react-bootstrap';
+import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faRocket, faEllipsisH } from '@fortawesome/free-solid-svg-icons';
-import axios from 'axios';
-import config from '../config/config';
-import { MessageProps } from './Message';
 import { v4 as uuidv4 } from 'uuid';
-import useStateWithCallback from './useStateWithCallback';
+
+import api from './api';
+
+import { MessageProps } from './Message';
 import { getConfiguration, Configuration } from './Configure';
+import AudioRecorder from './AudioRecorder';
+import useStateWithCallback from './useStateWithCallback';
 
 interface HomeProps {}
 
@@ -31,10 +34,16 @@ const Home: React.FC<HomeProps> = () => {
     fdr: 'Franklin D. Roosevelt',
   };
 
+  // const navigate = useNavigate();
+
   const [textAreaValue, setTextAreaValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [currentVideo, setCurrentVideo] = useState<'videoA' | 'videoB'>('videoA');
-  const [userConfiguration, setUserConfiguration] = useState<Configuration>({ username: '', email: '' });
+  const [userConfiguration, setUserConfiguration] = useState<Configuration>({
+    username: '',
+    email: '',
+    logged_in: false,
+  });
 
   //Config Refs
   const avatarRef = useRef<HTMLSelectElement>(null);
@@ -193,7 +202,7 @@ const Home: React.FC<HomeProps> = () => {
   const getTTS = async (prompt: string) => {
     const data = getLanguageModelConfig();
     data['prompt'] = prompt;
-    const response = await axios.post(`${config.host}:${config.port}/v1/tts`, data, {
+    const response = await api.post(`/v1/tts`, data, {
       responseType: 'blob',
     });
     playVideo(response.data, undefined);
@@ -215,7 +224,7 @@ const Home: React.FC<HomeProps> = () => {
 
       // Get completion
       setIsLoading(true);
-      const response = await axios.post(`${config.host}:${config.port}/v1/completions`, data);
+      const response = await api.post(`/v1/completions`, data);
 
       // Create an AI message
       const aiAuthor = names[getAvatar()];
@@ -582,13 +591,14 @@ const Home: React.FC<HomeProps> = () => {
                   ></textarea>
                 </div>
                 <div className="col col-3">
-                  <Button id="send-message" className="btn btn-main" onClick={getCompletion}>
+                  <Button id="send-message" className="btn btn-main btn-submit" onClick={getCompletion}>
                     {isLoading ? (
                       <FontAwesomeIcon icon={faEllipsisH} className="animated-ellipsis" />
                     ) : (
                       <FontAwesomeIcon icon={faRocket} />
                     )}
                   </Button>
+                  <AudioRecorder />
                 </div>
               </div>
             </div>
