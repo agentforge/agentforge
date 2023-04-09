@@ -58,7 +58,19 @@ Minimalistic requirements.
 - Docker
 - CUDA capable nvidia GPU + drivers
 
-## Build
+## Build for Dev
+
+Create an ssl key and cert for the Flask API:
+
+```openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365```
+
+Install docker-compose >= 1.29.2:
+
+```
+sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+docker-compose --version
+```
 
 Build the primary Docker image:
 
