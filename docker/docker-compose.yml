@@ -102,15 +102,12 @@ services:
   web:
     image: web2
     ports:
-      - "3000:3000"
+      - 3000
     ipc: host
     networks:
       main-net:
         aliases:
           - web2
-    volumes:
-      - shared-files:/app/files
-      - cache-volume:/app/cache
 
 networks:
   main-net:

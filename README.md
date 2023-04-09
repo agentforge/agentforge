@@ -31,9 +31,7 @@ Playground for integrating agents with deeplearning micro-services.
 ### Language Model
 - [x] Alpaca-LORA-7B w/ PEFT
 - [x] Streaming
-- [ ] Cerebras-GPT
-- [ ] gpt4all
-- [ ] OpenAI API Integration 
+- [ ] OpenAI API Integration
 
 #### Fine-Tuning
 - [ ] LORA Fine-Tuning w/ Anarchist Library for Makhno Avatar 
@@ -60,11 +58,23 @@ Minimalistic requirements.
 - Docker
 - CUDA capable nvidia GPU + drivers
 
-## Build
+## Build for Dev
+
+Create an ssl key and cert for the Flask API:
+
+```openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365```
+
+Install docker-compose >= 1.29.2:
+
+```
+sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+docker-compose --version
+```
 
 Build the primary Docker image:
 
-```docker build --build-arg REPO_URL=git@github.com:fragro/agent_n.git  --build-arg SSH_PRIVATE_KEY="$(cat ~/.ssh/id_rsa)" -t historica -f ./docker/worker.Dockerfile .```
+```docker build --build-arg REPO_URL=git@github.com:fragro/agent_n.git  --build-arg SSH_PRIVATE_KEY="$(cat ~/.ssh/id_rsa)" -t historica -f ./docker/historica.Dockerfile .```
 
 Now build the rest of the containers:
 

@@ -1,8 +1,7 @@
 import React, { useState, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Form, Button } from 'react-bootstrap';
-import axios from 'axios';
-import config from '../config/config';
+import api from './api';
 
 interface LoginProps {
   setIsLoggedIn?: React.Dispatch<React.SetStateAction<boolean>>;
@@ -16,7 +15,7 @@ const Login: React.FC<LoginProps> = ({ setIsLoggedIn }) => {
   const handleLogin = async (e: FormEvent) => {
     try {
       e.preventDefault();
-      const response = await axios.post(`${config.host}:${config.port}/login`, {
+      const response = await api.post(`/login`, {
         username,
         password,
       });
