@@ -6,9 +6,9 @@ sys.path.append(str(path_root))
 
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from core.wav2lip.wav2lip2 import Wav2LipModel
-from core.helpers.helpers import measure_time
-from core.wav2lip.wav2lip import Wav2Lip
+from historica.wav2lip import Wav2LipModel
+from historica.helpers import measure_time
+from historica.wav2lip import Wav2Lip
 
 app = Flask(__name__)
 CORS(app)

@@ -20,19 +20,10 @@ RUN ssh-keyscan github.com >> /root/.ssh/known_hosts
 # agent_n API
 RUN git clone "$REPO_URL"
 
-<<<<<<< HEAD
-WORKDIR /app/agent_n/historica
-
-RUN apt-get update
-RUN sudo apt-get install software-properties-common
-RUN add-apt-repository ppa:ubuntu-toolchain-r/test
-RUN DEBIAN_FRONTEND=noninteractiveapt-get install -y libstdc++6-7-dbg software-properties-common ffmpeg git openssh-client tig
-=======
 RUN apt-get update
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y software-properties-common
 RUN add-apt-repository ppa:ubuntu-toolchain-r/test
 RUN apt-get install -y libstdc++6-7-dbg ffmpeg git openssh-client tig
->>>>>>> 91b7b0faea69a960e1bcfbaeb2bdcfe43a5ea6b2
 
 # RUN rm /usr/lib/x86_64-linux-gnu/libstdc++.so.6 && ln -s /opt/conda/x86_64-conda-linux-gnu/lib/libstdc++.so.6.0.30 /usr/lib/x86_64-linux-gnu/libstdc++.so.6
 

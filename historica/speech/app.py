@@ -29,7 +29,6 @@ def whisper_api():
     # Return the generated text
     return {"generated_text": generated_text}
 
-
 # Given the following text request generate a wav file and return to the client
 @app.route("/v1/tts", methods=["POST"])
 @measure_time
