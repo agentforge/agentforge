@@ -23,3 +23,4 @@ flask_sse
 psycopg2-binary
 uuid
 flask-swagger-ui
+Werkzeug
