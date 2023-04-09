@@ -19,24 +19,6 @@ os.environ["LANGCHAIN_HANDLER"] = "langchain"
 # Dectorator to enable chat memory for the agent and get the prompt
 ## Future access to tools/plugins/retrieval
 
-def chat_memory_enabled(func):
-  def wrapper(self, instruct, **kwargs):
-      # Get the prompt from the prompt manager
-      instruct = self.get_prompt(instruction=instruct)
-
-      # Call add_user_message before the function is called
-      self.memory.chat_memory.add_user_message(instruct)
-      
-      # Call the original function
-      out = func(self, instruct, **kwargs)
-      
-      # Call add_ai_message after the function returns
-      self.memory.chat_memory.add_ai_message(out.response)
-      
-      # Return the function's original return value
-      return out
-  return wrapper
-
 ### Agent -- Layer over LLMChain Agent system to provide a more user friendly interface w/tools and reasoning
 class Agent():
   def __init__(self, opts={}) -> None:
@@ -77,6 +59,16 @@ class Agent():
   def configure(self, config):
     self.set_avatar_context(config["avatar"])
     self.setup_memory(ai_prefix=self.prompt_context["name"], human_prefix=config["human_name"])
+
+  # Saves a current speech artifact to the memory
+  def save_speech(self, speech):
+    if self.memory:
+      self.memory.chat_memory.add_user_message(speech)
+
+  # Saves a response from another individual to the memory
+  def save_response(self, speech):
+    if self.memory:
+      self.memory.chat_memory.add_ai_message(speech)
 
   # Setup Agent and load models
   def setup_agent(self):

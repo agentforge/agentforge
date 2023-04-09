@@ -6,8 +6,9 @@ from flask import session
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(64), index=True, unique=True, nullable=False)
+    username = db.Column(db.String(64), index=True, unique=True, nullable=False) #login name
     password_hash = db.Column(db.String(128), nullable=False)
+    config = db.Column(db.JSON)  # Stores email, display name, etc.
 
     @validates('username')
     def validate_username(self, key, username):
@@ -46,3 +47,15 @@ class User(db.Model):
             session[session_key] = user.id
             return user
         return None
+
+    def get_config(self) -> dict:
+        """Returns the configuration dictionary."""
+        return self.config or {}
+
+    def set_config(self, config_dict: dict):
+        """Updates the configuration dictionary with the provided dictionary."""
+        if self.config:
+            self.config.update(config_dict)
+        else:
+            self.config = config_dict
+        db.session.commit()

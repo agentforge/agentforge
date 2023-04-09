@@ -39,45 +39,53 @@ class ExecutiveCognition:
         return self.post_request(url, form_data)
 
     def parse_config(self, config):
-        config = config.replace("=>", ":") # Fix for ruby hash syntax
-        return json.loads(config)
+        return config
+        # return json.loads(config)
 
     # Either return a wav file or a mp4 file based on flag
-    def speak(self, prompt, config):
+    def speak(self, prompt, form_data):
         # Get wav/tts file
-        config = self.parse_config(config)
-        avatar = self.avatar.get_avatar(config["avatar"])
+        form_data = self.parse_config(form_data)
+
+        avatar = self.avatar.get_avatar(form_data["avatar"])
+        form_data["avatar"] = avatar
+
         prompt = self.agent.parser.parse_prompt(prompt)
-        form_data = {"prompt": prompt, "avatar": avatar}
         wav_response = self.get_tts(form_data)
 
         # if we want to generate lipsync
-        if config["lipsync"] != 'false':
-            form_data = {"wav_file": wav_response["filename"], "avatar": avatar}
+        if form_data["lipsync"] != 'false':
+            form_data["wav_file"] = wav_response["filename"]
             lipsync_response = self.lipsync(form_data)
             return {"filename": lipsync_response["filename"], "type": "video/mp4"}
 
         # else just return the wav file
         return {"filename": wav_response["filename"], "type": "audio/wav"}
 
-    def respond(self, prompt, config):
+    def respond(self, prompt, form_data):
         # Configure agent with new config
-        config = self.parse_config(config)
-        config["avatar"] = self.avatar.get_avatar(config["avatar"])
-        self.agent.configure(config)
+        form_data = self.parse_config(form_data)
+        form_data["avatar"] = self.avatar.get_avatar(form_data["avatar"])
+        self.agent.configure(form_data)
 
-        # Create new prompt
-        formatted_prompt = self.agent.get_prompt(instruction=prompt, config=config)
+        # Record raw prompt in memory
+        self.agent.save_speech(prompt)
+
+        # Format prompt with our Prompt engineering
+        formatted_prompt = self.agent.get_prompt(instruction=prompt, config=form_data)
 
         url = self.urls["LLM_URL"]
         url = f"{url}/v1/completions"
 
-        form_data = {"prompt": formatted_prompt, "config": config, "stream": False}
+        form_data["prompt"] = formatted_prompt
         response = self.post_request(url, form_data)
-        return self.parse_response(response)
+        return self.parse_and_save_response(response)
     
-    def parse_response(self, response):
-        response["response"] = self.parse_llm_response(response["choices"][0]["text"])
+    def parse_and_save_response(self, response):
+        response["response"] = self.parse_llm_response(response["choices"][0]["text"]) # backwards compatibility
+        
+        # Record response in memory
+        self.agent.save_response(response["response"])
         return response
 
     def parse_llm_response(self, text):

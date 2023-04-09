@@ -48,7 +48,7 @@ class TextStreamer(BaseStreamer):
             printable_text = text[self.print_len : text.rfind(" ") + 1]
             self.print_len += len(printable_text)
 
-        print(printable_text, flush=True, end="")
+        # print(printable_text, flush=True, end="")
 
     def end(self):
         """Flushes any remaining cache and prints a newline to stdout."""
@@ -62,4 +62,4 @@ class TextStreamer(BaseStreamer):
             printable_text = ""
 
         # Print a newline (and the remaining text, if any)
-        print(printable_text, flush=True)
+        # print(printable_text, flush=True)

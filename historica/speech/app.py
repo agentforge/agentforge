@@ -25,10 +25,16 @@ def text_to_speech():
   avatar = request.json["avatar"]
 
   filename = "/app/files/out.wav"
+  speaker_wav = avatar["speaker_wav"] if "speaker_wav" in avatar else None
+  speaker_idx = avatar["speaker_idx"] if "speaker_idx" in avatar else 0
 
   # Enqueue a job in the TTS pipeline
-  filename = tts_inst.synthesizer(prompt, filename, speaker_wav=avatar["speaker_wav"], speaker_idx=avatar["speaker_idx"])
-
+  filename = tts_inst.synthesizer(
+    prompt,
+    filename, 
+    speaker_wav=speaker_wav,
+    speaker_idx=speaker_idx
+  )
   # Return the wav file in the response
   print(filename)
   return jsonify({"filename": filename})

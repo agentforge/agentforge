@@ -13,13 +13,14 @@ class Prompt:
         if memory is not None: 
             self.memory = memory
 
+    # Get the chat history string from memory
+    # TODO: Ensure we don't break the token length and maybe refactor this to live elsewhere
     def chat_history(self):
         mem = self.memory.load_memory_variables({})
         def get_content(obj):
             prefix = "### Instruction: " if obj.__class__.__name__ == "HumanMessage" else "### Response: "
-            print(obj.__class__.__name__)
             return prefix + obj.content
-        return "\n".join(list(map(lambda obj: get_content(obj), mem["history"][-1:]))) if "history" in mem else ""
+        return "\n".join(list(map(lambda obj: get_content(obj), mem["history"]))) if "history" in mem else ""
 
     def simple_template(self, instruction="", **kwargs):
         template = f"""You are an AI having a friendly chat with a human.
