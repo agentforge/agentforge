@@ -12,9 +12,9 @@ from . import TextToSpeech
 path_root = Path(__file__).parents[2]
 sys.path.append(str(path_root))
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={r"/v1/*": {"origins": "*"}})
 tts_inst = TextToSpeech()
-# whisper = Whisper()
+whisper = Whisper()
 
 # Given the following text request generate a wav file and return to the client
 @app.route("/v1/tts", methods=["POST"])
@@ -44,10 +44,10 @@ def text_to_speech():
 @measure_time
 def interpret():
   # Get the wav file from the request
-  wav_file = request.files["wav_file"]
+  wav_file_path = request.json["file"]
 
   # Interpret the wav file
-  text = whisper.interpret(wav_file)
+  text = whisper.interpret(wav_file_path)
 
   # Return the text in the response
   return jsonify({"text": text})

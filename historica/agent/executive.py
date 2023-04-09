@@ -28,12 +28,23 @@ class ExecutiveCognition:
     def post_request(self, url, json_data):
         return requests.post(url, json=json_data)
 
-    def get_tts(self, form_data):
+    # Specific calls to services
+    def call_llm(self, form_data):
+        url = self.urls["LLM_URL"]
+        url = f"{url}/v1/completions"
+        return self.post_request(url, form_data)
+
+    def call_tts(self, form_data):
         url = self.urls["TTS_URL"]
         url = f"{url}/v1/tts"
         return self.post_request(url, form_data)
 
-    def lipsync(self, form_data):
+    def call_interpret(self, form_data):
+        url = self.urls["TTS_URL"]
+        url = f"{url}/v1/interpret"
+        return self.post_request(url, form_data)
+
+    def call_lipsync(self, form_data):
         url = self.urls["W2L_URL"]
         url = f"{url}/v1/lipsync"
         return self.post_request(url, form_data)
@@ -51,16 +62,26 @@ class ExecutiveCognition:
         form_data["avatar"] = avatar
 
         prompt = self.agent.parser.parse_prompt(prompt)
-        wav_response = self.get_tts(form_data)
+        wav_response = self.call_tts(form_data)
 
         # if we want to generate lipsync
         if form_data["lipsync"] != 'false':
             form_data["wav_file"] = wav_response["filename"]
-            lipsync_response = self.lipsync(form_data)
+            lipsync_response = self.call_lipsync(form_data)
             return {"filename": lipsync_response["filename"], "type": "video/mp4"}
 
         # else just return the wav file
         return {"filename": wav_response["filename"], "type": "audio/wav"}
+
+    # Takes a sound file and returns a text string
+    def interpret(self, form_data):
+        # Get wav/tts file
+        form_data = self.parse_config(form_data)
+
+        json_response = self.call_interpret(form_data)
+
+        # else just return the wav file
+        return json_response
 
     def respond(self, prompt, form_data):
         # Configure agent with new config
@@ -73,12 +94,9 @@ class ExecutiveCognition:
 
         # Format prompt with our Prompt engineering
         formatted_prompt = self.agent.get_prompt(instruction=prompt, config=form_data)
-
-        url = self.urls["LLM_URL"]
-        url = f"{url}/v1/completions"
-
         form_data["prompt"] = formatted_prompt
-        response = self.post_request(url, form_data)
+
+        response = self.call_llm(url, form_data)
         return self.parse_and_save_response(response)
     
     def parse_and_save_response(self, response):
@@ -88,6 +106,7 @@ class ExecutiveCognition:
         self.agent.save_response(response["response"])
         return response
 
+    # Keyed to alpaca-7b, needs to be updated for other models
     def parse_llm_response(self, text):
         bad_output_delimeters = ['"""', "### Input:", "#noinstantiation", "## Output:", "# End of Instruction", "### End", "### Instruction", "### Response", "# Python Responses", "# Output:", "#if __name__ == '__main__':", "#end document"]
         for i in bad_output_delimeters:
