@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import api from './api';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMicrophone, faStopCircle } from '@fortawesome/free-solid-svg-icons';
 
@@ -12,7 +12,7 @@ const AudioRecorder: React.FC = () => {
     // Send the axios POST request
     const formData = new FormData();
     formData.append('audio', audioBlob);
-    const response = await axios.post('/v1/whisper', formData, {
+    const response = await api.post('/v1/whisper', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
     });
 
