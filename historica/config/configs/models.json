@@ -11,5 +11,11 @@
         "model_name": "cerebras/Cerebras-GPT-111M",
         "tokenizer_name": "cerebras/Cerebras-GPT-111M",
         "prompt_type": "instruct_prompt"
+    },
+    "gpt-j-6B": {
+        "class_name": "GPTJForCausalLM",
+        "model_name": "EleutherAI/gpt-j-6B",
+        "tokenizer_name": "EleutherAI/gpt-j-6B",
+        "prompt_type": "instruct_w_memory"
     }
 }

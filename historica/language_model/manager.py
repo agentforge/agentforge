@@ -12,13 +12,17 @@ class LLMModelManager:
         self.key = None
         with open(CONFIG_FILE, "r") as f:
             self._loaded_configs = json.load(f)
+        self.tokenizer = None
+        self.model = None
 
     def load_model(self, key):
         # Check key and load logic according to key
         self.config = self.load_config(key)
-        if "alpaca" in key:
+        if key == "alpaca-lora-7b":
+            # Needs PEFT
             self.load_alpaca()
         else:
+            # Load standard huggingface model
             self.load_huggingface()
         self.key = key
 
@@ -28,16 +32,19 @@ class LLMModelManager:
             self.tokenizer = None
 
         if self.model is not None:
+            self.model = self.model.cpu()
             del self.model
             self.model = None
 
         gc.collect()
+        torch.cuda.empty_cache()
 
     # Switches model to a new model
     def switch_model(self, key):
-        self.key = key
-        self.unload_model()
-        self.load_model(key)
+        if self.key != key:
+            self.unload_model()
+            self.load_model(key)
+            self.key = key
     
     def load_config(self, key):
         if key not in self._loaded_configs:
@@ -62,24 +69,30 @@ class LLMModelManager:
             self.model, self.config["peft_model"], torch_dtype=torch.float16, device_map={'':0}
         )
 
-    def load_huggingface(self):
+    def load_huggingface(self, device="cuda"):
         print("Loading huggingface...")
         if self.config["model_name"] == None:
             raise ValueError("model_name must be defined")
 
-        revision = self.config.get("revision", "main")
+        # TODO: Source from models.json
+        revision = self.config.get("revision", "float16")
         torch_dtype = self.config.get("torch_dtype", torch.float16)
+        cfg = self.config["model_name"]
+        print(f"Loading model... {cfg}")
 
         self.model = AutoModelForCausalLM.from_pretrained(
             self.config["model_name"],
+            # load_in_8bit=True,
             torch_dtype=torch_dtype,
+            device_map={'':0},
             # revision=revision,
         )
+        print("Loading tokenizer...")
 
         self.tokenizer = AutoTokenizer.from_pretrained(self.config["tokenizer_name"])
 
-        device = torch.device("cuda") if self.gpu() else torch.device("cpu")
-        print("gpu: ", self.gpu())
+        # LLM Models need GPU
+        device = torch.device(device)
         self.model = self.model.to(device)
 
         print("Model loaded and online...")
