@@ -18,9 +18,11 @@ class LLMModelManager:
     def load_model(self, key):
         # Check key and load logic according to key
         self.config = self.load_config(key)
-        if "alpaca" in key:
+        if key == "alpaca-lora-7b":
+            # Needs PEFT
             self.load_alpaca()
         else:
+            # Load standard huggingface model
             self.load_huggingface()
         self.key = key
 

@@ -4,6 +4,7 @@
 ### accessing GPU/TPU resources ###
 
 ### Imports ###
+import copy
 import torch
 from historica.config import Config
 import logging, time
@@ -20,8 +21,6 @@ class LLM():
     
     # Loads the model configuration
     self.generation_config = Config(self.gc_name)
-    self.model = None # default states
-    self.tokenizer = None # default state
     self.device = opts.get("device", "cuda")
 
     # create a shared dictionary to store the model to be used by other workers
@@ -31,11 +30,8 @@ class LLM():
     self.llm = LLMModelManager()
 
   def configure(self, config) -> None:
-    print(config.get("generation_config"))
-    print(config.keys())
     self.set_generation_config(config.get("generation_config", self.gc_name))
     self.set_max_new_tokens(config.get("max_new_tokens", DEFAULT_MAX_NEW_TOKENS))
-    print(config)
     self.load(config.get("model_key", self.llm.key))
 
   def set_max_new_tokens(self, max_new_tokens):
@@ -80,7 +76,27 @@ class LLM():
     if gc_name is not None:
       self.set_generation_config(gc_name)
     kwargs = self.generation_config.to_dict()
+
+    # Separate model arguments from generation config.
+    config = self.llm.model.generation_config
+    config = copy.deepcopy(config)
+    kwargs = config.update(**kwargs)
+    kwargs["output_attentions"] = False
+    kwargs["output_hidden_states"] = False
+    kwargs["use_cache"] = config.use_cache
+
+    # Collect special token IDs.
+    pad_token_id = config.pad_token_id
+    bos_token_id = config.bos_token_id
+    eos_token_id = config.eos_token_id
+
+    if isinstance(eos_token_id, int):
+        eos_token_id = [eos_token_id]
+    if pad_token_id is None and eos_token_id is not None:
+        kwargs["pad_token_id"] = eos_token_id[0]
+
     print(f"Rendering with {kwargs}")
+
     return self._generate(prompt, **kwargs)
   
   def _generate(
@@ -96,6 +112,8 @@ class LLM():
       )
       # print(prompt)
       print("GENERATE...")
+      print(generation_config)
+      # raise Exception("STOP")
       start_time = time.time()
       with torch.no_grad():
           generation_output = self.llm.model.generate(
