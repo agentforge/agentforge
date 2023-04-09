@@ -24,7 +24,7 @@ from historica import db
 
 # Create an instance of the Flask class
 app = Flask(__name__)
-CORS(app, supports_credentials=True)
+CORS(app, supports_credentials=True, resources={r"/v1/*": {"origins": "*"}})
 
 # Setup database connection
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////app/cache/test.db'
@@ -108,6 +108,8 @@ def configure():
 
     token = token.split(' ')[1]
     user_id = redis_conn.get(token)
+    if user_id is None:
+        return jsonify({'message': 'Invalid token'}), 401
     print(user_id)
     user = User.query.get(int(user_id)) 
     print(user)
