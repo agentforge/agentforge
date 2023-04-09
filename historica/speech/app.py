@@ -12,9 +12,23 @@ from . import TextToSpeech
 path_root = Path(__file__).parents[2]
 sys.path.append(str(path_root))
 app = Flask(__name__)
-CORS(app)
+CORS(app, resources={r"/v1/*": {"origins": "*"}})
 tts_inst = TextToSpeech()
-# whisper = Whisper()
+whisper = Whisper()
+
+@app.route("/v1/whisper", methods=["POST"])
+def whisper_api():
+    # Save the uploaded wav file
+    audio_file = request.files["audio"]
+    wav_file_path = secure_filename(audio_file.filename)
+    audio_file.save(wav_file_path)
+
+    # Interpret the audio using the Whisper class
+    generated_text = whisper.interpret(wav_file_path)
+
+    # Return the generated text
+    return {"generated_text": generated_text}
+
 
 # Given the following text request generate a wav file and return to the client
 @app.route("/v1/tts", methods=["POST"])
