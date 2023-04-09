@@ -77,23 +77,18 @@ class LLM():
       self.set_generation_config(gc_name)
     kwargs = self.generation_config.to_dict()
 
-    # Separate model arguments from generation config.
+    # Set model arguments from generation config.
     config = self.llm.model.generation_config
-    config = copy.deepcopy(config)
-    kwargs = config.update(**kwargs)
+    
+    kwargs["pad_token_id"] = config.pad_token_id
+    kwargs["bos_token_id"] = config.bos_token_id
+    kwargs["eos_token_id"] = config.eos_token_id
     kwargs["output_attentions"] = False
     kwargs["output_hidden_states"] = False
     kwargs["use_cache"] = config.use_cache
 
-    # Collect special token IDs.
-    pad_token_id = config.pad_token_id
-    bos_token_id = config.bos_token_id
-    eos_token_id = config.eos_token_id
-
-    if isinstance(eos_token_id, int):
-        eos_token_id = [eos_token_id]
-    if pad_token_id is None and eos_token_id is not None:
-        kwargs["pad_token_id"] = eos_token_id[0]
+    if config.pad_token_id is None and config.eos_token_id is not None:
+        kwargs["pad_token_id"] = config.eos_token_id
 
     print(f"Rendering with {kwargs}")
 

@@ -74,21 +74,20 @@ class LLMModelManager:
         if self.config["model_name"] == None:
             raise ValueError("model_name must be defined")
 
-        # TODO: Source from models.json
-        revision = self.config.get("revision", "float16")
+        revision = self.config.get("revision", "main")
+        load_in_8bit = self.config.get("load_in_8bit", True)
         torch_dtype = self.config.get("torch_dtype", torch.float16)
         cfg = self.config["model_name"]
-        print(f"Loading model... {cfg}")
 
+        print(f"Loading model... {cfg}")
         self.model = AutoModelForCausalLM.from_pretrained(
-            self.config["model_name"],
-            # load_in_8bit=True,
+            cfg,
+            load_in_8bit=load_in_8bit,
             torch_dtype=torch_dtype,
             device_map={'':0},
-            # revision=revision,
+            revision=revision,
         )
         print("Loading tokenizer...")
-
         self.tokenizer = AutoTokenizer.from_pretrained(self.config["tokenizer_name"])
 
         # LLM Models need GPU

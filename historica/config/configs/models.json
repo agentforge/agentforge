@@ -16,6 +16,8 @@
         "class_name": "GPTJForCausalLM",
         "model_name": "EleutherAI/gpt-j-6B",
         "tokenizer_name": "EleutherAI/gpt-j-6B",
-        "prompt_type": "instruct_w_memory"
+        "prompt_type": "chat_prompt",
+        "revision": "float16",
+        "load_in_8bit": false
     }
 }
