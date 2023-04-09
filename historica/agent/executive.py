@@ -96,7 +96,7 @@ class ExecutiveCognition:
         formatted_prompt = self.agent.get_prompt(instruction=prompt, config=form_data)
         form_data["prompt"] = formatted_prompt
 
-        response = self.call_llm(url, form_data)
+        response = self.call_llm(form_data)
         return self.parse_and_save_response(response)
     
     def parse_and_save_response(self, response):
