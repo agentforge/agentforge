@@ -1,8 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Container, Row, Col, Form, Button } from 'react-bootstrap';
-import axios from 'axios';
-import config from '../config/config';
+import api from './api';
 
 interface ConfigureProps {}
 
@@ -21,7 +20,7 @@ export const getConfiguration = async (): Promise<Configuration> => {
     logged_in: true,
   };
   try {
-    const response = await axios.get(`${config.host}:${config.port}/v1/configure`, {
+    const response = await api.get(`/v1/configure`, {
       headers: {
         Authorization: `Bearer ${localStorage.getItem('token')}`,
       },
@@ -60,7 +59,7 @@ const Configure: React.FC<ConfigureProps> = () => {
 
   const setConfiguration = async (userConfig: Configuration) => {
     try {
-      const response = await axios.post(`${config.host}:${config.port}/v1/configure`, {
+      const response = await api.post(`/v1/configure`, {
         token: localStorage.getItem('token'),
         config: getLocalConfiguration(),
       });
