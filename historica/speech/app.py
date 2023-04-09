@@ -44,10 +44,10 @@ def text_to_speech():
 @measure_time
 def interpret():
   # Get the wav file from the request
-  wav_file = request.files["wav_file"]
+  wav_file_path = request.json["file"]
 
   # Interpret the wav file
-  text = whisper.interpret(wav_file)
+  text = whisper.interpret(wav_file_path)
 
   # Return the text in the response
   return jsonify({"text": text})
