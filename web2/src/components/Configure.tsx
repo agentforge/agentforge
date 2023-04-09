@@ -9,13 +9,16 @@ interface ConfigureProps {}
 export interface Configuration {
   email: string;
   username: string;
+  logged_in: boolean;
 }
 
 // Grabs the configuration JSON for the User from the DB backend
+// If the Token is invalid we want to direct the user to login again
 export const getConfiguration = async (): Promise<Configuration> => {
   const defaultConfig: Configuration = {
-    email: 'user@email.com',
-    username: 'username',
+    email: '',
+    username: '',
+    logged_in: true,
   };
   try {
     const response = await axios.get(`${config.host}:${config.port}/v1/configure`, {
@@ -26,9 +29,14 @@ export const getConfiguration = async (): Promise<Configuration> => {
     const retConfig: Configuration = {
       email: response.data.email,
       username: response.data.username,
+      logged_in: true,
     };
     return retConfig;
-  } catch (error) {
+  } catch (error: any) {
+    // Sometime went wrong
+    if (error.response.status === 401) {
+      defaultConfig.logged_in = false;
+    }
     console.error(error);
     return defaultConfig;
   }
@@ -42,7 +50,7 @@ const Configure: React.FC<ConfigureProps> = () => {
   const getLocalConfiguration = (): Configuration => {
     const email = emailRef.current?.value || '';
     const username = usernameRef.current?.value || '';
-    return { email, username };
+    return { email, username, logged_in: true };
   };
 
   const setLocalConfiguration = (config: Configuration) => {
