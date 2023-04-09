@@ -44,7 +44,7 @@ def text_to_speech():
 @measure_time
 def interpret():
   # Get the wav file from the request
-  wav_file = request.files["wav_file"]
+  wav_file = request.files["audio"]
 
   # Interpret the wav file
   text = whisper.interpret(wav_file)

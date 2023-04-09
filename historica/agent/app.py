@@ -7,6 +7,7 @@ from rq import Queue
 import logging, redis, uuid
 from datetime import timedelta
 from flask_swagger_ui import get_swaggerui_blueprint
+from werkzeug.utils import secure_filename
 
 from historica import AUDIO_DST_PATH
 from historica.agent import ExecutiveCognition
@@ -15,6 +16,7 @@ from historica.helpers import measure_time
 from historica.worker import Worker
 from historica.models import User
 from historica import db
+from historica.agent import secure_wav_filename
 
 # Create the worker queue TODO: Complete implementation
 # queue = Queue(connection=Redis())
@@ -138,11 +140,11 @@ def whisper_api():
     # Save the uploaded wav file
     audio_file = request.files["audio"]
 
-    wav_file_path = secure_filename(audio_file.filename)
-    audio_file.save(AUDIO_DST_PATH + wav_file_path)
+    wav_file_path = secure_wav_filename(audio_file.filename)
+    audio_file.save(AUDIO_DST_PATH + "/" + wav_file_path)
 
     # Interpret the audio using the Whisper class
-    generated_text = executive.interpret(wav_file_path)
+    generated_text = executive.interpret({"file": AUDIO_DST_PATH + "/" + wav_file_path, "type": "wav"})
 
     # Return the generated text
     return {"generated_text": generated_text}
