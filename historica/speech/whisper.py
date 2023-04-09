@@ -5,8 +5,8 @@ class Whisper:
   def __init__(self):
     # Initialize the AutoProcessor and AutoModelForSpeechSeq2Seq instances
     config = Config("config")
-    self.processor = AutoProcessor.from_pretrained(config["processor_cache"])
-    self.model = AutoModelForSpeechSeq2Seq.from_pretrained(config["whisper_model_cache"])
+    self.processor = AutoProcessor.from_pretrained("openai/whisper-large")
+    self.model = AutoModelForSpeechSeq2Seq.from_pretrained("openai/whisper-large")
 
   def interpret(self, wav_file_path):
     # Use the openai/whisper transformers API to interpret the wav file
