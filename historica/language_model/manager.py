@@ -92,6 +92,10 @@ class LLMModelManager:
 
         # LLM Models need GPU
         device = torch.device(device)
+        if torch.cuda.device_count() > 1:
+            print(f"Using {torch.cuda.device_count()} GPUs")
+            self.model = torch.nn.DataParallel(self.model)
+    
         self.model = self.model.to(device)
-
+        self.model.eval()  # Set the model to evaluation mode
         print("Model loaded and online...")
