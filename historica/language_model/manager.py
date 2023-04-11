@@ -14,6 +14,7 @@ class LLMModelManager:
             self._loaded_configs = json.load(f)
         self.tokenizer = None
         self.model = None
+        self.multi_gpu = False
 
     def load_model(self, key):
         # Check key and load logic according to key
@@ -32,7 +33,8 @@ class LLMModelManager:
             self.tokenizer = None
 
         if self.model is not None:
-            self.model = self.model.cpu()
+            if not self.multi_gpu:
+                self.model = self.model.cpu()
             del self.model
             self.model = None
 
@@ -53,23 +55,32 @@ class LLMModelManager:
             self._loaded_configs[key] = configs[key]
 
         return self._loaded_configs[key]
-
-    def load_alpaca(self):
+ 
+    def load_alpaca(self, device="cuda", device_map="auto"):
         print("Loading alpaca...")
         self.tokenizer = LlamaTokenizer.from_pretrained(self.config["model_name"],decode_with_prefix_space=True, clean_up_tokenization_spaces=True)
 
         self.model = LlamaForCausalLM.from_pretrained(
             self.config["model_name"],
-            load_in_8bit=True,
+            # load_in_8bit=True,
             torch_dtype=torch.float16,
-            device_map={'':0},
+            device_map=device_map,
         )
 
         self.model = PeftModel.from_pretrained(
-            self.model, self.config["peft_model"], torch_dtype=torch.float16, device_map={'':0}
+            self.model, self.config["peft_model"],
+            torch_dtype=torch.float16,
+            device_map=device_map
         )
 
-    def load_huggingface(self, device="cuda"):
+        # LLM Models need GPU
+        device = torch.device(device)
+        if torch.cuda.device_count() > 1:
+            print(f"Using {torch.cuda.device_count()} GPUs")
+            self.model = torch.nn.DataParallel(self.model)
+            self.multi_gpu = True
+
+    def load_huggingface(self, device="cuda", device_map="auto"):
         print("Loading huggingface...")
         if self.config["model_name"] == None:
             raise ValueError("model_name must be defined")
@@ -84,7 +95,7 @@ class LLMModelManager:
             cfg,
             load_in_8bit=load_in_8bit,
             torch_dtype=torch_dtype,
-            device_map={'':0},
+            device_map=device_map,
             revision=revision,
         )
         print("Loading tokenizer...")
@@ -95,7 +106,8 @@ class LLMModelManager:
         if torch.cuda.device_count() > 1:
             print(f"Using {torch.cuda.device_count()} GPUs")
             self.model = torch.nn.DataParallel(self.model)
+            self.multi_gpu = True
     
         self.model = self.model.to(device)
         self.model.eval()  # Set the model to evaluation mode
-        print("Model loaded and online...")
+        print(f"Model loaded and online... {self.model}")

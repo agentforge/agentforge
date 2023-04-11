@@ -16,7 +16,7 @@ from transformers import GenerationConfig, TextStreamer
 class LLM():
   def __init__(self,  opts) -> None:
     self.opts = {} if opts == None else opts
-    self.model_key = opts.get("model_key", "alpaca-lora-7b")
+    self.model_key = opts.get("model_key", "oasst-sft-1-pythia-12b")
     self.gc_name = opts.get("generation_config", "llm/logical")
     
     # Loads the model configuration
@@ -78,17 +78,20 @@ class LLM():
     kwargs = self.generation_config.to_dict()
 
     # Set model arguments from generation config.
-    config = self.llm.model.generation_config
+    if self.llm.multi_gpu:
+      config = self.llm.model.module.generation_config
+    else:
+      config = self.llm.model.generation_config
     
-    kwargs["pad_token_id"] = config.pad_token_id
-    kwargs["bos_token_id"] = config.bos_token_id
-    kwargs["eos_token_id"] = config.eos_token_id
-    kwargs["output_attentions"] = False
-    kwargs["output_hidden_states"] = False
-    kwargs["use_cache"] = config.use_cache
+    # kwargs["pad_token_id"] = config.pad_token_id
+    # kwargs["bos_token_id"] = config.bos_token_id
+    # kwargs["eos_token_id"] = config.eos_token_id
+    # kwargs["output_attentions"] = False
+    # kwargs["output_hidden_states"] = False
+    # kwargs["use_cache"] = config.use_cache
 
-    if config.pad_token_id is None and config.eos_token_id is not None:
-        kwargs["pad_token_id"] = config.eos_token_id
+    # if config.pad_token_id is None and config.eos_token_id is not None:
+    #     kwargs["pad_token_id"] = config.eos_token_id
 
     print(f"Rendering with {kwargs}")
 
@@ -99,34 +102,40 @@ class LLM():
           instruct,
           **kwargs,
   ):
-      # print(instruct)
-      inputs = self.llm.tokenizer(instruct, return_tensors="pt")
-      input_ids = inputs["input_ids"].cuda()
-      generation_config = GenerationConfig(
-          **kwargs,
-      )
-      # print(prompt)
-      print("GENERATE...")
-      print(generation_config)
-      # raise Exception("STOP")
-      start_time = time.time()
-      with torch.no_grad():
-          generation_output = self.llm.model.generate(
-              input_ids=input_ids,
-              generation_config=generation_config,
-              return_dict_in_generate=True,
-              output_scores=True,
-              max_new_tokens=self.max_new_tokens,
-              streamer=self.streamer,
-          )
-      end_time = time.time()
-      execution_time = end_time - start_time
-      print(f"Execution time: {execution_time:.6f} seconds")
-      s = generation_output.sequences[0]
-      output = self.llm.tokenizer.decode(s)
-      output = self.parse(output)
-      # print(output)
-      return output
+      with torch.autocast("cuda"):
+        # print(instruct)
+        inputs = self.llm.tokenizer(instruct, return_tensors="pt")
+        input_ids = inputs["input_ids"].cuda()
+        generation_config = GenerationConfig(
+            **kwargs,
+        )
+        # print(prompt)
+        print("GENERATE...")
+        print(generation_config)
+        # raise Exception("STOP")
+        start_time = time.time()
+        with torch.no_grad():
+            # Set model arguments from generation config.
+            if self.llm.multi_gpu:
+              gen = self.llm.model.module.generate
+            else:
+              gen = self.llm.model.generate
+            generation_output = gen(
+                input_ids=input_ids,
+                generation_config=generation_config,
+                return_dict_in_generate=True,
+                output_scores=True,
+                max_new_tokens=self.max_new_tokens,
+                streamer=self.streamer,
+            )
+        end_time = time.time()
+        execution_time = end_time - start_time
+        print(f"Execution time: {execution_time:.6f} seconds")
+        s = generation_output.sequences[0]
+        output = self.llm.tokenizer.decode(s)
+        output = self.parse(output)
+        # print(output)
+        return output
 
   # Returns and AgentResponse object that 
   def parse(self, output):

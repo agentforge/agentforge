@@ -6,11 +6,12 @@
         "peft_model": "tloen/alpaca-lora-7b",
         "prompt_type": "instruct_w_memory"
     },
-    "Cerebras-GPT-111M": {
+    "oasst-sft-1-pythia-12b": {
         "class_name": "AutoModelForCausalLM",
-        "model_name": "cerebras/Cerebras-GPT-111M",
-        "tokenizer_name": "cerebras/Cerebras-GPT-111M",
-        "prompt_type": "instruct_prompt"
+        "model_name": "OpenAssistant/oasst-sft-1-pythia-12b",
+        "tokenizer_name": "OpenAssistant/oasst-sft-1-pythia-12b",
+        "prompt_type": "instruct_prompt",
+        "load_in_8bit": false
     },
     "gpt-j-6B": {
         "class_name": "GPTJForCausalLM",
