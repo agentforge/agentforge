@@ -101,7 +101,7 @@ class ExecutiveCognition:
     
     def parse_and_save_response(self, response):
         response["response"] = self.parse_llm_response(response["choices"][0]["text"]) # backwards compatibility
-        
+        response["choices"][0]["text"] =  response["response"]
         # Record response in memory
         self.agent.save_response(response["response"])
         return response
@@ -111,5 +111,7 @@ class ExecutiveCognition:
         bad_output_delimeters = ['"""', "### Input:", "#noinstantiation", "## Output:", "# End of Instruction", "### End", "### Instruction", "### Response", "# Python Responses", "# Output:", "#if __name__ == '__main__':", "#end document"]
         for i in bad_output_delimeters:
             text = text.split(i)
-            text = text[0]    
+            text = text[0]
+        text = text.replace("\n", "<br>") # use br for new line
+        print(text)
         return text.strip()

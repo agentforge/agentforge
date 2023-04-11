@@ -25,3 +25,4 @@ uuid
 flask-swagger-ui
 Werkzeug
 python-dotenv
+flask-sse
