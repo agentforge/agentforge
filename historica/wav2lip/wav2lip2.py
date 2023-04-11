@@ -1,12 +1,12 @@
 from os import listdir, path
 import numpy as np
 import cv2, os
-from core.wav2lip import audio
+from historica.wav2lip import audio
 import subprocess
 from tqdm import tqdm
 import torch
-from core.wav2lip import face_detection
-from core.wav2lip.models import Wav2Lip
+from historica.wav2lip import face_detection
+from historica.wav2lip.models import Wav2Lip
 import platform
 
 class Wav2LipModel():

@@ -25,7 +25,7 @@ services:
         reservations:
           devices:
             - driver: nvidia
-              count: 1
+              count: all
               capabilities: [gpu]
 
   llm:
@@ -43,7 +43,7 @@ services:
         reservations:
           devices:
             - driver: nvidia
-              count: 1
+              count: all
               capabilities: [gpu]
 
   speech:
@@ -61,7 +61,7 @@ services:
         reservations:
           devices:
             - driver: nvidia
-              count: 1
+              count: all
               capabilities: [gpu]
 
   wav2lip:
@@ -79,7 +79,7 @@ services:
         reservations:
           devices:
             - driver: nvidia
-              count: 1
+              count: all
               capabilities: [gpu] 
 
   worker:
@@ -102,15 +102,12 @@ services:
   web:
     image: web2
     ports:
-      - "3000:3000"
+      - 3000
     ipc: host
     networks:
       main-net:
         aliases:
           - web2
-    volumes:
-      - shared-files:/app/files
-      - cache-volume:/app/cache
 
 networks:
   main-net:
