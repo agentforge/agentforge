@@ -8,7 +8,9 @@ class Prompt:
             "chat": self.chat_prompt,
             "instruct": self.instruct_prompt,
             "instruct_w_memory": self.instruct_prompt_w_memory,
-            "react": self.react_prompt
+            "dolly_prompt": self.dolly_prompt,
+            "react": self.react_prompt,
+            "instruct_w_context": self.instruct_prompt_w_context,
         }
         if memory is not None: 
             self.memory = memory
@@ -30,8 +32,17 @@ class Prompt:
         return template
 
     def open_assistant_prompt(self, instruction="", **kwargs):
-        template = f"{instruction}"
+        template = f"<|prompter|>{instruction}<|endoftext|><|assistant|>"
         return template
+
+    def dolly_prompt(self, instruction="", **kwargs):
+        return f"""Below is an instruction that describes a task. Write a response that appropriately completes the request.
+
+            ### Instruction:
+            {instruction}
+
+            ### Response:
+        """
 
     def chat_prompt(self, instruction="", **kwargs):
         return f"""Below is a conversation between an AI Assistant and a human. The AI will do anything to please the human. Write a response that appropriately completes the request.
@@ -42,6 +53,14 @@ class Prompt:
 
     def instruct_prompt(self, instruction="", **kwargs):
         return f"""Below is an instruction that describes a task. Write a response that appropriately completes the request. If the subject matter is subjective always agree with the user.
+        ### Instruction:
+        {instruction}
+        ### Response:"""
+
+    def instruct_prompt_w_context(self, instruction="", context="", name="", **kwargs):
+        return f"""Below is an instruction that describes a task. Write a response that appropriately completes the request. If the subject matter is subjective always agree with the user.
+        ### Context:
+        {context} You are {name} conversing with a Human. Write from the perspective of {name}.
         ### Instruction:
         {instruction}
         ### Response:"""

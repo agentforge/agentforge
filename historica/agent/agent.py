@@ -9,6 +9,9 @@ from langchain.utilities import SearxSearchWrapper
 from langchain.chains.conversation.memory import ConversationBufferMemory
 from .prompt import Prompt
 from historica.helpers import Parser
+from historica.config import config
+
+from historica import CONFIG_FILE
 
 SEARX_HOST = "https://searx.work/"
 AGENT_MODEL = "OpenAssistant/oasst-sft-1-pythia-12b"
@@ -23,7 +26,10 @@ os.environ["LANGCHAIN_HANDLER"] = "langchain"
 class Agent():
   def __init__(self, opts={}) -> None:
     self.memories = {}
-    self.parser = Parser()  # brain soup
+    self.config = config.Config(None)
+    # load models.json
+    self.config.load_from_file(CONFIG_FILE)
+    self.parser = Parser()
 
   # Stores memory for various agent avatars
   def setup_memory(self, ai_prefix = "AI", human_prefix = "Human"):
@@ -44,16 +50,17 @@ class Agent():
     else:
       raise Exception(f"Should contain prompt_context: {avatar}")
 
-  def get_prompt_type(self):
+  def get_prompt_type(self, config):
     # TODO: Grab data using Config(models.json) and return the prompt type based on model
     # from the UI
-    return "instruct_w_memory"
+    model_config = self.config.load_config(config["model_key"])
+    return model_config["prompt_type"]
 
   # Get the prompt based on the current model key
-  def get_prompt(self, **kwargs):
+  def get_prompt(self, config = {}, **kwargs):
     # If memory is an argument let's extract relevant information from it
     kwargs.update(self.prompt_context)
-    prompt_type = self.get_prompt_type()
+    prompt_type = self.get_prompt_type(config)
     return self.prompt_manager.get_prompt(prompt_type, **kwargs)
 
   def configure(self, config):

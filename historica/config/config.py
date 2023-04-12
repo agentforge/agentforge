@@ -4,6 +4,10 @@ import os
 class Config:
   def __init__(self, config_name):
     self.CONFIG_DIR = os.getenv('CONFIG_DIR')
+    
+    # If no config name is provided, load Nothing
+    if config_name is None:
+      return
     config_name = config_name + ".json" if config_name is not None else "config.json"
     try:
       with open(self.CONFIG_DIR + config_name) as f:
@@ -28,3 +32,14 @@ class Config:
   def to_dict(self):
     return self._config
   
+  def load_from_file(self, CONFIG_FILE):
+    with open(CONFIG_FILE, "r") as f:
+      self._loaded_configs = json.load(f)
+
+  def load_config(self, key):
+      if key not in self._loaded_configs:
+          with open(CONFIG_FILE, "r") as f:
+              configs = json.load(f)
+          self._loaded_configs[key] = configs[key]
+
+      return self._loaded_configs[key]

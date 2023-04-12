@@ -27,7 +27,7 @@ from historica.agent import secure_wav_filename
 
 # Create an instance of the Flask class
 app = Flask(__name__)
-CORS(app, supports_credentials=True, resources={r"/v1/*": {"origins": "*"}})
+CORS(app, supports_credentials=True, resources={r"/*": {"origins": "*"}})
 
 # Setup database connection
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////app/cache/test.db'
