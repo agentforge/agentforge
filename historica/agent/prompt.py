@@ -30,8 +30,17 @@ class Prompt:
         return template
 
     def open_assistant_prompt(self, instruction="", **kwargs):
-        template = f"{instruction}"
+        template = f"<|prompter|>{instruction}<|endoftext|><|assistant|>"
         return template
+
+    def dolly_prompt(self, instruction="", **kwargs):
+        return """Below is an instruction that describes a task. Write a response that appropriately completes the request.
+
+            ### Instruction:
+            {instruction}
+
+            ### Response:
+        """
 
     def chat_prompt(self, instruction="", **kwargs):
         return f"""Below is a conversation between an AI Assistant and a human. The AI will do anything to please the human. Write a response that appropriately completes the request.
