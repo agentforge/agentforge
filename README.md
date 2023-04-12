@@ -30,6 +30,7 @@ Playground for integrating agents with deeplearning micro-services.
 
 ### Language Model
 - [x] Alpaca-LORA-7B w/ PEFT
+- [x] dolly-v1-6B
 - [x] Streaming
 - [ ] OpenAI API Integration
 
@@ -50,6 +51,9 @@ Playground for integrating agents with deeplearning micro-services.
 - [ ] SSE Events for Streaming
 - [ ] React/Typescript Production Level App
 - [ ] Mobile-First Approach
+
+### Infra
+- [x] Multi-GPU
 
 ## Requirements
 

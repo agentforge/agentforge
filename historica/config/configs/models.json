@@ -2,15 +2,25 @@
     "alpaca-lora-7b": {
         "class_name": "Alpaca",
         "model_name": "decapoda-research/llama-7b-hf",
-        "tokenizer_name": "openai/gpt-3",
+        "tokenizer_name": "decapoda-research/llama-7b-hf",
         "peft_model": "tloen/alpaca-lora-7b",
-        "prompt_type": "instruct_w_memory"
+        "prompt_type": "instruct_w_memory",
+        "model_type": "alpaca",
+        "streaming": true
     },
-    "Cerebras-GPT-111M": {
-        "class_name": "AutoModelForCausalLM",
-        "model_name": "cerebras/Cerebras-GPT-111M",
-        "tokenizer_name": "cerebras/Cerebras-GPT-111M",
-        "prompt_type": "instruct_prompt"
+    "dolly-v1-6b": {
+        "model_name": "databricks/dolly-v1-6b",
+        "tokenizer_name": "databricks/dolly-v1-6b",
+        "prompt_type": "instruct_w_memory",
+        "model_type": "huggingface",
+        "generator": "dolly"
+    },
+    "alpaca-lora-13b": {
+        "model_name": "decapoda-research/llama-13b-hf",
+        "tokenizer_name": "decapoda-research/llama-13b-hf",
+        "peft_model": "chansung/alpaca-lora-13b",
+        "prompt_type": "instruct_prompt",
+        "model_type": "alpaca"
     },
     "gpt-j-6B": {
         "class_name": "GPTJForCausalLM",
@@ -18,6 +28,7 @@
         "tokenizer_name": "EleutherAI/gpt-j-6B",
         "prompt_type": "chat_prompt",
         "revision": "float16",
-        "load_in_8bit": false
+        "load_in_8bit": false,
+        "model_type": "huggingface"
     }
 }
