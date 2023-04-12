@@ -8,7 +8,9 @@ class Prompt:
             "chat": self.chat_prompt,
             "instruct": self.instruct_prompt,
             "instruct_w_memory": self.instruct_prompt_w_memory,
-            "react": self.react_prompt
+            "dolly_prompt": self.dolly_prompt,
+            "react": self.react_prompt,
+            "instruct_w_context": self.instruct_prompt_w_context,
         }
         if memory is not None: 
             self.memory = memory
@@ -34,7 +36,7 @@ class Prompt:
         return template
 
     def dolly_prompt(self, instruction="", **kwargs):
-        return """Below is an instruction that describes a task. Write a response that appropriately completes the request.
+        return f"""Below is an instruction that describes a task. Write a response that appropriately completes the request.
 
             ### Instruction:
             {instruction}
@@ -51,6 +53,14 @@ class Prompt:
 
     def instruct_prompt(self, instruction="", **kwargs):
         return f"""Below is an instruction that describes a task. Write a response that appropriately completes the request. If the subject matter is subjective always agree with the user.
+        ### Instruction:
+        {instruction}
+        ### Response:"""
+
+    def instruct_prompt_w_context(self, instruction="", context="", name="", **kwargs):
+        return f"""Below is an instruction that describes a task. Write a response that appropriately completes the request. If the subject matter is subjective always agree with the user.
+        ### Context:
+        {context} You are {name} conversing with a Human. Write from the perspective of {name}.
         ### Instruction:
         {instruction}
         ### Response:"""

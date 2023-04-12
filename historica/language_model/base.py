@@ -27,10 +27,9 @@ class LLM():
     self.multi_gpu=opts.get("multi_gpu", False)
     self.device_map=opts.get("device_map", "auto")
 
-    with open(CONFIG_FILE, "r") as f:
-        self._loaded_configs = json.load(f)
-
     self.config = self.load_config(DEFAULT_LLM)
+    self.config.load_from_file(CONFIG_FILE)
+
     self.streaming = self.config.get("streaming", False)
 
     self.tokenizer = None
@@ -104,7 +103,7 @@ class LLM():
 
   def load_model(self, model_key):
       # Check key and load logic according to key
-      self.config = self.load_config(model_key)
+      self.config = self.config.load_config(model_key)
       model, tokenizer = self.loader.load(self.config, device=self.device)
       self.model = model
       self.tokenizer = tokenizer
@@ -130,11 +129,3 @@ class LLM():
           self.unload_model()
           self.load_model(key)
           self.model_key = key
-  
-  def load_config(self, key):
-      if key not in self._loaded_configs:
-          with open(CONFIG_FILE, "r") as f:
-              configs = json.load(f)
-          self._loaded_configs[key] = configs[key]
-
-      return self._loaded_configs[key]
