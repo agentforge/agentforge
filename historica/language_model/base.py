@@ -4,48 +4,55 @@
 ### accessing GPU/TPU resources ###
 
 ### Imports ###
-import copy
+import copy, json, gc
 import torch
 from historica.config import Config
 import logging, time
-from historica import DEFAULT_MAX_NEW_TOKENS
-from .manager import LLMModelManager
 from transformers import GenerationConfig, TextStreamer
+from historica.language_model.generators import Generator
+from accelerate import Accelerator
+from historica.language_model.loaders import Loader
+from historica.helpers import Parser
+
+from historica import CONFIG_FILE
+
+DEFAULT_LLM = 'dolly-v1-6b'
 
 ### Manages Base LLM functions ###
 class LLM():
   def __init__(self,  opts) -> None:
     self.opts = {} if opts == None else opts
-    self.model_key = opts.get("model_key", "oasst-sft-1-pythia-12b")
+    self.model_key = opts.get("model_key", DEFAULT_LLM)
     self.gc_name = opts.get("generation_config", "llm/logical")
+    self.multi_gpu=opts.get("multi_gpu", False)
+    self.device_map=opts.get("device_map", "auto")
+
+    with open(CONFIG_FILE, "r") as f:
+        self._loaded_configs = json.load(f)
+
+    self.config = self.load_config(DEFAULT_LLM)
+    self.streaming = self.config.get("streaming", False)
+
+    self.tokenizer = None
+    self.model = None
     
-    # Loads the model configuration
-    self.generation_config = Config(self.gc_name)
-    self.device = opts.get("device", "cuda")
+    if self.multi_gpu:
+        self.accelerator = Accelerator()
+        self.device = self.accelerator.device
+    else:
+        self.device = "cuda"
+    self.loader = Loader(self.device_map, self.multi_gpu, self.device)
+    self.parser = Parser()
 
     # create a shared dictionary to store the model to be used by other workers
-    logging.info(f"LLM CUDA enabled: {self.device == 'cuda' and torch.cuda.is_available()}")
+    logging.info(f"LLM CUDA enabled: {torch.cuda.is_available()}")
 
-    # Load LLM Model Manager
-    self.llm = LLMModelManager()
+    self.generator = Generator(self.gc_name, self.multi_gpu)
 
   def configure(self, config) -> None:
-    self.set_generation_config(config.get("generation_config", self.gc_name))
-    self.set_max_new_tokens(config.get("max_new_tokens", DEFAULT_MAX_NEW_TOKENS))
-    self.load(config.get("model_key", self.llm.key))
-
-  def set_max_new_tokens(self, max_new_tokens):
-    # grab the config
-    if max_new_tokens != 'NaN':
-      self.max_new_tokens = int(max_new_tokens)
-    else:
-      self.max_new_tokens = DEFAULT_MAX_NEW_TOKENS
-
-  def set_generation_config(self, generation_config):
-    # grab the config
-    if self.gc_name != generation_config:
-      self.generation_config = Config("llm/" + generation_config)
-      self.gc_name = generation_config
+    self.generator.set_generation_config(config.get("generation_config", self.gc_name))
+    self.generator.set_max_new_tokens(config.get("max_new_tokens", 1024))
+    self.load(config.get("model_key", self.model_key))
 
   # Get the name of the class
   def name(self):
@@ -57,90 +64,77 @@ class LLM():
 
   # Loads the model and transfomer given the model name
   def load(self, model_key=None, **kwargs) -> None:
-    # If we aren't overriding use the default model
-    if model_key == None:
-      model_key = self.model_key
 
-    # If we are already using this model, don't reload
-    if model_key == self.llm.key:
+    if model_key == None:
+      # If we aren't overriding use the default model
+      model_key = self.model_key
+    elif model_key is not None and model_key == self.model_key:
+      # If we are already using this model, don't reload
       return  
     
     # Load the model
-    self.llm.switch_model(model_key)
-    
-    # Create the streamer after loading tokenizer
-    self.streamer = TextStreamer(self.llm.tokenizer)
+    self.switch_model(model_key)
 
-  # Generates a response given a prompt
-  def generate(self, prompt, gc_name=None):
-    if gc_name is not None:
-      self.set_generation_config(gc_name)
-    kwargs = self.generation_config.to_dict()
+    self.generator.set_models(self.model, self.tokenizer, TextStreamer(self.tokenizer))
 
-    # Set model arguments from generation config.
-    if self.llm.multi_gpu:
-      config = self.llm.model.module.generation_config
-    else:
-      config = self.llm.model.generation_config
-    
-    # kwargs["pad_token_id"] = config.pad_token_id
-    # kwargs["bos_token_id"] = config.bos_token_id
-    # kwargs["eos_token_id"] = config.eos_token_id
-    # kwargs["output_attentions"] = False
-    # kwargs["output_hidden_states"] = False
-    # kwargs["use_cache"] = config.use_cache
+  def generate(self, prompt, **kwargs):
+    # setup the generator
 
-    # if config.pad_token_id is None and config.eos_token_id is not None:
-    #     kwargs["pad_token_id"] = config.eos_token_id
-
-    print(f"Rendering with {kwargs}")
-
-    return self._generate(prompt, **kwargs)
-  
-  def _generate(
-          self,
-          instruct,
-          **kwargs,
-  ):
-      with torch.autocast("cuda"):
-        # print(instruct)
-        inputs = self.llm.tokenizer(instruct, return_tensors="pt")
-        input_ids = inputs["input_ids"].cuda()
-        generation_config = GenerationConfig(
-            **kwargs,
+    if "generator" in self.config:
+        # Use custom generator based on function string
+        function_name = self.config["generator"]
+        function = getattr(self.generator, function_name)
+        return function(
+            prompt,
+            self.loader.model, 
+            self.loader.tokenizer,
+            TextStreamer(self.tokenizer),
+            **kwargs
         )
-        # print(prompt)
-        print("GENERATE...")
-        print(generation_config)
-        # raise Exception("STOP")
-        start_time = time.time()
-        with torch.no_grad():
-            # Set model arguments from generation config.
-            if self.llm.multi_gpu:
-              gen = self.llm.model.module.generate
-            else:
-              gen = self.llm.model.generate
-            generation_output = gen(
-                input_ids=input_ids,
-                generation_config=generation_config,
-                return_dict_in_generate=True,
-                output_scores=True,
-                max_new_tokens=self.max_new_tokens,
-                streamer=self.streamer,
-            )
-        end_time = time.time()
-        execution_time = end_time - start_time
-        print(f"Execution time: {execution_time:.6f} seconds")
-        s = generation_output.sequences[0]
-        output = self.llm.tokenizer.decode(s)
-        output = self.parse(output)
-        # print(output)
-        return output
+    # Use default generator
+    output = self.generator.generate(
+        prompt,
+        self.loader.model, 
+        self.loader.tokenizer,
+        TextStreamer(self.tokenizer),
+        **kwargs
+    )
+    return self.parser.parse_output(output)
+            
 
-  # Returns and AgentResponse object that 
-  def parse(self, output):
-    responses = output.split("### Response:")
-    candidate = responses[len(responses)-1].strip()
-    # candidate = helpers.process_code_output(candidate)
-    candidate = candidate.lstrip('\n')
-    return candidate
+  def load_model(self, model_key):
+      # Check key and load logic according to key
+      self.config = self.load_config(model_key)
+      model, tokenizer = self.loader.load(self.config, device=self.device)
+      self.model = model
+      self.tokenizer = tokenizer
+      self.model_key = model_key
+
+  def unload_model(self):
+      if self.tokenizer is not None:
+          del self.tokenizer
+          self.tokenizer = None
+
+      if self.model is not None:
+          if not self.multi_gpu:
+              self.model = self.model.cpu()
+          del self.model
+          self.model = None
+
+      gc.collect()
+      torch.cuda.empty_cache()
+
+  # Switches model to a new model
+  def switch_model(self, key):
+      if self.model_key != key:
+          self.unload_model()
+          self.load_model(key)
+          self.model_key = key
+  
+  def load_config(self, key):
+      if key not in self._loaded_configs:
+          with open(CONFIG_FILE, "r") as f:
+              configs = json.load(f)
+          self._loaded_configs[key] = configs[key]
+
+      return self._loaded_configs[key]
