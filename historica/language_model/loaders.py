@@ -60,6 +60,7 @@ class Loader:
         revision = self.config.get("revision", "main")
         load_in_8bit = self.config.get("load_in_8bit", False)
         torch_dtype = self.config.get("torch_dtype", torch.float16)
+        padding_side = self.config.get("padding_side", "left")
         cfg = self.config["model_name"]
 
         print(f"Loading model... {cfg}")
@@ -69,9 +70,10 @@ class Loader:
             torch_dtype=torch_dtype,
             device_map=self.device_map,
             revision=revision,
+            trust_remote_code=True
         )
         print("Loading tokenizer...")
-        self.tokenizer = AutoTokenizer.from_pretrained(self.config["tokenizer_name"])
+        self.tokenizer = AutoTokenizer.from_pretrained(self.config["tokenizer_name"], padding_side=padding_side)
 
         # if self.config["tokenizer_name"] == "OpenAssistant/oasst-sft-1-pythia-12b":
         #     special_tokens_dict = {'additional_special_tokens': ['<|prompter|>', '<|assistant|>']}

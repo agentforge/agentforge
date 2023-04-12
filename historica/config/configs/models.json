@@ -11,7 +11,7 @@
     "dolly-v1-6b": {
         "model_name": "databricks/dolly-v1-6b",
         "tokenizer_name": "databricks/dolly-v1-6b",
-        "prompt_type": "instruct_w_memory",
+        "prompt_type": "dolly_prompt",
         "model_type": "huggingface",
         "generator": "dolly"
     },

@@ -47,9 +47,9 @@ class Generator:
 
     # Set model arguments from generation config.
     if multi_gpu:
-      config = self.model.module.generation_config
+      config = model.module.generation_config
     else:
-      config = self.model.generation_config
+      config = model.generation_config
 
     kwargs["output_attentions"] = False
     kwargs["output_hidden_states"] = False
@@ -61,7 +61,7 @@ class Generator:
     eos_token_id = config.eos_token_id
 
     if pad_token_id is None and eos_token_id is not None:
-        self.model.generation_config.pad_token_id = eos_token_id
+        model.generation_config.pad_token_id = eos_token_id
 
     # # Generate from eos if no input is specified.
     # if input_length == 0:
@@ -73,20 +73,21 @@ class Generator:
     print(f"Rendering with {kwargs}")
 
     with torch.autocast("cuda"):
-      inputs = self.tokenizer(prompt, return_tensors="pt")
+      inputs = tokenizer(prompt, return_tensors="pt")
       input_ids = inputs["input_ids"].cuda()
       generation_config = GenerationConfig(
           **kwargs,
       )
       print("GENERATE...")
-      print(generation_config)
+      # print(generation_config)
       start_time = time.time()
       with torch.no_grad():
-          # Set model arguments from generation config.
+          # If we are using multi-gpu, we need to use the model.module.generate method.
           if self.multi_gpu:
-            gen = self.model.module.generate
+            gen = model.module.generate
           else:
-            gen = self.model.generate
+            gen = model.generate
+          print(len(input_ids))
           kwargs = {
               'input_ids': input_ids,
               'generation_config': generation_config,
@@ -94,44 +95,49 @@ class Generator:
               'output_scores': True,
               'max_new_tokens': self.max_new_tokens
           }
-          if self.streamer != None:
-            kwargs['streamer'] = self.streamer
+          if streamer != None:
+            kwargs['streamer'] = streamer
           generation_output = gen(**kwargs)
       end_time = time.time()
       execution_time = end_time - start_time
       print(f"Execution time: {execution_time:.6f} seconds")
       s = generation_output.sequences[0]
-      output = self.tokenizer.decode(s)
+      output = tokenizer.decode(s)
       return output
  
-  def dolly(self, instruction: str, model, tokenizer, _, gc_name=None, **kwargs) -> str:
-    print(instruction)
+  def dolly(self, prompt, model, tokenizer, _, gc_name=None, **kwargs) -> str:
     kwargs = self.set_generation_config(gc_name)
     generation_config = GenerationConfig(
         **kwargs,
     )
 
-    input_ids = tokenizer(instruction, return_tensors="pt").input_ids.to("cuda")
+    # Set model arguments from generation config.
+    if self.multi_gpu:
+      config = model.module.generation_config
+    else:
+      config = model.generation_config
 
-    # each of these is encoded to a single token
-    response_key_token_id = tokenizer.encode("### Response:")[0]
+    kwargs["output_attentions"] = False
+    kwargs["output_hidden_states"] = False
+    kwargs["use_cache"] = True # config.use_cache
+
     end_key_token_id = tokenizer.encode("### End")[0]
+    pad_token_id = tokenizer.pad_token_id
+    eos_token_id = end_key_token_id
 
-    gen_tokens = model.generate(input_ids, pad_token_id=tokenizer.pad_token_id, eos_token_id=end_key_token_id,
-                                generation_config=generation_config, max_new_tokens=self.max_new_tokens,**kwargs)[0].cpu()
+    input = tokenizer(prompt, return_tensors="pt").input_ids.to("cuda")
 
-    # find where the response begins
-    response_positions = np.where(gen_tokens == response_key_token_id)[0]
+    outputs = model.generate(
+        input,
+        pad_token_id=pad_token_id,
+        eos_token_id=eos_token_id,
+        max_new_tokens=self.max_new_tokens,
+        generation_config=generation_config,
+    )
 
-    if len(response_positions) >= 0:
-        response_pos = response_positions[0]
-        
-        # find where the response ends
-        end_pos = None
-        end_positions = np.where(gen_tokens == end_key_token_id)[0]
-        if len(end_positions) > 0:
-            end_pos = end_positions[0]
-
-        return tokenizer.decode(gen_tokens[response_pos + 1 : end_pos]).strip()
-
-    return None
+    response = tokenizer.decode(outputs[0], skip_special_tokens=True)
+    # response = response.split(prompt)[1]
+    end = "### End"  # the output seems to contain lots of ### End of ...
+    if end not in response:
+      return response
+    return response[:response.index(end)].strip()

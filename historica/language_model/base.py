@@ -94,7 +94,7 @@ class LLM():
     # Use default generator
     output = self.generator.generate(
         prompt,
-        self.loader.model, 
+        self.loader.model,
         self.loader.tokenizer,
         TextStreamer(self.tokenizer),
         **kwargs
