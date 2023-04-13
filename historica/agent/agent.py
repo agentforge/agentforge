@@ -14,8 +14,6 @@ from historica.config import config
 from historica import LLM_CONFIG_FILE
 
 SEARX_HOST = "https://searx.work/"
-AGENT_MODEL = "OpenAssistant/oasst-sft-1-pythia-12b"
-CONFIG_NAME = "logical"
 
 os.environ["LANGCHAIN_HANDLER"] = "langchain"
 
@@ -28,7 +26,7 @@ class Agent():
     self.memories = {}
     self.config = config.Config(None)
     # load models.json
-    self.config.load_from_file(LLM_CONFIG_FILE)
+    self.config.load_config(LLM_CONFIG_FILE)
     self.parser = Parser()
 
   # Stores memory for various agent avatars
@@ -53,14 +51,16 @@ class Agent():
   def get_prompt_type(self, config):
     # TODO: Grab data using Config(models.json) and return the prompt type based on model
     # from the UI
-    model_config = self.config.load_config(config["model_key"])
+    model_config = self.config.get_config(config["model_key"])
     return model_config["prompt_type"]
 
   # Get the prompt based on the current model key
-  def get_prompt(self, config = {}, **kwargs):
-    # If memory is an argument let's extract relevant information from it
+  def process_prompt(self, config = {}, **kwargs):
+    # Seed context from the avatar json file
     kwargs.update(self.prompt_context)
+    # get the prompt template
     prompt_type = self.get_prompt_type(config)
+    # process the prompt template
     return self.prompt_manager.get_prompt(prompt_type, **kwargs)
 
   def configure(self, config):

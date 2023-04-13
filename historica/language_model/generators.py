@@ -11,6 +11,7 @@ class Generator:
   def __init__(self, gc_name=None, multi_gpu=False):
     self.gc_name = gc_name
     self.streameer = None
+    print(f"Generator multi_gpu {multi_gpu}")
     self.multi_gpu = multi_gpu
     
     # Set at runtime by the base LLM class.
@@ -41,12 +42,12 @@ class Generator:
       self.max_new_tokens = DEFAULT_MAX_NEW_TOKENS
 
   # Generates a response given a prompt
-  def generate(self, prompt, model, tokenizer, streamer, gc_name=None, multi_gpu=False, **kwargs):
+  def generate(self, prompt, model, tokenizer, streamer, gc_name=None, **kwargs):
 
     kwargs = self.set_generation_config(gc_name)
 
     # Set model arguments from generation config.
-    if multi_gpu:
+    if self.multi_gpu:
       config = model.module.generation_config
     else:
       config = model.generation_config
@@ -128,7 +129,12 @@ class Generator:
 
     input = tokenizer(prompt, return_tensors="pt").input_ids.to("cuda")
 
-    outputs = model.generate(
+    if self.multi_gpu:
+      gen = model.module.generation
+    else:
+      gen = model.generation
+
+    outputs = gen(
         input,
         pad_token_id=pad_token_id,
         eos_token_id=eos_token_id,
