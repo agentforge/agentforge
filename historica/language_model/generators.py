@@ -107,16 +107,11 @@ class Generator:
       return output
  
   def dolly(self, prompt, model, tokenizer, _, gc_name=None, **kwargs) -> str:
+    print(f"self.multi_gpu {self.multi_gpu}")
     kwargs = self.set_generation_config(gc_name)
     generation_config = GenerationConfig(
         **kwargs,
     )
-
-    # Set model arguments from generation config.
-    if self.multi_gpu:
-      config = model.module.generation_config
-    else:
-      config = model.generation_config
 
     kwargs["output_attentions"] = False
     kwargs["output_hidden_states"] = False
@@ -129,9 +124,9 @@ class Generator:
     input = tokenizer(prompt, return_tensors="pt").input_ids.to("cuda")
 
     if self.multi_gpu:
-      gen = model.module.generation
+      gen = model.module.generate
     else:
-      gen = model.generation
+      gen = model.generate
 
     outputs = gen(
         input,
