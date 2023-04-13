@@ -1,4 +1,5 @@
 from transformers import BaseStreamer, AutoTokenizer
+from flask_sse import sse
 
 class TextStreamer(BaseStreamer):
     """
@@ -49,6 +50,7 @@ class TextStreamer(BaseStreamer):
             self.print_len += len(printable_text)
 
         # print(printable_text, flush=True, end="")
+        sse.publish({"message": printable_text}, type='stream_completion')
 
     def end(self):
         """Flushes any remaining cache and prints a newline to stdout."""
@@ -63,3 +65,4 @@ class TextStreamer(BaseStreamer):
 
         # Print a newline (and the remaining text, if any)
         # print(printable_text, flush=True)
+        sse.publish({"message": printable_text}, type='stream_completion')

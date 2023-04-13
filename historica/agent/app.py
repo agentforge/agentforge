@@ -33,6 +33,7 @@ CORS(app, supports_credentials=True, resources={r"/*": {"origins": "*"}})
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////app/cache/test.db'
 app.secret_key = '0e529d8e-31b9-4e54-a63f-55d6b76e6d14'
 app.config['SESSION_TYPE'] = 'filesystem'
+app.register_blueprint(sse, url_prefix='/stream')
 db.init_app(app)
 migrate = Migrate(app, db)
 

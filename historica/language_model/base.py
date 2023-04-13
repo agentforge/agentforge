@@ -8,11 +8,12 @@ import copy, json, gc
 import torch
 from historica.config import Config
 import logging, time
-from transformers import GenerationConfig, TextStreamer
+from transformers import GenerationConfig
 from historica.language_model.generators import Generator
 from accelerate import Accelerator
 from historica.language_model.loaders import Loader
 from historica.helpers import Parser
+from historica.language_model import  
 
 from historica import LLM_CONFIG_FILE
 
