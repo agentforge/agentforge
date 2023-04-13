@@ -15,6 +15,13 @@
         "model_type": "huggingface",
         "generator": "dolly"
     },
+    "dolly-v2-12b": {
+        "model_name": "databricks/dolly-v2-12b",
+        "tokenizer_name": "databricks/dolly-v2-12b",
+        "prompt_type": "dolly_prompt",
+        "model_type": "huggingface",
+        "generator": "dolly"
+    },
     "alpaca-lora-13b": {
         "model_name": "decapoda-research/llama-13b-hf",
         "tokenizer_name": "decapoda-research/llama-13b-hf",

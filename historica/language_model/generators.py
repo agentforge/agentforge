@@ -136,8 +136,14 @@ class Generator:
     )
 
     response = tokenizer.decode(outputs[0], skip_special_tokens=True)
-    # response = response.split(prompt)[1]
+    print(prompt)
+    print(response)
+    fixed_prompt = prompt.replace("### Instruction:", "").replace("### Response:", "")
+    response = response.replace(fixed_prompt, "")
+    response = response.strip()
     end = "### End"  # the output seems to contain lots of ### End of ...
-    if end not in response:
-      return response
-    return response[:response.index(end)].strip()
+    if end in response:
+      response = response[:response.index(end)].strip()
+    if "A: " in response: # GPT loves to add A: with random nonsense
+      response = response[:response.index("A: ")].strip() 
+    return response

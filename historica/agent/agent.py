@@ -11,7 +11,7 @@ from .prompt import Prompt
 from historica.helpers import Parser
 from historica.config import config
 
-from historica import CONFIG_FILE
+from historica import LLM_CONFIG_FILE
 
 SEARX_HOST = "https://searx.work/"
 AGENT_MODEL = "OpenAssistant/oasst-sft-1-pythia-12b"
@@ -28,7 +28,7 @@ class Agent():
     self.memories = {}
     self.config = config.Config(None)
     # load models.json
-    self.config.load_from_file(CONFIG_FILE)
+    self.config.load_from_file(LLM_CONFIG_FILE)
     self.parser = Parser()
 
   # Stores memory for various agent avatars

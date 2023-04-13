@@ -32,13 +32,15 @@ class Config:
   def to_dict(self):
     return self._config
   
-  def load_from_file(self, CONFIG_FILE):
+  def load_config(self, CONFIG_FILE):
     with open(CONFIG_FILE, "r") as f:
       self._loaded_configs = json.load(f)
+    self.CONFIG_FILE = CONFIG_FILE
 
-  def load_config(self, key):
+  # Loads a config ig it hasn't been loaded yet
+  def get_config(self, key):
       if key not in self._loaded_configs:
-          with open(CONFIG_FILE, "r") as f:
+          with open(self.CONFIG_FILE, "r") as f:
               configs = json.load(f)
           self._loaded_configs[key] = configs[key]
 
