@@ -4,13 +4,15 @@ import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faRocket, faEllipsisH } from '@fortawesome/free-solid-svg-icons';
 import { v4 as uuidv4 } from 'uuid';
+// import DOMPurify from 'dompurify';
 
-import api from './api';
+import api, { api_url } from './api';
 
 import { MessageProps } from './Message';
 import { getConfiguration, Configuration } from './Configure';
 import AudioRecorder from './AudioRecorder';
 import useStateWithCallback from './useStateWithCallback';
+import SwirlIcon from './svg/mind-icon.svg';
 
 interface HomeProps {}
 
@@ -19,7 +21,7 @@ const Home: React.FC<HomeProps> = () => {
   // CONSTANTS
   const avatars = ['default', 'makhno', 'fdr'];
   const modelConfigs = ['creative', 'logical', 'moderate'];
-  const models = ['alpaca-lora-7b', 'vicuna-7b'];
+  const models = ['alpaca-lora-7b', 'alpaca-lora-13b', 'dolly-v1-6b', 'dolly-v2-12b'];
   interface StringMap {
     [key: string]: string;
   }
@@ -84,6 +86,24 @@ const Home: React.FC<HomeProps> = () => {
     }
   };
 
+  const handleResize = () => {
+    const video = document.getElementById('hero-video') as HTMLVideoElement;
+    const videoWrapper = document.getElementById('hero-video-wrapper') as HTMLElement;
+    // const chatHistory = document.querySelector('.chat-history') as HTMLElement;
+    // const chatHistoryRect = chatHistory.getBoundingClientRect();
+    const userInput = document.getElementById('user-input') as HTMLElement;
+    if (userInput) {
+      const userInputRect = userInput.getBoundingClientRect();
+      const distanceFromTop = userInputRect.top;
+      if (videoWrapper.style.position === 'absolute') {
+        videoWrapper.style.top = '0';
+        videoWrapper.style.left = userInputRect.left + 'px';
+        video.style.width = userInputRect.width + 'px';
+        video.style.height = distanceFromTop + 'px';
+      }
+    }
+  };
+
   const addMessage = async (
     prompt: string | undefined,
     author: string | undefined,
@@ -120,6 +140,19 @@ const Home: React.FC<HomeProps> = () => {
       });
     });
   };
+
+  // Append a string to the latest message for streaming
+  const appendMessage = (newText: string) => {
+    if (streamingCheckboxRef.current?.checked) {
+      setMessages((prevMessages) => {
+        const lastIndex = prevMessages.length - 1;
+        const lastMessage = prevMessages[lastIndex];
+        const updatedMessage = { ...lastMessage, text: lastMessage.text + newText };
+        return [...prevMessages.slice(0, lastIndex), updatedMessage];
+      });
+    }
+  };
+
   // Get the current avatar dropdown value
   const getAvatar = () => {
     let avatar = avatarRef.current?.value;
@@ -218,18 +251,28 @@ const Home: React.FC<HomeProps> = () => {
     }
     data['prompt'] = prompt;
     try {
-      // Create a human message
+      // Get authors
       const author = userConfiguration.username;
+      const aiAuthor = names[getAvatar()];
+
+      // Create a human message
       addMessage(prompt, author, 'human');
+
+      // If we are streaming append an empty message for the streamed output
+      if (data['streaming']) {
+        addMessage('', aiAuthor, 'ai');
+      }
 
       // Get completion
       setIsLoading(true);
       const response = await api.post(`/v1/completions`, data);
+      let output = '';
 
-      // Create an AI message
-      const aiAuthor = names[getAvatar()];
-      const output = response.data.choices[0]['text'];
-      addMessage(output, aiAuthor, 'ai');
+      if (!data['streaming']) {
+        // Create an AI message
+        output = response.data.choices[0]['text'];
+        addMessage(output, aiAuthor, 'ai');
+      }
 
       if (data['tts']) {
         getTTS(output);
@@ -313,16 +356,37 @@ const Home: React.FC<HomeProps> = () => {
     }
   };
 
-  // useEffect Function
+  // Setup streaming listener
   useEffect(() => {
-    // Set user configuration
+    // SSE Event Listener for streaming messages and more
+    const eventSource = new EventSource(`${api_url}stream`);
+
+    eventSource.onmessage = (e: MessageEvent) => {
+      appendMessage(JSON.parse(e.data).next);
+    };
+
+    eventSource.addEventListener('stream_completion', (e: MessageEvent) => {
+      appendMessage(JSON.parse(e.data).next);
+    });
+
+    // Cleanup function to close the event source when the component is unmounted
+    return () => {
+      eventSource.close();
+    };
+  }, []); // Pass an empty dependency array to run the effect only once
+
+  // Set user configuration if uninitialized
+  useEffect(() => {
     if (userConfiguration.username === '' && userConfiguration.email === '') {
       const res = getConfiguration();
       res.then((data: Configuration) => {
         setUserConfiguration(data);
       });
     }
+  }, []); // Pass an empty dependency array to run the effect only once
 
+  // Setup the Configuration Interface
+  useEffect(() => {
     //Update max tokens
     const updateMaxTokensValue = () => {
       const slider = maxNewTokensRef.current;
@@ -384,29 +448,16 @@ const Home: React.FC<HomeProps> = () => {
         updateStates();
       });
     }
+  }, []); // Pass an empty dependency array to run the effect only once
 
+  useEffect(() => {
     // Add resize event listener (use a method instead of @resizeVideo)
-    window.addEventListener('resize', () => {
-      const video = document.getElementById('hero-video') as HTMLVideoElement;
-      const videoWrapper = document.getElementById('hero-video-wrapper') as HTMLElement;
-      // const chatHistory = document.querySelector('.chat-history') as HTMLElement;
-      // const chatHistoryRect = chatHistory.getBoundingClientRect();
-      const userInput = document.getElementById('user-input') as HTMLElement;
-      if (userInput) {
-        const userInputRect = userInput.getBoundingClientRect();
-        const distanceFromTop = userInputRect.top;
-        if (videoWrapper.style.position === 'absolute') {
-          videoWrapper.style.top = '0';
-          videoWrapper.style.left = userInputRect.left + 'px';
-          video.style.width = userInputRect.width + 'px';
-          video.style.height = distanceFromTop + 'px';
-        }
-      }
-    });
+    window.addEventListener('resize', handleResize);
 
     // Cleanup event listeners on unmount
     return () => {
       // Remove all event listeners here TODO
+      window.removeEventListener('resize', handleResize);
     };
   }, [messages, currentVideo]);
 
@@ -572,7 +623,7 @@ const Home: React.FC<HomeProps> = () => {
               >
                 {messages.map((message, _) => (
                   <li key={message.id} className={message.author_type}>
-                    {message.author}: {message.text}
+                    {message.author}: <span dangerouslySetInnerHTML={{ __html: message.text }}></span>
                   </li>
                   // <Message id={message.id} auth`or_type={message.author_type} author={message.author} text={message.text} />
                 ))}
@@ -591,9 +642,9 @@ const Home: React.FC<HomeProps> = () => {
                   ></textarea>
                 </div>
                 <div className="col col-3">
-                  <Button id="send-message" className="btn btn-main btn-submit" onClick={getCompletion}>
+                  <Button id="send-message" className="btn-main" onClick={getCompletion} style={{ padding: '0px' }}>
                     {isLoading ? (
-                      <FontAwesomeIcon icon={faEllipsisH} className="animated-ellipsis" />
+                      <img src={SwirlIcon} alt="Swirling Icon" className="swirling-icon" />
                     ) : (
                       <FontAwesomeIcon icon={faRocket} />
                     )}
