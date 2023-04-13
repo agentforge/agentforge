@@ -108,7 +108,7 @@ class ExecutiveCognition:
 
     # Keyed to alpaca-7b, needs to be updated for other models
     def parse_llm_response(self, text):
-        bad_output_delimeters = ['"""', "### Input:", "#noinstantiation", "## Output:", "# End of Instruction", "### End", "### Instruction", "### Response", "# Python Responses", "# Output:", "#if __name__ == '__main__':", "#end document"]
+        bad_output_delimeters = ['"""', "### Input:", "#noinstantiation", "## Output:", "# End of Instruction", "### End", "### Instruction", "### Response", "# Python Responses", "# Output:", "#if __name__ == '__main__':", "#end document", "<# end of output #>"]
         for i in bad_output_delimeters:
             text = text.split(i)
             text = text[0]
