@@ -16,7 +16,6 @@ from historica.helpers import Parser
 
 from .text_streamer import TextStreamer
 
-
 from historica import LLM_CONFIG_FILE
 
 DEFAULT_LLM = 'dolly-v2-12b'
@@ -81,7 +80,10 @@ class LLM():
     # Load the model
     self.switch_model(model_key)
 
-    self.generator.set_models(self.model, self.tokenizer, TextStreamer(self.tokenizer))
+    self.generator.set_models(self.model, self.tokenizer, self.text_streamer())
+
+  def text_streamer(self, **kwargs):
+    return TextStreamer(self.tokenizer, skip_prompt=True, **kwargs)
 
   def generate(self, prompt, **kwargs):
     # setup the generator
@@ -94,7 +96,7 @@ class LLM():
             prompt,
             self.loader.model, 
             self.loader.tokenizer,
-            TextStreamer(self.tokenizer),
+            self.text_streamer(),
             **kwargs
         )
     # Use default generator
@@ -102,7 +104,7 @@ class LLM():
         prompt,
         self.loader.model,
         self.loader.tokenizer,
-        TextStreamer(self.tokenizer),
+        self.text_streamer(),
         **kwargs
     )
     return self.parser.parse_output(output)
