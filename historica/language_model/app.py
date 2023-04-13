@@ -34,7 +34,6 @@ llm.load_model(llm.model_key)
 
 app = Flask(__name__)
 app.config["REDIS_URL"] = "redis://redis:6379/0"
-app.register_blueprint(sse, url_prefix='/stream')
 
 redis_store = redis.StrictRedis().from_url(app.config["REDIS_URL"])
 

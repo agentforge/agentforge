@@ -1,4 +1,5 @@
-from transformers import BaseStreamer, AutoTokenizer
+from transformers.generation.streamers import BaseStreamer
+from transformers import AutoTokenizer
 from flask_sse import sse
 
 class TextStreamer(BaseStreamer):
