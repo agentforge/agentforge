@@ -16,7 +16,7 @@ from historica.helpers import Parser
 
 from historica import LLM_CONFIG_FILE
 
-DEFAULT_LLM = 'dolly-v1-6b'
+DEFAULT_LLM = 'dolly-v2-12b'
 
 ### Manages Base LLM functions ###
 class LLM():
@@ -26,6 +26,7 @@ class LLM():
     self.gc_name = opts.get("generation_config", "llm/logical")
     self.multi_gpu=opts.get("multi_gpu", False)
     self.device_map=opts.get("device_map", "auto")
+    print(f"Base multi_gpu {self.multi_gpu}")
 
     self.config_controller = Config(None)
 

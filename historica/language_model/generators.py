@@ -106,6 +106,7 @@ class Generator:
       return output
  
   def dolly(self, prompt, model, tokenizer, _, gc_name=None, **kwargs) -> str:
+    print(f"self.multi_gpu {self.multi_gpu}")
     kwargs = self.set_generation_config(gc_name)
     generation_config = GenerationConfig(
         **kwargs,
