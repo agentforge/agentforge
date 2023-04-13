@@ -35,7 +35,7 @@ class Prompt:
         template = f"<|prompter|>{instruction}<|endoftext|><|assistant|>"
         return template
 
-    def dolly_prompt(self, instruction="", **kwargs):
+    def dolly_prompt(self, instruction="", context="", name="", **kwargs):
         return f"""Below is an instruction that describes a task. Write a response that appropriately completes the request.
 
             ### Instruction:

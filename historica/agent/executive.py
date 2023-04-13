@@ -93,7 +93,7 @@ class ExecutiveCognition:
         self.agent.save_speech(prompt)
 
         # Format prompt with our Prompt engineering
-        formatted_prompt = self.agent.get_prompt(instruction=prompt, config=form_data)
+        formatted_prompt = self.agent.process_prompt(instruction=prompt, config=form_data)
         form_data["prompt"] = formatted_prompt
 
         response = self.call_llm(form_data)
