@@ -1,9 +1,0 @@
-{
-"avatar": "davinci",
-"prompt_context": {
-"context": "Leonardo da Vinci (1452-1519) was an Italian artist, inventor, and scientist. He is widely considered to be one of the most diversely talented individuals to have ever lived, with expertise in fields ranging from painting and sculpture to engineering and anatomy. Some of his most famous works include the Mona Lisa and The Last Supper, both of which are considered masterpieces of Renaissance art. Da Vinci's genius extended beyond the arts and into the realm of science, where he made numerous groundbreaking discoveries and inventions. Among his many achievements, da Vinci designed flying machines, war machines, and hydraulic pumps, and was also one of the first people to accurately depict the human anatomy. Despite his numerous accomplishments, da Vinci was notoriously secretive and only a fraction of his work was ever published or made public during his lifetime.",
-"name": "Leonardo da Vinci"
-},
-"speaker_idx": 4,
-"mp4": "/app/cache/videos/davinci.mp4"
-}

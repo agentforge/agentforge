@@ -16,7 +16,7 @@ interface HomeProps {}
 const Home: React.FC<HomeProps> = () => {
   // TODO: make dynamic, temporary until we can source these from the API
   // CONSTANTS
-  const avatars = ['default', 'makhno', 'fdr', 'davinci'];
+  const avatars = ['default', 'makhno', 'fdr', 'sankara'];
   const modelConfigs = ['creative', 'logical', 'moderate'];
   const models = ['alpaca-lora-7b', 'alpaca-lora-13b', 'dolly-v1-6b', 'dolly-v2-12b'];
   interface StringMap {
@@ -26,10 +26,12 @@ const Home: React.FC<HomeProps> = () => {
     default: '/videos/default.mp4',
     makhno: '/videos/makhno.mp4',
     fdr: '/videos/fdr.mp4',
+    sankara: '/videos/sankara.mp4',
   };
   const names: StringMap = {
     default: 'intelliChild',
     makhno: 'Nestor Makhno',
+    sankara: 'Thomas Sankara',
     fdr: 'Franklin D. Roosevelt',
   };
 
