@@ -1,7 +1,8 @@
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
-from flask import Flask, request, jsonify, send_file
+from flask import Flask, request, jsonify, send_file, render_template, Response, make_response
 from flask_cors import CORS
+from flask_sse import sse
 from redis import Redis
 from rq import Queue
 import logging, redis, uuid
@@ -27,12 +28,21 @@ from historica.agent import secure_wav_filename
 
 # Create an instance of the Flask class
 app = Flask(__name__)
-CORS(app, supports_credentials=True, resources={r"/v1/*": {"origins": "*"}})
+CORS(app, supports_credentials=True, resources={r"/*": {"origins": "*"}})
 
 # Setup database connection
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////app/cache/test.db'
-app.secret_key = '0e529d8e-31b9-4e54-a63f-55d6b76e6d14'
 app.config['SESSION_TYPE'] = 'filesystem'
+app.config["REDIS_URL"] = "redis://redis:6379/0"
+
+# Set the ALLOWED_ORIGIN and ALLOW_CREDENTIALS configuration variables
+app.config["ALLOWED_ORIGIN"] = "*"
+app.config["ALLOW_CREDENTIALS"] = True
+
+app.secret_key = '0e529d8e-31b9-4e54-a63f-55d6b76e6d14'
+
+app.register_blueprint(sse, url_prefix='/stream')
+
 db.init_app(app)
 migrate = Migrate(app, db)
 
@@ -54,6 +64,15 @@ swaggerui_blueprint = get_swaggerui_blueprint(
     }
 )
 app.register_blueprint(swaggerui_blueprint, url_prefix=SWAGGER_URL)
+
+# def sse_stream_with_cors():
+#     response = Response(sse.stream(), content_type='text/event-stream')
+#     response.headers['Access-Control-Allow-Origin'] = request.headers.get('Origin', '*')
+#     response.headers['Access-Control-Allow-Credentials'] = 'true'
+#     response.headers['Cache-Control'] = 'no-cache'
+#     return response
+
+# app.view_functions['sse.stream'] = sse_stream_with_cors
 
 @app.route('/login', methods=['POST'])
 def login():

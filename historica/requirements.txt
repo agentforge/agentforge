@@ -1,7 +1,7 @@
 gTTS
 flask
 pytest
-accelerate
+accelerate==0.18.0
 bitsandbytes
 trl
 flask_cors
@@ -25,3 +25,5 @@ uuid
 flask-swagger-ui
 Werkzeug
 python-dotenv
+flask-sse
+accelerate @ git+https://github.com/huggingface/accelerate.git
