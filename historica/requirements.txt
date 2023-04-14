@@ -1,7 +1,7 @@
 gTTS
 flask
 pytest
-accelerate
+accelerate==0.18.0
 bitsandbytes
 trl
 flask_cors
