@@ -10,7 +10,6 @@ import sys
 import redis
 from flask import Flask, request, jsonify, send_file, Response
 from flask_cors import CORS
-from flask_sse import sse
 import logging
 
 from historica.helpers import measure_time
