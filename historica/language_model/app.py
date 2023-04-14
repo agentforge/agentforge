@@ -7,14 +7,14 @@ import sys
 ### accessing GPU/TPU resources
 
 ### Imports ###
-import requests, json, redis
+import redis
 from flask import Flask, request, jsonify, send_file, Response
 from flask_cors import CORS
 from flask_sse import sse
 import logging
 
 from historica.helpers import measure_time
-from historica.language_model import Alpaca, LLM
+from historica.language_model import LLM
 
 #logging.basicConfig(filename='agent.log', level=logging.DEBUG)
 path_root = Path(__file__).parents[2]
@@ -23,17 +23,17 @@ sys.path.append(str(path_root))
 app = Flask(__name__)
 CORS(app)
 
-# llm = Agent()
-# llm.setup_agent()
-# llm.load_agent()
+### Load the LLM - single GPU example
+llm = LLM({"multi_gpu": False, "device_map": {'':0}, "model_key":"alpaca-lora-7b"})
 
-### Alpaca -- Stanford's davinci-003 model
-# llm = Alpaca()
-llm = LLM({}) # Start with alpaca model
-llm.load()
+### Load the LLM - multi-GPU example
+# llm = LLM({"multi_gpu": True, "device_map": "balanced_low_0"})
+
+# Load the defaiult model
+llm.load_model(llm.model_key)
+
 app = Flask(__name__)
 app.config["REDIS_URL"] = "redis://redis:6379/0"
-app.register_blueprint(sse, url_prefix='/stream')
 
 redis_store = redis.StrictRedis().from_url(app.config["REDIS_URL"])
 

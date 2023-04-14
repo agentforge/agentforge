@@ -16,9 +16,9 @@ CHKPT_PTH = "/app/cache/weights/wav2lip_gan.pth"
 # Default face loop
 # TODO: When we introduce multiple avatars this will need refactoring
 faces = [
-  ("default", "/app/cache/default.mp4"),
-  ("makhno", "/app/cache/makhno.mp4"),
-  ("fdr", "/app/cache/fdr.mp4"),
+  ("default", "/app/cache/videos/default.mp4"),
+  ("makhno", "/app/cache/videos/makhno.mp4"),
+  ("fdr", "/app/cache/videos/fdr.mp4"),
 ]
 opts = {}
 wav2lip = Wav2LipModel(CHKPT_PTH, opts, faces)

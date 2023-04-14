@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white">
+  <circle cx="12" cy="12" r="2" />
+  <circle cx="6" cy="6" r="1" />
+  <circle cx="18" cy="6" r="1" />
+  <circle cx="6" cy="18" r="1" />
+  <circle cx="18" cy="18" r="1" />
+  <circle cx="12" cy="6" r="1" />
+  <circle cx="6" cy="12" r="1" />
+  <circle cx="18" cy="12" r="1" />
+  <circle cx="12" cy="18" r="1" />
+  <path d="M12,14L12,10" stroke="white" stroke-width="1" />
+  <path d="M10,12L14,12" stroke="white" stroke-width="1" />
+  <path d="M12,8L6,6" stroke="white" stroke-width="1" />
+  <path d="M12,8L18,6" stroke="white" stroke-width="1" />
+  <path d="M12,16L6,18" stroke="white" stroke-width="1" />
+  <path d="M12,16L18,18" stroke="white" stroke-width="1" />
+  <path d="M14,12L18,12" stroke="white" stroke-width="1" />
+  <path d="M10,12L6,12" stroke="white" stroke-width="1" />
+</svg>

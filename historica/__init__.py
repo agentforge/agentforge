@@ -8,6 +8,6 @@ AUDIO_DST_PATH = DST_PATH + "/uploads/audio"
 if not os.path.exists(AUDIO_DST_PATH):
     os.makedirs(AUDIO_DST_PATH)
 DEFAULT_MAX_NEW_TOKENS = os.environ.get("DEFAULT_MAX_NEW_TOKENS", 2048)
-CONFIG_FILE = os.path.join(CONFIG_DIR, "models.json")
+LLM_CONFIG_FILE = os.path.join(CONFIG_DIR, "models.json")
 
 db = SQLAlchemy()
