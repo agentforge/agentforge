@@ -1,13 +1,10 @@
 import React, { useEffect, useRef, useState, KeyboardEvent } from 'react';
 import { Button } from 'react-bootstrap';
-import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faRocket, faEllipsisH } from '@fortawesome/free-solid-svg-icons';
 import { v4 as uuidv4 } from 'uuid';
-// import DOMPurify from 'dompurify';
 
 import api, { api_url } from './api';
-
 import { MessageProps } from './Message';
 import { getConfiguration, Configuration } from './Configure';
 import AudioRecorder from './AudioRecorder';
@@ -19,7 +16,7 @@ interface HomeProps {}
 const Home: React.FC<HomeProps> = () => {
   // TODO: make dynamic, temporary until we can source these from the API
   // CONSTANTS
-  const avatars = ['default', 'makhno', 'fdr'];
+  const avatars = ['default', 'makhno', 'fdr', 'sankara'];
   const modelConfigs = ['creative', 'logical', 'moderate'];
   const models = ['alpaca-lora-7b', 'alpaca-lora-13b', 'dolly-v1-6b', 'dolly-v2-12b'];
   interface StringMap {
@@ -29,10 +26,12 @@ const Home: React.FC<HomeProps> = () => {
     default: '/videos/default.mp4',
     makhno: '/videos/makhno.mp4',
     fdr: '/videos/fdr.mp4',
+    sankara: '/videos/sankara.mp4',
   };
   const names: StringMap = {
     default: 'intelliChild',
     makhno: 'Nestor Makhno',
+    sankara: 'Thomas Sankara',
     fdr: 'Franklin D. Roosevelt',
   };
 
@@ -266,11 +265,10 @@ const Home: React.FC<HomeProps> = () => {
       // Get completion
       setIsLoading(true);
       const response = await api.post(`/v1/completions`, data);
-      let output = '';
+      const output = response.data.choices[0]['text'];
 
       if (!data['streaming']) {
         // Create an AI message
-        output = response.data.choices[0]['text'];
         addMessage(output, aiAuthor, 'ai');
       }
 
@@ -280,6 +278,7 @@ const Home: React.FC<HomeProps> = () => {
         setIsLoading(false);
       }
     } catch (error) {
+      setIsLoading(false);
       console.error('Error sending message:', error);
     }
   };
@@ -295,8 +294,6 @@ const Home: React.FC<HomeProps> = () => {
           videoARef.current.src = videos[avatar];
         }
         videoARef.current.currentTime = 0.1;
-        // videoARef.current.play();
-        // videoARef.current.style.display = 'block';
 
         const playWhenLoaded = () => {
           if (videoARef.current != null && videoBRef.current != null) {
@@ -625,7 +622,6 @@ const Home: React.FC<HomeProps> = () => {
                   <li key={message.id} className={message.author_type}>
                     {message.author}: <span dangerouslySetInnerHTML={{ __html: message.text }}></span>
                   </li>
-                  // <Message id={message.id} auth`or_type={message.author_type} author={message.author} text={message.text} />
                 ))}
               </ul>
               <div id="chat-input" className="row">
