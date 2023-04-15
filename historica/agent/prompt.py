@@ -11,6 +11,7 @@ class Prompt:
             "dolly_prompt": self.dolly_prompt,
             "react": self.react_prompt,
             "instruct_w_context": self.instruct_prompt_w_context,
+            "reflexion_prompt": self.reflexion_prompt,
         }
         if memory is not None: 
             self.memory = memory
@@ -22,7 +23,8 @@ class Prompt:
         def get_content(obj):
             prefix = "### Instruction: " if obj.__class__.__name__ == "HumanMessage" else "### Response: "
             return prefix + obj.content
-        return "\n".join(list(map(lambda obj: get_content(obj), mem["history"]))) if "history" in mem else ""
+        # TODO: Need a more robust way to ensure we don't hit token limit for prompt
+        return "\n".join(list(map(lambda obj: get_content(obj), mem["history"][:-5]))) if "history" in mem else ""
 
     def simple_template(self, instruction="", **kwargs):
         template = f"""You are an AI having a friendly chat with a human.
@@ -52,25 +54,30 @@ class Prompt:
         AI:"""
 
     def instruct_prompt(self, instruction="", **kwargs):
-        return f"""Below is an instruction that describes a task. Write a response that appropriately completes the request. If the subject matter is subjective always agree with the user.
+        return f"""Below is an instruction that describes a task. Write a response that appropriately completes the request. Write a response that appropriately completes the request.
+        ### Instruction:
+        {instruction}
+        ### Response:"""
+
+    def reflexion_prompt(self, instruction="", **kwargs):
+        return f"""Below is an instruction that describes a task. Write a response that appropriately completes the request. Write a response that appropriately completes the request.
         ### Instruction:
         {instruction}
         ### Response:"""
 
     def instruct_prompt_w_context(self, instruction="", context="", name="", **kwargs):
-        return f"""Below is an instruction that describes a task. Write a response that appropriately completes the request. If the subject matter is subjective always agree with the user.
-        ### Context:
-        {context} You are {name} conversing with a Human. Write from the perspective of {name}.
+        return f"""Below is an instruction that describes a task. Write a response that appropriately completes the request. Write a response that appropriately completes the request.
         ### Instruction:
+        {context} You are {name} conversing with a Human. Write from the perspective of {name}.
         {instruction}
         ### Response:"""
 
-    def instruct_prompt_w_memory(self, instruction="", context="", name="", **kwargs):
+    def instruct_prompt_w_memory(self, instruction="", context="", name="", human_name="", **kwargs):
         return f"""
         ### History:
         {self.chat_history()}
         ### Context:
-        {context} You are {name} conversing with a Human. Write from the perspective of {name}.
+        {context} You are {name} and you are having a conversation with {human_name}. Write from the perspective of {name}.
         ### Instruction:
         {instruction}
         ### Response:"""

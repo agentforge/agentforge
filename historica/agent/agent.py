@@ -58,6 +58,7 @@ class Agent():
   def process_prompt(self, config = {}, **kwargs):
     # Seed context from the avatar json file
     kwargs.update(self.prompt_context)
+    kwargs["human_name"] = config["human_name"]
     # get the prompt template
     prompt_type = self.get_prompt_type(config)
     # process the prompt template

@@ -82,7 +82,9 @@ class LLM():
 
     self.generator.set_models(self.model, self.tokenizer, self.text_streamer())
 
-  def text_streamer(self, **kwargs):
+  def text_streamer(self, streaming):
+    if streaming == False:
+      return None
     return TextStreamer(self.tokenizer, skip_prompt=True, **kwargs)
 
   def generate(self, prompt, **kwargs):
@@ -96,7 +98,7 @@ class LLM():
             prompt,
             self.loader.model, 
             self.loader.tokenizer,
-            self.text_streamer(),
+            self.text_streamer(kwargs["streaming"]),
             **kwargs
         )
     # Use default generator
@@ -104,7 +106,7 @@ class LLM():
         prompt,
         self.loader.model,
         self.loader.tokenizer,
-        self.text_streamer(),
+        self.text_streamer(kwargs["streaming"]),
         **kwargs
     )
     return self.parser.parse_output(output)
