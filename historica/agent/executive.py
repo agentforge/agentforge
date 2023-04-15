@@ -2,6 +2,7 @@ from historica.agent import Avatar
 from historica.agent import Agent
 from historica.config import Config
 import requests, json, os
+from flask_sse import sse
 
 def handle_response_error(func):
     def wrapper(*args, **kwargs):
@@ -96,9 +97,39 @@ class ExecutiveCognition:
         formatted_prompt = self.agent.process_prompt(instruction=prompt, config=form_data)
         form_data["prompt"] = formatted_prompt
 
+        # Get response from LLM
         response = self.call_llm(form_data)
-        return self.parse_and_save_response(response)
-    
+        response = self.parse_and_save_response(response)
+
+        # Reflection on this conversation
+        self.reflect(prompt, response, form_data)
+
+        return response
+
+    def get_reflect_prompt(self, prompt, response):
+        reflection_prompt = f"""Reflect on how the following statement statement makes you feel: {prompt}"""
+        # reflection_prompt = f"""Reflect on the following statement: Does this response "{response}" match this prompt: "{prompt}"?"""
+        # reflection_prompt = f"""
+        #     You are [Name of famous expert 1], together with [Name of famous expert 2] you are reviewing this document:
+        #     {prompt}
+        #     You take turns discussing and suggesting improvement points, until you at the end, rewrite only the document and implement all the suggestions.
+        # """
+
+        reflexion = self.agent.prompt_manager.get_prompt("reflexion_prompt", instruction=reflection_prompt)
+        return reflection_prompt
+
+    def reflect(self, prompt, response, form_data):
+        # Get reflection prompt
+        reflection_prompt = self.get_reflect_prompt(prompt, response)
+
+        # Format prompt with our Prompt engineering
+        formatted_prompt = self.agent.process_prompt(instruction=reflection_prompt, config=form_data)
+        form_data["prompt"] = formatted_prompt
+
+        response = self.call_llm(form_data)
+        print(f"### REFLECTION\n{response}")
+        sse.publish({"reflection": response}, type='reflection')
+
     def parse_and_save_response(self, response):
         response["response"] = self.parse_llm_response(response["choices"][0]["text"]) # backwards compatibility
         response["choices"][0]["text"] =  response["response"]
@@ -108,7 +139,7 @@ class ExecutiveCognition:
 
     # Keyed to alpaca-7b, needs to be updated for other models
     def parse_llm_response(self, text):
-        bad_output_delimeters = ['"""', "### Input:", "#noinstantiation", "## Output:", "# End of Instruction", "### End", "### Instruction", "### Response", "# Python Responses", "# Output:", "#if __name__ == '__main__':", "#end document", "<# end of output #>"]
+        bad_output_delimeters = ['"""', "### Input:", "#noinstantiation", "## Output:", "# End of Instruction", "### End", "### Instruction", "### Response", "# Python Responses", "# Output:", "#if __name__ == '__main__':", "#end document", "<# end of output #>", "% endinstruction", "# End of story"]
         for i in bad_output_delimeters:
             text = text.split(i)
             text = text[0]
