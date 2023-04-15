@@ -125,6 +125,7 @@ class ExecutiveCognition:
         # Format prompt with our Prompt engineering
         formatted_prompt = self.agent.process_prompt(instruction=reflection_prompt, config=form_data)
         form_data["prompt"] = formatted_prompt
+        form_data["streaming"] = False
 
         response = self.call_llm(form_data)
         print(f"### REFLECTION\n{response}")
