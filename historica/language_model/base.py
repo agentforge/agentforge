@@ -85,9 +85,9 @@ class LLM():
   def text_streamer(self, streaming):
     if streaming == False:
       return None
-    return TextStreamer(self.tokenizer, skip_prompt=True, **kwargs)
+    return TextStreamer(self.tokenizer, skip_prompt=True)
 
-  def generate(self, prompt, **kwargs):
+  def generate(self, prompt="", **kwargs):
     # setup the generator
 
     if "generator" in self.config:
