@@ -2,10 +2,16 @@ from historica.agent import Avatar
 from historica.agent import Agent
 from historica.config import Config
 import requests, json, os
+from flask_sse import sse
 
 def handle_response_error(func):
     def wrapper(*args, **kwargs):
-        response = func(*args, **kwargs)
+        try:
+            response = func(*args, **kwargs)
+        except Exception as e:
+            print(e)
+            print("Request failed with status code 500")
+            return "ERROR PLEASE TRY AGAIN LATER"
         if response.status_code == 200:
             print(f"Request successful with status code {response.status_code}")
             print(response.json())
@@ -23,6 +29,7 @@ class ExecutiveCognition:
         self.avatar = Avatar() # personality
         self.agent = Agent() # agency, reason, memory, prompt engineering
         self.urls = Config("urls")
+        self.reflection = None
 
     @handle_response_error
     def post_request(self, url, json_data):
@@ -95,10 +102,48 @@ class ExecutiveCognition:
         # Format prompt with our Prompt engineering
         formatted_prompt = self.agent.process_prompt(instruction=prompt, config=form_data)
         form_data["prompt"] = formatted_prompt
+        if self.reflection is not None:
+            form_data["avatar"]["prompt_context"]["reflection"] = self.reflection
+
+        # Get response from LLM
+        response = self.call_llm(form_data)
+        print(response)
+        if "choices" not in response:
+            return {"error": response} # return error
+        response = self.parse_and_save_response(response)
+
+        # Reflection on this conversation
+        self.reflect(prompt, response, form_data)
+
+        return response
+
+    def get_reflect_prompt(self, prompt, response):
+        reflection_prompt = f"""Reflect on how the following statement statement makes you feel: {prompt}"""
+        # reflection_prompt = f"""Reflect on the following statement: Does this response "{response}" match this prompt: "{prompt}"?"""
+        # reflection_prompt = f"""
+        #     You are [Name of famous expert 1], together with [Name of famous expert 2] you are reviewing this document:
+        #     {prompt}
+        #     You take turns discussing and suggesting improvement points, until you at the end, rewrite only the document and implement all the suggestions.
+        # """
+
+        reflexion = self.agent.prompt_manager.get_prompt("reflexion_prompt", instruction=reflection_prompt)
+        return reflection_prompt
+
+    def reflect(self, prompt, response, form_data):
+        # Get reflection prompt
+        reflection_prompt = self.get_reflect_prompt(prompt, response)
+
+        # Format prompt with our Prompt engineering
+        formatted_prompt = self.agent.process_prompt(instruction=reflection_prompt, config=form_data)
+        form_data["prompt"] = formatted_prompt
+        form_data["streaming"] = False
+        form_data["max_new_tokens"] = 128
 
         response = self.call_llm(form_data)
-        return self.parse_and_save_response(response)
-    
+        self.reflection = response["choices"][0]["text"] # Set the reflection for next time #TODO: This is a hack we need to use disk to store this
+        print(f"### REFLECTION\n{response}")
+        sse.publish({"reflection": response}, type='reflection')
+
     def parse_and_save_response(self, response):
         response["response"] = self.parse_llm_response(response["choices"][0]["text"]) # backwards compatibility
         response["choices"][0]["text"] =  response["response"]
@@ -108,7 +153,7 @@ class ExecutiveCognition:
 
     # Keyed to alpaca-7b, needs to be updated for other models
     def parse_llm_response(self, text):
-        bad_output_delimeters = ['"""', "### Input:", "#noinstantiation", "## Output:", "# End of Instruction", "### End", "### Instruction", "### Response", "# Python Responses", "# Output:", "#if __name__ == '__main__':", "#end document", "<# end of output #>"]
+        bad_output_delimeters = ['# End of instruction', '# End of the output', '! # No answer', 'Output:', '"""', "### Input:", "#noinstantiation", "## Output:", "# End of Instruction", "### End", "### Instruction", "### Response", "# Python Responses", "# Output:", "#if __name__ == '__main__':", "#end document", "<# end of output #>", "% endinstruction", "# End of story"]
         for i in bad_output_delimeters:
             text = text.split(i)
             text = text[0]

@@ -72,6 +72,9 @@ const Home: React.FC<HomeProps> = () => {
       chatHistoryRef.current.scrollTop = chatHistoryRef.current.scrollHeight;
     }
   });
+
+  const [reflections, setReflections] = useState<string[]>(['My thoughts...']);
+
   // Change Events
   const handleTextAreaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setTextAreaValue(e.target.value);
@@ -366,6 +369,14 @@ const Home: React.FC<HomeProps> = () => {
       appendMessage(JSON.parse(e.data).next);
     });
 
+    eventSource.addEventListener('reflection', (e: MessageEvent) => {
+      const reflect = JSON.parse(e.data).reflection.choices[0].text;
+      console.log(reflect);
+      setReflections((prevReflections: any) => {
+        return [...prevReflections, reflect];
+      });
+    });
+
     // Cleanup function to close the event source when the component is unmounted
     return () => {
       eventSource.close();
@@ -456,7 +467,7 @@ const Home: React.FC<HomeProps> = () => {
       // Remove all event listeners here TODO
       window.removeEventListener('resize', handleResize);
     };
-  }, [messages, currentVideo]);
+  }, []);
 
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.code === 'Enter') {
@@ -653,7 +664,11 @@ const Home: React.FC<HomeProps> = () => {
         </div>
         <div className="col-2 secondary-control d-none d-md-block">
           <div className="container">
-            <ul className="thought-history" style={{ maxHeight: '500px', overflow: 'scroll', fontSize: '10px' }}></ul>
+            <ul className="thought-history" style={{ maxHeight: '500px', overflow: 'scroll', fontSize: '10px' }}>
+              {reflections.map((str, index) => (
+                <li key={index}>{str}</li>
+              ))}
+            </ul>
           </div>
         </div>
       </div>

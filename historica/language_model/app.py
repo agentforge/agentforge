@@ -55,7 +55,7 @@ def output():
 #   print(f"Prompt: {prompt}")
 #   print(f"Config: {config }")
   llm.configure(config)
-  response = llm.generate(prompt)
+  response = llm.generate(prompt, **config)
 #   print(response)
   return jsonify({"choices": [{"text": response}]})
 

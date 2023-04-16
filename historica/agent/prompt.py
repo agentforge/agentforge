@@ -11,6 +11,7 @@ class Prompt:
             "dolly_prompt": self.dolly_prompt,
             "react": self.react_prompt,
             "instruct_w_context": self.instruct_prompt_w_context,
+            "reflexion_prompt": self.reflexion_prompt,
         }
         if memory is not None: 
             self.memory = memory
@@ -58,6 +59,12 @@ class Prompt:
         {instruction}
         ### Response:"""
 
+    def reflexion_prompt(self, instruction="", **kwargs):
+        return f"""Below is an instruction that describes a task. Write a response that appropriately completes the request. Write a response that appropriately completes the request.
+        ### Instruction:
+        {instruction}
+        ### Response:"""
+
     def instruct_prompt_w_context(self, instruction="", context="", name="", **kwargs):
         return f"""Below is an instruction that describes a task. Write a response that appropriately completes the request. Write a response that appropriately completes the request.
         ### Instruction:
@@ -65,10 +72,12 @@ class Prompt:
         {instruction}
         ### Response:"""
 
-    def instruct_prompt_w_memory(self, instruction="", context="", name="", human_name="", **kwargs):
+    def instruct_prompt_w_memory(self, instruction="", context="", name="", human_name="", reflection="", **kwargs):
         return f"""
         ### History:
         {self.chat_history()}
+        ### Thought:
+        {reflection}
         ### Context:
         {context} You are {name} and you are having a conversation with {human_name}. Write from the perspective of {name}.
         ### Instruction:

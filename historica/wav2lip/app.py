@@ -19,6 +19,7 @@ faces = [
   ("default", "/app/cache/videos/default.mp4"),
   ("makhno", "/app/cache/videos/makhno.mp4"),
   ("fdr", "/app/cache/videos/fdr.mp4"),
+  ("sankara", "/app/cache/videos/sankara.mp4"),
 ]
 opts = {}
 wav2lip = Wav2LipModel(CHKPT_PTH, opts, faces)
