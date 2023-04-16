@@ -10,7 +10,6 @@ import sys
 import redis
 from flask import Flask, request, jsonify, send_file, Response
 from flask_cors import CORS
-from flask_sse import sse
 import logging
 
 from historica.helpers import measure_time
@@ -50,12 +49,11 @@ def publish():
 @measure_time
 def output():
 #   print(request.json)
-  prompt = request.json["prompt"]
   config = request.json
-#   print(f"Prompt: {prompt}")
+  print(f"Prompt: {config['prompt']}")
 #   print(f"Config: {config }")
   llm.configure(config)
-  response = llm.generate(prompt, **config)
+  response = llm.generate(**config)
 #   print(response)
   return jsonify({"choices": [{"text": response}]})
 
