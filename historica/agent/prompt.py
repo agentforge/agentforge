@@ -14,6 +14,7 @@ class Prompt:
             "no_prompt": self.no_prompt,
             "reflection": self.reflection,
             "observation": self.observation,
+            "open_assistant_prompt": self.open_assistant_prompt,
         }
         if memory is not None: 
             self.memory = memory
@@ -41,8 +42,10 @@ class Prompt:
         AI:"""
         return template
 
-    def open_assistant_prompt(self, instruction="", **kwargs):
-        template = f"<|prompter|>{instruction}<|endoftext|><|assistant|>"
+    def open_assistant_prompt(self, instruction="", context="", name="", human_name="", reflection="", **kwargs):
+        template = f"""<|prompter|>
+        {context} Your latest thought is the following. {reflection}
+        You are {name} and you are having a conversation with {human_name}. Write from the perspective of {name}. Write a response that appropriately completes the request: {instruction} <|endoftext|><|assistant|>"""
         return template
 
     def dolly_prompt(self, instruction="", context="", name="", **kwargs):

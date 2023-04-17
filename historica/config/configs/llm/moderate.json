@@ -1,6 +1,5 @@
 {
   "do_sample": false,
-  "no_repeat_ngram_size": 3,
   "renormalize_logits": true,
   "temperature": 0.5,
   "top_k": 64,
