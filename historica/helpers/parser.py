@@ -17,7 +17,7 @@ class Parser:
 
   # Keyed to alpaca-7b, needs to be updated for other models
   # TODO: make this more robust
-  def parse_llm_response(self, text):
+  def parse_llm_response(self, text, skip_tokens=[]):
       bad_output_delimeters = ['### Thought',
         '# End',
         '# end',
@@ -44,9 +44,11 @@ class Parser:
         "#include",
         "// output"
       ]
-      for i in bad_output_delimeters:
+      print(skip_tokens)
+      for i in bad_output_delimeters + skip_tokens:
           text = text.split(i)
           text = text[0]
-      text = text.replace("\n", "<br>") # use br for new line
+      if "\n" not in skip_tokens:
+        text = text.replace("\n", "<br>") # use br for new line
       print(text)
       return text.strip()

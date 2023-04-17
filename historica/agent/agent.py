@@ -63,7 +63,13 @@ class Agent():
     prompt_type = self.get_prompt_type(config)
     # process the prompt template
     return self.prompt_manager.get_prompt(prompt_type, **kwargs)
-
+  
+  # Takes the output from the model and processes it before returning it to the user
+  def process_completion(self, text, config, skip_tokens=[]):
+    text = self.parser.parse_llm_response(text, skip_tokens=skip_tokens)
+    # Remove agent name from the output, sometimes chatbots like to add their name
+    return text.replace(config["avatar"]["prompt_context"]["name"] + ":", "")
+  
   def configure(self, config):
     self.set_avatar_context(config["avatar"])
     self.setup_memory(ai_prefix=self.prompt_context["name"], human_prefix=config["human_name"])

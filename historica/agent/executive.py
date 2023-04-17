@@ -14,6 +14,7 @@ class ExecutiveCognition:
         self.agent = Agent() # agency, reason, memory, prompt engineering
         self.thoughts = {} # thoughts hack #TODO: replace with memory
         self.service = Service()
+        self.lock = threading.Lock() # for async calls
 
     # Either return a wav file or a mp4 file based on flag
     def speak(self, prompt, form_data):
@@ -66,7 +67,7 @@ class ExecutiveCognition:
         text = response["choices"][0]["text"]
 
         # Parse response
-        response["choices"][0]["text"] = self.agent.parser.parse_llm_response(text) # backwards compatibility
+        response["choices"][0]["text"] = self.agent.process_completion(text, form_data) # backwards compatibility
 
         # Record response in memory
         self.agent.save_response(response["choices"][0]["text"])
@@ -74,10 +75,19 @@ class ExecutiveCognition:
         form_data["prompt"] = prompt
         print("PROMPT: ", prompt)
 
-        # Asyncronous reflection on this conversation -- how the agent feels, should it act, etc.
-        self.think(prompt, {"type": "observation", "callback": self.action}, form_data)
+        # Asyncronous reaction/reflection on this conversation -- how the agent feels, should it act, etc.
+        self.react(prompt, text, form_data, app)
 
-        self.think(prompt, {"type": "reflection", "callback": None}, form_data)
+        return response
+
+    # Use ReAct Agent (from langchain?) to take action in response to this observation
+    def action(self, prompt, response, form_data, thought):
+        pass # TODO
+
+    # Asyncronous reflection on this conversation -- how the agent feels, should it act, etc.
+    def react(self, prompt, text, form_data, app):
+        # self.think(prompt, {"type": "observation", "callback": self.action}, form_data)
+        # self.think(prompt, {"type": "reflection", "callback": None}, form_data)
         observation_thread_args=(prompt, text, form_data, {"type": "observation", "callback": self.action}, app)
         observation_thread = threading.Thread(target=self.thought_with_app_context, args=observation_thread_args )
         observation_thread.start()
@@ -86,16 +96,11 @@ class ExecutiveCognition:
         reflection_thread = threading.Thread(target=self.thought_with_app_context, args=reflection_thread_args )
         reflection_thread.start()
 
-        return response
-
-    # Use ReAct Agent (from langchain?) to take action in response to this observation
-    def action(self, prompt, response, form_data, thought):
-        pass # TODO
-
-    # For async thought processing
+    # Locking and thread ontext for async thought processing
     def thought_with_app_context(self, prompt, response, form_data, thought, app):
         with app.app_context():
-            self.think(prompt, thought, form_data)
+            with self.lock:
+                self.think(prompt, thought, form_data)
 
     # queries the local visual environmemt for contextual information
     def query_vision(self, prompt):
@@ -121,7 +126,7 @@ class ExecutiveCognition:
         text = response["choices"][0]["text"]
 
         # Parse response
-        response["choices"][0]["text"] = self.agent.parser.parse_llm_response(text) # backwards compatibility
+        response["choices"][0]["text"] = self.agent.process_completion(text, form_data, skip_tokens=["\n"]) # backwards compatibility
 
         self.thoughts[thought["type"]] = response["choices"][0]["text"]
         if publish:

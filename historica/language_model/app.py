@@ -26,7 +26,7 @@ CORS(app)
 llm = LLM({"multi_gpu": False, "device_map": {'':0}, "model_key":"alpaca-lora-7b"})
 
 ### Load the LLM - multi-GPU example
-# llm = LLM({"multi_gpu": True, "device_map": "balanced_low_0"})
+# llm = LLM({"multi_gpu ": True, "device_map": "auto", "model_key":"alpaca-lora-7b"})
 
 # Load the defaiult model
 llm.load_model(llm.model_key)

@@ -89,6 +89,10 @@ const Home: React.FC<HomeProps> = () => {
     setTextAreaValue(e.target.value);
   };
 
+  // err handling
+  const [errorState, setErrorState] = useState(false);
+  const [errorValue, setErrorValue] = useState('');
+
   const clearTextarea = () => {
     if (textareaRef.current) {
       setTextAreaValue('');
@@ -119,8 +123,8 @@ const Home: React.FC<HomeProps> = () => {
     prompt: string | undefined,
     author: string | undefined,
     author_type: string | undefined,
+    error: boolean,
   ) => {
-    // Validations
     if (author == null) {
       console.log('ERROR: Must set author.');
       return;
@@ -140,7 +144,7 @@ const Home: React.FC<HomeProps> = () => {
       author_type: author_type, //'human',
       author: author,
       text: prompt,
-      error: false,
+      error: error,
     };
 
     // Wrap setMessages in a Promise and use await to ensure sequential execution
@@ -151,6 +155,19 @@ const Home: React.FC<HomeProps> = () => {
         return [...prevMessages, newMessage];
       });
     });
+  };
+
+  const closeError = () => {
+    setErrorState(false);
+    setErrorValue('');
+  };
+
+  const openError = (error: any) => {
+    setErrorState(true);
+    setErrorValue(error);
+  };
+  const errMessage = async (error: string) => {
+    openError(`You have encountered a problem. Please contact support. Error message ${error}`);
   };
 
   // Append a string to the latest message for streaming
@@ -288,22 +305,28 @@ const Home: React.FC<HomeProps> = () => {
       const aiAuthor = names[getAvatar()];
 
       // Create a human message
-      addMessage(prompt, author, 'human');
+      addMessage(prompt, author, 'human', false);
 
       // If we are streaming append an empty message for the streamed output
       console.log(data['streaming']);
       if (data['streaming']) {
-        addMessage('', aiAuthor, 'ai');
+        addMessage('', aiAuthor, 'ai', false);
       }
 
       // Get completion
       setIsLoading(true);
       const response = await api.post(`/v1/completions`, data);
+      // Check for API error
+      if (response.data.error) {
+        errMessage(response.data.error);
+        setIsLoading(false);
+        return;
+      }
       const output = response.data.choices[0]['text'];
 
       if (!data['streaming']) {
         // Create an AI message
-        addMessage(output, aiAuthor, 'ai');
+        addMessage(output, aiAuthor, 'ai', false);
       }
 
       if (data['tts']) {
@@ -311,8 +334,10 @@ const Home: React.FC<HomeProps> = () => {
       } else {
         setIsLoading(false);
       }
-    } catch (error) {
+    } catch (error: any) {
+      // Check for react failure
       setIsLoading(false);
+      errMessage(error);
       console.error('Error sending message:', error);
     }
   };
@@ -603,13 +628,9 @@ const Home: React.FC<HomeProps> = () => {
               >
                 {messages.map((message, _) => (
                   <li key={message.id} className={message.author_type}>
-                    {message.error ? (
-                      <ErrorMessage message="You have encountered a problem. Please contact support." />
-                    ) : (
-                      <div>
-                        {message.author}: <span dangerouslySetInnerHTML={{ __html: message.text }}></span>
-                      </div>
-                    )}
+                    <div>
+                      {message.author}: <span dangerouslySetInnerHTML={{ __html: message.text }}></span>
+                    </div>
                   </li>
                 ))}
               </ul>
@@ -637,6 +658,9 @@ const Home: React.FC<HomeProps> = () => {
                   <AudioRecorder />
                 </div>
               </div>
+            </div>
+            <div>
+              <ErrorMessage errorState={errorState} errorValue={errorValue} closeError={closeError} />
             </div>
           </div>
         </div>

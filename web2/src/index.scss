@@ -547,40 +547,24 @@ $btn-background-color-active: linear-gradient(135deg, #6EE7B7 0%, #1abc9c 100%);
     transform: rotate(360deg);
   }
 }
-.flashErrorModal {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 999;
-  width: 80%;
-  max-width: 400px;
-  background-color: #f44336;
-  color: white;
-  text-align: center;
-  padding: 1rem;
-  border-radius: 4px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
 .logo {
   width: 48px;
   margin: 0 auto;
   display: block;
 }
-
 .error-modal {
-  display: none;
   position: fixed;
   left: 0;
-  top: 0;
+  top: 0px;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
   z-index: 1000;
 }
-
-.modal-content {
-  background-color: #ffffff;
+.hidden {
+  display: none;
+}
+.error-modal-content {
+  background-color: rgba(0, 0, 0, 0.5);
   margin: 15% auto;
   padding: 20px;
   border: 2px solid $error-modal-border-color;

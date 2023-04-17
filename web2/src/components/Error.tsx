@@ -2,21 +2,20 @@
 import React from 'react';
 
 interface ErrorMessageProps {
-  message: string;
+  errorState: boolean;
+  errorValue: string;
+  closeError: () => void;
 }
 
-const ErrorMessage: React.FC<ErrorMessageProps> = ({ message }) => {
+const ErrorMessage: React.FC<ErrorMessageProps> = ({ errorState, errorValue, closeError }) => {
   return (
     <>
-      <ul>
-        <li>
-          <div className="error-modal" id="errorModal">
-            <div className="modal-content">
-              <p className="modal-text">{message}</p>
-            </div>
-          </div>
-        </li>
-      </ul>
+      <div className={`error-modal ${errorState ? '' : 'hidden'}`} id="errorModal">
+        <div className="error-modal-content">
+          <p className="modal-text">{errorValue}</p>
+          <button onClick={closeError}>Close</button>
+        </div>
+      </div>
     </>
   );
 };
