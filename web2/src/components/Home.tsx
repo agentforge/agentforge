@@ -7,6 +7,7 @@ import { v4 as uuidv4 } from 'uuid';
 import api, { api_url } from './api';
 import { MessageProps } from './Message';
 import { ReflectionProps } from './Reflection';
+import ErrorMessage from './Error';
 import { getConfiguration, Configuration } from './Configure';
 import AudioRecorder from './AudioRecorder';
 import useStateWithCallback from './useStateWithCallback';
@@ -17,20 +18,22 @@ interface HomeProps {}
 const Home: React.FC<HomeProps> = () => {
   // TODO: make dynamic, temporary until we can source these from the API
   // CONSTANTS
-  const avatars = ['default', 'makhno', 'fdr', 'sankara'];
+  const avatars = ['caretaker', 'default', 'makhno', 'fdr', 'sankara'];
   const modelConfigs = ['creative', 'logical', 'moderate'];
-  const models = ['alpaca-lora-7b', 'alpaca-lora-13b', 'dolly-v1-6b', 'dolly-v2-12b'];
+  const models = ['alpaca-lora-7b', 'alpaca-lora-13b', 'dolly-v1-6b', 'dolly-v2-12b', 'pythia-6.9b-gpt4all-pretrain'];
   interface StringMap {
     [key: string]: string;
   }
   const videos: StringMap = {
     default: '/videos/default.mp4',
+    caretaker: '/videos/default.mp4',
     makhno: '/videos/makhno.mp4',
     fdr: '/videos/fdr.mp4',
     sankara: '/videos/sankara.mp4',
   };
   const names: StringMap = {
-    default: 'intelliChild',
+    default: 'Sam',
+    caretaker: 'Sam',
     makhno: 'Nestor Makhno',
     sankara: 'Thomas Sankara',
     fdr: 'Franklin D. Roosevelt',
@@ -137,6 +140,7 @@ const Home: React.FC<HomeProps> = () => {
       author_type: author_type, //'human',
       author: author,
       text: prompt,
+      error: false,
     };
 
     // Wrap setMessages in a Promise and use await to ensure sequential execution
@@ -246,7 +250,7 @@ const Home: React.FC<HomeProps> = () => {
           // // Hide prev video
           currentVideoRef.current.style.display = 'none';
           const selectedAvatar = getAvatar();
-          const defaultUrl = '/videos/' + selectedAvatar + '.mp4';
+          const defaultUrl = videos[selectedAvatar];
 
           if (!currentVideoRef.current.src.includes(defaultUrl)) {
             currentVideoRef.current.src = defaultUrl;
@@ -287,6 +291,7 @@ const Home: React.FC<HomeProps> = () => {
       addMessage(prompt, author, 'human');
 
       // If we are streaming append an empty message for the streamed output
+      console.log(data['streaming']);
       if (data['streaming']) {
         addMessage('', aiAuthor, 'ai');
       }
@@ -598,7 +603,13 @@ const Home: React.FC<HomeProps> = () => {
               >
                 {messages.map((message, _) => (
                   <li key={message.id} className={message.author_type}>
-                    {message.author}: <span dangerouslySetInnerHTML={{ __html: message.text }}></span>
+                    {message.error ? (
+                      <ErrorMessage message="You have encountered a problem. Please contact support." />
+                    ) : (
+                      <div>
+                        {message.author}: <span dangerouslySetInnerHTML={{ __html: message.text }}></span>
+                      </div>
+                    )}
                   </li>
                 ))}
               </ul>
