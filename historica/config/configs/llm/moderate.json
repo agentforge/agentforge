@@ -2,8 +2,8 @@
   "do_sample": false,
   "renormalize_logits": true,
   "temperature": 0.5,
-  "top_k": 64,
+  "top_k": 32,
   "use_cache": true,
   "num_beams": 1,
-  "repetition_penalty": 1
+  "repetition_penalty": 1.2
 }

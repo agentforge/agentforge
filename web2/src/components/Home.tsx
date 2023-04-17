@@ -6,6 +6,7 @@ import { v4 as uuidv4 } from 'uuid';
 
 import api, { api_url } from './api';
 import { MessageProps } from './Message';
+import { ReflectionProps } from './Reflection';
 import { getConfiguration, Configuration } from './Configure';
 import AudioRecorder from './AudioRecorder';
 import useStateWithCallback from './useStateWithCallback';
@@ -62,6 +63,7 @@ const Home: React.FC<HomeProps> = () => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const chatHistoryRef = useRef<HTMLUListElement>(null);
+  const thoughtHistoryRef = useRef<HTMLUListElement>(null);
 
   const modelConfigInputRef = useRef<HTMLSelectElement>(null);
   const modelKeyInputRef = useRef<HTMLSelectElement>(null);
@@ -73,7 +75,11 @@ const Home: React.FC<HomeProps> = () => {
     }
   });
 
-  const [reflections, setReflections] = useState<string[]>(['My thoughts...']);
+  const [reflections, setReflections] = useStateWithCallback<ReflectionProps[]>([], () => {
+    if (chatHistoryRef.current) {
+      chatHistoryRef.current.scrollTop = chatHistoryRef.current.scrollHeight;
+    }
+  });
 
   // Change Events
   const handleTextAreaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -149,10 +155,37 @@ const Home: React.FC<HomeProps> = () => {
       setMessages((prevMessages) => {
         const lastIndex = prevMessages.length - 1;
         const lastMessage = prevMessages[lastIndex];
-        const updatedMessage = { ...lastMessage, text: lastMessage.text + newText };
-        return [...prevMessages.slice(0, lastIndex), updatedMessage];
+        if (lastMessage != undefined) {
+          const updatedMessage = { ...lastMessage, text: lastMessage.text + newText };
+          return [...prevMessages.slice(0, lastIndex), updatedMessage];
+        }
+        return prevMessages;
       });
     }
+  };
+
+  // Add a reflection to the list of reflections in the UX
+  const addReflection = async (text: string | undefined, type: string | undefined) => {
+    if (text == null) {
+      console.log('ERROR: Must set text.');
+      return;
+    }
+    if (type == null) {
+      console.log('ERROR: Must set type.');
+      return;
+    }
+    // Create new message
+    const newReflection: ReflectionProps = {
+      id: uuidv4(),
+      type: type,
+      text: text,
+    };
+    // Append a string to the latest message for streaming
+    await new Promise<void>((resolve) => {
+      setReflections((prevReflections: any) => {
+        return [...prevReflections, newReflection];
+      });
+    });
   };
 
   // Get the current avatar dropdown value
@@ -207,13 +240,11 @@ const Home: React.FC<HomeProps> = () => {
       }
       const playWhenLoaded = () => {
         if (currentVideoRef.current != null) {
-          // nextVideo.currentTime = .1;
           nextVideo.play();
           nextVideo.style.display = 'block';
 
           // // Hide prev video
           currentVideoRef.current.style.display = 'none';
-          // currentVideoRef.current.currentTime = .1;
           const selectedAvatar = getAvatar();
           const defaultUrl = '/videos/' + selectedAvatar + '.mp4';
 
@@ -221,15 +252,10 @@ const Home: React.FC<HomeProps> = () => {
             currentVideoRef.current.src = defaultUrl;
           }
           currentVideoRef.current.pause();
-          // setCurrentVideo((prevVideo) => (prevVideo === 'videoA' ? 'videoB' : 'videoA'));
-          // switchVideo();
           nextVideo.removeEventListener('canplaythrough', playWhenLoaded);
         }
       };
       nextVideo.addEventListener('canplaythrough', playWhenLoaded);
-      // await nextVideo.play();
-      // nextVideo.style.display = 'block';
-      // switchVideo();
     }
   };
 
@@ -340,8 +366,6 @@ const Home: React.FC<HomeProps> = () => {
           }
         };
         videoBRef.current.addEventListener('canplaythrough', playWhenLoaded);
-        // videoBRef.current.play();
-        // videoBRef.current.style.display = 'block';
       }
     }
   };
@@ -371,10 +395,12 @@ const Home: React.FC<HomeProps> = () => {
 
     eventSource.addEventListener('reflection', (e: MessageEvent) => {
       const reflect = JSON.parse(e.data).reflection.choices[0].text;
-      console.log(reflect);
-      setReflections((prevReflections: any) => {
-        return [...prevReflections, reflect];
-      });
+      addReflection(reflect, 'Reflection');
+    });
+
+    eventSource.addEventListener('observation', (e: MessageEvent) => {
+      const reflect = JSON.parse(e.data).observation.choices[0].text;
+      addReflection(reflect, 'Observation');
     });
 
     // Cleanup function to close the event source when the component is unmounted
@@ -403,26 +429,6 @@ const Home: React.FC<HomeProps> = () => {
       }
     };
 
-    const updateStates = () => {
-      const ttsChecked = ttsCheckboxRef.current?.checked;
-      const streamingChecked = streamingCheckboxRef.current?.checked;
-
-      const lipsyncCheckbox = document.getElementById('lipsync') as HTMLInputElement;
-
-      if (ttsChecked) {
-        if (streamingChecked) {
-          lipsyncCheckbox.checked = false;
-          lipsyncCheckbox.disabled = true;
-        } else {
-          lipsyncCheckbox.checked = true;
-          lipsyncCheckbox.disabled = false;
-        }
-      } else {
-        lipsyncCheckbox.checked = false;
-        lipsyncCheckbox.disabled = true;
-      }
-    };
-
     // Avatar change event
     if (avatarRef.current) {
       avatarRef.current.addEventListener('change', () => {
@@ -441,20 +447,6 @@ const Home: React.FC<HomeProps> = () => {
     if (maxNewTokensRef.current) {
       maxNewTokensRef.current.addEventListener('input', updateMaxTokensValue);
       maxNewTokensRef.current.addEventListener('change', updateMaxTokensValue);
-    }
-
-    if (ttsCheckboxRef.current && streamingCheckboxRef.current) {
-      ttsCheckboxRef.current.addEventListener('change', (e) => {
-        console.log('change');
-        e.preventDefault();
-        updateStates();
-      });
-
-      streamingCheckboxRef.current.addEventListener('change', (e) => {
-        console.log('change');
-        e.preventDefault();
-        updateStates();
-      });
     }
   }, []); // Pass an empty dependency array to run the effect only once
 
@@ -476,35 +468,11 @@ const Home: React.FC<HomeProps> = () => {
     }
   };
 
-  // // Changes the source of the video
-  // const handleVideoEnded = () => {
-  //   var avatar = getAvatar()
-  //   const defaultVideoUrl = videos[avatar];
-  //   if (heroVideoRef.current) {
-  //     // console.log("heroVideoRef.current.src")
-  //     // console.log(heroVideoRef.current.src)
-
-  //     // console.log("defaultVideoUrl")
-  //     // console.log(defaultVideoUrl)
-  //     if(!heroVideoRef.current.src.includes(defaultVideoUrl)){
-  //       console.log(defaultVideoUrl)
-  //       heroVideoRef.current.src = defaultVideoUrl;
-  //     }
-  //     console.log(heroVideoRef.current.currentTime)
-  //     // Manually loop the video
-  //     // heroVideoRef.current.currentTime = 0;
-  //     // heroVideoRef.current.play();
-  //   }
-  // };
-
   return (
     <div>
       <div className="row">
         <div className="col-2 main-control d-none d-md-block">
           <div className="control-panel container">
-            {/* <div className="form-group">
-            <Button id="reset-history" className="btn-main">Reset History</Button>
-          </div> */}
             <div id="hero-video-wrapper">
               <div style={{ position: 'relative' }}>
                 <video
@@ -526,13 +494,6 @@ const Home: React.FC<HomeProps> = () => {
                   onTimeUpdate={() => handleTimeUpdate(videoBRef)}
                 />
               </div>
-              {/* <video
-              id="hero-video"
-              src={videoSrc}
-              ref={heroVideoRef}
-              preload="auto"
-              autoPlay
-            ></video> */}
             </div>
             <div className="row form-group" style={{ marginTop: '12px' }}>
               <div className="custom-control custom-checkbox col-md-6">
@@ -554,7 +515,13 @@ const Home: React.FC<HomeProps> = () => {
                 </label>
               </div>
               <div className="custom-control custom-checkbox col-md-6">
-                <input type="checkbox" id="streaming" className="custom-control-input" ref={streamingCheckboxRef} />
+                <input
+                  defaultChecked
+                  type="checkbox"
+                  id="streaming"
+                  className="custom-control-input"
+                  ref={streamingCheckboxRef}
+                />
                 <label htmlFor="streaming" className="custom-control-label">
                   Streaming
                 </label>
@@ -573,7 +540,7 @@ const Home: React.FC<HomeProps> = () => {
                   defaultValue="1024"
                 />
                 <span id="max_new_tokens_value" className="col-2">
-                  1024
+                  512
                 </span>
               </div>
             </div>
@@ -664,9 +631,15 @@ const Home: React.FC<HomeProps> = () => {
         </div>
         <div className="col-2 secondary-control d-none d-md-block">
           <div className="container">
-            <ul className="thought-history" style={{ maxHeight: '500px', overflow: 'scroll', fontSize: '10px' }}>
-              {reflections.map((str, index) => (
-                <li key={index}>{str}</li>
+            <ul
+              ref={thoughtHistoryRef}
+              className="thought-history"
+              style={{ maxHeight: '500px', overflow: 'scroll', fontSize: '10px' }}
+            >
+              {reflections.map((reflection, index) => (
+                <li key={index}>
+                  <b>{reflection.type}: </b> {reflection.text}
+                </li>
               ))}
             </ul>
           </div>
