@@ -1,6 +1,14 @@
 {
     "alpaca-lora-7b": {
-        "class_name": "Alpaca",
+        "model_name": "decapoda-research/llama-7b-hf",
+        "tokenizer_name": "decapoda-research/llama-7b-hf",
+        "peft_model": "tloen/alpaca-lora-7b",
+        "prompt_type": "instruct_w_memory",
+        "model_type": "alpaca",
+        "streaming": true,
+        "stopping_criteria": ["#", "\"\"\""]
+    },
+    "alpaca-lora-7b-deca": {
         "model_name": "decapoda-research/llama-7b-hf",
         "tokenizer_name": "decapoda-research/llama-7b-hf",
         "peft_model": "tloen/alpaca-lora-7b",
@@ -30,11 +38,17 @@
         "model_type": "alpaca"
     },
     "gpt-j-6B": {
-        "class_name": "GPTJForCausalLM",
         "model_name": "EleutherAI/gpt-j-6B",
         "tokenizer_name": "EleutherAI/gpt-j-6B",
         "prompt_type": "chat_prompt",
         "revision": "float16",
+        "load_in_8bit": false,
+        "model_type": "huggingface"
+    },
+    "pythia-6.9b-gpt4all-pretrain": {
+        "model_name": "andreaskoepf/pythia-6.9b-gpt4all-pretrain",
+        "tokenizer_name": "andreaskoepf/pythia-6.9b-gpt4all-pretrain",
+        "prompt_type": "open_assistant_prompt",
         "load_in_8bit": false,
         "model_type": "huggingface"
     }

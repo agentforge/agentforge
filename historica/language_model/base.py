@@ -80,7 +80,7 @@ class LLM():
     # Load the model
     self.switch_model(model_key)
 
-    self.generator.set_models(self.model, self.tokenizer, self.text_streamer())
+    self.generator.set_models(self.model, self.tokenizer, self.text_streamer(False))
 
   def text_streamer(self, streaming):
     if streaming == False:

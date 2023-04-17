@@ -1,6 +1,6 @@
 import torch
 import time
-from transformers import GenerationConfig
+from transformers import GenerationConfig, StoppingCriteria
 import numpy as np
 from historica.config import Config
 from historica import DEFAULT_MAX_NEW_TOKENS
@@ -55,6 +55,9 @@ class Generator:
     kwargs["output_attentions"] = False
     kwargs["output_hidden_states"] = False
     kwargs["use_cache"] = True # config.use_cache
+
+    if "stopping_criteria" in kwargs:
+      kwargs["stopping_criteria"] = StoppingCriteria(stop_token_ids=tokenizer.convert_tokens_to_ids(kwargs["stopping_criteria"]))
 
     # Collect special token IDs.
     pad_token_id = config.pad_token_id
