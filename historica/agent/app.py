@@ -175,9 +175,9 @@ def prompt():
   # Get the message for the request
   prompt = request.json["prompt"]
   form_data = request.json
-
+  print("Oriiginal prompt: ", prompt)
   # Run the LLM agent
-  response = executive.respond(prompt, form_data)
+  response = executive.respond(prompt, form_data, app)
 
   print(response)
   # Return the response

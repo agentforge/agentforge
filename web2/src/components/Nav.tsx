@@ -32,7 +32,11 @@ const NavMenu: React.FC<NavMenuProps> = ({ isLoggedIn, handleLogout }) => {
 
   return (
     <nav className="nav-menu">
-      <div className="nav-header">Logo</div>
+      <div className="nav-header">
+        <a href="/">
+          <img className="logo" src="/logo.png" alt="Logo" />
+        </a>
+      </div>
       <ul className="menu-items">
         {navMenuItems.map((item, index) => (
           <li key={index} onClick={item.onClick}>
