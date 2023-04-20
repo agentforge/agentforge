@@ -28,6 +28,9 @@ $btn-background-color: #4caf50;
 $btn-border-color: darkgrey;
 $input-disabled-bg: #333333;;
 $input-disabled-border-color: darkgrey;
+$error-modal-text-color: red;
+$error-modal-border-color: red;
+$error-modal-border-radius: 5px;
 
 @import "node_modules/bootstrap/scss/bootstrap";
 
@@ -544,23 +547,35 @@ $btn-background-color-active: linear-gradient(135deg, #6EE7B7 0%, #1abc9c 100%);
     transform: rotate(360deg);
   }
 }
-.flashErrorModal {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 999;
-  width: 80%;
-  max-width: 400px;
-  background-color: #f44336;
-  color: white;
-  text-align: center;
-  padding: 1rem;
-  border-radius: 4px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
 .logo {
   width: 48px;
   margin: 0 auto;
   display: block;
+}
+.error-modal {
+  position: fixed;
+  left: 0;
+  top: 0px;
+  width: 100%;
+  height: 100%;
+  z-index: 1000;
+}
+.hidden {
+  display: none;
+}
+.error-modal-content {
+  background-color: rgba(0, 0, 0, 0.5);
+  margin: 15% auto;
+  padding: 20px;
+  border: 2px solid $error-modal-border-color;
+  border-radius: $error-modal-border-radius;
+  width: 80%;
+  max-width: 400px;
+  text-align: center;
+}
+
+.modal-text {
+  color: $error-modal-text-color;
+  font-size: 18px;
+  font-weight: bold;
 }

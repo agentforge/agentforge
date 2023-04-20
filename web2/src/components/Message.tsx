@@ -5,6 +5,7 @@ export type MessageProps = {
   author_type: string;
   author: string;
   text: string;
+  error: boolean;
 };
 
 const Message: React.FC<MessageProps> = ({ id, author_type, author, text }) => {

@@ -7,6 +7,7 @@ import { v4 as uuidv4 } from 'uuid';
 import api, { api_url } from './api';
 import { MessageProps } from './Message';
 import { ReflectionProps } from './Reflection';
+import ErrorMessage from './Error';
 import { getConfiguration, Configuration } from './Configure';
 import AudioRecorder from './AudioRecorder';
 import useStateWithCallback from './useStateWithCallback';
@@ -17,20 +18,22 @@ interface HomeProps {}
 const Home: React.FC<HomeProps> = () => {
   // TODO: make dynamic, temporary until we can source these from the API
   // CONSTANTS
-  const avatars = ['default', 'makhno', 'fdr', 'sankara'];
+  const avatars = ['caretaker', 'default', 'makhno', 'fdr', 'sankara'];
   const modelConfigs = ['creative', 'logical', 'moderate'];
-  const models = ['alpaca-lora-7b', 'alpaca-lora-13b', 'dolly-v1-6b', 'dolly-v2-12b'];
+  const models = ['alpaca-lora-7b', 'alpaca-lora-13b', 'dolly-v1-6b', 'dolly-v2-12b', 'pythia-6.9b-gpt4all-pretrain'];
   interface StringMap {
     [key: string]: string;
   }
   const videos: StringMap = {
     default: '/videos/default.mp4',
+    caretaker: '/videos/default.mp4',
     makhno: '/videos/makhno.mp4',
     fdr: '/videos/fdr.mp4',
     sankara: '/videos/sankara.mp4',
   };
   const names: StringMap = {
-    default: 'intelliChild',
+    default: 'Sam',
+    caretaker: 'Sam',
     makhno: 'Nestor Makhno',
     sankara: 'Thomas Sankara',
     fdr: 'Franklin D. Roosevelt',
@@ -86,6 +89,10 @@ const Home: React.FC<HomeProps> = () => {
     setTextAreaValue(e.target.value);
   };
 
+  // err handling
+  const [errorState, setErrorState] = useState(false);
+  const [errorValue, setErrorValue] = useState('');
+
   const clearTextarea = () => {
     if (textareaRef.current) {
       setTextAreaValue('');
@@ -116,8 +123,8 @@ const Home: React.FC<HomeProps> = () => {
     prompt: string | undefined,
     author: string | undefined,
     author_type: string | undefined,
+    error: boolean,
   ) => {
-    // Validations
     if (author == null) {
       console.log('ERROR: Must set author.');
       return;
@@ -137,6 +144,7 @@ const Home: React.FC<HomeProps> = () => {
       author_type: author_type, //'human',
       author: author,
       text: prompt,
+      error: error,
     };
 
     // Wrap setMessages in a Promise and use await to ensure sequential execution
@@ -147,6 +155,19 @@ const Home: React.FC<HomeProps> = () => {
         return [...prevMessages, newMessage];
       });
     });
+  };
+
+  const closeError = () => {
+    setErrorState(false);
+    setErrorValue('');
+  };
+
+  const openError = (error: any) => {
+    setErrorState(true);
+    setErrorValue(error);
+  };
+  const errMessage = async (error: string) => {
+    openError(`You have encountered a problem. Please contact support. Error message ${error}`);
   };
 
   // Append a string to the latest message for streaming
@@ -246,7 +267,7 @@ const Home: React.FC<HomeProps> = () => {
           // // Hide prev video
           currentVideoRef.current.style.display = 'none';
           const selectedAvatar = getAvatar();
-          const defaultUrl = '/videos/' + selectedAvatar + '.mp4';
+          const defaultUrl = videos[selectedAvatar];
 
           if (!currentVideoRef.current.src.includes(defaultUrl)) {
             currentVideoRef.current.src = defaultUrl;
@@ -284,21 +305,28 @@ const Home: React.FC<HomeProps> = () => {
       const aiAuthor = names[getAvatar()];
 
       // Create a human message
-      addMessage(prompt, author, 'human');
+      addMessage(prompt, author, 'human', false);
 
       // If we are streaming append an empty message for the streamed output
+      console.log(data['streaming']);
       if (data['streaming']) {
-        addMessage('', aiAuthor, 'ai');
+        addMessage('', aiAuthor, 'ai', false);
       }
 
       // Get completion
       setIsLoading(true);
       const response = await api.post(`/v1/completions`, data);
+      // Check for API error
+      if (response.data.error) {
+        errMessage(response.data.error);
+        setIsLoading(false);
+        return;
+      }
       const output = response.data.choices[0]['text'];
 
       if (!data['streaming']) {
         // Create an AI message
-        addMessage(output, aiAuthor, 'ai');
+        addMessage(output, aiAuthor, 'ai', false);
       }
 
       if (data['tts']) {
@@ -306,8 +334,10 @@ const Home: React.FC<HomeProps> = () => {
       } else {
         setIsLoading(false);
       }
-    } catch (error) {
+    } catch (error: any) {
+      // Check for react failure
       setIsLoading(false);
+      errMessage(error);
       console.error('Error sending message:', error);
     }
   };
@@ -598,7 +628,9 @@ const Home: React.FC<HomeProps> = () => {
               >
                 {messages.map((message, _) => (
                   <li key={message.id} className={message.author_type}>
-                    {message.author}: <span dangerouslySetInnerHTML={{ __html: message.text }}></span>
+                    <div>
+                      {message.author}: <span dangerouslySetInnerHTML={{ __html: message.text }}></span>
+                    </div>
                   </li>
                 ))}
               </ul>
@@ -626,6 +658,9 @@ const Home: React.FC<HomeProps> = () => {
                   <AudioRecorder />
                 </div>
               </div>
+            </div>
+            <div>
+              <ErrorMessage errorState={errorState} errorValue={errorValue} closeError={closeError} />
             </div>
           </div>
         </div>
