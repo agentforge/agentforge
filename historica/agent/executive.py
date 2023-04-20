@@ -52,6 +52,9 @@ class ExecutiveCognition:
         # Record raw prompt in memory
         self.agent.save_speech(prompt)
 
+        # Get memories assoicated with this prompt
+        self.agent.memory.recall(prompt)
+
         # Format prompt with our Prompt engineering
         formatted_prompt = self.agent.process_prompt(instruction=prompt, config=form_data)
         form_data["prompt"] = formatted_prompt
@@ -71,6 +74,7 @@ class ExecutiveCognition:
 
         # Record response in memory
         self.agent.save_response(response["choices"][0]["text"])
+        self.agent.memory.remember(prompt, response["choices"][0]["text"], app)
 
         form_data["prompt"] = prompt
         print("PROMPT: ", prompt)
@@ -86,8 +90,6 @@ class ExecutiveCognition:
 
     # Asyncronous reflection on this conversation -- how the agent feels, should it act, etc.
     def react(self, prompt, text, form_data, app):
-        # self.think(prompt, {"type": "observation", "callback": self.action}, form_data)
-        # self.think(prompt, {"type": "reflection", "callback": None}, form_data)
         observation_thread_args=(prompt, text, form_data, {"type": "observation", "callback": self.action}, app)
         observation_thread = threading.Thread(target=self.thought_with_app_context, args=observation_thread_args )
         observation_thread.start()

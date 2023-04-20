@@ -6,9 +6,9 @@ from historica import helpers
 from langchain.agents import Tool
 from langchain.llms import HuggingFaceModel
 from langchain.utilities import SearxSearchWrapper
-from langchain.chains.conversation.memory import ConversationBufferMemory
 from .prompt import Prompt
 from historica.helpers import Parser
+from historica.agent import Memory
 from historica.config import config
 
 from historica import LLM_CONFIG_FILE
@@ -23,23 +23,11 @@ os.environ["LANGCHAIN_HANDLER"] = "langchain"
 ### Agent -- Layer over LLMChain Agent system to provide a more user friendly interface w/tools and reasoning
 class Agent():
   def __init__(self, opts={}) -> None:
-    self.memories = {}
     self.config = config.Config(None)
     # load models.json
     self.config.load_config(LLM_CONFIG_FILE)
     self.parser = Parser()
-
-  # Stores memory for various agent avatars
-  def setup_memory(self, ai_prefix = "AI", human_prefix = "Human"):
-    if ai_prefix in self.memories:
-      self.memory = self.memories[ai_prefix]
-    else:
-      self.memory = ConversationBufferMemory(return_messages=True)
-      self.memory.human_prefix = human_prefix
-      self.memory.ai_prefix = ai_prefix
-      self.memories[ai_prefix] = self.memory
-    # Rebuild the prompt manager
-    self.prompt_manager = Prompt(self.memory)
+    self.memory = Memory()
 
   def set_avatar_context(self, avatar):
     # grab the config
@@ -69,29 +57,29 @@ class Agent():
     text = self.parser.parse_llm_response(text, skip_tokens=skip_tokens)
     # Remove agent name from the output, sometimes chatbots like to add their name
     return text.replace(config["avatar"]["prompt_context"]["name"] + ":", "")
-  
+
+  # TODO: this is clunky and should be more reactive  
   def configure(self, config):
     self.set_avatar_context(config["avatar"])
-    self.setup_memory(ai_prefix=self.prompt_context["name"], human_prefix=config["human_name"])
+    self.memory.setup_memory(ai_prefix=self.prompt_context["name"], human_prefix=config["human_name"])
+    # Rebuild the prompt manager
+    self.prompt_manager = Prompt(self.memory.short_term_memory)
 
   # Saves a current speech artifact to the memory
   def save_speech(self, speech):
     if self.memory:
-      self.memory.chat_memory.add_user_message(speech)
+      self.memory.save_speech(speech)
 
   # Saves a response from another individual to the memory
   def save_response(self, speech):
     if self.memory:
-      self.memory.chat_memory.add_ai_message(speech)
+      self.memory.save_response(speech)
 
   # Setup Agent and load models
   def setup_agent(self):
     self.init_tools()
     self.load()
     self.load_agent()
-
-    # create a new prompt loaded with memory
-    # self.prompt_manager = Prompt(self.memory)
 
   def load_agent(self):
     # Loads the model and tokenizer into langchain compatible agent class
