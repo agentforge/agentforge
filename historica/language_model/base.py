@@ -24,9 +24,7 @@ class LLM():
     self.model_key = opts.get("model_key", DEFAULT_LLM)
     self.gc_name = opts.get("generation_config", "llm/logical")
     self.multi_gpu=opts.get("multi_gpu", False)
-    print(f"Base multi_gpu {self.multi_gpu}")
     self.device_map=opts.get("device_map", "auto")
-    print(f"Base multi_gpu {self.multi_gpu}")
 
     self.config_controller = Config(None)
 
