@@ -1,10 +1,11 @@
 import torch
-import time, threading, json
+import time, threading, json, logging
 from transformers import GenerationConfig, StoppingCriteria
 import numpy as np
 from historica.config import Config
 from historica import DEFAULT_MAX_NEW_TOKENS
-from historica.language_model.logger import logger, convert_to_serializable
+from historica.language_model.logger import convert_to_serializable
+logger = logging.getLogger("llm")
 
 # Drives text generation for multiple models.
 class Generator:

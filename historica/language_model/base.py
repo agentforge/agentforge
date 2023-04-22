@@ -13,7 +13,7 @@ from historica.language_model.generators import Generator
 from accelerate import Accelerator
 from historica.language_model.loaders import Loader
 from historica.helpers import Parser
-from historica.language_model import logger
+logger = logging.getLogger("llm")
 
 from .text_streamer import TextStreamer
 
