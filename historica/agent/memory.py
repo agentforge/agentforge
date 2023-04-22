@@ -9,9 +9,9 @@ from langchain.text_splitter import CharacterTextSplitter
 class Memory:
   def __init__(self, model_name="decapoda-research/llama-7b-hf"):
     self.memories = {}
-    self.embdeddings = HuggingFaceEmbeddings(model_name=model_name)
+    # self.embdeddings = HuggingFaceEmbeddings(model_name=model_name)
     # Use deeplake for long-term vector memory storage
-    self.deeplake = DeepLake(dataset_path="/app/cache/deeplake2", embedding_function=self.embdeddings)
+    # self.deeplake = DeepLake(dataset_path="/app/cache/deeplake2", embedding_function=self.embdeddings)
 
   # Stores memory for various agent avatars
   def setup_memory(self, ai_prefix = "AI", human_prefix = "Human"):
@@ -34,10 +34,10 @@ class Memory:
     if self.short_term_memory:
       self.short_term_memory.chat_memory.add_ai_message(speech)
 
-  def recall(self, ai_prefix, prompt):
-    retriever = self.deeplake.as_retriever()
-    docs = retriever.get_relevant_documents(prompt)
-    print(docs)
+  def recall(self, prompt):
+    pass
+    # docs = self.deeplake.similarity_search(prompt)
+    # print(docs)
 
   # Async method using threading for memorization -- need app for Flask context
   def remember(self, prompt, text, app):
