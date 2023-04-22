@@ -14,9 +14,6 @@ from flask_cors import CORS
 from historica.helpers import measure_time
 from historica.language_model import LLM
 
-import logging.config
-logging.config.fileConfig('/app/logging.conf')
-
 path_root = Path(__file__).parents[2]
 sys.path.append(str(path_root))
 
@@ -50,7 +47,6 @@ def publish():
 @measure_time
 def output():
   config = request.json
-  print(f"Prompt: {config['prompt']}")
   response = llm.generate(**config)
   return jsonify({"choices": [{"text": response}]})
 

@@ -8,3 +8,7 @@ from .startup import startup
 from .files import secure_wav_filename
 
 __all__ = ["Prompt", "Avatar", "Agent", "Memory", "ExecutiveCognition", "startup"]
+
+import logging.config
+logging.config.fileConfig('../config/configs/logs/llm.conf')
+logger = logging.getLogger(__name__)
