@@ -1,5 +1,10 @@
 import torch
+import logging
 from transformers import GenerationConfig
+
+import logging.config
+logging.config.fileConfig('../config/configs/logs/llm.conf')
+logger = logging.getLogger('llm')
 
 def convert_to_serializable(obj):
     if isinstance(obj, torch.Tensor):

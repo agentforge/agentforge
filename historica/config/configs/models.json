@@ -1,7 +1,7 @@
 {
     "alpaca-lora-7b": {
-        "model_name": "decapoda-research/llama-7b-hf",
-        "tokenizer_name": "decapoda-research/llama-7b-hf",
+        "model_name": "fragro/llama-7b-hf",
+        "tokenizer_name": "fragro/llama-7b-hf",
         "peft_model": "tloen/alpaca-lora-7b",
         "prompt_type": "instruct_w_memory",
         "model_type": "llama",

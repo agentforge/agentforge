@@ -13,13 +13,9 @@ from historica.language_model.generators import Generator
 from accelerate import Accelerator
 from historica.language_model.loaders import Loader
 from historica.helpers import Parser
-logger = logging.getLogger("llm")
-
 from .text_streamer import TextStreamer
-
 from historica import LLM_CONFIG_FILE
-
-DEFAULT_LLM = 'dolly-v2-12b'
+DEFAULT_LLM = 'alpaca-lora-7b'
 
 ### Manages Base LLM functions ###
 class LLM():
