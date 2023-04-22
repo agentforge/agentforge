@@ -2,7 +2,7 @@ import torch, logging
 from peft import PeftModel
 from transformers import LlamaTokenizer, LlamaForCausalLM
 from transformers import AutoModelForCausalLM, AutoTokenizer
-logger = logging.getLogger("llm")
+from historica.language_model.logger import logger
 
 ## Loaders for different models
 class Loader:

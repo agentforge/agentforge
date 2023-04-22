@@ -5,7 +5,6 @@ import numpy as np
 from historica.config import Config
 from historica import DEFAULT_MAX_NEW_TOKENS
 from historica.language_model.logger import convert_to_serializable
-logger = logging.getLogger("llm")
 
 # Drives text generation for multiple models.
 class Generator:
@@ -58,11 +57,11 @@ class Generator:
     generated_tokens = completion.sequences[:, input_length:]
 
     probs = []
-    logger.info("""| token | token string | logits | probability |""")
-    logger.info("""| ----- | ------------ | ------ | ----------- |""")
+    logging.info("""| token | token string | logits | probability |""")
+    logging.info("""| ----- | ------------ | ------ | ----------- |""")
     for tok,score in zip(generated_tokens[0], trans_scores[0]):
       score = score.cpu().numpy()
-      logger.info(f"| {tok:5d} | {tokenizer.decode([tok]):8s} | {score:.3f} | {np.exp(score):.2%} |")
+      logging.info(f"| {tok:5d} | {tokenizer.decode([tok]):8s} | {score:.3f} | {np.exp(score):.2%} |")
 
   # Generates a response given a prompt
   def generate(self, prompt, model, tokenizer, streamer, **kwargs):
@@ -96,7 +95,7 @@ class Generator:
     #     if eos_token_id is not None:
     #         input_ids = input_ids * eos_token_id[0]
     #     input_length = 1
-
+    logging.info(prompt)
     with torch.autocast("cuda"):
       inputs = tokenizer(prompt, return_tensors="pt")
       input_ids = inputs["input_ids"].cuda()
@@ -111,7 +110,7 @@ class Generator:
             gen = model.module.generate
           else:
             gen = model.generate
-          logger.info(f"Rendering with {json.dumps(kwargs, indent=4, default=convert_to_serializable)}")
+          logging.info(f"Rendering with {json.dumps(kwargs, indent=4, default=convert_to_serializable)}")
           kwargs = {
               'input_ids': input_ids,
               'generation_config': generation_config,
@@ -126,7 +125,7 @@ class Generator:
             self.get_probabilities(model, tokenizer, inputs, generation_output)
       end_time = time.time()
       execution_time = end_time - start_time
-      logger.info(f"Execution time: {execution_time:.6f} seconds")
+      logging.info(f"Execution time: {execution_time:.6f} seconds")
       s = generation_output.sequences[0]
       output = tokenizer.decode(s)
       return output
