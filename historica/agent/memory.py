@@ -46,7 +46,7 @@ class Memory:
       remember_thread.start()
 
   # Locking and thread ontext for async memory processing
-  def remember_with_app_context(self, prompt, response, thought, app):
+  def remember_with_app_context(self, prompt, response, app):
       with app.app_context():
           self.agent.memory.save_interaction(prompt, response)
 
