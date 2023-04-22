@@ -4,7 +4,7 @@ from transformers import GenerationConfig, StoppingCriteria
 import numpy as np
 from historica.config import Config
 from historica import DEFAULT_MAX_NEW_TOKENS
-from historica.language_model import logger
+from historica.language_model.logger import logger
 
 # Drives text generation for multiple models.
 class Generator:
