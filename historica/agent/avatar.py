@@ -1,6 +1,7 @@
 import os
 import json
 from historica.config import Config
+from historica.agent.logger import logger
 
 class Avatar:
     def __init__(self, folder_path='/avatars'):
@@ -18,7 +19,7 @@ class Avatar:
                 if avatar_key:
                     self.avatar_config[avatar_key] = avatar_data
       except Exception as e:
-          print(f'Error loading avatar {folder_path}: {e}')
+          logger.error(f'Error loading avatar {folder_path}: {e}')
 
     def get_avatar(self, avatar_key):
       return self.avatar_config.get(avatar_key)
@@ -29,7 +30,6 @@ class Avatar:
 def main():
   avatar_instance = Avatar()
   makhno_avatar = avatar_instance.get_avatar('makhno')
-  print(makhno_avatar)
 
 if __name__ == '__main__':
   main()
