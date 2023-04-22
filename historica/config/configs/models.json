@@ -16,6 +16,13 @@
         "model_type": "alpaca",
         "streaming": true
     },
+    "vicuna-7b": {
+        "model_name": "AlekseyKorshuk/vicuna-7b",
+        "tokenizer_name": "AlekseyKorshuk/vicuna-7b",
+        "prompt_type": "instruct",
+        "model_type": "huggingface",
+        "streaming": true
+    },
     "dolly-v1-6b": {
         "model_name": "databricks/dolly-v1-6b",
         "tokenizer_name": "databricks/dolly-v1-6b",
