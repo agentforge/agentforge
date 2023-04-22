@@ -4,6 +4,7 @@ from historica.agent import Service
 from historica.agent import Agent
 import requests, json, os
 from flask_sse import sse
+from historica.agent.logger import logger
 
 ### Executive Cognition
 ### Handles Model Ensemble Coordination
@@ -63,7 +64,7 @@ class ExecutiveCognition:
 
         # Get response from LLM
         response = self.service.call_llm(form_data)
-        print(response)
+        logger.info(response)
         if "choices" not in response:
             return {"error": response} # return error
 
@@ -77,7 +78,7 @@ class ExecutiveCognition:
         self.agent.memory.remember(prompt, response["choices"][0]["text"], app)
 
         form_data["prompt"] = prompt
-        print("PROMPT: ", prompt)
+        logger.info(f"PROMPT: {prompt}")
 
         # Asyncronous reaction/reflection on this conversation -- how the agent feels, should it act, etc.
         self.react(prompt, text, form_data, app)

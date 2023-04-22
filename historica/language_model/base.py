@@ -13,6 +13,7 @@ from historica.language_model.generators import Generator
 from accelerate import Accelerator
 from historica.language_model.loaders import Loader
 from historica.helpers import Parser
+logger = logging.getLogger("llm")
 
 from .text_streamer import TextStreamer
 
@@ -27,9 +28,7 @@ class LLM():
     self.model_key = opts.get("model_key", DEFAULT_LLM)
     self.gc_name = opts.get("generation_config", "llm/logical")
     self.multi_gpu=opts.get("multi_gpu", False)
-    print(f"Base multi_gpu {self.multi_gpu}")
     self.device_map=opts.get("device_map", "auto")
-    print(f"Base multi_gpu {self.multi_gpu}")
 
     self.config_controller = Config(None)
 
@@ -54,11 +53,6 @@ class LLM():
 
     self.generator = Generator(self.gc_name, self.multi_gpu)
 
-  def configure(self, config) -> None:
-    self.generator.set_generation_config(config.get("generation_config", self.gc_name))
-    self.generator.set_max_new_tokens(config.get("max_new_tokens", 1024))
-    self.load(config.get("model_key", self.model_key))
-
   # Get the name of the class
   def name(self):
     return self.__class__.__name__
@@ -69,7 +63,6 @@ class LLM():
 
   # Loads the model and transfomer given the model name
   def load(self, model_key=None, **kwargs) -> None:
-
     if model_key == None:
       # If we aren't overriding use the default model
       model_key = self.model_key
@@ -82,6 +75,7 @@ class LLM():
 
     self.generator.set_models(self.model, self.tokenizer, self.text_streamer(False))
 
+  # Setup and return the text streamer
   def text_streamer(self, streaming):
     if streaming == False:
       return None
@@ -89,7 +83,9 @@ class LLM():
 
   def generate(self, prompt="", **kwargs):
     # setup the generator
-
+    config = self.generator.prep_generation_config(kwargs.get("generation_config", "logical"))
+    self.load(kwargs.get("model_key", self.model_key))
+    kwargs.update(config)
     if "generator" in self.config:
         # Use custom generator based on function string
         function_name = self.config["generator"]

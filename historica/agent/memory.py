@@ -9,9 +9,10 @@ from langchain.text_splitter import CharacterTextSplitter
 class Memory:
   def __init__(self, model_name="decapoda-research/llama-7b-hf"):
     self.memories = {}
-    self.embdeddings = HuggingFaceEmbeddings(model_name=model_name)
+    # self.embdeddings = HuggingFaceEmbeddings(model_name=model_name)
     # Use deeplake for long-term vector memory storage
-    self.deeplake = DeepLake(dataset_path="/app/cache/deeplake2", embedding_function=self.embdeddings)
+    # self.deeplake = DeepLake(dataset_path="/app/cache/deeplake2", embedding_function=self.embdeddings)
+    self.deeplake = None
 
   # Stores memory for various agent avatars
   def setup_memory(self, ai_prefix = "AI", human_prefix = "Human"):
@@ -34,10 +35,10 @@ class Memory:
     if self.short_term_memory:
       self.short_term_memory.chat_memory.add_ai_message(speech)
 
-  def recall(self, ai_prefix, prompt):
-    retriever = self.deeplake.as_retriever()
-    docs = retriever.get_relevant_documents(prompt)
-    print(docs)
+  def recall(self, prompt):
+    pass
+    # docs = self.deeplake.similarity_search(prompt)
+    # print(docs)
 
   # Async method using threading for memorization -- need app for Flask context
   def remember(self, prompt, text, app):
@@ -46,9 +47,9 @@ class Memory:
       remember_thread.start()
 
   # Locking and thread ontext for async memory processing
-  def remember_with_app_context(self, prompt, response, thought, app):
+  def remember_with_app_context(self, prompt, response, app):
       with app.app_context():
-          self.agent.memory.save_interaction(prompt, response)
+          self.save_interaction(prompt, response)
 
   # Saves a response from another individual to long-term memory
   def save_interaction(self, prompt, response):
@@ -56,6 +57,7 @@ class Memory:
     if prompt.strip() == "":
       return
     interaction = f"""{self.short_term_memory.human_prefix}: {prompt}\n{ self.short_term_memory.ai_prefix}: {response}"""
-    self.deeplake.add_texts(
-      [interaction], [{"source": self.short_term_memory.ai_prefix, "time": datetime.datetime.now()}], [uuid.uuid4()]
-    )
+    if self.deeplake is not None:
+      self.deeplake.add_texts(
+        [interaction], [{"source": self.short_term_memory.ai_prefix, "time": datetime.datetime.now()}], [uuid.uuid4()]
+      )

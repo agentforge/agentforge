@@ -1,5 +1,6 @@
 import json
 import os
+from historica.agent.logger import logger
 
 class Config:
   def __init__(self, config_name):
@@ -16,7 +17,7 @@ class Config:
       self.config_name = config_name
 
     except FileNotFoundError:
-      print(f"Config file {config_name} not found")
+      logger.info(f"Config file {config_name} not found")
       self._config = {}
       self.config_name = config_name
 

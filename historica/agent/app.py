@@ -5,7 +5,7 @@ from flask_cors import CORS
 from flask_sse import sse
 from redis import Redis
 from rq import Queue
-import logging, redis, uuid
+import redis, uuid
 from datetime import timedelta
 from flask_swagger_ui import get_swaggerui_blueprint
 from werkzeug.utils import secure_filename
@@ -22,9 +22,6 @@ from historica.agent import secure_wav_filename
 # Create the worker queue TODO: Complete implementation
 # queue = Queue(connection=Redis())
 # worker = Worker()
-
-# Setup logging
-#logging.basicConfig(filename='agent.log', level=logging.DEBUG)
 
 # Create an instance of the Flask class
 app = Flask(__name__)
@@ -132,9 +129,7 @@ def configure():
     user_id = redis_conn.get(token)
     if user_id is None:
         return jsonify({'message': 'Invalid token'}), 401
-    print(user_id)
     user = User.query.get(int(user_id)) 
-    print(user)
     ## For GET requests get the configuration
     if request.method == 'GET':
         try:
@@ -146,7 +141,6 @@ def configure():
     ## For POST requests set the configuration
     if request.method == 'POST':
         data = request.json
-        print(data["config"])
         try:
             config = user.set_config(data["config"])
             return jsonify(config)
@@ -175,11 +169,8 @@ def prompt():
   # Get the message for the request
   prompt = request.json["prompt"]
   form_data = request.json
-  print("Oriiginal prompt: ", prompt)
   # Run the LLM agent
   response = executive.respond(prompt, form_data, app)
-
-  print(response)
   # Return the response
   return jsonify(response)
 
