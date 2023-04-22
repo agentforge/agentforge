@@ -18,8 +18,6 @@ from historica.worker import Worker
 from historica.models import User
 from historica import db
 from historica.agent import secure_wav_filename
-import logging.config
-logging.config.fileConfig('/app/logging.conf')
 
 # Create the worker queue TODO: Complete implementation
 # queue = Queue(connection=Redis())
