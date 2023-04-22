@@ -19,8 +19,15 @@ const Home: React.FC<HomeProps> = () => {
   // TODO: make dynamic, temporary until we can source these from the API
   // CONSTANTS
   const avatars = ['caretaker', 'default', 'makhno', 'fdr', 'sankara'];
-  const modelConfigs = ['creative', 'logical', 'moderate'];
-  const models = ['alpaca-lora-7b', 'alpaca-lora-13b', 'dolly-v1-6b', 'dolly-v2-12b', 'pythia-6.9b-gpt4all-pretrain'];
+  const modelConfigs = ['logical', 'creative', 'moderate'];
+  const models = [
+    'alpaca-lora-7b',
+    'alpaca-lora-13b',
+    'dolly-v1-6b',
+    'dolly-v2-12b',
+    'pythia-6.9b-gpt4all-pretrain',
+    'vicuna-7b',
+  ];
   interface StringMap {
     [key: string]: string;
   }
