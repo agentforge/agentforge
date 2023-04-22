@@ -125,5 +125,5 @@ class TextStreamer(BaseStreamer):
 
     def on_finalized_text(self, text: str, stream_end: bool = False):
         """Prints the new text to stdout. If the stream is ending, also prints a newline."""
-        print(text, flush=True, end="" if not stream_end else None)
+        # print(text, flush=True, end="" if not stream_end else None)
         sse.publish({"next": text}, type='stream_completion')

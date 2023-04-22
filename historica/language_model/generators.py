@@ -1,10 +1,10 @@
 import torch
-import time, threading
+import time, threading, json
 from transformers import GenerationConfig, StoppingCriteria
 import numpy as np
 from historica.config import Config
 from historica import DEFAULT_MAX_NEW_TOKENS
-from historica.language_model.logger import logger
+from historica.language_model.logger import logger, convert_to_serializable
 
 # Drives text generation for multiple models.
 class Generator:
@@ -96,16 +96,13 @@ class Generator:
     #         input_ids = input_ids * eos_token_id[0]
     #     input_length = 1
 
-    print(f"Rendering with {kwargs}")
-
     with torch.autocast("cuda"):
       inputs = tokenizer(prompt, return_tensors="pt")
       input_ids = inputs["input_ids"].cuda()
       generation_config = GenerationConfig(
           **kwargs,
       )
-      # print("GENERATE...")
-      # print(generation_config)
+    
       start_time = time.time()
       with torch.no_grad():
           # If we are using multi-gpu, we need to use the model.module.generate method.
@@ -113,6 +110,7 @@ class Generator:
             gen = model.module.generate
           else:
             gen = model.generate
+          logger.info(f"Rendering with {json.dumps(kwargs, indent=4, default=convert_to_serializable)}")
           kwargs = {
               'input_ids': input_ids,
               'generation_config': generation_config,
@@ -127,7 +125,7 @@ class Generator:
             self.get_probabilities(model, tokenizer, inputs, generation_output)
       end_time = time.time()
       execution_time = end_time - start_time
-      print(f"Execution time: {execution_time:.6f} seconds")
+      logger.info(f"Execution time: {execution_time:.6f} seconds")
       s = generation_output.sequences[0]
       output = tokenizer.decode(s)
       return output
