@@ -10,12 +10,13 @@ import sys
 import redis
 from flask import Flask, request, jsonify, send_file, Response
 from flask_cors import CORS
-import logging
 
 from historica.helpers import measure_time
 from historica.language_model import LLM
 
-#logging.basicConfig(filename='agent.log', level=logging.DEBUG)
+import logging.config
+logging.config.fileConfig('/app/logging.conf')
+
 path_root = Path(__file__).parents[2]
 sys.path.append(str(path_root))
 
@@ -48,13 +49,9 @@ def publish():
 @app.route("/v1/completions", methods=["POST"])
 @measure_time
 def output():
-#   print(request.json)
   config = request.json
   print(f"Prompt: {config['prompt']}")
-#   print(f"Config: {config }")
-  llm.configure(config)
   response = llm.generate(**config)
-#   print(response)
   return jsonify({"choices": [{"text": response}]})
 
 @app.route("/v1/update_model", methods=["POST"])

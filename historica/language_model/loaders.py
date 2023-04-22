@@ -15,16 +15,16 @@ class Loader:
 
     def load(self, config, device="cuda"):
         self.config = config
-        if config["model_type"] == "alpaca":
-            self.alpaca(device)
+        if config["model_type"] == "llama":
+            self.llama(device)
         elif config["model_type"] == "huggingface":
             self.huggingface(device)
         else:
             raise ValueError(f"Unknown model type {config['model_type']}")
         return self.model, self.tokenizer
 
-    def alpaca(self, device="cuda"):
-        print("Loading alpaca...")
+    def llama(self, device="cuda"):
+        print("Loading llama...")
         # self.tokenizer = LlamaTokenizer.from_pretrained(self.config["model_name"], decode_with_prefix_space=True, clean_up_tokenization_spaces=True)
         self.tokenizer = LlamaTokenizer.from_pretrained(self.config["model_name"], decode_with_prefix_space=True, clean_up_tokenization_spaces=True)
         self.tokenizer.pad_token_id = 0
@@ -36,12 +36,12 @@ class Loader:
             torch_dtype=torch.float16,
             device_map=self.device_map,
         )
-
-        self.model = PeftModel.from_pretrained(
-            self.model, self.config["peft_model"],
-            torch_dtype=torch.float16,
-            # device_map=device_map
-        )
+        if "peft_model" in self.config:
+            self.model = PeftModel.from_pretrained(
+                self.model, self.config["peft_model"],
+                torch_dtype=torch.float16,
+                # device_map=device_map
+            )
 
         #LLM Models need GPU
         device = torch.device(device)

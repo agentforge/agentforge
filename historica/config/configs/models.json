@@ -4,7 +4,7 @@
         "tokenizer_name": "decapoda-research/llama-7b-hf",
         "peft_model": "tloen/alpaca-lora-7b",
         "prompt_type": "instruct",
-        "model_type": "alpaca",
+        "model_type": "llama",
         "streaming": true,
         "stopping_criteria": ["#", "\"\"\""]
     },
@@ -13,14 +13,14 @@
         "tokenizer_name": "decapoda-research/llama-7b-hf",
         "peft_model": "tloen/alpaca-lora-7b",
         "prompt_type": "instruct",
-        "model_type": "alpaca",
+        "model_type": "llama",
         "streaming": true
     },
     "vicuna-7b": {
         "model_name": "AlekseyKorshuk/vicuna-7b",
         "tokenizer_name": "AlekseyKorshuk/vicuna-7b",
         "prompt_type": "instruct",
-        "model_type": "huggingface",
+        "model_type": "llama",
         "streaming": true
     },
     "dolly-v1-6b": {
