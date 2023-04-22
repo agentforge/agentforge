@@ -1,6 +1,7 @@
 from .tts import TextToSpeech
 from .normalize import normalize_transcription
 from .whisper import Whisper
+from .bark import BarkTextToSpeech
 
 __all__ = [
 'TextToSpeech',

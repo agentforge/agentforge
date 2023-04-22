@@ -8,12 +8,13 @@ from historica.helpers import measure_time
 
 from . import Whisper
 from . import TextToSpeech
+from . import BarkTextToSpeech
 
 path_root = Path(__file__).parents[2]
 sys.path.append(str(path_root))
 app = Flask(__name__)
 CORS(app, resources={r"/v1/*": {"origins": "*"}})
-tts_inst = TextToSpeech()
+tts_inst = BarkTextToSpeech()
 whisper = Whisper()
 
 # Given the following text request generate a wav file and return to the client
