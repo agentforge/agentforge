@@ -44,11 +44,9 @@ class Parser:
         "#include",
         "// output"
       ]
-      print(skip_tokens)
       for i in bad_output_delimeters + skip_tokens:
           text = text.split(i)
           text = text[0]
       if "\n" not in skip_tokens:
         text = text.replace("\n", "<br>") # use br for new line
-      print(text)
       return text.strip()

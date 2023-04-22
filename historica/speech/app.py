@@ -36,7 +36,6 @@ def text_to_speech():
     speaker_idx=speaker_idx
   )
   # Return the wav file in the response
-  print(filename)
   return jsonify({"filename": filename})
 
 # Define the /interpret endpoint

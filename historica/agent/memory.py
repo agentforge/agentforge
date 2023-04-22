@@ -12,6 +12,7 @@ class Memory:
     # self.embdeddings = HuggingFaceEmbeddings(model_name=model_name)
     # Use deeplake for long-term vector memory storage
     # self.deeplake = DeepLake(dataset_path="/app/cache/deeplake2", embedding_function=self.embdeddings)
+    self.deeplake = None
 
   # Stores memory for various agent avatars
   def setup_memory(self, ai_prefix = "AI", human_prefix = "Human"):
