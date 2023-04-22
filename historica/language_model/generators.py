@@ -4,6 +4,7 @@ from transformers import GenerationConfig, StoppingCriteria
 import numpy as np
 from historica.config import Config
 from historica import DEFAULT_MAX_NEW_TOKENS
+from historica.language_model import logger
 
 # Drives text generation for multiple models.
 class Generator:
@@ -56,11 +57,11 @@ class Generator:
     generated_tokens = completion.sequences[:, input_length:]
 
     probs = []
-    print("""| token | token string | logits | probability |""")
-    print("""| ----- | ------------ | ------ | ----------- |""")
+    logger.info("""| token | token string | logits | probability |""")
+    logger.info("""| ----- | ------------ | ------ | ----------- |""")
     for tok,score in zip(generated_tokens[0], trans_scores[0]):
       score = score.cpu().numpy()
-      print(f"| {tok:5d} | {tokenizer.decode([tok]):8s} | {score:.3f} | {np.exp(score):.2%} |")
+      logger.info(f"| {tok:5d} | {tokenizer.decode([tok]):8s} | {score:.3f} | {np.exp(score):.2%} |")
 
   # Generates a response given a prompt
   def generate(self, prompt, model, tokenizer, streamer, **kwargs):

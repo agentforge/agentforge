@@ -23,7 +23,6 @@ class Prompt:
     # Get the chat history string from memory
     # TODO: Ensure we don't break the token length and maybe refactor this to live elsewhere
     def chat_history(self):
-        print("ACCESSING CHAT MEMORY")
         mem = self.memory.load_memory_variables({})
         def get_content(obj):
             prefix = "### Instruction: " if obj.__class__.__name__ == "HumanMessage" else "### Response: "

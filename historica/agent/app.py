@@ -129,9 +129,7 @@ def configure():
     user_id = redis_conn.get(token)
     if user_id is None:
         return jsonify({'message': 'Invalid token'}), 401
-    print(user_id)
     user = User.query.get(int(user_id)) 
-    print(user)
     ## For GET requests get the configuration
     if request.method == 'GET':
         try:
@@ -143,7 +141,6 @@ def configure():
     ## For POST requests set the configuration
     if request.method == 'POST':
         data = request.json
-        print(data["config"])
         try:
             config = user.set_config(data["config"])
             return jsonify(config)
@@ -172,11 +169,8 @@ def prompt():
   # Get the message for the request
   prompt = request.json["prompt"]
   form_data = request.json
-  print("Oriiginal prompt: ", prompt)
   # Run the LLM agent
   response = executive.respond(prompt, form_data, app)
-
-  print(response)
   # Return the response
   return jsonify(response)
 
