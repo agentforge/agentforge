@@ -20,7 +20,7 @@ class TextToSpeech():
 
 if __name__ == "__main__":
   # Create an instance of the TTS class
-  tts = TTS()
+  tts = TextToSpeech()
   # Call the speech function
   wav_bytes = tts.synthesizer("Hello, I am a text-to-speech system.", "hello.wav")
   print(len(wav_bytes))
