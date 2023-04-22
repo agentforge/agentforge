@@ -5,7 +5,7 @@ from flask_cors import CORS
 from flask_sse import sse
 from redis import Redis
 from rq import Queue
-import logging, redis, uuid
+import redis, uuid
 from datetime import timedelta
 from flask_swagger_ui import get_swaggerui_blueprint
 from werkzeug.utils import secure_filename
@@ -18,13 +18,12 @@ from historica.worker import Worker
 from historica.models import User
 from historica import db
 from historica.agent import secure_wav_filename
+import logging.config
+logging.config.fileConfig('/app/logging.conf')
 
 # Create the worker queue TODO: Complete implementation
 # queue = Queue(connection=Redis())
 # worker = Worker()
-
-# Setup logging
-#logging.basicConfig(filename='agent.log', level=logging.DEBUG)
 
 # Create an instance of the Flask class
 app = Flask(__name__)
