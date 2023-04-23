@@ -100,14 +100,14 @@ services:
       - cache-volume:/app/cache
 
   web:
-    image: web2
+    image: web
     ports:
       - 3000
     ipc: host
     networks:
       main-net:
         aliases:
-          - web2
+          - web
 
 networks:
   main-net:
