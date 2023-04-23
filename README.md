@@ -42,20 +42,22 @@ Minimalistic requirements:
 
 - [Install Docker or Docker Engine for Linux](https://docs.docker.com/get-docker/)
 - CUDA capable Nvidia GPU + Drivers (if running GPU services locally)
-- Install docker-compose >= 1.29.2:
+- Install latest docker-compose (>= 1.29.2 required):
 
 ```
-sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo curl -L "https://github.com/docker/compose/releases/download/v2.17.3/docker-compose-linux-x86_64" -o /usr/local/bin/docker-compose
 sudo chmod +x /usr/local/bin/docker-compose
 docker-compose --version
 ```
+
+If you aren't on x86 Linux change the URL to match your arch from the list of releases on the docker-compose github.
 
 ## Build Docker Containers
 
 Build the web image:
 
 ```
-docker build --build-arg REPO_URL=git@github.com:fragro/agent_n.git  --build-arg SSH_PRIVATE_KEY="$(cat ~/.ssh/id_rsa)" -t web2 -f ./docker/web2.Dockerfile .
+docker build -t web -f ./docker/web2.Dockerfile .
 ```
 
 Note: You only need to run the ensemble stack if you are pointing services to external services, have thick GPUs, or accept absurdly slow CPU inference speeds.
@@ -75,6 +77,16 @@ docker build -t wav2lip -f ./docker/wav2lip.Dockerfile .
 
 `docker-compose up -d web`
 
+Connect to your Docker container, we provide a scrip to easily connect int the `/docker` folder. (python >= 3.8)
+
+`python3 exec.py web`
+
+Otherwise connect via `docker exec -it <CONTAINER_ID> /bin/bash`
+
+To run the react typescript server:
+
+```PORT=3005 npm start```
+
 Change config.ts to point to the model ensemble IP.
 
 ## Run Entire Stack
@@ -82,12 +94,6 @@ Change config.ts to point to the model ensemble IP.
 Run all the services via docker-compose in the docker folder:
 
 ```docker-compose up -d```
-
-## SSL
-
-Create an ssl key and cert for the Flask API:
-
-```openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365```
 
 ## Development
 
@@ -99,9 +105,11 @@ Wav2Lip (requires additional env vars):
 
 ```LC_ALL=C.UTF-8 LANG=C.UTF-8 CONFIG_DIR="/app/agent_n/historica/config/configs/" flask run --host=0.0.0.0 --port=3000```
 
-To run the react typescript server:
+## SSL
 
-```PORT=3005 npm start```
+Create an ssl key and cert for the Flask API:
+
+```openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365```
 
 ## Data Engine
 
