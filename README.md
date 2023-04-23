@@ -85,7 +85,7 @@ Otherwise connect via `docker exec -it <CONTAINER_ID> /bin/bash`
 
 To run the react typescript server:
 
-```PORT=3005 npm start```
+```PORT=3000 npm start```
 
 Change config.ts to point to the model ensemble IP.
 
@@ -95,7 +95,7 @@ Run all the services via docker-compose in the docker folder:
 
 ```docker-compose up -d```
 
-## Development
+## Running Model Ensemble APIs
 
 To run the flask server(s) from inside a container:
 
