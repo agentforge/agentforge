@@ -20,6 +20,7 @@ Playground for integrating agents with deeplearning micro-services.
 - [ ] DeepLake Service/Long-Term Vector Storage Memory
 - [ ] Worker/Queue for Model Services
 - [ ] Always-Online Agent w/ Executive Function Loop
+- [ ] Fall/Emergency Sound Detection Model
 - [ ] Caretake Executive Function Example
 - [ ] Avatar Creator on Web
 - [ ] Make Services and Models Configurable through Web Interface/DB
