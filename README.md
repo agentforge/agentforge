@@ -55,7 +55,7 @@ docker-compose --version
 Build the web image:
 
 ```
-docker build --build-arg REPO_URL=git@github.com:fragro/agent_n.git  --build-arg SSH_PRIVATE_KEY="$(cat ~/.ssh/id_rsa)" -t web2 -f ./docker/web2.Dockerfile .
+docker build -t web2 -f ./docker/web.Dockerfile .
 ```
 
 Note: You only need to run the ensemble stack if you are pointing services to external services, have thick GPUs, or accept absurdly slow CPU inference speeds.
