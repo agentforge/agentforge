@@ -1,48 +1,28 @@
-# Base image
-FROM ruby:3.2.1
+# Use the official Node.js v14 image as the base image
+FROM node:14
 
-# Set environment variables
-ENV RAILS_ENV development
-ENV RAILS_SERVE_STATIC_FILES true
-ENV RAILS_LOG_TO_STDOUT true
-ARG REPO_URL
-ARG SSH_PRIVATE_KEY
-
-ENV REPO_URL=$REPO_URL
-ENV SSH_PRIVATE_KEY=$SSH_PRIVATE_KEY
-
-# Set the working directory to /app
+# Set the working directory in the container
 WORKDIR /app
 
-# Copy over git repos
-RUN mkdir -p /root/.ssh && \
-    echo "$SSH_PRIVATE_KEY" > /root/.ssh/id_rsa && \
-    chmod 600 /root/.ssh/id_rsa
+RUN mkdir /app/agent_n
 
-RUN  apt-get -yq update && \
-     apt-get -yqq install ssh
+COPY . /app/agent_n/
 
-RUN ssh-keyscan github.com >> /root/.ssh/known_hosts
+WORKDIR /app/agent_n/web2
 
-# agent_n API
-RUN git clone "$REPO_URL"
+# Install the app's dependencies
+RUN npm install
 
-# Install nodejs and yarn (for webpacker)
-RUN apt-get update -qq && \
-    apt-get install -y nodejs npm && \
-    npm install --global yarn
+# Install Webpacker globally
+RUN npm install -g webpack webpack-cli webpack-dev-server
 
-WORKDIR /app/agent_n/web
+RUN apt-get update
+RUN apt-get install -y tig
 
-# Install bundler and gems
-RUN gem install bundler && \
-    bundle install --jobs 4 --retry 3
+# Expose the port used by the app (if any)
+EXPOSE 3005
 
-# Precompile assets
-# RUN RAILS_ENV=production SECRET_KEY_BASE=placeholder_key_base bin/rails assets:precompile
+# Start the app
+# CMD [ "npm", "start" ]
+CMD tail -f /dev/null
 
-# Expose port 3000
-EXPOSE 3000
-
-# Start the server
-CMD ["bundle", "exec", "rails", "server", "-b", "0.0.0.0", "-p", "3000"]

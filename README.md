@@ -3,96 +3,99 @@
 Playground for integrating agents with deeplearning micro-services.
 
 ## Features
-
-### Agent
-- [x] RESTful Service proxy
-- [x] Conversational Memory
-- [ ] Multi-Agent Forum
-
-### Agent Tools
-- [x] Search
-- [ ] REPL
-- [ ] Task Plan Loop
-
-### Avatars
-- [x] Configurable Avatar System
-- [ ] Avatar Creation Pipeline
-
-### Speech To Animation
-- [x] Wav2Lip
-- [ ] Winfredy / SadTalker
-
-### Speech Encoding
-- [x] TTS.py
-- [ ] Improve text-preprocessing
-- [ ] Audio Data Aggregation/Cleanup
-- [ ] LORA Fine-Tuning
-
-### Language Model
-- [x] Alpaca-LORA-7B w/ PEFT
-- [x] dolly-v1-6B
+- [x] Flask proxy
+- [x] Basic Conversational Memory
+- [x] JSON Configurable Avatar System
+- [x] Wav2Lip generated video
+- [x] coqai TTS.py generated audio
+- [x] PromptManager
+- [x] Llama/Alpaca
+- [x] HuggingFace
 - [x] Streaming
-- [ ] OpenAI API Integration
-
-#### Fine-Tuning
-- [ ] LORA Fine-Tuning w/ Anarchist Library for Makhno Avatar 
-
-#### RLHF (Reinforcement Learning through Human Feedback)
-- [ ] Integrate RLHF
-
-### Speech Decoding
-- [ ] whisper/large
-
-### Computer Vision
+- [x] SSE Events for Streaming
+- [x] React/Typescript Frontend
+- [x] Multi-GPU Inference
+- [x] whisper/large (buggy currently)
+- [x] Rails Prototype (deprecated)
+- [ ] DeepLake Service/Long-Term Vector Storage Memory
+- [ ] Worker/Queue for Model Services
+- [ ] Always-Online Agent w/ Executive Function Loop
+- [ ] Caretake Executive Function Example
+- [ ] Avatar Creator on Web
+- [ ] Make Services and Models Configurable through Web Interface/DB
+- [ ] Avatar Library (Share, Remix, Report Avatars)
+- [ ] [whisper/fast](https://github.com/sanchit-gandhi/whisper-jax)
 - [ ] PRISMR Object Detection
-
-### Web Frontend
-- [x] Rails Prototype
-- [ ] SSE Events for Streaming
-- [ ] React/Typescript Production Level App
-- [ ] Mobile-First Approach
-
-### Infra
-- [x] Multi-GPU
+- [ ] Convert Flask to Fast API
+- [ ] Audio Data Aggregation Pipeline
+- [ ] [Winfredy / SadTalker](https://github.com/Winfredy/SadTalker)
+- [ ] [Bark TTS](https://github.com/suno-ai/bark)
+- [ ] Integrate Latest Langchain
+- [ ] LORA Fine-Tuning w/ External Library
+- [ ] [PPO With TRL](https://github.com/lvwerra/trl)
+- [ ] Fine-Tuning or PPO w/ Long-Term Vector Memory Storage
+- [ ] Mobile Application
 
 ## Requirements
 
-Minimalistic requirements.
+Minimalistic requirements:
 
-- Docker
-- CUDA capable nvidia GPU + drivers
-
-## Build for Dev
-
-Create an ssl key and cert for the Flask API:
-
-```openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365```
-
-Install docker-compose >= 1.29.2:
+- [Install Docker or Docker Engine for Linux](https://docs.docker.com/get-docker/)
+- CUDA capable Nvidia GPU + Drivers (if running GPU services locally)
+- Install latest docker-compose (>= 1.29.2 required):
 
 ```
-sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo curl -L "https://github.com/docker/compose/releases/download/v2.17.3/docker-compose-linux-x86_64" -o /usr/local/bin/docker-compose
 sudo chmod +x /usr/local/bin/docker-compose
 docker-compose --version
 ```
 
-Build the primary Docker image:
+If you aren't on x86 Linux change the URL to match your arch from the list of releases on the docker-compose github.
 
-```docker build --build-arg REPO_URL=git@github.com:fragro/agent_n.git  --build-arg SSH_PRIVATE_KEY="$(cat ~/.ssh/id_rsa)" -t historica -f ./docker/historica.Dockerfile .```
+## Build Docker Containers
 
-Now build the rest of the containers:
+Build the web image:
 
-```make build```
+```
+docker build -t web -f ./docker/web2.Dockerfile .
+```
 
-## Run
+Note: You only need to run the ensemble stack if you are pointing services to external services, have thick GPUs, or accept absurdly slow CPU inference speeds.
+
+
+Build the model ensemble stack:
+
+```
+cd agent_n
+docker build --build-arg REPO_URL=git@github.com:fragro/agent_n.git  --build-arg SSH_PRIVATE_KEY="$(cat ~/.ssh/id_rsa)" -t historica -f ./docker/historica.Dockerfile .
+docker build -t worker -f ./docker/worker.Dockerfile .
+docker build -t llm -f ./docker/llm.Dockerfile .
+docker build -t speech -f ./docker/speech.Dockerfile .
+docker build -t wav2lip -f ./docker/wav2lip.Dockerfile .
+```
+## Run the Web Instance Only (If Model Ensemble is Remote)
+
+`docker-compose up -d web`
+
+Connect to your Docker container, we provide a scrip to easily connect int the `/docker` folder. (python >= 3.8)
+
+`python3 exec.py web`
+
+Otherwise connect via `docker exec -it <CONTAINER_ID> /bin/bash`
+
+To run the react typescript server:
+
+```PORT=3000 npm start```
+
+Change config.ts to point to the model ensemble IP.
+
+## Run Entire Stack
 
 Run all the services via docker-compose in the docker folder:
 
 ```docker-compose up -d```
 
-TODO: Running in prod
-
-## Development
+## Running Model Ensemble APIs
 
 To run the flask server(s) from inside a container:
 
@@ -102,13 +105,11 @@ Wav2Lip (requires additional env vars):
 
 ```LC_ALL=C.UTF-8 LANG=C.UTF-8 CONFIG_DIR="/app/agent_n/historica/config/configs/" flask run --host=0.0.0.0 --port=3000```
 
-To run the react typescript server:
+## SSL
 
-```PORT=3005 npm start```
+Create an ssl key and cert for the Flask API:
 
-Running the rails server (deprecated):
-
-```rails server -p 3001```
+```openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365```
 
 ## Data Engine
 
@@ -117,3 +118,7 @@ Uses SQL Alchemy and Redis to store user credentials, profile, and training data
 To add new columns:
 
 ```flask db migrate -m "Migration message"```
+
+## DeepLake
+
+Coming Soon!
