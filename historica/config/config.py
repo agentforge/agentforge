@@ -16,7 +16,6 @@ class Config:
       self.config_name = config_name
 
     except FileNotFoundError:
-      print(f"Config file {config_name} not found")
       self._config = {}
       self.config_name = config_name
 

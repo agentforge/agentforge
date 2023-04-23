@@ -8,7 +8,6 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from historica.wav2lip import Wav2LipModel
 from historica.helpers import measure_time
-from historica.wav2lip import Wav2Lip
 
 app = Flask(__name__)
 CORS(app)
@@ -17,6 +16,7 @@ CHKPT_PTH = "/app/cache/weights/wav2lip_gan.pth"
 # TODO: When we introduce multiple avatars this will need refactoring
 faces = [
   ("default", "/app/cache/videos/default.mp4"),
+  ("caretaker", "/app/cache/videos/default.mp4"),
   ("makhno", "/app/cache/videos/makhno.mp4"),
   ("fdr", "/app/cache/videos/fdr.mp4"),
   ("sankara", "/app/cache/videos/sankara.mp4"),

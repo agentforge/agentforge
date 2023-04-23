@@ -23,7 +23,6 @@ class Prompt:
     # Get the chat history string from memory
     # TODO: Ensure we don't break the token length and maybe refactor this to live elsewhere
     def chat_history(self):
-        print("ACCESSING CHAT MEMORY")
         mem = self.memory.load_memory_variables({})
         def get_content(obj):
             prefix = "### Instruction: " if obj.__class__.__name__ == "HumanMessage" else "### Response: "
@@ -114,8 +113,8 @@ class Prompt:
     def _informal_instruct_prompt_w_memory(self, instruction="", context="", name="", human_name="", reflection="", **kwargs):
         return f"""
         {context} Your latest thought is the following. {reflection} Below is an instruction that describes a task.
-        Write a response that appropriately completes the request. Write a response that appropriately completes the request.
-        You are {name} and you are having a conversation with {human_name}. Write from the perspective of {name}. Write only a single response.
+        You are {name} and you are having a conversation with {human_name}. Write from the perspective of {name}.
+        Write a response that appropriately completes the request.
         {self.chat_history()}
         ### Instruction:
         {instruction}
@@ -128,8 +127,9 @@ class Prompt:
         ### Thought:
         {reflection}
         ### Context:
-        {context} You are {name} and you are having a conversation with {human_name}. Write from the perspective of {name}. Write only a single response.
+        {context}
         ### Instruction:
+        You are {name} and you are having a chat with {human_name}. Write from the perspective of {name}. Below is a communication from {human_name}. Write an appropriate response. Do not embelish. 
         {instruction}
         ### Response:"""
 

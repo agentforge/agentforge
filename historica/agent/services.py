@@ -1,20 +1,21 @@
 from historica.config import Config
 import requests
+from historica.agent.logger import logger
 
 def handle_response_error(func):
   def wrapper(*args, **kwargs):
     try:
         response = func(*args, **kwargs)
     except Exception as e:
-        print(e)
-        print("Request failed with status code 500")
+        logger.error(e)
+        logger.error("Request failed with status code 500")
         return "ERROR PLEASE TRY AGAIN LATER"
     if response.status_code == 200:
-        print(f"Request successful with status code {response.status_code}")
-        print(response.json())
+        logger.error(f"Request successful with status code {response.status_code}")
+        logger.error(response.json())
         return response.json()
     else:
-        print(f"Request failed with status code {response.status_code}")
+        logger.error(f"Request failed with status code {response.status_code}")
         return "ERROR PLEASE TRY AGAIN LATER"
   return wrapper
 

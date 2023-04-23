@@ -8,6 +8,7 @@ from historica.helpers import measure_time
 
 from . import Whisper
 from . import TextToSpeech
+from . import BarkTextToSpeech
 
 path_root = Path(__file__).parents[2]
 sys.path.append(str(path_root))
@@ -36,7 +37,6 @@ def text_to_speech():
     speaker_idx=speaker_idx
   )
   # Return the wav file in the response
-  print(filename)
   return jsonify({"filename": filename})
 
 # Define the /interpret endpoint

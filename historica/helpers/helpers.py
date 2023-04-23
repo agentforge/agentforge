@@ -8,6 +8,7 @@ from pygments import highlight
 import time, re, math
 from functools import wraps
 from flask import request
+from historica.agent.logger import logger
 
 def measure_time(func):
     @wraps(func)
@@ -16,7 +17,7 @@ def measure_time(func):
         response = func(*args, **kwargs)
         end_time = time.time()
         elapsed_time = end_time - start_time
-        print(f"API call: {request.path} took {elapsed_time:.4f} seconds")
+        logger.info(f"API call: {request.path} took {elapsed_time:.4f} seconds")
         return response
     return wrapper
 

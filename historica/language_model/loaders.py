@@ -1,7 +1,8 @@
-import torch
+import torch, logging
 from peft import PeftModel
 from transformers import LlamaTokenizer, LlamaForCausalLM
 from transformers import AutoModelForCausalLM, AutoTokenizer
+from historica.language_model.logger import logger
 
 ## Loaders for different models
 class Loader:
@@ -15,16 +16,16 @@ class Loader:
 
     def load(self, config, device="cuda"):
         self.config = config
-        if config["model_type"] == "alpaca":
-            self.alpaca(device)
+        if config["model_type"] == "llama":
+            self.llama(device)
         elif config["model_type"] == "huggingface":
             self.huggingface(device)
         else:
             raise ValueError(f"Unknown model type {config['model_type']}")
         return self.model, self.tokenizer
 
-    def alpaca(self, device="cuda"):
-        print("Loading alpaca...")
+    def llama(self, device="cuda"):
+        logger.info("Loading llama...")
         # self.tokenizer = LlamaTokenizer.from_pretrained(self.config["model_name"], decode_with_prefix_space=True, clean_up_tokenization_spaces=True)
         self.tokenizer = LlamaTokenizer.from_pretrained(self.config["model_name"], decode_with_prefix_space=True, clean_up_tokenization_spaces=True)
         self.tokenizer.pad_token_id = 0
@@ -36,24 +37,24 @@ class Loader:
             torch_dtype=torch.float16,
             device_map=self.device_map,
         )
-
-        self.model = PeftModel.from_pretrained(
-            self.model, self.config["peft_model"],
-            torch_dtype=torch.float16,
-            # device_map=device_map
-        )
+        if "peft_model" in self.config:
+            self.model = PeftModel.from_pretrained(
+                self.model, self.config["peft_model"],
+                torch_dtype=torch.float16,
+                # device_map=device_map
+            )
 
         #LLM Models need GPU
         device = torch.device(device)
         if torch.cuda.device_count() > 1 and self.multi_gpu:
-            print(f"Using {torch.cuda.device_count()} GPUs")
+            logger.info(f"Using {torch.cuda.device_count()} GPUs")
             self.model = torch.nn.DataParallel(self.model)
         
         if not self.multi_gpu:
             self.model.half()
 
     def huggingface(self, device="cuda"):
-        print("Loading huggingface...")
+        logger.info("Loading huggingface...")
         if self.config["model_name"] == None:
             raise ValueError("model_name must be defined")
 
@@ -63,7 +64,7 @@ class Loader:
         padding_side = self.config.get("padding_side", "left")
         cfg = self.config["model_name"]
 
-        print(f"Loading model... {cfg}")
+        logger.info(f"Loading model... {cfg}")
         self.model = AutoModelForCausalLM.from_pretrained(
             cfg,
             load_in_8bit=load_in_8bit,
@@ -72,7 +73,7 @@ class Loader:
             revision=revision,
             trust_remote_code=True
         )
-        print("Loading tokenizer...")
+        logger.info("Loading tokenizer...")
         self.tokenizer = AutoTokenizer.from_pretrained(self.config["tokenizer_name"], padding_side=padding_side)
 
         # if self.config["tokenizer_name"] == "OpenAssistant/oasst-sft-1-pythia-12b":
@@ -84,9 +85,9 @@ class Loader:
         # # LLM Models need GPU
         device = torch.device(device)
         if torch.cuda.device_count() > 1 and self.multi_gpu:
-            print(f"Using {torch.cuda.device_count()} GPUs")
+            logger.info(f"Using {torch.cuda.device_count()} GPUs")
             self.model = torch.nn.DataParallel(self.model)
     
         self.model = self.model.to(self.device)
         self.model.eval()  # Set the model to evaluation mode
-        print(f"Model loaded and online...")
+        logger.info(f"Model loaded and online...")
