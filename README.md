@@ -3,70 +3,51 @@
 Playground for integrating agents with deeplearning micro-services.
 
 ## Features
-
-### Agent
-- [x] RESTful Service proxy
-- [x] Conversational Memory
-- [ ] Multi-Agent Forum
-
-### Agent Tools
-- [x] Search
-- [ ] REPL
-- [ ] Task Plan Loop
-
-### Avatars
-- [x] Configurable Avatar System
-- [ ] Avatar Creation Pipeline
-
-### Speech To Animation
-- [x] Wav2Lip
-- [ ] Winfredy / SadTalker
-
-### Speech Encoding
-- [x] TTS.py
-- [ ] Improve text-preprocessing
-- [ ] Audio Data Aggregation/Cleanup
-- [ ] LORA Fine-Tuning
-
-### Language Model
-- [x] Alpaca-LORA-7B w/ PEFT
-- [x] dolly-v1-6B
+- [x] Flask proxy
+- [x] Basic Conversational Memory
+- [x] JSON Configurable Avatar System
+- [x] Wav2Lip generated video
+- [x] coqai TTS.py generated audio
+- [x] PromptManager
+- [x] Llama/Alpaca
+- [x] HuggingFace
 - [x] Streaming
-- [ ] OpenAI API Integration
-
-#### Fine-Tuning
-- [ ] LORA Fine-Tuning w/ Anarchist Library for Makhno Avatar 
-
-#### RLHF (Reinforcement Learning through Human Feedback)
-- [ ] Integrate RLHF
-
-### Speech Decoding
-- [ ] whisper/large
-
-### Computer Vision
+- [x] SSE Events for Streaming
+- [x] React/Typescript Frontend
+- [x] Multi-GPU Inference
+- [x] whisper/large (buggy currently)
+- [x] Rails Prototype (deprecated)
+- [ ] DeepLake Service/Long-Term Vector Storage Memory
+- [ ] Always-Online Agent w/ Executive Function Loop
+- [ ] Caretake Executive Function Example
+- [ ] Avatar Creator
+- [ ] Avatar Library (Share, Remix, Report Avatars)
+- [ ] [whisper/fast](https://github.com/sanchit-gandhi/whisper-jax)
 - [ ] PRISMR Object Detection
-
-### Web Frontend
-- [x] Rails Prototype
-- [ ] SSE Events for Streaming
-- [ ] React/Typescript Production Level App
-- [ ] Mobile-First Approach
-
-### Infra
-- [x] Multi-GPU
+- [ ] Convert Flask to Fast API
+- [ ] Audio Data Aggregation Pipeline
+- [ ] [Winfredy / SadTalker](https://github.com/Winfredy/SadTalker)
+- [ ] [Bark TTS](https://github.com/suno-ai/bark)
+- [ ] Integrate Latest Langchain
+- [ ] LORA Fine-Tuning w/ External Library
+- [ ] [PPO With TRL](https://github.com/lvwerra/trl)
+- [ ] Fine-Tuning or PPO w/ Long-Term Vector Memory Storage
+- [ ] Mobile Application
 
 ## Requirements
 
-Minimalistic requirements.
+Minimalistic requirements:
 
-- Docker
-- CUDA capable nvidia GPU + drivers
+- [Install Docker](https://docs.docker.com/get-docker/)
+- CUDA capable Nvidia GPU + Drivers (if running GPU services locally)
+
+## Run the Web Instance
+
+`docker-compose up -d web`
+
+Change config.ts to point to the model ensemble IP.
 
 ## Build for Dev
-
-Create an ssl key and cert for the Flask API:
-
-```openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365```
 
 Install docker-compose >= 1.29.2:
 
@@ -90,7 +71,11 @@ Run all the services via docker-compose in the docker folder:
 
 ```docker-compose up -d```
 
-TODO: Running in prod
+## SSL
+
+Create an ssl key and cert for the Flask API:
+
+```openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365```
 
 ## Development
 
@@ -106,10 +91,6 @@ To run the react typescript server:
 
 ```PORT=3005 npm start```
 
-Running the rails server (deprecated):
-
-```rails server -p 3001```
-
 ## Data Engine
 
 Uses SQL Alchemy and Redis to store user credentials, profile, and training data.
@@ -117,3 +98,7 @@ Uses SQL Alchemy and Redis to store user credentials, profile, and training data
 To add new columns:
 
 ```flask db migrate -m "Migration message"```
+
+## DeepLake
+
+Coming Soon!
