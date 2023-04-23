@@ -23,12 +23,7 @@ class Prompt:
     # Get the chat history string from memory
     # TODO: Ensure we don't break the token length and maybe refactor this to live elsewhere
     def chat_history(self):
-        mem = self.memory.load_memory_variables({})
-        def get_content(obj):
-            prefix = "### Instruction: " if obj.__class__.__name__ == "HumanMessage" else "### Response: "
-            return prefix + obj.content
-        # TODO: Need a more robust way to ensure we don't hit token limit for prompt
-        return "\n".join(list(map(lambda obj: get_content(obj), mem["history"][-5:]))) if "history" in mem else ""
+        return self.memory.chat_history()
 
     # no prompt is useful for experiments
     def no_prompt(self, instruction="", **kwargs):
@@ -53,11 +48,9 @@ class Prompt:
         return template
 
     def dolly_prompt(self, instruction="", context="", name="", **kwargs):
-        return f"""Below is an instruction that describes a task. Write a response that appropriately completes the request.
-
+        return f"""Below is an instruction that describes a task. Write a response that appropriately completes the request.s
             ### Instruction:
             {instruction}
-
             ### Response:
         """
 
@@ -127,9 +120,8 @@ class Prompt:
         ### Thought:
         {reflection}
         ### Context:
-        {context}
+        {context} You are {name} and you are having a chat with {human_name}. Write from the perspective of {name}. Below is a communication from {human_name}. Write an appropriate response. Do not embelish. Do not lie. Do not be rude.
         ### Instruction:
-        You are {name} and you are having a chat with {human_name}. Write from the perspective of {name}. Below is a communication from {human_name}. Write an appropriate response. Do not embelish. 
         {instruction}
         ### Response:"""
 

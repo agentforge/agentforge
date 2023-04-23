@@ -21,7 +21,8 @@ Playground for integrating agents with deeplearning micro-services.
 - [ ] Worker/Queue for Model Services
 - [ ] Always-Online Agent w/ Executive Function Loop
 - [ ] Caretake Executive Function Example
-- [ ] Avatar Creator
+- [ ] Avatar Creator on Web
+- [ ] Make Services and Models Configurable through Web Interface/DB
 - [ ] Avatar Library (Share, Remix, Report Avatars)
 - [ ] [whisper/fast](https://github.com/sanchit-gandhi/whisper-jax)
 - [ ] PRISMR Object Detection
@@ -39,7 +40,7 @@ Playground for integrating agents with deeplearning micro-services.
 
 Minimalistic requirements:
 
-- [Install Docker](https://docs.docker.com/get-docker/)
+- [Install Docker or Docker Engine for Linux](https://docs.docker.com/get-docker/)
 - CUDA capable Nvidia GPU + Drivers (if running GPU services locally)
 - Install docker-compose >= 1.29.2:
 
@@ -49,23 +50,34 @@ sudo chmod +x /usr/local/bin/docker-compose
 docker-compose --version
 ```
 
-## Run the Web Instance
+## Build Docker Containers
+
+Build the web image:
+
+```
+docker build --build-arg REPO_URL=git@github.com:fragro/agent_n.git  --build-arg SSH_PRIVATE_KEY="$(cat ~/.ssh/id_rsa)" -t web2 -f ./docker/web2.Dockerfile .
+```
+
+Note: You only need to run the ensemble stack if you are pointing services to external services, have thick GPUs, or accept absurdly slow CPU inference speeds.
+
+
+Build the model ensemble stack:
+
+```
+cd agent_n
+docker build --build-arg REPO_URL=git@github.com:fragro/agent_n.git  --build-arg SSH_PRIVATE_KEY="$(cat ~/.ssh/id_rsa)" -t historica -f ./docker/historica.Dockerfile .
+docker build -t worker -f ./docker/worker.Dockerfile .
+docker build -t llm -f ./docker/llm.Dockerfile .
+docker build -t speech -f ./docker/speech.Dockerfile .
+docker build -t wav2lip -f ./docker/wav2lip.Dockerfile .
+```
+## Run the Web Instance Only (If Model Ensemble is Remote)
 
 `docker-compose up -d web`
 
 Change config.ts to point to the model ensemble IP.
 
-## Build for Dev
-
-Build the primary Docker image:
-
-```docker build --build-arg REPO_URL=git@github.com:fragro/agent_n.git  --build-arg SSH_PRIVATE_KEY="$(cat ~/.ssh/id_rsa)" -t historica -f ./docker/historica.Dockerfile .```
-
-Now build the rest of the containers:
-
-```make build```
-
-## Run
+## Run Entire Stack
 
 Run all the services via docker-compose in the docker folder:
 

@@ -7,11 +7,11 @@ from langchain.document_loaders import TextLoader
 from langchain.text_splitter import CharacterTextSplitter
 
 class Memory:
-  def __init__(self, model_name="decapoda-research/llama-7b-hf"):
+  def __init__(self, model_name="fragro/llama-7b-hf"):
     self.memories = {}
-    # self.embdeddings = HuggingFaceEmbeddings(model_name=model_name)
+    self.embdeddings = HuggingFaceEmbeddings(model_name=model_name)
     # Use deeplake for long-term vector memory storage
-    # self.deeplake = DeepLake(dataset_path="/app/cache/deeplake2", embedding_function=self.embdeddings)
+    self.deeplake = DeepLake(dataset_path="/app/cache/deeplake2", embedding_function=self.embdeddings)
     self.deeplake = None
 
   # Stores memory for various agent avatars
@@ -50,6 +50,16 @@ class Memory:
   def remember_with_app_context(self, prompt, response, app):
       with app.app_context():
           self.save_interaction(prompt, response)
+
+  # Returns the last 5 interactions from the short term memory
+  def chat_history(self):
+      mem = self.short_term_memory.load_memory_variables({})
+      def get_content(obj):
+          prefix = "### Instruction: " if obj.__class__.__name__ == "HumanMessage" else "### Response: "
+          return prefix + obj.content
+      # TODO: Need a more robust way to ensure we don't hit token limit for prompt
+      return "\n".join(list(map(lambda obj: get_content(obj), mem["history"][-5:]))) if "history" in mem else ""
+
 
   # Saves a response from another individual to long-term memory
   def save_interaction(self, prompt, response):

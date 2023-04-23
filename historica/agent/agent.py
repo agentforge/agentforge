@@ -63,7 +63,7 @@ class Agent():
     self.set_avatar_context(config["avatar"])
     self.memory.setup_memory(ai_prefix=self.prompt_context["name"], human_prefix=config["human_name"])
     # Rebuild the prompt manager
-    self.prompt_manager = Prompt(self.memory.short_term_memory)
+    self.prompt_manager = Prompt(self.memory)
 
   # Saves a current speech artifact to the memory
   def save_speech(self, speech):
