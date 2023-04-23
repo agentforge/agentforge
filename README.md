@@ -40,6 +40,13 @@ Minimalistic requirements:
 
 - [Install Docker](https://docs.docker.com/get-docker/)
 - CUDA capable Nvidia GPU + Drivers (if running GPU services locally)
+- Install docker-compose >= 1.29.2:
+
+```
+sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose
+docker-compose --version
+```
 
 ## Run the Web Instance
 
@@ -48,14 +55,6 @@ Minimalistic requirements:
 Change config.ts to point to the model ensemble IP.
 
 ## Build for Dev
-
-Install docker-compose >= 1.29.2:
-
-```
-sudo curl -L "https://github.com/docker/compose/releases/download/1.29.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-sudo chmod +x /usr/local/bin/docker-compose
-docker-compose --version
-```
 
 Build the primary Docker image:
 
