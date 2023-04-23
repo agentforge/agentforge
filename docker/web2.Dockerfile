@@ -1,26 +1,10 @@
 # Use the official Node.js v14 image as the base image
 FROM node:14
 
-ARG REPO_URL
-ARG SSH_PRIVATE_KEY
-
-ENV REPO_URL=$REPO_URL
-ENV SSH_PRIVATE_KEY=$SSH_PRIVATE_KEY
-
-# Copy over git repos
-RUN mkdir -p /root/.ssh && \
-    echo "$SSH_PRIVATE_KEY" > /root/.ssh/id_rsa && \
-    chmod 600 /root/.ssh/id_rsa
-
-RUN  apt-get -yq update && \
-     apt-get -yqq install ssh
-
-RUN ssh-keyscan github.com >> /root/.ssh/known_hosts
-
 # Set the working directory in the container
 WORKDIR /app
 
-RUN git clone "$REPO_URL"
+COPY ../agent_n /app/agent_n
 
 WORKDIR /app/agent_n/web2
 
