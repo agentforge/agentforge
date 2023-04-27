@@ -59,10 +59,17 @@ const Configure: React.FC<ConfigureProps> = () => {
 
   const setConfiguration = async (userConfig: Configuration) => {
     try {
-      const response = await api.post(`/v1/configure`, {
-        token: localStorage.getItem('token'),
-        config: getLocalConfiguration(),
-      });
+      await api.post(
+        `/v1/configure`,
+        {
+          config: getLocalConfiguration(),
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`,
+          },
+        },
+      );
       return { err: false };
     } catch (error) {
       console.error(error);
