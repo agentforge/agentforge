@@ -47,6 +47,7 @@ class Agent():
     # Seed context from the avatar json file
     kwargs.update(self.prompt_context)
     kwargs["human_name"] = config["human_name"]
+    kwargs["long_term_memories"] = self.memory.get_long_term_memories()
     # get the prompt template
     prompt_type = self.get_prompt_type(config)
     # process the prompt template
