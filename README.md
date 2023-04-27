@@ -17,9 +17,10 @@ Playground for integrating agents with deeplearning micro-services.
 - [x] Multi-GPU Inference
 - [x] whisper/large (buggy currently)
 - [x] Rails Prototype (deprecated)
-- [ ] DeepLake Service/Long-Term Vector Storage Memory
+- [x] DeepLake Service/Long-Term Vector Storage Memory
 - [ ] Sentiment Classification Model/Service
 - [ ] Named-Entity Recognition Model/Service
+- [ ] [Implement Quantization Patch](https://github.com/oobabooga/text-generation-webui/blob/main/modules/models.py)
 - [ ] Worker/Queue for Model Services
 - [ ] Always-Online Agent w/ Executive Function Loop
 - [ ] Fall/Emergency Sound Detection Model
