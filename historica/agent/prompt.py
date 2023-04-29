@@ -113,14 +113,15 @@ class Prompt:
         {instruction}
         ### Response:"""
 
-    def instruct_prompt_w_memory(self, instruction="", context="", name="", human_name="", reflection="", **kwargs):
+    def instruct_prompt_w_memory(self, instruction="", context="", name="", human_name="", reflection="", long_term_memories="", **kwargs):
         return f"""
-        ### History:
-        {self.chat_history()}
         ### Thought:
         {reflection}
         ### Context:
-        {context} You are {name} and you are having a chat with {human_name}. Write from the perspective of {name}. Below is a communication from {human_name}. Write an appropriate response. Do not embelish. Do not lie. Do not be rude.
+        {context} You are {name} and you are having a chat with {human_name}. Write from the perspective of {name}. Below is a communication from {human_name}. Write an appropriate response considering the previous history.
+        ### Memory:
+        {long_term_memories}
+        {self.chat_history()}
         ### Instruction:
         {instruction}
         ### Response:"""

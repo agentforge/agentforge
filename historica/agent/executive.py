@@ -50,11 +50,11 @@ class ExecutiveCognition:
         form_data["avatar"] = self.avatar.get_avatar(form_data["avatar"])
         self.agent.configure(form_data)
 
+        # Get recent memories about this prompt
+        self.agent.memory.recall(prompt)
+
         # Record raw prompt in memory
         self.agent.save_speech(prompt)
-
-        # Get memories assoicated with this prompt
-        self.agent.memory.recall(prompt)
 
         # Format prompt with our Prompt engineering
         formatted_prompt = self.agent.process_prompt(instruction=prompt, config=form_data)
