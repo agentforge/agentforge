@@ -1,4 +1,5 @@
 import Card from "@/components/home/card";
+import DualCard from "@/components/home/dualcard";
 import Balancer from "react-wrap-balancer";
 import { DEPLOY_URL } from "@/lib/constants";
 import { Github, Twitter } from "@/components/shared/icons";
@@ -78,13 +79,24 @@ export default async function Home() {
       </div>
       <div className="my-10 grid w-full max-w-screen-xl animate-fade-up grid-cols-1 gap-5 px-5 md:grid-cols-3 xl:px-0">
         {features.map(({ title, description, demo, large }) => (
-          <Card
-            key={title}
-            title={title}
-            description={description}
-            demo={(demo)}
-            large={large}
-          />
+          title === "Building Next Generation Agent Applications" ? (
+            <DualCard
+              key={title}
+              title={title}
+              description={description}
+              demo={(demo)}
+              large={large}
+            />
+          ) : (
+            <Card
+              key={title}
+              title={title}
+              description={description}
+              demo={(demo)}
+              large={large}
+            />
+          )
+          
         ))}
       </div>
     </>
@@ -135,20 +147,20 @@ const features = [
     ),
   },
   {
-    title: "Beautiful, reusable components",
+    title: "Building Next Generation Agent Applications",
     description:
-      "Pre-built beautiful, a11y-first components, powered by [Tailwind CSS](https://tailwindcss.com/), [Radix UI](https://www.radix-ui.com/), and [Framer Motion](https://framer.com/motion)",
+      "Language models provide a new probabilistic interface for building agent applications and with it comes new challenges. PersonaForge makes it easy",
     large: true,
     demo: (
-        <Image alt="JSON vector logo" src="/json.svg" width={ 100 } height={ 100 }/>
+        <Image alt="JSON vector logo" src="/agent1.png" width={ 350 } height={ 150 }/>
     ),
   },
   {
-    title: "Local First",
+    title: "Local First Models",
     description:
-      "Don't get tied down by a single AI provider. PersonaForge is built to be deployed anywhere, even on your own machine.",
+      "PersonaForge is built to be deployed anywhere without need for external APIs or services",
     demo: (
-      <Image alt="Open Source Logo" src="/authjs.webp" width={50} height={50} />
+      <Image alt="Open Source Logo" src="/agent2.png" width={200} height={200} />
     ),
   },
 ];
