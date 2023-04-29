@@ -18,6 +18,9 @@ Playground for integrating agents with deeplearning micro-services.
 - [x] whisper/large (buggy currently)
 - [x] Rails Prototype (deprecated)
 - [ ] DeepLake Service/Long-Term Vector Storage Memory
+- [ ] Sentiment Analysis Service
+- [ ] Named Entity Recognition Service
+- [ ] Summarizer Service
 - [ ] Worker/Queue for Model Services
 - [ ] Always-Online Agent w/ Executive Function Loop
 - [ ] Caretake Executive Function Example

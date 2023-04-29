@@ -46,8 +46,6 @@ const Home: React.FC<HomeProps> = () => {
     fdr: 'Franklin D. Roosevelt',
   };
 
-  // const navigate = useNavigate();
-
   const [textAreaValue, setTextAreaValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [currentVideo, setCurrentVideo] = useState<'videoA' | 'videoB'>('videoA');

@@ -10,6 +10,7 @@ import Configure from './components/Configure';
 import NavMenu from './components/Nav';
 
 import './dist/css/bootstrap.min.css';
+import api from './components/api';
 
 interface AppProps {}
 
@@ -24,37 +25,9 @@ const App: React.FC<AppProps> = () => {
     }
   }, []);
 
-  const handleLogout = async () => {
-    const token = localStorage.getItem('token');
-    if (!token) {
-      console.error('No token found');
-      return;
-    }
-    try {
-      const response = await fetch(`${config.host}:${config.port}/logout`, {
-        method: 'POST',
-        credentials: 'include', // Include cookies in the request
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      console.log(response);
-      if (response.ok) {
-        localStorage.removeItem('token');
-        setIsLoggedIn(false);
-        delete axios.defaults.headers.common['Authorization'];
-      } else {
-        throw new Error('Logout failed');
-      }
-    } catch (error) {
-      console.error('Error:', error);
-    }
-  };
-
   return (
     <BrowserRouter>
-      <NavMenu isLoggedIn={isLoggedIn} handleLogout={handleLogout} />
+      <NavMenu isLoggedIn={isLoggedIn} setIsLoggedIn={setIsLoggedIn} />
       <Routes>
         <Route path="/" element={isLoggedIn ? <Home /> : <Navigate to="/login" />} />
         <Route path="/login" element={isLoggedIn ? <Navigate to="/" /> : <Login setIsLoggedIn={setIsLoggedIn} />} />
