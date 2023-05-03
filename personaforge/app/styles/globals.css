@@ -1,0 +1,25 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+textarea {
+  border-radius: 4px;
+  font-size: 13px;
+  line-height: 20px;
+  padding-left: 5px;
+  padding-right: 5px;
+  appearance: none;
+  border-width: 0px;
+  font-family: inherit;
+  margin: 0px;
+  outline: none;
+  padding: var(--space-1);
+  width: 100%;
+  background-color: hsl(197 6.8% 13.6%);
+  box-shadow: inset 0 0 0 1px hsl(203 6.0% 24.3%);;
+  color: hsl(210 6.0% 93.0%);
+  font-variant-numeric: tabular-nums;
+  position: relative;
+  min-height: 80px;
+  resize: vertical;
+}

@@ -2,7 +2,7 @@
 import { ImageResponse } from "next/server";
 
 export const runtime = "edge";
-export const alt = "PersonaForge - Building agents for the future";
+export const alt = "AgentForge - Building agents for the future";
 export const contentType = "image/png";
 
 export default async function OG() {
@@ -26,8 +26,8 @@ export default async function OG() {
         }}
       >
         <img
-          src={new URL("../public/personaforge-logo.png", import.meta.url).toString()}
-          alt="PersonaForge Logo"
+          src={new URL("../public/agentforge-logo.png", import.meta.url).toString()}
+          alt="AgentForge Logo"
           tw="w-20 h-20 mb-4 opacity-95"
         />
         <h1
@@ -42,7 +42,7 @@ export default async function OG() {
             letterSpacing: "-0.02em",
           }}
         >
-          PersonaForge
+          AgentForge
         </h1>
       </div>
     ),

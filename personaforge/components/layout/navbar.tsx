@@ -15,22 +15,18 @@ export default function NavBar({ session }: { session: Session | null }) {
     <>
       <SignInModal />
       <div
-        className={`fixed top-0 w-full ${
-          scrolled
-            ? "border-b border-gray-200 bg-white/50 backdrop-blur-xl"
-            : "bg-white/0"
-        } z-30 transition-all`}
+        className={`fixed top-0 w-full border-b border-gray-200 bg-white/50 backdrop-blur-xl z-30 transition-all`}
       >
         <div className="mx-5 flex h-16 max-w-screen-xl items-center justify-between xl:mx-auto">
           <Link href="/" className="flex items-center font-display text-2xl">
             <Image
-              src="/personaforge-logo.svg"
-              alt="PersonaForge logo"
+              src="/agentforge-logo.svg"
+              alt="AgentForge logo"
               width="60"
               height="60"
               className="mr-2 rounded-sm"
             ></Image>
-            <p>PersonaForge</p>
+            <p>AgentForge</p>
           </Link>
           <div>
             {session ? (

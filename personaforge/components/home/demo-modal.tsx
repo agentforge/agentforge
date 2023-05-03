@@ -21,16 +21,16 @@ const DemoModal = ({
         <div className="flex flex-col items-center justify-center space-y-3 bg-white px-4 py-6 pt-8 text-center md:px-16">
           <a href="https://precedent.dev">
             <Image
-              src="/personaforge-logo.png"
-              alt="PersonaForge Logo"
+              src="/agentforge-logo.png"
+              alt="AgentForge Logo"
               className="h-10 w-10 rounded-full"
               width={20}
               height={20}
             />
           </a>
-          <h3 className="font-display text-2xl font-bold">PersonaForge</h3>
+          <h3 className="font-display text-2xl font-bold">AgentForge</h3>
           <p className="text-sm text-gray-500">
-            PersonaForge is an opinionated collection of components, hooks, and
+            AgentForge is an opinionated collection of components, hooks, and
             utilities for your Next.js project.
           </p>
         </div>
