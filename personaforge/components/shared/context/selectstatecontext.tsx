@@ -2,8 +2,8 @@
 import React, { createContext, useContext, useState } from 'react';
 
 interface SelectStateContextValue {
-  selectedValue: string | null;
-  setSelectedValue: (value: string | null) => void;
+  selectedValues: { [key: string]: string | null };
+  setSelectedValue: (id: string, value: string | null) => void;
 }
 
 const SelectStateContext = createContext<SelectStateContextValue | undefined>(undefined);
@@ -21,10 +21,17 @@ interface SelectStateProviderProps {
 }
 
 export const SelectStateProvider: React.FC<SelectStateProviderProps> = ({ children }) => {
-  const [selectedValue, setSelectedValue] = useState<string | null>(null);
+  const [selectedValues, setSelectedValues] = useState<{ [key: string]: string | null }>({});
+
+  const setSelectedValue = (id: string, value: string | null) => {
+    setSelectedValues((prevSelectedValues) => ({
+      ...prevSelectedValues,
+      [id]: value,
+    }));
+  };
 
   return (
-    <SelectStateContext.Provider value={{ selectedValue, setSelectedValue }}>
+    <SelectStateContext.Provider value={{ selectedValues, setSelectedValue }}>
       {children}
     </SelectStateContext.Provider>
   );

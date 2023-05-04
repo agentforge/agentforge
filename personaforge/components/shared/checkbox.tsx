@@ -2,7 +2,7 @@
 import React, { forwardRef } from 'react';
 import * as Checkbox from '@radix-ui/react-checkbox';
 import { CheckIcon } from '@radix-ui/react-icons';
-import { useCheckboxState } from '@/components/shared/context/checkboxcontext';
+import { useCheckboxState } from '@/components/shared/context/checkboxstatecontext';
 
 interface CheckboxElementProps {
   label: string;
