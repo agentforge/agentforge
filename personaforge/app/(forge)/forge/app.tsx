@@ -13,6 +13,8 @@ import ErrorMessage from '@/components/shared/error';
 // import useStateWithCallback from './useStateWithCallback';
 import SwirlIcon from './mind-icon.svg';
 import CheckboxElement from '@/components/shared/checkbox';
+import SliderElement from '@/components/shared/slider';
+import SelectElement from '@/components/shared/select';
 import { useCheckboxState } from '@/components/shared/context/checkboxcontext';
 
 interface ForgeProps {}
@@ -521,6 +523,7 @@ const Forge: React.FC<ForgeProps> = () => {
   };
 
   return (
+    <>
     <main className="flex min-h-screen w-full flex-col py-32">
     <div className='fixed top-0 w-full z-30 transition-all'>
       <div className="md:block md:w-2/12">
@@ -584,38 +587,39 @@ const Forge: React.FC<ForgeProps> = () => {
               </label> */}
             </div>
           </div>
-          <div>
-            <label htmlFor="max_new_tokens">Max New Tokens</label>
-            <div className="flex justify-center">
-              <input
-                ref={maxNewTokensRef}
-                type="range"
-                id="max_new_tokens"
-                className="w-8/12"
-                min="1"
-                max="2048"
-                defaultValue="1024"
-              />
-              <span id="max_new_tokens_value" className="w-2/12">
-                512
-              </span>
+              <div className='flex m-4'>
+                <div className='mt-3'>
+                  <SliderElement defaultValue={512} max={2048} step={1} ariaLabel="Max New Tokens" width="200px" />
+                </div>
+                <span id="max_new_tokens_value" className="w-2/12">
+                  512
+                </span>
             </div>
-          </div>
-          <div className="flex">
-            <div className="w-1/2">
-              <label htmlFor="avatar-dropdown">Avatar</label>
             </div>
-            <div className="w-1/2">
-              <select className="form-select float-right" id="avatar-dropdown" ref={avatarRef}>
-                {avatars.map((avatar) => (
-                  <option key={avatar} value={avatar}>
-                    {avatar}
-                  </option>
-                ))}
-              </select>
+            <div className='flex w-full'>
+              <SelectElement options={avatars} id="avatar-dropdown" label="Avatar" defaultVal="caretaker" />
             </div>
-          </div>
-          <div className="flex">
+            <div className='flex w-full'>
+              <SelectElement options={ modelConfigs } id="model-config" label="Prompt Config" defaultVal="logical" />
+            </div>
+            <div className='flex w-full'>
+              <SelectElement options={models} id="model" label="Model" defaultVal="alpaca-lora-7b" />
+            </div>
+            {/* <div className="flex">
+              <div className="w-1/2">
+                <label htmlFor="avatar-dropdown">Avatar</label>
+              </div>
+              <div className="w-1/2">
+                <select className="form-select float-right" id="avatar-dropdown" ref={avatarRef}>
+                  {avatars.map((avatar) => (
+                    <option key={avatar} value={avatar}>
+                      {avatar}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div> */}
+          {/* <div className="flex">
             <div className="w-1/2">
               <label htmlFor="model-config">Personality</label>
             </div>
@@ -639,8 +643,8 @@ const Forge: React.FC<ForgeProps> = () => {
               ))}
             </select>
           </div>
-        </div>
-        </div>
+        </div> */}
+    </div>
     <div className="w-full md:w-8/12">
       <div className="px-18%">
         <div className="chat-widget">
@@ -709,8 +713,8 @@ const Forge: React.FC<ForgeProps> = () => {
       </div>
     </div>
   </div>
-  </div>
-</main>
+  </main >
+  </>
 )};
 
 export default Forge;
