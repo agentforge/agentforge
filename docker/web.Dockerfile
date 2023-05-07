@@ -8,9 +8,12 @@ RUN mkdir /app/agent_n
 
 COPY . /app/agent_n/
 
-WORKDIR /app/agent_n/web2
+WORKDIR /app/agent_n/personaforge
 
 # Install the app's dependencies
+RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
+RUN nvm install 16.8.0
+RUN nvm use 16.8.0
 RUN npm install
 
 # Install Webpacker globally
