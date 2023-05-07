@@ -2,7 +2,6 @@
 import Card from "@/components/home/card";
 import DualCard from "@/components/home/dualcard";
 import Balancer from "react-wrap-balancer";
-import { DEPLOY_URL } from "@/lib/constants";
 import Image from "next/image";
 
 
@@ -72,16 +71,14 @@ const features = [
     description:
       "Large Language Models, Speech Synthesis, Speech Recognition, Computer Vision, and more",
     demo: (
-      <a href={DEPLOY_URL}>
-        <div className="grid grid-flow-col grid-rows-3 gap-10 p-10">
-        <span className="font-mono font-semibold">Alpaca 7B</span>
-        <span className="font-mono font-semibold">Whisper JAX</span>
-        <span className="font-mono font-semibold">coqai TTS</span>
-        <span className="font-mono font-semibold">PRISMER</span>
-        <span className="font-mono font-semibold">Wav2Lip</span>
-        <span className="font-mono font-semibold">DeepLake</span>
-      </div>
-      </a>
+      <div className="grid grid-flow-col grid-rows-3 gap-10 p-10">
+      <span className="font-mono font-semibold">Alpaca 7B</span>
+      <span className="font-mono font-semibold">Whisper JAX</span>
+      <span className="font-mono font-semibold">coqai TTS</span>
+      <span className="font-mono font-semibold">PRISMER</span>
+      <span className="font-mono font-semibold">Wav2Lip</span>
+      <span className="font-mono font-semibold">DeepLake</span>
+    </div>
     ),
   },
   {

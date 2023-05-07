@@ -268,7 +268,9 @@ pre code .comment {
     border-radius: 0; /* Remove rounded corners on smaller screens */
   }
 }
-
+.z-1000 {
+  z-index: 1000;
+}
 .fullscreen {
     position: fixed;
     top: 0;

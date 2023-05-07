@@ -2,7 +2,6 @@
 
 import React, { useEffect, useRef, useState, KeyboardEvent } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { SpinnerIcon, ArrowRightIcon } from '@radix-ui/react-icons';
 
 import api, { api_url } from '@/components/shared/api';
 import { MessageProps } from '@/components/shared/message';
@@ -13,7 +12,13 @@ import ErrorMessage from '@/components/shared/error';
 // import useStateWithCallback from './useStateWithCallback';
 import SwirlIcon from './mind-icon.svg';
 import CheckboxElement from '@/components/shared/checkbox';
-import { useCheckboxState } from '@/components/shared/context/checkboxcontext';
+import SliderElement from '@/components/shared/slider';
+import SelectElement from '@/components/shared/select';
+import { useCheckboxState } from '@/components/shared/context/checkboxstatecontext';
+import { useSelectState } from '@/components/shared/context/selectstatecontext';
+import { useSliderState } from '@/components/shared/context/sliderstatecontext';
+
+
 
 interface ForgeProps {}
 
@@ -49,7 +54,6 @@ const Forge: React.FC<ForgeProps> = () => {
   };
 
   const [textAreaValue, setTextAreaValue] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
   const [currentVideo, setCurrentVideo] = useState<'videoA' | 'videoB'>('videoA');
   const [userConfiguration, setUserConfiguration] = useState<Configuration>({
     username: '',
@@ -61,11 +65,11 @@ const Forge: React.FC<ForgeProps> = () => {
   const avatarRef = useRef<HTMLSelectElement>(null);
   const maxNewTokensRef = useRef<HTMLInputElement>(null);
   // const ttsCheckboxRef = useRef<HTMLButtonElement>(null);
-  const { checkboxState } = useCheckboxState();
+  // const { checkboxState } = useCheckboxState();
 
-  const handleClick = () => {
-    console.log('Checkbox checked:', checkboxState);
-  };
+  // const handleClick = () => {
+  //   console.log('Checkbox checked:', checkboxState);
+  // };
 
   const streamingCheckboxRef = useRef<HTMLInputElement>(null);
   const lipsyncCheckboxRef = useRef<HTMLInputElement>(null);
@@ -222,22 +226,24 @@ const Forge: React.FC<ForgeProps> = () => {
     return avatar;
   };
 
-  // Getter/Setter Functions for all user configuration variables
-  // present on this screen
-  const getLanguageModelConfig = () => {
+  const useLanguageModelConfig = () => {
+    const { checkboxStates } = useCheckboxState();
+    const { selectedValues } = useSelectState();
+    const { sliderValues } = useSliderState();
+  
     const configs = {
       human_name: userConfiguration.username || '',
       robot_name: names[getAvatar()] || '',
-      tts: ttsCheckboxRef.current?.checked || false,
-      lipsync: lipsyncCheckboxRef.current?.checked || false,
-      streaming: streamingCheckboxRef.current?.checked || false,
-      max_new_tokens: parseInt(maxNewTokensRef.current?.value || '0', 10),
-      avatar: avatarRef.current?.value || '',
-      generation_config: modelConfigInputRef.current?.value || '',
-      model_key: modelKeyInputRef.current?.value || '',
+      tts: checkboxStates.tts || false,
+      lipsync: checkboxStates.lipsync || false,
+      streaming: checkboxStates.streaming || false,
+      max_new_tokens: sliderValues.maxNewTokens || 10,
+      avatar: selectedValues.avatar || '',
+      generation_config: selectedValues.generationConfig || '',
+      model_key: selectedValues.modelKey || '',
       prompt: '',
     };
-
+  
     return configs;
   };
 
@@ -285,8 +291,8 @@ const Forge: React.FC<ForgeProps> = () => {
   };
 
   // Calls TTS API
-  const getTTS = async (prompt: string) => {
-    const data = getLanguageModelConfig();
+  const useTTS = async (prompt: string) => {
+    const { data } = useLanguageModelConfig();
     data['prompt'] = prompt;
     await fetch(`/v1/tts`, {
       method: 'POST',
@@ -351,7 +357,7 @@ const Forge: React.FC<ForgeProps> = () => {
           }
     
           if (data['tts']) {
-            getTTS(output);
+            useTTS(output);
           } else {
             setIsLoading(false);
           }
@@ -521,6 +527,7 @@ const Forge: React.FC<ForgeProps> = () => {
   };
 
   return (
+    <>
     <main className="flex min-h-screen w-full flex-col py-32">
     <div className='fixed top-0 w-full z-30 transition-all'>
       <div className="md:block md:w-2/12">
@@ -584,38 +591,39 @@ const Forge: React.FC<ForgeProps> = () => {
               </label> */}
             </div>
           </div>
-          <div>
-            <label htmlFor="max_new_tokens">Max New Tokens</label>
-            <div className="flex justify-center">
-              <input
-                ref={maxNewTokensRef}
-                type="range"
-                id="max_new_tokens"
-                className="w-8/12"
-                min="1"
-                max="2048"
-                defaultValue="1024"
-              />
-              <span id="max_new_tokens_value" className="w-2/12">
-                512
-              </span>
+              <div className='flex m-4'>
+                <div className='mt-3'>
+                  <SliderElement defaultValue={512} max={2048} step={1} ariaLabel="Max New Tokens" width="200px" />
+                </div>
+                <span id="max_new_tokens_value" className="w-2/12">
+                  512
+                </span>
             </div>
-          </div>
-          <div className="flex">
-            <div className="w-1/2">
-              <label htmlFor="avatar-dropdown">Avatar</label>
             </div>
-            <div className="w-1/2">
-              <select className="form-select float-right" id="avatar-dropdown" ref={avatarRef}>
-                {avatars.map((avatar) => (
-                  <option key={avatar} value={avatar}>
-                    {avatar}
-                  </option>
-                ))}
-              </select>
+            <div className='flex w-full'>
+              <SelectElement options={avatars} id="avatar-dropdown" label="Avatar" defaultVal="caretaker" />
             </div>
-          </div>
-          <div className="flex">
+            <div className='flex w-full'>
+              <SelectElement options={ modelConfigs } id="model-config" label="Prompt Config" defaultVal="logical" />
+            </div>
+            <div className='flex w-full'>
+              <SelectElement options={models} id="model" label="Model" defaultVal="alpaca-lora-7b" />
+            </div>
+            {/* <div className="flex">
+              <div className="w-1/2">
+                <label htmlFor="avatar-dropdown">Avatar</label>
+              </div>
+              <div className="w-1/2">
+                <select className="form-select float-right" id="avatar-dropdown" ref={avatarRef}>
+                  {avatars.map((avatar) => (
+                    <option key={avatar} value={avatar}>
+                      {avatar}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div> */}
+          {/* <div className="flex">
             <div className="w-1/2">
               <label htmlFor="model-config">Personality</label>
             </div>
@@ -639,55 +647,55 @@ const Forge: React.FC<ForgeProps> = () => {
               ))}
             </select>
           </div>
-        </div>
-        </div>
+        </div> */}
+    </div>
     <div className="w-full md:w-8/12">
       <div className="px-18%">
-        <div className="chat-widget">
-          <ul
-            ref={chatHistoryRef}
-            className="no-bullets chat-history"
-            style={{ maxHeight: '500px', overflow: 'scroll' }}
-          >
-            {messages.map((message, _) => (
-              <li key={message.id} className={message.author_type}>
-                <div>
-                  {message.author}: <span dangerouslySetInnerHTML={{ __html: message.text }}></span>
-                </div>
-              </li>
-            ))}
-          </ul>
-          <div id="chat-input" className="flex">
-            <div className="w-3/4">
-              <textarea
-                onChange={handleTextAreaChange}
-                value={textAreaValue}
-                id="user-input"
-                className="form-control"
-                rows={4}
-                style={{ width: '100%' }}
-                ref={textareaRef}
-                onKeyDown={handleKeyDown}
-              ></textarea>
-            </div>
-            <div className="w-1/4">
-            <button
-              id="send-message"
-              className="btn-main"
-              onClick={getCompletion}
-              style={{ padding: '0px' }}
+          <div className="chat-widget">
+            <ul
+              ref={chatHistoryRef}
+              className="no-bullets chat-history"
+              style={{ maxHeight: '500px', overflow: 'scroll' }}
             >
-              {
-                isLoading ? (
-                  <SpinnerIcon className="swirling-icon" />
-                ) : (
-                  <ArrowRightIcon />
-                )}
-            </button>
-              {/* <AudioRecorder /> */}
+              {messages.map((message, _) => (
+                <li key={message.id} className={message.author_type}>
+                  <div>
+                    {message.author}: <span dangerouslySetInnerHTML={{ __html: message.text }}></span>
+                  </div>
+                </li>
+              ))}
+            </ul>
+            <div id="chat-input" className="flex">
+              <div className="w-3/4">
+                <textarea
+                  onChange={handleTextAreaChange}
+                  value={textAreaValue}
+                  id="user-input"
+                  className="form-control"
+                  rows={4}
+                  style={{ width: '100%' }}
+                  ref={textareaRef}
+                  onKeyDown={handleKeyDown}
+                ></textarea>
+              </div>
+              <div className="w-1/4">
+              <button
+                id="send-message"
+                className="btn-main"
+                onClick={getCompletion}
+                style={{ padding: '0px' }}
+              >
+                {
+                  isLoading ? (
+                    <SpinnerIcon className="swirling-icon" />
+                  ) : (
+                    <ArrowRightIcon />
+                  )}
+              </button>
+                {/* <AudioRecorder /> */}
+              </div>
             </div>
           </div>
-        </div>
         <div>
           <ErrorMessage errorState={errorState} errorValue={errorValue} closeError={closeError} />
         </div>
@@ -709,8 +717,8 @@ const Forge: React.FC<ForgeProps> = () => {
       </div>
     </div>
   </div>
-  </div>
-</main>
+  </main >
+  </>
 )};
 
 export default Forge;
