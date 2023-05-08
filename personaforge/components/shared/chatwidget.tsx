@@ -3,35 +3,81 @@ import * as React from 'react';
 import { useChatWidgetState, ChatWidgetStateProvider } from '@/components/shared/context/chatwidgetstatecontext';
 import { ArrowRightIcon } from '@radix-ui/react-icons';
 import { useLanguageModelConfig } from '@/components/shared/context/languagemodelconfigcontext';
-
-// Define the MessageType interface
-interface MessageType {
-  id: number;
-  author: string;
-  author_type: string;
-  text: string;
-}
+import { MessageProps } from '@/components/shared/message';
+import { v4 as uuidv4 } from 'uuid';
 
 const ChatWidget: React.FC = () => {
+  const languageModelConfig = useLanguageModelConfig();
   const { messages, setMessages, textAreaValue, setTextAreaValue } = useChatWidgetState();
+
   const [isLoading, setIsLoading] = React.useState(false);
 
   const handleTextAreaChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     setTextAreaValue(event.target.value);
   };
-  const useCompletion = async () => {
-    const prompt = textAreaValue;
-    const languageModelConfig = useLanguageModelConfig();
+
+  const addMessage = async (
+    message: string | undefined,
+    author: string | undefined,
+    author_type: string | undefined,
+    error: boolean,
+  ) => {
+
+    console.log(author);
+    if (author == null) {
+      console.log('ERROR: Must set author.');
+      return;
+    }
+    if (message == null) {
+      console.log('ERROR: Must set message.');
+      return;
+    }
+    if (author_type == null) {
+      console.log('ERROR: Must set author_type.');
+      return;
+    }
   
+    // Create new message
+    const newMessage: MessageProps = {
+      id: uuidv4(),
+      author_type: author_type, //'human',
+      author: author,
+      text: message,
+      error: error,
+    };
+  
+    // Wrap setMessages in a Promise and use await to ensure sequential execution
+    await new Promise<void>((resolve) => {
+      setMessages((prevMessages: any) => {
+        resolve();
+        setTextAreaValue(''); // Clear text area
+        return [...prevMessages, newMessage];
+      });
+    });
+  };
+    
+  // Handles completion API call after user enters a prompt and clicks the send button
+  const useCompletion = async () => {
+    const promptObject = {
+      prompt: textAreaValue,
+    };
+    const mergedObject = {
+      ...languageModelConfig.languageModelConfigs,
+      ...promptObject,
+    };
+    console.log(mergedObject.prompt)
+    addMessage(mergedObject.prompt, 'Human', 'human', false);
     const res = await fetch('/api/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ prompt, languageModelConfig }),
+      body: JSON.stringify(mergedObject),
     });
   
     const data = await res.json();
+    console.log(data);
+    addMessage(data.choices[0].text, 'GPT-3', 'default', false);
     // Handle the result, update the state, etc.
   };
 
@@ -58,7 +104,7 @@ const ChatWidget: React.FC = () => {
               className="form-control"
               rows={4}
               style={{ width: '100%' }}
-              onKeyDown={handleKeyDown}
+              // onKeyDown={handleKeyDown}
             ></textarea>
           </div>
           <div className="w-1/4">

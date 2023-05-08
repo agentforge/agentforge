@@ -1,9 +1,10 @@
 // ChatWidgetStateContext.tsx
 import React, { createContext, useContext, useState } from 'react';
+import { MessageProps } from '@/components/shared/message';
 
 interface ChatWidgetStateContextValue {
-  messages: Message[];
-  setMessages: (messages: Message[]) => void;
+  messages: MessageProps[];
+  setMessages: (callback: (prevMessages: MessageProps[]) => MessageProps[]) => void;
   textAreaValue: string;
   setTextAreaValue: (value: string) => void;
 }
@@ -23,7 +24,8 @@ interface ChatWidgetStateProviderProps {
 }
 
 export const ChatWidgetStateProvider: React.FC<ChatWidgetStateProviderProps> = ({ children }) => {
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<MessageProps[]>([]);
+
   const [textAreaValue, setTextAreaValue] = useState('');
 
   return (
@@ -32,10 +34,3 @@ export const ChatWidgetStateProvider: React.FC<ChatWidgetStateProviderProps> = (
     </ChatWidgetStateContext.Provider>
   );
 };
-
-interface Message {
-  id: string;
-  author: string;
-  text: string;
-  author_type: string;
-}
