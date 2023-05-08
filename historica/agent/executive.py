@@ -46,6 +46,11 @@ class ExecutiveCognition:
     # Responds to a user prompt -- queries LLM and returns a response
     # Reflects on the prompt and returns a reflection
     def respond(self, prompt, form_data, app):
+        # Validate form data
+        for v in ["prompt", "avatar"]:
+            if v not in form_data:
+                return {"error": f"User must stipulate {v} for response"} # return error
+
         # Configure agent with new config
         form_data["avatar"] = self.avatar.get_avatar(form_data["avatar"])
         self.agent.configure(form_data)
