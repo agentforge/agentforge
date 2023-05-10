@@ -147,7 +147,6 @@ def configure():
         except Exception as e:
             return jsonify({'message': str(e)}), 400
 
-
 @app.route("/v1/whisper", methods=["POST"])
 def whisper_api():
     # Save the uploaded wav file
@@ -192,6 +191,12 @@ def tts():
       mimetype=response["type"],
       as_attachment=True
   )
-  # Set the headers
-  response_obj.headers['Content-Disposition'] = f'attachment; filename="{filename}"'
-  return response_obj
+
+@app.route("/v1/avatars", methods=["GET"])
+def avatars():
+
+  # Get the avatars currently loaded into the config
+  response = executive.avatar.get_avatars()
+
+  # Create a response object with the avatars
+  return jsonify(response)
