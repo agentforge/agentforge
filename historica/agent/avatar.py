@@ -24,6 +24,9 @@ class Avatar:
     def get_avatar(self, avatar_key):
       return self.avatar_config.get(avatar_key)
 
+    def get_avatars(self):
+      return self.avatar_config
+
     def set_avatar(self, avatar_key, avatar_data):
       self.avatar_config[avatar_key] = avatar_data
 
