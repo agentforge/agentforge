@@ -36,7 +36,6 @@ const ChatWidget: React.FC = () => {
     error: boolean,
   ) => {
 
-    console.log(author);
     if (author == null) {
       console.log('ERROR: Must set author.');
       return;
@@ -103,7 +102,10 @@ const ChatWidget: React.FC = () => {
       currentAvatar.current = avatarData;
     }
     const completion = data.choices[0].text
-    lastResponseRef.current = completion;
+    const tts = languageModelConfig.languageModelConfigs["speech"] as boolean;
+    if (tts) {
+      lastResponseRef.current = completion;
+    }
     addMessage(completion, currentAvatar.current?.prompt_context.name, 'default', false);
 
     // Handle the result, update the state, etc.

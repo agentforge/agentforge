@@ -159,7 +159,7 @@ const Forge: React.FC<ForgeProps> = () => {
   useEffect(() => {
     setLanguageModelConfig('human_name', userConfiguration.username || 'Human');
     setLanguageModelConfig('robot_name', names[getAvatar()] || 'Sam');
-    setLanguageModelConfig('tts', false);
+    setLanguageModelConfig('speech', false);
     setLanguageModelConfig('lipsync', false);
     setLanguageModelConfig('streaming', false);
     setLanguageModelConfig('max_new_tokens', 512);

@@ -6,7 +6,7 @@ import { AvatarData } from './context/avatarcontextprovider';
 
 interface SpeechComponentProps {
   lastResponseRef: React.MutableRefObject<string>;
-  currentAvatar:  React.MutableRefObject<AvatarData>;
+  currentAvatar:  React.MutableRefObject<AvatarData | undefined>;
 }
 
 const SpeechComponent: React.FC<SpeechComponentProps> = ({ lastResponseRef, currentAvatar }) => {
@@ -19,12 +19,15 @@ const SpeechComponent: React.FC<SpeechComponentProps> = ({ lastResponseRef, curr
   }, [lastResponseRef.current]);
 
 
-  const fetchAudio = async (text: string, avatar: AvatarData): Promise<Blob> => {
+  const fetchAudio = async (text: string, avatar: AvatarData | undefined): Promise<Blob> => {
+    if (!avatar) {
+      throw new Error('Avatar must be set to call TTS API');
+    }
     const request = {
       "prompt": text,
       "avatar": avatar.avatar,
     };
-    console.log(request);
+
     // TODO: Going around TS server to API, we need to use a token to authenticate
     const response = await fetch(`${api_url}/v1/tts`, {
       method: 'POST',
@@ -41,7 +44,7 @@ const SpeechComponent: React.FC<SpeechComponentProps> = ({ lastResponseRef, curr
     return await response.blob();
   };
 
-  const playAudio = async (text: string, avatar: AvatarData) => {
+  const playAudio = async (text: string, avatar: AvatarData | undefined) => {
     try {
       const audioBlob = await fetchAudio(text, avatar);
       const audioUrl = URL.createObjectURL(audioBlob);
