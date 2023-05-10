@@ -1,4 +1,9 @@
 ### Memory Module for the Agent
+### This is the neuro-symbolic core for the long-term memory of the agent
+### It is responsible for storing and retrieving memories
+### similarity functions to access memories and methods to forget
+### Forgetting is an important part of learning and memory
+
 import uuid, datetime, threading
 from copy import deepcopy
 from langchain.memory import ConversationBufferMemory
