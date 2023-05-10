@@ -2,6 +2,7 @@
 import * as React from 'react';
 import { useChatWidgetState, ChatWidgetStateProvider } from '@/components/shared/context/chatwidgetstatecontext';
 import { ArrowRightIcon } from '@radix-ui/react-icons';
+import ProgressSpinner from '@/components/shared/progressspinner';
 import { useLanguageModelConfig } from '@/components/shared/context/languagemodelconfigcontext';
 import { useAvatarProvider } from '@/components/shared/context/avatarcontextprovider';
 import { MessageProps } from '@/components/shared/message';
@@ -14,8 +15,9 @@ const ChatWidget: React.FC = () => {
   const chatContainerRef = React.useRef<HTMLUListElement>(null);
   const [isLoading, setIsLoading] = React.useState(false);
 
+  // When loading state changes scroll to the bottom of the chat container
   React.useEffect(() => {
-    if (!isLoading && chatContainerRef.current) {
+    if (chatContainerRef.current) {
       chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
     }
   }, [isLoading]);
@@ -66,7 +68,6 @@ const ChatWidget: React.FC = () => {
 
   // Handles completion API call after user enters a prompt and clicks the send button or enter key
   const complete = async () => {
-    setIsLoading(true);
     const promptObject = {
       prompt: textAreaValue,
     };
@@ -74,12 +75,13 @@ const ChatWidget: React.FC = () => {
       ...languageModelConfig.languageModelConfigs,
       ...promptObject,
     };
-    console.log(mergedObject.prompt)
+
+    // Add the Human message //TODO: Get the name of the human from the user config
     addMessage(mergedObject.prompt, 'Human', 'human', false);
+
+    // set is loading, hitting API now
+    setIsLoading(true);
     // Scroll to the top of the chat container after human message is added
-    if (chatContainerRef.current) {
-      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
-    }
     const res = await fetch('/api/completions', {
       method: 'POST',
       headers: {
@@ -89,7 +91,6 @@ const ChatWidget: React.FC = () => {
     });
   
     const data = await res.json();
-    console.log(data);
     const av_id = languageModelConfig.languageModelConfigs["avatar"] as string;
     const avatarData = getAvatarData(av_id);
     if (!avatarData) {
@@ -140,8 +141,9 @@ const ChatWidget: React.FC = () => {
           </div>
           <div className="w-1/4">
             {isLoading ? (
-                <div className="m-4">
-                </div>
+              <div className="m-4">
+                <ProgressSpinner />
+              </div>
             ) : (
               <button id="send-message" className="btn-main m-4" onClick={useCompletion} style={{ padding: '0px' }}>
                 <ArrowRightIcon />
