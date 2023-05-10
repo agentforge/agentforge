@@ -32,12 +32,9 @@ export const LanguageModelConfigProvider: React.FC<LanguageModelConfigProviderPr
   const [languageModelConfigs, setLanguageModelConfigs] = useState<LanguageModelConfig>({});
 
   const setLanguageModelConfig = (id: string, value: any) => {
-    console.log('Updating languageModelConfigs:', { id, value });
     
     setLanguageModelConfigs((prevConfigs) => {
-      console.log('Previous languageModelConfigs:', prevConfigs);
       const updatedConfigs = { ...prevConfigs, [id]: value };
-      console.log('Updated languageModelConfigs:', updatedConfigs);
       return updatedConfigs;
     });
   };
