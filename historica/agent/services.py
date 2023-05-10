@@ -1,3 +1,6 @@
+### Handles calls and error handling for internal services (LLM, TTS, etc)
+### Also a good place to place any calls to external APIs
+
 from historica.config import Config
 import requests
 from historica.agent.logger import logger
@@ -19,7 +22,6 @@ def handle_response_error(func):
         return "ERROR PLEASE TRY AGAIN LATER"
   return wrapper
 
-### Handles calls and error handling for external services 
 class Service:
     def __init__(self):
       self.urls = Config("urls")

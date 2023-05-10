@@ -192,6 +192,8 @@ def tts():
       as_attachment=True
   )
 
+  return response_obj
+
 @app.route("/v1/avatars", methods=["GET"])
 def avatars():
 

@@ -1,10 +1,11 @@
+# Caretaker loop is a always online monitor of the individual's environment and needs
+
 import asyncio
 from datetime import datetime, timedelta
 from speech import synthesize_speech, recognize_speech
 from memory import Memory
 from avatars import HistoricalAvatar
 
-# Caretaker loop is a always online monitor of the individual's environment and needs
 class Caretaker(ExecutiveCognition):
 
   async def perform_task(task, elderly_person):
