@@ -1,10 +1,7 @@
 'use client';
-
-import React, { useEffect, useRef, useState, KeyboardEvent } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-
+import React, { useEffect, useRef, useState, KeyboardEvent } from 'react';
 import api, { api_url } from '@/components/shared/api';
-import { MessageProps } from '@/components/shared/message';
 import { ReflectionProps } from '@/components/shared/reflection';
 import ErrorMessage from '@/components/shared/error';
 // import { getConfiguration, Configuration } from '../../components/shared/Configure';
@@ -14,11 +11,11 @@ import SwirlIcon from './mind-icon.svg';
 import CheckboxElement from '@/components/shared/checkbox';
 import SliderElement from '@/components/shared/slider';
 import SelectElement from '@/components/shared/select';
+import ChatWidget from '@/components/shared/chatwidget';
 import { useCheckboxState } from '@/components/shared/context/checkboxstatecontext';
 import { useSelectState } from '@/components/shared/context/selectstatecontext';
 import { useSliderState } from '@/components/shared/context/sliderstatecontext';
-
-
+import { useLanguageModelConfig } from '@/components/shared/context/languagemodelconfigcontext';
 
 interface ForgeProps {}
 
@@ -89,8 +86,9 @@ const Forge: React.FC<ForgeProps> = () => {
   const modelKeyInputRef = useRef<HTMLSelectElement>(null);
 
   // useState values
-  const [messages, setMessages] = useState<MessageProps[]>([]);
   const [reflections, setReflections] = useState<ReflectionProps[]>([]);
+
+  const { setLanguageModelConfig } = useLanguageModelConfig();
 
   // Change Events
   const handleTextAreaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -100,14 +98,6 @@ const Forge: React.FC<ForgeProps> = () => {
   // err handling
   const [errorState, setErrorState] = useState(false);
   const [errorValue, setErrorValue] = useState('');
-
-  const clearTextarea = () => {
-    if (textareaRef.current) {
-      setTextAreaValue('');
-      textareaRef.current.value = '';
-      // textAreaValue = '';
-    }
-  };
 
   const handleResize = () => {
     const video = document.getElementById('hero-video') as HTMLVideoElement;
@@ -127,44 +117,6 @@ const Forge: React.FC<ForgeProps> = () => {
     }
   };
 
-  const addMessage = async (
-    prompt: string | undefined,
-    author: string | undefined,
-    author_type: string | undefined,
-    error: boolean,
-  ) => {
-    if (author == null) {
-      console.log('ERROR: Must set author.');
-      return;
-    }
-    if (prompt == null) {
-      console.log('ERROR: Must set prompt.');
-      return;
-    }
-    if (author_type == null) {
-      console.log('ERROR: Must set author_type.');
-      return;
-    }
-
-    // Create new message
-    const newMessage: MessageProps = {
-      id: uuidv4(),
-      author_type: author_type, //'human',
-      author: author,
-      text: prompt,
-      error: error,
-    };
-
-    // Wrap setMessages in a Promise and use await to ensure sequential execution
-    await new Promise<void>((resolve) => {
-      setMessages((prevMessages: any) => {
-        resolve();
-        clearTextarea();
-        return [...prevMessages, newMessage];
-      });
-    });
-  };
-
   const closeError = () => {
     setErrorState(false);
     setErrorValue('');
@@ -179,19 +131,19 @@ const Forge: React.FC<ForgeProps> = () => {
   };
 
   // Append a string to the latest message for streaming
-  const appendMessage = (newText: string) => {
-    if (streamingCheckboxRef.current?.checked) {
-      setMessages((prevMessages) => {
-        const lastIndex = prevMessages.length - 1;
-        const lastMessage = prevMessages[lastIndex];
-        if (lastMessage != undefined) {
-          const updatedMessage = { ...lastMessage, text: lastMessage.text + newText };
-          return [...prevMessages.slice(0, lastIndex), updatedMessage];
-        }
-        return prevMessages;
-      });
-    }
-  };
+  // const appendMessage = (newText: string) => {
+  //   if (streamingCheckboxRef.current?.checked) {
+  //     setMessages((prevMessages) => {
+  //       const lastIndex = prevMessages.length - 1;
+  //       const lastMessage = prevMessages[lastIndex];
+  //       if (lastMessage != undefined) {
+  //         const updatedMessage = { ...lastMessage, text: lastMessage.text + newText };
+  //         return [...prevMessages.slice(0, lastIndex), updatedMessage];
+  //       }
+  //       return prevMessages;
+  //     });
+  //   }
+  // };
 
   // Add a reflection to the list of reflections in the UX
   const addReflection = async (text: string | undefined, type: string | undefined) => {
@@ -226,26 +178,19 @@ const Forge: React.FC<ForgeProps> = () => {
     return avatar;
   };
 
-  const useLanguageModelConfig = () => {
-    const { checkboxStates } = useCheckboxState();
-    const { selectedValues } = useSelectState();
-    const { sliderValues } = useSliderState();
-  
-    const configs = {
-      human_name: userConfiguration.username || '',
-      robot_name: names[getAvatar()] || '',
-      tts: checkboxStates.tts || false,
-      lipsync: checkboxStates.lipsync || false,
-      streaming: checkboxStates.streaming || false,
-      max_new_tokens: sliderValues.maxNewTokens || 10,
-      avatar: selectedValues.avatar || '',
-      generation_config: selectedValues.generationConfig || '',
-      model_key: selectedValues.modelKey || '',
-      prompt: '',
-    };
-  
-    return configs;
-  };
+  // useEffect to initialize the languageModelConfig on first render
+  useEffect(() => {
+    setLanguageModelConfig('human_name', userConfiguration.username || 'Human');
+    setLanguageModelConfig('robot_name', names[getAvatar()] || 'Sam');
+    setLanguageModelConfig('tts', false);
+    setLanguageModelConfig('lipsync', false);
+    setLanguageModelConfig('streaming', false);
+    setLanguageModelConfig('max_new_tokens', 512);
+    setLanguageModelConfig('avatar', getAvatar());
+    setLanguageModelConfig('generation_config', modelConfigs[0]);
+    setLanguageModelConfig('model_key', models[0]);
+    setLanguageModelConfig('prompt', '');
+  }, []);
 
   // Play a video from blob or url -- setup the non-active video, load it, and play it.
   // Switch the reference to this video
@@ -443,13 +388,13 @@ const Forge: React.FC<ForgeProps> = () => {
     // SSE Event Listener for streaming messages and more
     const eventSource = new EventSource(`${api_url}stream`);
 
-    eventSource.onmessage = (e: MessageEvent) => {
-      appendMessage(JSON.parse(e.data).next);
-    };
+    // eventSource.onmessage = (e: MessageEvent) => {
+    //   appendMessage(JSON.parse(e.data).next);
+    // };
 
-    eventSource.addEventListener('stream_completion', (e: MessageEvent) => {
-      appendMessage(JSON.parse(e.data).next);
-    });
+    // eventSource.addEventListener('stream_completion', (e: MessageEvent) => {
+    //   appendMessage(JSON.parse(e.data).next);
+    // });
 
     eventSource.addEventListener('reflection', (e: MessageEvent) => {
       const reflect = JSON.parse(e.data).reflection.choices[0].text;
@@ -593,7 +538,7 @@ const Forge: React.FC<ForgeProps> = () => {
           </div>
               <div className='flex m-4'>
                 <div className='mt-3'>
-                  <SliderElement defaultValue={512} max={2048} step={1} ariaLabel="Max New Tokens" width="200px" />
+                  <SliderElement defaultValue={512} max={2048} step={1} ariaLabel="Max New Tokens" width="200px" sliderId="tokens" />
                 </div>
                 <span id="max_new_tokens_value" className="w-2/12">
                   512
@@ -601,13 +546,13 @@ const Forge: React.FC<ForgeProps> = () => {
             </div>
             </div>
             <div className='flex w-full'>
-              <SelectElement options={avatars} id="avatar-dropdown" label="Avatar" defaultVal="caretaker" />
+              <SelectElement options={avatars} id="avatar" label="Avatar" defaultVal="caretaker" storeInConfig={true} />
             </div>
             <div className='flex w-full'>
-              <SelectElement options={ modelConfigs } id="model-config" label="Prompt Config" defaultVal="logical" />
+              <SelectElement options={ modelConfigs } id="generation_config" label="Prompt Config" defaultVal="logical" storeInConfig={true} />
             </div>
             <div className='flex w-full'>
-              <SelectElement options={models} id="model" label="Model" defaultVal="alpaca-lora-7b" />
+              <SelectElement options={models} id="model_key" label="Model" defaultVal="alpaca-lora-7b" storeInConfig={true} />
             </div>
             {/* <div className="flex">
               <div className="w-1/2">
@@ -650,8 +595,9 @@ const Forge: React.FC<ForgeProps> = () => {
         </div> */}
     </div>
     <div className="w-full md:w-8/12">
-      <div className="px-18%">
-          <div className="chat-widget">
+            <div className="px-18%">
+              <ChatWidget />
+          {/* <div className="chat-widget">
             <ul
               ref={chatHistoryRef}
               className="no-bullets chat-history"
@@ -692,10 +638,10 @@ const Forge: React.FC<ForgeProps> = () => {
                     <ArrowRightIcon />
                   )}
               </button>
-                {/* <AudioRecorder /> */}
+                <AudioRecorder />
               </div>
             </div>
-          </div>
+          </div> */}
         <div>
           <ErrorMessage errorState={errorState} errorValue={errorValue} closeError={closeError} />
         </div>

@@ -24,6 +24,14 @@ const SelectElement: React.FC<SelectElementProps> = ({
   const { selectedValues, setSelectedValue } = useSelectState();
   const { languageModelConfigs, setLanguageModelConfig } = useLanguageModelConfig();
 
+  // Initialize the values in the LanguageModelConfig
+  React.useEffect(() => {
+    if (defaultVal && storeInConfig) {
+      setLanguageModelConfig(id, defaultVal);
+    }
+  }, []);
+
+  // Update config as needed
   const handleValueChange = (id: string, value: string) => {
     setSelectedValue(id, value);
     if (storeInConfig) {

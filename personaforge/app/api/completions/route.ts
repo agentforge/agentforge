@@ -1,30 +1,21 @@
 // pages/api/completions.ts
 import type { NextApiRequest, NextApiResponse } from 'next';
+import { NextResponse } from 'next/server';
+import api_url from '@/components/shared/api';
 
-async function callCompletionsAPI(prompt: string, languageModelConfig: object) {
-  const res = await fetch('https://your-completions-api-url', {
+export async function POST(request: Request) {
+  console.log(request);
+  const requestBody = await request.json();
+  const res = await fetch(`${api_url}/v1/completions`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      // 'API-Key': process.env.DATA_API_KEY,// TODO: Add API key
+      // 'API-Key': process.env.DATA_API_KEY,
     },
-    body: JSON.stringify({ prompt, ...languageModelConfig }),
+    body: JSON.stringify(requestBody),
   });
-
+  console.log(res);
   const data = await res.json();
-  return data;
-}
-
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  if (req.method === 'POST') {
-    const { prompt, languageModelConfig } = req.body;
-    try {
-      const data = await callCompletionsAPI(prompt, languageModelConfig);
-      res.status(200).json(data);
-    } catch (error) {
-      res.status(500).json({ error: 'Error calling completions API' });
-    }
-  } else {
-    res.status(405).json({ error: 'Method not allowed' });
-  }
+ 
+  return NextResponse.json(data);
 }

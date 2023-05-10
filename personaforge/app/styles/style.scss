@@ -255,7 +255,12 @@ pre code .comment {
   border-radius: 8px; /* Add rounded corners to the chat widget */
   overflow: hidden; /* Hide overflowing content, if any */
 }
-
+.chat-history {
+  padding: 0px 16px;
+  font-weight: bold;
+  color: #f0f0f0;
+  display: inline-block;
+}
 /* Shadow and style for the user input element */
 #user-input {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Add a subtle shadow to the user input element */
