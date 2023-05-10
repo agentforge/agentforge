@@ -62,7 +62,7 @@ If you aren't on x86 Linux change the URL to match your arch from the list of re
 Build the web image:
 
 ```
-docker build -t web -f ./docker/web2.Dockerfile .
+docker build -t web -f ./docker/web.Dockerfile .
 ```
 
 Note: You only need to run the ensemble stack if you are pointing services to external services, have thick GPUs, or accept absurdly slow CPU inference speeds.
