@@ -3,8 +3,9 @@ import * as React from 'react';
 import { useChatWidgetState, ChatWidgetStateProvider } from '@/components/shared/context/chatwidgetstatecontext';
 import { ArrowRightIcon } from '@radix-ui/react-icons';
 import ProgressSpinner from '@/components/shared/progressspinner';
+import SpeechComponent from '@/components/shared/speech';
 import { useLanguageModelConfig } from '@/components/shared/context/languagemodelconfigcontext';
-import { useAvatarProvider } from '@/components/shared/context/avatarcontextprovider';
+import { useAvatarProvider, AvatarData } from '@/components/shared/context/avatarcontextprovider';
 import { MessageProps } from '@/components/shared/message';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -14,6 +15,8 @@ const ChatWidget: React.FC = () => {
   const { messages, setMessages, textAreaValue, setTextAreaValue } = useChatWidgetState();
   const chatContainerRef = React.useRef<HTMLUListElement>(null);
   const [isLoading, setIsLoading] = React.useState(false);
+  const lastResponseRef = React.useRef<string>('');
+  const currentAvatar = React.useRef<AvatarData>();
 
   // When loading state changes scroll to the bottom of the chat container
   React.useEffect(() => {
@@ -76,7 +79,7 @@ const ChatWidget: React.FC = () => {
       ...promptObject,
     };
 
-    // Add the Human message //TODO: Get the name of the human from the user config
+    // Add the Human message //TODO: Get the name of the human from the user
     addMessage(mergedObject.prompt, 'Human', 'human', false);
 
     // set is loading, hitting API now
@@ -92,11 +95,17 @@ const ChatWidget: React.FC = () => {
   
     const data = await res.json();
     const av_id = languageModelConfig.languageModelConfigs["avatar"] as string;
-    const avatarData = getAvatarData(av_id);
-    if (!avatarData) {
-      return; // TODO: handle error
+    if (av_id != currentAvatar.current?.avatar) { 
+      const avatarData = getAvatarData(av_id);
+      if (!avatarData) {
+        return; // TODO: handle error
+      }
+      currentAvatar.current = avatarData;
     }
-    addMessage(data.choices[0].text, avatarData.prompt_context.name, 'default', false);
+    const completion = data.choices[0].text
+    lastResponseRef.current = completion;
+    addMessage(completion, currentAvatar.current?.prompt_context.name, 'default', false);
+
     // Handle the result, update the state, etc.
     setIsLoading(false);
   }
@@ -150,6 +159,7 @@ const ChatWidget: React.FC = () => {
               </button>
               )}
             {/* <AudioRecorder /> */}
+            <SpeechComponent lastResponseRef={lastResponseRef} currentAvatar={currentAvatar}  />
           </div>
         </div>
       </div>

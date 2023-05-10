@@ -173,7 +173,7 @@ const Forge: React.FC<ForgeProps> = () => {
   // Setup streaming listener
   useEffect(() => {
     // SSE Event Listener for streaming messages and more
-    const eventSource = new EventSource(`${api_url}stream`);
+    const eventSource = new EventSource(`${api_url}/stream`);
 
     // eventSource.onmessage = (e: MessageEvent) => {
     //   appendMessage(JSON.parse(e.data).next);

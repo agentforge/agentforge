@@ -1,7 +1,7 @@
 // AvatarProviderContext.tsx
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
-interface AvatarData {
+export interface AvatarData {
   avatar: string;
   mp4: string;
   prompt_context: {
