@@ -1,3 +1,8 @@
+
+### Executive Cognition
+### Handles Model Ensemble Coordination
+### Higher level memory and reasoning loops
+
 import threading
 from historica.agent import Avatar
 from historica.agent import Service
@@ -6,9 +11,6 @@ import requests, json, os
 from flask_sse import sse
 from historica.agent.logger import logger
 
-### Executive Cognition
-### Handles Model Ensemble Coordination
-### Higher level memory and reasoning loops
 class ExecutiveCognition:
     def __init__(self) -> None:
         self.avatar = Avatar() # personality
@@ -27,7 +29,7 @@ class ExecutiveCognition:
         wav_response = self.service.call_tts(form_data)
 
         # if we want to generate lipsync
-        if form_data["lipsync"] != 'false':
+        if "lipsync" in form_data and form_data["lipsync"] != 'false':
             form_data["wav_file"] = wav_response["filename"]
             lipsync_response = self.service.call_lipsync(form_data)
             return {"filename": lipsync_response["filename"], "type": "video/mp4"}
@@ -46,6 +48,11 @@ class ExecutiveCognition:
     # Responds to a user prompt -- queries LLM and returns a response
     # Reflects on the prompt and returns a reflection
     def respond(self, prompt, form_data, app):
+        # Validate form data
+        for v in ["prompt", "avatar"]:
+            if v not in form_data:
+                return {"error": f"User must stipulate {v} for response"} # return error
+
         # Configure agent with new config
         form_data["avatar"] = self.avatar.get_avatar(form_data["avatar"])
         self.agent.configure(form_data)
@@ -81,7 +88,7 @@ class ExecutiveCognition:
         logger.info(f"PROMPT: {prompt}")
 
         # Asyncronous reaction/reflection on this conversation -- how the agent feels, should it act, etc.
-        self.react(prompt, text, form_data, app)
+        # self.react(prompt, text, form_data, app)
 
         return response
 

@@ -3,18 +3,33 @@ import React, { forwardRef } from 'react';
 import * as Checkbox from '@radix-ui/react-checkbox';
 import { CheckIcon } from '@radix-ui/react-icons';
 import { useCheckboxState } from '@/components/shared/context/checkboxstatecontext';
+import { useLanguageModelConfig } from '@/components/shared/context/languagemodelconfigcontext';
 
 interface CheckboxElementProps {
   label: string;
   id: string;
+  defaultVal: boolean;
 }
 
-const CheckboxElement = forwardRef<HTMLButtonElement, CheckboxElementProps>(({ label, id }, ref) => {
+const CheckboxElement = forwardRef<HTMLButtonElement, CheckboxElementProps>(({
+  label,
+  id,
+  defaultVal,
+}, ref) => {
   const { checkboxStates, setCheckboxState } = useCheckboxState();
   const checked = checkboxStates[id] || false;
+  const { languageModelConfigs, setLanguageModelConfig } = useLanguageModelConfig();
+
+  // Initialize the values in the LanguageModelConfig
+  React.useEffect(() => {
+    if (defaultVal) {
+      setLanguageModelConfig(id, defaultVal);
+    }
+  }, []);
 
   const handleCheckboxChange = () => {
     setCheckboxState(id, !checked);
+    setLanguageModelConfig(id, !checked);
   };
 
   return (

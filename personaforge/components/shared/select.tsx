@@ -11,7 +11,6 @@ interface SelectElementProps {
   id: string;
   label: string;
   defaultVal: string;
-  storeInConfig?: boolean; // Add this prop to conditionally store in LanguageModelConfig
 }
 
 const SelectElement: React.FC<SelectElementProps> = ({
@@ -19,16 +18,21 @@ const SelectElement: React.FC<SelectElementProps> = ({
   id,
   label,
   defaultVal,
-  storeInConfig = false, // Default value is false
 }) => {
   const { selectedValues, setSelectedValue } = useSelectState();
   const { languageModelConfigs, setLanguageModelConfig } = useLanguageModelConfig();
 
+  // Initialize the values in the LanguageModelConfig
+  React.useEffect(() => {
+    if (defaultVal) {
+      setLanguageModelConfig(id, defaultVal);
+    }
+  }, []);
+
+  // Update config as needed
   const handleValueChange = (id: string, value: string) => {
     setSelectedValue(id, value);
-    if (storeInConfig) {
-      setLanguageModelConfig(id, value);
-    }
+    setLanguageModelConfig(id, value);
   };
 
   return (
