@@ -12,6 +12,7 @@ import CheckboxElement from '@/components/shared/checkbox';
 import SliderElement from '@/components/shared/slider';
 import SelectElement from '@/components/shared/select';
 import ChatWidget from '@/components/shared/chatwidget';
+import ButtonComponent from '@/components/shared/button';
 import { useCheckboxState } from '@/components/shared/context/checkboxstatecontext';
 import { useSelectState } from '@/components/shared/context/selectstatecontext';
 import { useSliderState } from '@/components/shared/context/sliderstatecontext';
@@ -51,7 +52,6 @@ const Forge: React.FC<ForgeProps> = () => {
     fdr: 'Franklin D. Roosevelt',
   };
 
-  const [textAreaValue, setTextAreaValue] = useState('');
   const [userConfiguration, setUserConfiguration] = useState<Configuration>({
     username: '',
     email: '',
@@ -66,14 +66,24 @@ const Forge: React.FC<ForgeProps> = () => {
 
   const { setLanguageModelConfig } = useLanguageModelConfig();
 
-  // Change Events
-  const handleTextAreaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setTextAreaValue(e.target.value);
-  };
+  const heroVideoWrapperRef = useRef<HTMLDivElement | null>(null);
 
   // err handling
   const [errorState, setErrorState] = useState(false);
   const [errorValue, setErrorValue] = useState('');
+
+  const fullScreen = () => {
+    // if (!heroVideoWrapperRef.current || !chatHistoryRef.current) {
+    //   return;
+    // }
+  
+    // const chatHistoryRect = chatHistoryRef.current.getBoundingClientRect();
+    // heroVideoWrapperRef.current.style.position = 'absolute';
+    // heroVideoWrapperRef.current.style.width = `${chatHistoryRect.width}px`;
+    // heroVideoWrapperRef.current.style.height = `${chatHistoryRect.height}px`;
+    // heroVideoWrapperRef.current.style.left = `${chatHistoryRect.left}px`;
+    // heroVideoWrapperRef.current.style.top = `${chatHistoryRect.top}px`; 
+  }
 
   const handleResize = () => {
     const video = document.getElementById('hero-video') as HTMLVideoElement;
@@ -224,43 +234,46 @@ const Forge: React.FC<ForgeProps> = () => {
   return (
     <>
     <main className="flex min-h-screen w-full flex-col py-32">
-    <div className='fixed top-0 w-full z-30 transition-all'>
-      <div className="md:block md:w-2/12">
-        <div className="container mx-auto">
-          <VideoComponent/>
-          <div className="flex mt-3">
-            <div className="w-1/2">
-              <CheckboxElement label={"Speech"} id="speech" defaultVal={false} />
-            </div>
+      <div className='fixed top-0 w-full z-30 transition-all'>
+        <div className="md:block md:w-2/12">
+          <div className="container mx-auto">
+            <VideoComponent/>
+            <div className="flex mt-3">
               <div className="w-1/2">
-              <CheckboxElement label={"Video"} id="lipsync" defaultVal={false}  />
-            </div>
+                <CheckboxElement label={"Speech"} id="speech" defaultVal={false} />
+              </div>
               <div className="w-1/2">
-              <CheckboxElement label={"Streaming"} id="streaming" defaultVal={false} />
+                <CheckboxElement label={"Video"} id="lipsync" defaultVal={false}  />
+              </div>
+              <div className="w-1/2">
+                <CheckboxElement label={"Streaming"} id="streaming" defaultVal={false} />
+              </div>
+            </div>
+            <div className='flex w-full'>
+              <SliderElement defaultValue={512} max={2048} step={1} ariaLabel="Max New Tokens" width="200px" sliderId="tokens" />
             </div>
           </div>
-          <div className='flex w-full m-4'>
-            <SliderElement defaultValue={512} max={2048} step={1} ariaLabel="Max New Tokens" width="200px" sliderId="tokens" />
+          <div className='flex w-full mt-3'>
+            <SelectElement options={avatars} id="avatar" label="Avatar" defaultVal="caretaker" />
+          </div>
+          <div className='flex w-full mt-3'>
+            <SelectElement options={ modelConfigs } id="generation_config" label="Prompt Config" defaultVal="logical" />
+          </div>
+          <div className='flex w-full mt-3'>
+            <SelectElement options={models} id="model_key" label="Model" defaultVal="alpaca-lora-7b" />
+          </div>
+          <div className='flex w-full mt-3'>
+            <ButtonComponent text="Expand Video" onClick={fullScreen} />
+          </div>  
+        </div>
+        <div className="w-full md:w-8/12">
+          <div className="px-18%">
+            <ChatWidget />
+            <div>
+              <ErrorMessage errorState={errorState} errorValue={errorValue} closeError={closeError} />
+            </div>
           </div>
         </div>
-        <div className='flex w-full'>
-          <SelectElement options={avatars} id="avatar" label="Avatar" defaultVal="caretaker" />
-        </div>
-        <div className='flex w-full'>
-          <SelectElement options={ modelConfigs } id="generation_config" label="Prompt Config" defaultVal="logical" />
-        </div>
-        <div className='flex w-full'>
-              <SelectElement options={models} id="model_key" label="Model" defaultVal="alpaca-lora-7b" />
-        </div>
-      </div>
-      <div className="w-full md:w-8/12">
-        <div className="px-18%">
-          <ChatWidget />
-          <div>
-            <ErrorMessage errorState={errorState} errorValue={errorValue} closeError={closeError} />
-          </div>
-        </div>
-      </div>
       <div className="md:block md:w-2/12">
         <div className="container mx-auto">
           <ul

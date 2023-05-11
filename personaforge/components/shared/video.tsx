@@ -1,9 +1,9 @@
 // VideoComponent.tsx
 import React, { useRef, useEffect } from 'react';
-import { useVideoProvider } from '@/components/shared/context/videoprovidercontext'
+import { useVideo } from '@/components/shared/context/videoprovider'
 
 const VideoComponent: React.FC = () => {
-  const { videoARef, videoBRef, switchVideo, playVideo, pauseVideo, isPlaying } = useVideoProvider();
+  const { videoARef, videoBRef, switchVideo, playVideo, pauseVideo, isPlaying } = useVideo();
 
   const handleTimeUpdate = (videoRef: React.RefObject<HTMLVideoElement>) => {
     if (!videoRef.current) return;
@@ -15,7 +15,6 @@ const VideoComponent: React.FC = () => {
 
   // Initialize first video
   useEffect(() => {
-    console.log("switching video");
     switchVideo('/videos/default.mp4');
   }, []);
 
