@@ -10,7 +10,7 @@ from datetime import timedelta
 from flask_swagger_ui import get_swaggerui_blueprint
 from werkzeug.utils import secure_filename
 
-from agentforge import AUDIO_DST_PATH
+from agentforge import AUDIO_DST_PATH, DST_PATH
 from agentforge.agent import ExecutiveCognition
 from agentforge.agent import startup
 from agentforge.helpers import measure_time
@@ -28,7 +28,7 @@ app = Flask(__name__)
 CORS(app, supports_credentials=True, resources={r"/*": {"origins": "*"}})
 
 # Setup database connection
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////app/cache/test.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{DST_PATH}/test.db"
 app.config['SESSION_TYPE'] = 'filesystem'
 app.config["REDIS_URL"] = "redis://redis:6379/0"
 
