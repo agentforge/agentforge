@@ -12,7 +12,7 @@ build:
 	docker build -t llm -f ./docker/llm.Dockerfile .
 	docker build -t speech -f ./docker/speech.Dockerfile .
 	docker build -t wav2lip -f ./docker/wav2lip.Dockerfile .
-	docker build -t web2 -f ./docker/web2.Dockerfile .
+	docker build -t web2 -f ./docker/web.Dockerfile .
 
 # Run targets
 run:
