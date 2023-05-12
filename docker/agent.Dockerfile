@@ -3,6 +3,7 @@ FROM agentforge:latest
 # agent
 WORKDIR /app/agent_n/agentforge/agent
 RUN apt-get install -y python3-dev
+RUN pip install bcrypt
 # Expose port 3000
 EXPOSE 3000
 

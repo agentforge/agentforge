@@ -1,8 +1,9 @@
 FROM agentforge:latest
 
-RUN pip install llvmlite --ignore-installed && pip install typeguard==2.7.0 TTS inflect
-RUN apt-get install -y espeak-ng
+RUN pip install typeguard==2.7.0 TTS inflect --ignore-installed llvmlite
 RUN pip install git+https://github.com/suno-ai/bark.git
+RUN pip uninstall -y psutil
+RUN pip uninstall -y urllib3 && pip install urllib3==1.26
 WORKDIR /app/agent_n/agentforge/speech
 
 # Expose port 3000
