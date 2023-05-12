@@ -30,8 +30,8 @@ RUN apt-get install -y libstdc++6-7-dbg ffmpeg git openssh-client tig
 RUN pip install --upgrade pip
 RUN pip install llvmlite --ignore-installed
 
-WORKDIR /app/agent_n/historica/
-RUN pip install -r /app/agent_n/historica/requirements.txt
+WORKDIR /app/agent_n/agentforge/
+RUN pip install -r /app/agent_n/agentforge/requirements.txt
 
 # #CMD ["flask", "run", "--host=0.0.0.0", "--port=3000"]
 CMD tail -f /dev/null

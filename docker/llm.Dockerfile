@@ -1,6 +1,6 @@
-FROM historica:latest
+FROM agentforge:latest
 
-WORKDIR /app/agent_n/historica/language_model
+WORKDIR /app/agent_n/agentforge/language_model
 RUN pip install peft
 RUN pip install --upgrade accelerate
 

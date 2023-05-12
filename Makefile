@@ -5,7 +5,7 @@ SSH_PRIVATE_KEY=`cat ~/.ssh/id_rsa`
 
 # This has issues currently TODO Fix SSH_PRIVATE_KEY
 core:
-	docker build --build-arg REPO_URL=git@github.com:fragro/agent_n.git  --build-arg SSH_PRIVATE_KEY="$(SSH_PRIVATE_KEY)" -t historica -f ./docker/worker.Dockerfile .
+	docker build --build-arg REPO_URL=git@github.com:fragro/agent_n.git  --build-arg SSH_PRIVATE_KEY="$(SSH_PRIVATE_KEY)" -t agentforge -f ./docker/worker.Dockerfile .
 
 build:
 	docker build -t worker -f ./docker/worker.Dockerfile .

@@ -10,13 +10,13 @@ services:
         aliases:
           - redis
 
-  historica:
-    image: historica
+  agentforge:
+    image: agentforge
     ipc: host
     networks:
       main-net:
         aliases:
-          - historica
+          - agentforge
     volumes:
       - shared-files:/app/files
       - cache-volume:/app/cache

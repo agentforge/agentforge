@@ -72,7 +72,7 @@ Note: You only need to run the ensemble stack if you are pointing services to ex
 
 ```
 cd agent_n
-docker build --build-arg REPO_URL=git@github.com:fragro/agent_n.git  --build-arg SSH_PRIVATE_KEY="$(cat ~/.ssh/id_rsa)" -t historica -f ./docker/historica.Dockerfile .
+docker build --build-arg REPO_URL=git@github.com:fragro/agent_n.git  --build-arg SSH_PRIVATE_KEY="$(cat ~/.ssh/id_rsa)" -t agentforge -f ./docker/agentforge.Dockerfile .
 docker build -t worker -f ./docker/worker.Dockerfile .
 docker build -t llm -f ./docker/llm.Dockerfile .
 docker build -t speech -f ./docker/speech.Dockerfile .
@@ -104,11 +104,11 @@ Run all the services via docker-compose in the docker folder:
 
 To run the flask server(s) from inside a container:
 
-```CONFIG_DIR="/app/agent_n/historica/config/configs/" flask run --host=0.0.0.0 --port=3000```
+```CONFIG_DIR="/app/agent_n/agentforge/config/configs/" flask run --host=0.0.0.0 --port=3000```
 
 Wav2Lip (requires additional env vars):
 
-```LC_ALL=C.UTF-8 LANG=C.UTF-8 CONFIG_DIR="/app/agent_n/historica/config/configs/" flask run --host=0.0.0.0 --port=3000```
+```LC_ALL=C.UTF-8 LANG=C.UTF-8 CONFIG_DIR="/app/agent_n/agentforge/config/configs/" flask run --host=0.0.0.0 --port=3000```
 
 ## SSL
 
