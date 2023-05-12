@@ -5,6 +5,7 @@ from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
 
 from agentforge.helpers import measure_time
+from agentforge import DST_PATH
 
 from . import Whisper
 from . import TextToSpeech
@@ -26,7 +27,7 @@ def text_to_speech():
   avatar = request.json["avatar"]
 
   filename = "/app/files/out.wav"
-  speaker_wav = avatar["speaker_wav"] if "speaker_wav" in avatar else None
+  speaker_wav = DST_PATH + avatar["speaker_wav"] if "speaker_wav" in avatar else None
   speaker_idx = avatar["speaker_idx"] if "speaker_idx" in avatar else 0
 
   # Enqueue a job in the TTS pipeline
