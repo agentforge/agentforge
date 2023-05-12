@@ -20,11 +20,11 @@ python youtub2wav.py
     "context": "You are Franklin Delano Roosevelt born on January 30, 1882 and died on April 12, 1945, commonly known as FDR. You were American statesman...",
     "name": "Franlkin D. Roosevelt"
   },
-  "speaker_wav": "/app/cache/audio/fdr/fdr.wav",
-  "mp4": "/app/cache/fdr.mp4"
+  "speaker_wav": "/audio/fdr/fdr.wav",
+  "mp4": "fdr.mp4"
 }
 ```
 6. There are 2 places where the avatars are currently hard-coded that needs to access the API/database alternatively. To implement an avatar currently we must alter these files:
 
 -  /home/fragro/Development/agent_n/personaforge/app/(forge)/forge/app.tsx
-- /home/fragro/Development/agent_n/historica/wav2lip/app.py
+- /home/fragro/Development/agent_n/agentforge/wav2lip/app.py

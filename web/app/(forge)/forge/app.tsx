@@ -37,13 +37,7 @@ const Forge: React.FC<ForgeProps> = () => {
   interface StringMap {
     [key: string]: string;
   }
-  const videos: StringMap = {
-    default: '/videos/default.mp4',
-    caretaker: '/videos/default.mp4',
-    makhno: '/videos/makhno.mp4',
-    fdr: '/videos/fdr.mp4',
-    sankara: '/videos/sankara.mp4',
-  };
+
   const names: StringMap = {
     default: 'Sam',
     caretaker: 'Sam',

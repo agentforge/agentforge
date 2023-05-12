@@ -11,15 +11,15 @@ from agentforge.helpers import measure_time
 
 app = Flask(__name__)
 CORS(app)
-CHKPT_PTH = "/app/cache/weights/wav2lip_gan.pth"
+CHKPT_PTH = DST_PATH + "/weights/wav2lip_gan.pth"
 # Default face loop
 # TODO: When we introduce multiple avatars this will need refactoring
 faces = [
-  ("default", "/app/cache/videos/default.mp4"),
-  ("caretaker", "/app/cache/videos/default.mp4"),
-  ("makhno", "/app/cache/videos/makhno.mp4"),
-  ("fdr", "/app/cache/videos/fdr.mp4"),
-  ("sankara", "/app/cache/videos/sankara.mp4"),
+  ("default", DST_PATH + "/videos/default.mp4"),
+  ("caretaker", DST_PATH + "/videos/default.mp4"),
+  ("makhno", DST_PATH + "/videos/makhno.mp4"),
+  ("fdr", DST_PATH + "/videos/fdr.mp4"),
+  ("sankara", DST_PATH + "/videos/sankara.mp4"),
 ]
 opts = {}
 wav2lip = Wav2LipModel(CHKPT_PTH, opts, faces)

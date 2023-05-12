@@ -25,7 +25,7 @@ class Memory:
     self.memories = {}
     self.embdeddings = HuggingFaceEmbeddings(model_name=model_name)
     ### FOR TESTING DANGER LIES AHEAD
-    directory_path = "/app/cache/deeplake-x27"
+    directory_path = DST_PATH + "/deeplake-x27"
     try:
         shutil.rmtree(directory_path)
         print(f"Directory '{directory_path}' has been deleted.")
@@ -34,7 +34,7 @@ class Memory:
     except Exception as e:
         print(f"Error while deleting directory '{directory_path}': {e}")
     # Use deeplake for long-term vector memory storage
-    self.deeplake = DeepLake(dataset_path="/app/cache/deeplake-x27", embedding_function=self.embdeddings)
+    self.deeplake = DeepLake(dataset_path=DST_PATH + "//deeplake-x27", embedding_function=self.embdeddings)
     self.long_term_memories = []
     self.retriever = TimeWeightedVectorStoreRetriever(vectorstore=self.deeplake, decay_rate=.0000000000000000000000001, k=4)
     self.human_prefix = "Human"
