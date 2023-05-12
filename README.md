@@ -73,10 +73,7 @@ Note: You only need to run the ensemble stack if you are pointing services to ex
 ```
 cd agent_n
 docker build --build-arg REPO_URL=git@github.com:fragro/agent_n.git  --build-arg SSH_PRIVATE_KEY="$(cat ~/.ssh/id_rsa)" -t agentforge -f ./docker/agentforge.Dockerfile .
-docker build -t agent -f ./docker/agent.Dockerfile .
-docker build -t llm -f ./docker/llm.Dockerfile .
-docker build -t speech -f ./docker/speech.Dockerfile .
-docker build -t wav2lip -f ./docker/wav2lip.Dockerfile .
+make build
 ```
 ## Run the Web Instance Only (If Model Ensemble is Remote)
 
