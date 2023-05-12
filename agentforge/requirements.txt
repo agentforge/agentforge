@@ -1,7 +1,6 @@
 gTTS
 flask
 pytest
-accelerate==0.18.0
 bitsandbytes
 trl
 flask_cors
@@ -26,7 +25,6 @@ flask-swagger-ui
 Werkzeug
 python-dotenv
 flask-sse
-accelerate @ git+https://github.com/huggingface/accelerate.git
 deeplake
 tiktoken
 sentence_transformers

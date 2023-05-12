@@ -2,7 +2,7 @@ FROM agentforge:latest
 
 WORKDIR /app/agent_n/agentforge/language_model
 RUN pip install peft
-RUN pip install --upgrade accelerate
+RUN pip install 'accelerate @ git+https://github.com/huggingface/accelerate.git'
 
 # Expose port 3000
 EXPOSE 3000

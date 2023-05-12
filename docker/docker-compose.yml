@@ -82,8 +82,8 @@ services:
               device_ids: ['1']
               capabilities: [gpu] 
 
-  worker:
-    image: worker
+  agent:
+    image: agent
     environment:
       - CONFIG_DIR=""
     ports:
@@ -94,7 +94,7 @@ services:
     networks:
       main-net:
         aliases:
-          - worker
+          - agent
     volumes:
       - shared-files:/app/files
       - cache-volume:/app/cache
