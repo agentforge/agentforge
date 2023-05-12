@@ -57,18 +57,18 @@ docker-compose --version
 
 If you aren't on x86 Linux change the URL to match your arch from the list of releases on the docker-compose github.
 
-## Build Docker Containers
+## Build Docker Containers For Development
 
-Build the web image:
+### Build the web image:
 
 ```
 docker build -t web -f ./docker/web.Dockerfile .
 ```
+Now run `cd docker && python exec.py web` to start the docker container. To run the web server run the command `npx next dev`.
+
+### Build the model ensemble stack:
 
 Note: You only need to run the ensemble stack if you are pointing services to external services, have thick GPUs, or accept absurdly slow CPU inference speeds.
-
-
-Build the model ensemble stack:
 
 ```
 cd agent_n

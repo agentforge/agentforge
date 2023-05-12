@@ -100,7 +100,7 @@ services:
       - cache-volume:/app/cache
 
   web:
-    image: web2
+    image: web
     ports:
       - 3000
     ipc: host
