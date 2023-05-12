@@ -262,9 +262,9 @@ const Forge: React.FC<ForgeProps> = () => {
           <div className='flex w-full mt-3'>
             <SelectElement options={models} id="model_key" label="Model" defaultVal="alpaca-lora-7b" />
           </div>
-          <div className='flex w-full mt-3'>
+          {/* <div className='flex w-full mt-3'>
             <ButtonComponent text="Expand Video" onClick={fullScreen} />
-          </div>  
+          </div>   */}
         </div>
         <div className="w-full md:w-8/12">
           <div className="px-18%">
