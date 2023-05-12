@@ -1,5 +1,6 @@
 FROM agentforge:latest
 
+RUN apt-get install -y espeak-ng
 RUN pip install typeguard==2.7.0 TTS inflect --ignore-installed llvmlite
 RUN pip install git+https://github.com/suno-ai/bark.git
 RUN pip uninstall -y psutil
