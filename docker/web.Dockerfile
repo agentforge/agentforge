@@ -14,7 +14,7 @@ RUN mkdir /app/agentforge
 
 COPY . /app/agentforge/
 
-WORKDIR /app/agentforge/personaforge
+WORKDIR /app/agentforge/web/
 
 ENV NODE_VERSION 16.8.0
 ENV NVM_DIR /usr/local/nvm
@@ -26,12 +26,10 @@ RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | b
     && . $NVM_DIR/nvm.sh \
     && nvm install $NODE_VERSION \
     && nvm alias default $NODE_VERSION \
-    && nvm use default
-
-# Install Webpacker globally
-RUN npm install
-RUN npm install -g webpack webpack-cli webpack-dev-server
-RUN npm install next@latest react@latest react-dom@latest
+    && nvm use default \
+    && npm install \
+    && npm install -g webpack webpack-cli webpack-dev-server \
+    && npm install next@latest react@latest react-dom@latest
 
 RUN apt-get update
 RUN apt-get install -y tig
