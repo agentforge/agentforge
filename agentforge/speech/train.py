@@ -18,7 +18,7 @@ if __name__ == '__main__':
 
   # init configs
   dataset_config = BaseDatasetConfig(
-      formatter="ljspeech", meta_file_train="/app/agent_n/core/speech/transcripts-2023_03_29_08_01_39.csv", path=os.path.join(output_path, "/app/cache/audio/fdr/16k/")
+      formatter="ljspeech", meta_file_train="/app/agentforge/core/speech/transcripts-2023_03_29_08_01_39.csv", path=os.path.join(output_path, "/app/cache/audio/fdr/16k/")
   )
 
   audio_config = BaseAudioConfig(

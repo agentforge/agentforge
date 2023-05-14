@@ -1,6 +1,6 @@
 FROM agentforge:latest
 
-WORKDIR /app/agent_n/agentforge/language_model
+WORKDIR /app/agentforge/agentforge/language_model
 RUN pip install peft
 RUN pip install 'accelerate @ git+https://github.com/huggingface/accelerate.git'
 

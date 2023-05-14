@@ -26,5 +26,5 @@ python youtub2wav.py
 ```
 6. There are 2 places where the avatars are currently hard-coded that needs to access the API/database alternatively. To implement an avatar currently we must alter these files:
 
--  /home/fragro/Development/agent_n/personaforge/app/(forge)/forge/app.tsx
-- /home/fragro/Development/agent_n/agentforge/wav2lip/app.py
+-  /home/fragro/Development/agentforge/personaforge/app/(forge)/forge/app.tsx
+- /home/fragro/Development/agentforge/agentforge/wav2lip/app.py

@@ -71,8 +71,8 @@ Now run `cd docker && python exec.py web` to start the docker container. To run 
 Note: You only need to run the ensemble stack if you are pointing services to external services, have thick GPUs, or accept absurdly slow CPU inference speeds.
 
 ```
-cd agent_n
-docker build --build-arg REPO_URL=git@github.com:fragro/agent_n.git  --build-arg SSH_PRIVATE_KEY="$(cat ~/.ssh/id_rsa)" -t agentforge -f ./docker/agentforge.Dockerfile .
+cd agentforge
+docker build --build-arg REPO_URL=git@github.com:fragro/agentforge.git  --build-arg SSH_PRIVATE_KEY="$(cat ~/.ssh/id_rsa)" -t agentforge -f ./docker/agentforge.Dockerfile .
 make build
 ```
 ## Run the Web Instance Only (If Model Ensemble is Remote)
@@ -101,11 +101,11 @@ Run all the services via docker-compose in the docker folder:
 
 To run the flask server(s) from inside a container:
 
-```CONFIG_DIR="/app/agent_n/agentforge/config/configs/" flask run --host=0.0.0.0 --port=3000```
+```CONFIG_DIR="/app/agentforge/agentforge/config/configs/" flask run --host=0.0.0.0 --port=3000```
 
 Wav2Lip (requires additional env vars):
 
-```LC_ALL=C.UTF-8 LANG=C.UTF-8 CONFIG_DIR="/app/agent_n/agentforge/config/configs/" flask run --host=0.0.0.0 --port=3000```
+```LC_ALL=C.UTF-8 LANG=C.UTF-8 CONFIG_DIR="/app/agentforge/agentforge/config/configs/" flask run --host=0.0.0.0 --port=3000```
 
 ## SSL
 
