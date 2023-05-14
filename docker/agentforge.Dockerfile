@@ -1,24 +1,9 @@
 # Use the huggingface/transformers-pytorch-deepspeed-latest-gpu-push-ci image as the base image
 FROM huggingface/transformers-pytorch-deepspeed-latest-gpu-push-ci
 
-ARG REPO_URL
-ARG SSH_PRIVATE_KEY
-
-ENV REPO_URL=$REPO_URL
-ENV SSH_PRIVATE_KEY=$SSH_PRIVATE_KEY
-
 # Set the working directory to /app
-WORKDIR /app
-
-# Copy over git repos
-RUN mkdir -p /root/.ssh && \
-    echo "$SSH_PRIVATE_KEY" > /root/.ssh/id_rsa && \
-    chmod 600 /root/.ssh/id_rsa
-
-RUN ssh-keyscan github.com >> /root/.ssh/known_hosts
-
-# agent_n API
-RUN git clone "$REPO_URL"
+RUN mkdir -p /app/agent_n
+COPY . /app/agent_n/
 
 RUN apt-get update
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y software-properties-common
