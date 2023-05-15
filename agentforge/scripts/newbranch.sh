@@ -18,7 +18,7 @@ git stash
 git checkout -b $new_branch
 
 # Set the upstream
-git branch --set-upstream-to=$upstream_branch $new_branch
+git branch --set-upstream-to=origin/$upstream_branch $new_branch
 
 # Pop the stash
 git stash pop
