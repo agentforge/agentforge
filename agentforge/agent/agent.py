@@ -59,7 +59,7 @@ class Agent():
     # Remove agent name from the output, sometimes chatbots like to add their name
     return text.replace(config["avatar"]["prompt_context"]["name"] + ":", "")
 
-  # TODO: this is clunky and should be more reactive  
+  # TODO: this is clunky and should be more reactive/data-driven
   def configure(self, config):
     self.set_avatar_context(config["avatar"])
     self.memory.setup_memory(ai_prefix=self.prompt_context["name"], human_prefix=config["human_name"])

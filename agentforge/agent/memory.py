@@ -26,7 +26,7 @@ class Memory:
     self.memories = {}
     self.embdeddings = HuggingFaceEmbeddings(model_name=model_name)
     ### FOR TESTING DANGER LIES AHEAD
-    directory_path = DST_PATH + "/deeplake-x27"
+    directory_path = DST_PATH + "/deeplake-vectorstore"
     try:
         shutil.rmtree(directory_path)
         print(f"Directory '{directory_path}' has been deleted.")
@@ -35,8 +35,9 @@ class Memory:
     except Exception as e:
         print(f"Error while deleting directory '{directory_path}': {e}")
     # Use deeplake for long-term vector memory storage
-    self.deeplake = DeepLake(dataset_path=DST_PATH + "//deeplake-x27", embedding_function=self.embdeddings)
+    self.deeplake = DeepLake(dataset_path=DST_PATH + "/deeplake-vectorstore", embedding_function=self.embdeddings)
     self.long_term_memories = []
+    # TODO: Replace this retriever it has internal bugs
     self.retriever = TimeWeightedVectorStoreRetriever(vectorstore=self.deeplake, decay_rate=.0000000000000000000000001, k=4)
     self.human_prefix = "Human"
     self.ai_prefix = "AI"
@@ -94,7 +95,8 @@ class Memory:
       mem = self.short_term_memory.load_memory_variables({})
       def get_content(obj):
           prefix = f"{self.human_prefix}: " if obj.__class__.__name__ == "HumanMessage" else f"{self.ai_prefix}: "
-          return prefix + obj.content
+          postfix = f" {self.human_postfix}" if obj.__class__.__name__ == "HumanMessage" else f" {self.human_postfix}"
+          return prefix + obj.content + postfix
       # TODO: Need a more robust way to ensure we don't hit token limit for prompt
       return "\n".join(list(map(lambda obj: get_content(obj), mem["history"][-5:]))) if "history" in mem else ""
 

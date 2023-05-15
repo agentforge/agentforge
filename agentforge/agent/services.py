@@ -25,6 +25,7 @@ def handle_response_error(func):
 class Service:
     def __init__(self):
       self.urls = Config("urls")
+      self.models = Config("models")
 
     @handle_response_error
     def post_request(self, url, json_data):
@@ -50,3 +51,7 @@ class Service:
         url = self.urls["W2L_URL"]
         url = f"{url}/v1/lipsync"
         return self.post_request(url, form_data)
+
+    # Configuration-based services
+    def get_llm_models(self):
+        return self.models

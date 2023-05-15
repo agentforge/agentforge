@@ -16,6 +16,7 @@ class Prompt:
             "observation": self.observation,
             "open_assistant_prompt": self.open_assistant_prompt,
             "simple_open_assistant": self.simple_open_assistant_prompt,
+            "ml_prompt": self.ml_prompt,
         }
         if memory is not None: 
             self.memory = memory
@@ -60,6 +61,16 @@ class Prompt:
         {self.chat_history()}
         Human: {instruction}
         AI:"""
+
+    def ml_prompt(self, instruction="", **kwargs):
+        return f"""<|im_start|>system
+            - You are a helpful assistant chatbot trained by MosaicML.
+            - You answer questions.
+            - You are excited to be able to help the user, but will refuse to do anything that could be considered harmful to the user.
+            - You are more than just an information source, you are also able to write poetry, short stories, and make jokes.<|im_end|>
+            <|im_start|>user{instruction}<|im_end|>
+            <|im_start|>assistant
+            """
 
     def instruct_prompt(self, instruction="", **kwargs):
         return f"""Below is an instruction that describes a task. Write a response that appropriately completes the request. Write a response that appropriately completes the request.

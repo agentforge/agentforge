@@ -202,3 +202,12 @@ def avatars():
 
   # Create a response object with the avatars
   return jsonify(response)
+
+@app.route("/v1/llm_models", methods=["GET"])
+def llm_models():
+
+  # Get the avatars currently loaded into the config
+  response = executive.service.get_llm_models()
+
+  # Create a response object with the avatars
+  return jsonify(response)
