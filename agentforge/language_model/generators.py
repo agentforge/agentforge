@@ -84,6 +84,13 @@ class Generator:
     bos_token_id = config.bos_token_id
     eos_token_id = config.eos_token_id
 
+    if eos_token_id is None:
+        eos_token_id = tokenizer.eos_token_id
+    if bos_token_id is None:
+        bos_token_id = tokenizer.bos_token_id
+    if pad_token_id is None:
+        pad_token_id = tokenizer.pad_token_id
+
     if pad_token_id is None and eos_token_id is not None:
         model.generation_config.pad_token_id = eos_token_id
 
@@ -110,14 +117,17 @@ class Generator:
             gen = model.module.generate
           else:
             gen = model.generate
-          logging.info(f"Rendering with {json.dumps(kwargs, indent=4, default=convert_to_serializable)}")
           kwargs = {
               'input_ids': input_ids,
               'generation_config': generation_config,
               'return_dict_in_generate': True,
               'output_scores': True,
-              'max_new_tokens': max_new_tokens
+              'max_new_tokens': max_new_tokens,
+              'eos_token_id': eos_token_id,
+              'bos_token_id': bos_token_id,
+              'pad_token_id': pad_token_id,
           }
+          logging.info(f"Rendering with {json.dumps(kwargs, indent=4, default=convert_to_serializable)}")
           if streamer != None:
             kwargs['streamer'] = streamer
           with self.lock:

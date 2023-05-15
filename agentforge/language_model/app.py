@@ -21,7 +21,7 @@ app = Flask(__name__)
 CORS(app)
 
 ### Load the LLM - single GPU example
-llm = LLM({"multi_gpu": False, "device_map": {'':0}, "model_key":"alpaca-lora-7b"})
+llm = LLM({"multi_gpu": False, "device_map": {'':0}, "model_key":"mpt-7b-chat"})
 
 ### Load the LLM - multi-GPU example
 # llm = LLM({"multi_gpu ": True, "device_map": "auto", "model_key":"alpaca-lora-7b"})

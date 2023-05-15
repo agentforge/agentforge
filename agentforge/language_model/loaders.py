@@ -1,7 +1,7 @@
 import torch, logging
 from peft import PeftModel
 from transformers import LlamaTokenizer, LlamaForCausalLM
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoModelForCausalLM, AutoTokenizer, AutoConfig, GPTNeoXTokenizerFast
 from agentforge.language_model.logger import logger
 
 ## Loaders for different models
@@ -20,6 +20,8 @@ class Loader:
             self.llama(device)
         elif config["model_type"] == "huggingface":
             self.huggingface(device)
+        elif config["model_type"] == "mpt":
+            self.huggingface(device, mpt=True)
         else:
             raise ValueError(f"Unknown model type {config['model_type']}")
         return self.model, self.tokenizer
@@ -53,7 +55,7 @@ class Loader:
         if not self.multi_gpu:
             self.model.half()
 
-    def huggingface(self, device="cuda"):
+    def huggingface(self, device="cuda", mpt=False):
         logger.info("Loading huggingface...")
         if self.config["model_name"] == None:
             raise ValueError("model_name must be defined")
@@ -62,19 +64,30 @@ class Loader:
         load_in_8bit = self.config.get("load_in_8bit", False)
         torch_dtype = self.config.get("torch_dtype", torch.float16)
         padding_side = self.config.get("padding_side", "left")
-        cfg = self.config["model_name"]
+        model_name = self.config["model_name"]
 
-        logger.info(f"Loading model... {cfg}")
+        logger.info(f"Loading model... {model_name}")
+
+        config = AutoConfig.from_pretrained(model_name, trust_remote_code=True)
+        if mpt:
+            # config.update({"max_seq_len": 4096})
+            config.attn_config['attn_impl'] = 'triton'
+
         self.model = AutoModelForCausalLM.from_pretrained(
-            cfg,
-            load_in_8bit=load_in_8bit,
+            model_name,
+            config=config,
+            # load_in_8bit=load_in_8bit,
             torch_dtype=torch_dtype,
             device_map=self.device_map,
             revision=revision,
             trust_remote_code=True
         )
-        logger.info("Loading tokenizer...")
-        self.tokenizer = AutoTokenizer.from_pretrained(self.config["tokenizer_name"], padding_side=padding_side)
+        if mpt:
+            logger.info("Loading GPTNeoXTokenizerFast...")
+            self.tokenizer = GPTNeoXTokenizerFast.from_pretrained("EleutherAI/gpt-neox-20b")
+        else:
+            logger.info("Loading AutoTokenizer...")
+            self.tokenizer = AutoTokenizer.from_pretrained(self.config["tokenizer_name"], padding_side=padding_side)
 
         # if self.config["tokenizer_name"] == "OpenAssistant/oasst-sft-1-pythia-12b":
         #     special_tokens_dict = {'additional_special_tokens': ['<|prompter|>', '<|assistant|>']}
