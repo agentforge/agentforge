@@ -18,6 +18,8 @@ import { useSelectState } from '@/components/shared/context/selectstatecontext';
 import { useSliderState } from '@/components/shared/context/sliderstatecontext';
 import { useLanguageModelConfig } from '@/components/shared/context/languagemodelconfigcontext';
 import VideoComponent from '@/components/shared/video';
+import GenerationConfigForm from './generationconfig';
+import Sidebar from './sidebar';
 
 interface ForgeProps {}
 
@@ -62,10 +64,6 @@ const Forge: React.FC<ForgeProps> = () => {
 
   const heroVideoWrapperRef = useRef<HTMLDivElement | null>(null);
 
-  // err handling
-  const [errorState, setErrorState] = useState(false);
-  const [errorValue, setErrorValue] = useState('');
-
   const fullScreen = () => {
     // if (!heroVideoWrapperRef.current || !chatHistoryRef.current) {
     //   return;
@@ -95,20 +93,6 @@ const Forge: React.FC<ForgeProps> = () => {
         video.style.height = distanceFromTop + 'px';
       }
     }
-  };
-
-  const closeError = () => {
-    setErrorState(false);
-    setErrorValue('');
-  };
-
-  const openError = (error: any) => {
-    setErrorState(true);
-    setErrorValue(error);
-  };
-
-  const errMessage = async (error: string) => {
-    openError(`You have encountered a problem. Please contact support. Error message ${error}`);
   };
 
   // Append a string to the latest message for streaming
@@ -228,48 +212,15 @@ const Forge: React.FC<ForgeProps> = () => {
   return (
     <>
     <main className="flex min-h-screen w-full flex-col py-32">
-      <div className='fixed top-0 w-full z-30 transition-all'>
-        <div className="md:block md:w-2/12">
-          <div className="container mx-auto">
-            <VideoComponent/>
-            <div className="flex mt-3">
-              <div className="w-1/2">
-                <CheckboxElement label={"Speech"} id="speech" defaultVal={false} />
-              </div>
-              <div className="w-1/2">
-                <CheckboxElement label={"Video"} id="lipsync" defaultVal={false}  />
-              </div>
-              <div className="w-1/2">
-                <CheckboxElement label={"Streaming"} id="streaming" defaultVal={false} />
-              </div>
-            </div>
-            <div className='flex w-full'>
-              <SliderElement defaultValue={512} max={2048} step={1} ariaLabel="Max New Tokens" width="200px" sliderId="tokens" />
-            </div>
-          </div>
-          <div className='flex w-full mt-3'>
-            <SelectElement options={avatars} id="avatar" label="Avatar" defaultVal="caretaker" />
-          </div>
-          <div className='flex w-full mt-3'>
-            <SelectElement options={ modelConfigs } id="generation_config" label="Prompt Config" defaultVal="logical" />
-          </div>
-          <div className='flex w-full mt-3'>
-            <SelectElement options={models} id="model_key" label="Model" defaultVal="alpaca-lora-7b" />
-          </div>
-          {/* <div className='flex w-full mt-3'>
-            <ButtonComponent text="Expand Video" onClick={fullScreen} />
-          </div>   */}
+      <div className="flex fixed top-0 w-full z-30 transition-all">
+        <div className="md:block h-full md:w-2/12">
+          <Sidebar />
         </div>
-        <div className="w-full md:w-8/12">
-          <div className="px-18%">
-            <ChatWidget />
-            <div>
-              <ErrorMessage errorState={errorState} errorValue={errorValue} closeError={closeError} />
-            </div>
-          </div>
+          <div className="md:block w-full h-full md:w-8/12">
+            < GenerationConfigForm />
         </div>
       <div className="md:block md:w-2/12">
-        <div className="container mx-auto">
+        <div className="mx-auto">
           <ul
             ref={thoughtHistoryRef}
             className="thought-history"
@@ -281,7 +232,7 @@ const Forge: React.FC<ForgeProps> = () => {
               </li>
             ))}
           </ul>
-        </div>
+            </div>
       </div>
     </div>
   </main >

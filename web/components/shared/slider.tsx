@@ -3,6 +3,7 @@ import React, { forwardRef } from 'react';
 import * as Slider from '@radix-ui/react-slider';
 import { useSliderState } from '@/components/shared/context/sliderstatecontext';
 import { useLanguageModelConfig } from '@/components/shared/context/languagemodelconfigcontext';
+import { Text } from '@nextui-org/react';
 
 interface SliderElementProps {
   defaultValue?: number;
@@ -33,27 +34,33 @@ const SliderElement = forwardRef<HTMLDivElement, SliderElementProps>(
 
     return (
       <>
-      <form className="w-10/12 mt-3">
-          <Slider.Root
-            ref={ref}
-            className="relative flex items-center select-none touch-none"
-            style={{ width }}
-            defaultValue={[defaultValue]}
-            max={max}
-            step={step}
-            aria-label={ariaLabel}
-            onValueChange={handleValueChange}
-            value={[sliderValues[sliderId] ?? defaultValue]}
-          >
-            <Slider.Track className="bg-blackA10 relative grow rounded-full h-[3px]">
-              <Slider.Range className="absolute bg-white rounded-full h-full" />
-            </Slider.Track>
-            <Slider.Thumb className="block w-5 h-5 bg-white shadow-[0_2px_10px] shadow-blackA7 rounded-[10px] hover:bg-violet3 focus:outline-none focus:shadow-[0_0_0_5px] focus:shadow-blackA8" />
-          </Slider.Root>
-      </form>
-      <div id="max_new_tokens_value" className="w-2/12">
-        { sliderValues[sliderId] || defaultValue }
+      <div className="flex flex-row w-full mt-3"> 
+        <Text h6>{ariaLabel}</Text>
+        <div id="max_new_tokens_value" className="flex w-2/12">
+          { sliderValues[sliderId] || defaultValue }
+        </div>
       </div>
+      <div className="flex flex-row w-full"> 
+
+        <form className="float-left">
+            <Slider.Root
+              ref={ref}
+              className="relative flex items-center select-none touch-none"
+              style={{ width }}
+              defaultValue={[defaultValue]}
+              max={max}
+              step={step}
+              aria-label={ariaLabel}
+              onValueChange={handleValueChange}
+              value={[sliderValues[sliderId] ?? defaultValue]}
+            >
+              <Slider.Track className="bg-blackA10 relative grow rounded-full h-[3px]">
+                <Slider.Range className="absolute bg-white rounded-full h-full" />
+              </Slider.Track>
+              <Slider.Thumb className="block w-5 h-5 bg-white shadow-[0_2px_10px] shadow-blackA7 rounded-[10px] hover:bg-violet3 focus:outline-none focus:shadow-[0_0_0_5px] focus:shadow-blackA8" />
+            </Slider.Root>
+          </form>
+        </div>
       </>
     );
   }
