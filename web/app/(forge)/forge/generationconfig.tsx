@@ -5,6 +5,8 @@ import CheckboxElement from '@/components/shared/checkbox';
 import SelectElement from '@/components/shared/select';
 import SliderElement from '@/components/shared/slider';
 import { RemoveScroll } from 'react-remove-scroll';
+import * as ScrollArea from '@radix-ui/react-scroll-area';
+import * as Label from '@radix-ui/react-label';
 
   interface GenerationConfig {
     // Parameters that control the length of the output
@@ -128,122 +130,148 @@ import { RemoveScroll } from 'react-remove-scroll';
       e.preventDefault();
       // Handle the form submission...
     };
-
+    
     return (
-      <RemoveScroll>
+      <ScrollArea.Root className="w-full h-screen rounded overflow-hidden">
+      <ScrollArea.Viewport className="w-full h-full rounded">
         <div className="flex w-full mt-3">
-          <div className="w-10/12">
-            <Text h1>Rendering</Text>
-          </div>
-          <div className='mt-6   w-2/12'>
-            <Button color="primary" type="submit">Save</Button>
-          </div>
-        </div>
-        <div className="container mx-auto">
-          <div className="flex w-1/2 mt-3">
-            <div className="w-1/2">
-              <CheckboxElement label={"Speech"} id="speech" defaultVal={false} />
+            <div className="w-10/12">
+              <Text h1>Rendering</Text>
             </div>
-            <div className="w-1/2">
-              <CheckboxElement label={"Video"} id="lipsync" defaultVal={false}  />
-            </div>
-            <div className="w-1/2">
-              <CheckboxElement label={"Streaming"} id="streaming" defaultVal={false} />
+            <div className='mt-6   w-2/12'>
+              <Button color="primary" type="submit">Save</Button>
             </div>
           </div>
-          {/* <div className='flex w-full'>
-            <SliderElement defaultValue={512} max={2048} step={1} ariaLabel="Max New Tokens" width="200px" sliderId="tokens" />
-          </div> */}
-        </div>
-        <div className='flex w-1/2'>
-          <div className='flex w-1/3 mt-3'>
-            <SelectElement options={avatars} id="avatar" label="Avatar" defaultVal="caretaker" />
+          <div className="container mx-auto">
+            <div className="flex w-1/2 mt-3">
+              <div className="w-1/2">
+                <CheckboxElement label={"Speech"} id="speech" defaultVal={false} />
+              </div>
+              <div className="w-1/2">
+                <CheckboxElement label={"Video"} id="lipsync" defaultVal={false}  />
+              </div>
+              <div className="w-1/2">
+                <CheckboxElement label={"Streaming"} id="streaming" defaultVal={false} />
+              </div>
+            </div>
+            {/* <div className='flex w-full'>
+              <SliderElement defaultValue={512} max={2048} step={1} ariaLabel="Max New Tokens" width="200px" sliderId="tokens" />
+            </div> */}
           </div>
-          <div className='flex w-1/3 mt-3'>
-            <SelectElement options={ modelConfigs } id="generation_config" label="Prompt Config" defaultVal="logical" />
+          <div className='flex w-1/2'>
+            <div className='flex w-1/3 mt-3'>
+              <SelectElement options={avatars} id="avatar" label="Avatar" defaultVal="caretaker" />
+            </div>
+            <div className='flex w-1/3 mt-3'>
+              <SelectElement options={ modelConfigs } id="generation_config" label="Prompt Config" defaultVal="logical" />
+            </div>
+            <div className='flex w-1/3 mt-3'>
+              <SelectElement options={models} id="model_key" label="Model" defaultVal="alpaca-lora-7b" />
+            </div>
           </div>
-          <div className='flex w-1/3 mt-3'>
-            <SelectElement options={models} id="model_key" label="Model" defaultVal="alpaca-lora-7b" />
-          </div>
-        </div>
-        <Text h1>Text Generation</Text>
-        <p className="text-gray-600">Configure the generation parameters for the model.</p>
-      <form onSubmit={handleSubmit}>
-        {
-          (() => {
-            let rows: JSX.Element[] = [];
-            let elements: JSX.Element[] = [];
-            let counter = 0;
-            const N = 4; // Replace with your desired value
+          <Text h1>Text Generation</Text>
+          <p className="text-gray-600">Configure the generation parameters for the model.</p>
+        <form onSubmit={handleSubmit}>
+          {
+            (() => {
+              let rows: JSX.Element[] = [];
+              let elements: JSX.Element[] = [];
+              let counter = 0;
+              const N = 4; // Replace with your desired value
 
-            Object.entries(CONFIG_FIELDS).forEach(([key, { type }], index) => {
-              let element: JSX.Element | null;
+              Object.entries(CONFIG_FIELDS).forEach(([key, { type }], index) => {
+                let element: JSX.Element | null;
 
-              switch (type) {
-                case 'slider':
-                  let sliderVal = '';
-                  if (form[key] !== undefined) {
-                    sliderVal = form[key]!.toString();
-                  }
-                  element = (
-                    <div className="flex w-1/4">
-                      <SliderElement defaultValue={512} max={2048} step={1} ariaLabel={key} sliderId="tokens" />
-                      <Spacer y={2.5} />
-                    </div>
-                      );
-                  break;
-                case 'number':
-                  let val = '';
-                  if (form[key] !== undefined) {
-                    val = form[key]!.toString();
-                  }
-                  element = (
-                    <div className="flex w-1/4">
-                      <Input bordered key={key} labelPlaceholder={key} type="number" />
-                      <Spacer y={2.5} />
-                    </div>
-                  );
-                  break;
-                case 'boolean':
-                  // Handle typesafety
-                  let variable: string | number | boolean | undefined = form[key];
-                  let booleanVariable: boolean | undefined;
-                  if (typeof variable === 'boolean' || typeof variable === 'undefined') {
-                    booleanVariable = variable;
+                switch (type) {
+                  case 'slider':
+                    let sliderVal = '';
+                    if (form[key] !== undefined) {
+                      sliderVal = form[key]!.toString();
+                    }
                     element = (
                       <div className="flex w-1/4">
-                        <Checkbox key={key} label={key} name={key} isSelected={booleanVariable} />
+                        <SliderElement defaultValue={512} max={2048} step={1} ariaLabel={key} sliderId="tokens" />
+                        <Spacer y={2.5} />
+                      </div>
+                        );
+                    break;
+                  case 'number':
+                    let val = '';
+                    if (form[key] !== undefined) {
+                      val = form[key]!.toString();
+                    }
+                    element = (
+                      <div className="flex w-1/4">
+                        <div className="flex flex-wrap items-center gap-[15px] px-5">
+                          <Label.Root className="text-[15px] font-medium leading-[35px] text-white" htmlFor={ key }>
+                            { key }
+                          </Label.Root>
+                          <input
+                            className="bg-blackA5 shadow-blackA9 inline-flex h-[35px] w-full appearance-none items-center justify-center rounded-[4px] px-[10px] text-[15px] leading-none text-white shadow-[0_0_0_1px] outline-none focus:shadow-[0_0_0_2px_black] selection:color-white selection:bg-blackA9"
+                            type="number"
+                            id={ key }
+                            defaultValue=""
+                          />
+                        </div>
+                        {/* <Input bordered key={key} labelPlaceholder={key} type="number" />
+                        <Spacer y={2.5} /> */}
                       </div>
                     );
-                  } else {
-                    element = <span>Error incorrect type</span>;
-                  }
-                  break;
+                    break;
+                  case 'boolean':
+                    // Handle typesafety
+                    let variable: string | number | boolean | undefined = form[key];
+                    let booleanVariable: boolean | undefined;
+                    if (typeof variable === 'boolean' || typeof variable === 'undefined') {
+                      booleanVariable = variable;
+                      element = (
+                        <div className="flex w-1/4">
+                          <Checkbox key={key} label={key} name={key} />
+                        </div>
+                      );
+                    } else {
+                      element = <span>Error incorrect type</span>;
+                    }
+                    break;
 
-                // ... handle more field types ...
-                default:
-                  element = null;
-              }
-
-              if (element) {
-                elements.push(element);
-                counter++;
-                if (counter === N || index === CONFIG_FIELDS.length - 1) {
-                  rows.push(<div className="flex flex-row mt-9" key={`row${index}`}>{elements}</div>);
-                  elements = [];
-                  counter = 0;
+                  // ... handle more field types ...
+                  default:
+                    element = null;
                 }
-              }
-            });
 
-            return rows;
-          })()
-        }
-        {/* <div className='flex w-full mt-3'>
-          <ButtonComponent text="Expand Video" onClick={fullScreen} />
-        </div>   */}
-      </form>
-      </RemoveScroll>
+                if (element) {
+                  elements.push(element);
+                  counter++;
+                  if (counter === N || index === CONFIG_FIELDS.length - 1) {
+                    rows.push(<div className="flex flex-row mt-9" key={`row${index}`}>{elements}</div>);
+                    elements = [];
+                    counter = 0;
+                  }
+                }
+              });
+
+              return rows;
+            })()
+          }
+          {/* <div className='flex w-full mt-3'>
+            <ButtonComponent text="Expand Video" onClick={fullScreen} />
+          </div>   */}
+        </form>
+      </ScrollArea.Viewport>
+      <ScrollArea.Scrollbar
+        className="flex select-none touch-none p-0.5 bg-blackA6 transition-colors duration-[160ms] ease-out hover:bg-blackA8 data-[orientation=vertical]:w-2.5 data-[orientation=horizontal]:flex-col data-[orientation=horizontal]:h-2.5"
+        orientation="vertical"
+      >
+        <ScrollArea.Thumb className="flex-1 bg-mauve10 rounded-[10px] relative before:content-[''] before:absolute before:top-1/2 before:left-1/2 before:-translate-x-1/2 before:-translate-y-1/2 before:w-full before:h-full before:min-w-[44px] before:min-h-[44px]" />
+      </ScrollArea.Scrollbar>
+      <ScrollArea.Scrollbar
+        className="flex select-none touch-none p-0.5 bg-blackA6 transition-colors duration-[160ms] ease-out hover:bg-blackA8 data-[orientation=vertical]:w-2.5 data-[orientation=horizontal]:flex-col data-[orientation=horizontal]:h-2.5"
+        orientation="horizontal"
+      >
+        <ScrollArea.Thumb className="flex-1 bg-mauve10 rounded-[10px] relative before:content-[''] before:absolute before:top-1/2 before:left-1/2 before:-translate-x-1/2 before:-translate-y-1/2 before:w-full before:h-full before:min-w-[44px] before:min-h-[44px]" />
+      </ScrollArea.Scrollbar>
+      <ScrollArea.Corner className="bg-blackA8" />
+    </ScrollArea.Root>
     );
   }
   
