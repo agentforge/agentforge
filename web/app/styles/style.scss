@@ -210,10 +210,10 @@ pre code .comment {
   color: $text-color;
   border-color: $text-color;
 
-  &:focus {
-    border-color: $accent-color;
-    box-shadow: 0 0 0 0.2rem rgba($accent-color, 0.25);
-  }
+  // &:focus {
+  //   border-color: $accent-color;
+  //   box-shadow: 0 0 0 0.2rem rgba($accent-color, 0.25);
+  // }
 }
 
 .dropdown-container {
@@ -225,10 +225,10 @@ pre code .comment {
   transition: all 0.3s ease;
 }
 
-.custom-control-input:focus ~ .custom-control-label::before,
-.custom-range:focus::-webkit-slider-thumb {
-  box-shadow: 0 0 5px $accent-color;
-}
+// .custom-control-input:focus ~ .custom-control-label::before,
+// .custom-range:focus::-webkit-slider-thumb {
+//   box-shadow: 0 0 5px $accent-color;
+// }
 
 // Stylized shadows for dropdowns
 .custom-select:focus {
