@@ -1,12 +1,6 @@
 # Use the official Node.js v14 image as the base image
 FROM node:14
 
-# Replace shell with bash so we can source files
-RUN rm /bin/sh && ln -s /bin/bash /bin/sh
-
-# Set debconf to run non-interactively
-RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
-
 # Set the working directory in the container
 WORKDIR /app
 
@@ -16,9 +10,9 @@ RUN rm /bin/sh && ln -s /bin/bash /bin/sh
 # Set debconf to run non-interactively
 RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
 
-RUN mkdir /app/agent_n
+RUN mkdir /app/agentforge
 
-COPY . /app/agent_n/
+COPY . /app/agentforge/
 
 WORKDIR /app/agentforge/web/
 
@@ -37,16 +31,11 @@ RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | b
     && npm install -g webpack webpack-cli webpack-dev-server \
     && npm install next@latest react@latest react-dom@latest
 
-# Install Webpacker globally
-# RUN npm install
-# RUN npm install -g webpack webpack-cli webpack-dev-server
-# RUN npm install next@latest react@latest react-dom@latest
-
 RUN apt-get update
 RUN apt-get install -y tig
 
 # Expose the port used by the app (if any)
-EXPOSE 3005
+EXPOSE 8080
 
 # Start the app
 # CMD [ "npm", "start" ]

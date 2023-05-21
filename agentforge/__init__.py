@@ -2,7 +2,7 @@ import os
 from flask_sqlalchemy import SQLAlchemy
 
 CONFIG_DIR = os.environ.get("CONFIG_DIR", "/app/agentforge/config")
-VIDEO_SRC_PATH = os.environ.get("SRC_PATH", "/app/agent_n/web/public/videos")
+VIDEO_SRC_PATH = os.environ.get("SRC_PATH", "/app/agentforge/web/public/videos")
 DST_PATH = os.environ.get("DST_PATH", "/app/cache")
 AUDIO_DST_PATH = DST_PATH + "/uploads/audio"
 if not os.path.exists(AUDIO_DST_PATH):
