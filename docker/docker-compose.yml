@@ -89,8 +89,6 @@ services:
     ports:
       - "3000:3000"
     ipc: host
-    depends_on:
-      - llm
     networks:
       main-net:
         aliases:
@@ -102,7 +100,7 @@ services:
   web:
     image: web
     ports:
-      - 3000
+      - "8080:8080"
     ipc: host
     networks:
       main-net:

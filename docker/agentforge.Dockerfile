@@ -2,8 +2,8 @@
 FROM huggingface/transformers-pytorch-deepspeed-latest-gpu-push-ci
 
 # Set the working directory to /app
-RUN mkdir -p /app/agent_n
-COPY . /app/agent_n/
+RUN mkdir -p /app/agentforge
+COPY . /app/agentforge/
 
 RUN apt-get update
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y software-properties-common

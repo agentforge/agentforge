@@ -62,7 +62,7 @@ If you aren't on x86 Linux change the URL to match your arch from the list of re
 ### Build the web image:
 
 ```
-make web
+docker build -t web -f ./docker/web.Dockerfile .
 ```
 Now run `cd docker && python exec.py web` to start the docker container. To run the web server run the command `npx next dev`.
 
@@ -87,7 +87,7 @@ Otherwise connect via `docker exec -it <CONTAINER_ID> /bin/bash`
 
 To run the react typescript server:
 
-```PORT=3000 npm start```
+```npx next dev -p 8080```
 
 Change config.ts to point to the model ensemble IP.
 
