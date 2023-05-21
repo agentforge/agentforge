@@ -18,7 +18,7 @@ import { useSelectState } from '@/components/shared/context/selectstatecontext';
 import { useSliderState } from '@/components/shared/context/sliderstatecontext';
 import { useLanguageModelConfig } from '@/components/shared/context/languagemodelconfigcontext';
 import VideoComponent from '@/components/shared/video';
-import GenerationConfigForm from './generationconfig';
+import MainConfigForm from './mainconfig';
 import Sidebar from './sidebar';
 
 interface ForgeProps {}
@@ -217,7 +217,7 @@ const Forge: React.FC<ForgeProps> = () => {
           <Sidebar />
         </div>
           <div className="md:block w-full h-full md:w-8/12">
-            < GenerationConfigForm />
+            < MainConfigForm />
         </div>
       <div className="md:block md:w-2/12">
         <div className="mx-auto">

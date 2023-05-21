@@ -18,12 +18,19 @@ type ConfigFields = {
     [key: string]: ConfigField;
 }
 
-interface ConfigFormProps {
+export interface ConfigFormProps {
   fields: ConfigFields;
   form: {[key: string]: string | number | boolean | undefined};
 }
 
-const ConfigForm: React.FC<ConfigFormProps> = ({ fields, form }) =>  {
+function titleize(str: string): string {
+  return str
+    .split('_')
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
+export const ConfigForm: React.FC<ConfigFormProps> = ({ fields, form }) =>  {
     let rows: JSX.Element[] = [];
     let elements: JSX.Element[] = [];
     let counter = 0;
@@ -55,9 +62,9 @@ const ConfigForm: React.FC<ConfigFormProps> = ({ fields, form }) =>  {
           <div className="flex w-1/4">
             <div className="flex flex-wrap items-center gap-[15px] px-5">
               <Label.Root className="text-[15px] font-medium leading-[35px] text-white" htmlFor={ key }>
-                {key}
+                {titleize(key)}
                 {fields[key].tooltip !== undefined ? (
-                  <TooltipSimple text={fields[key].tooltip} /> 
+                  <span className='ml-3'><TooltipSimple text={fields[key].tooltip} /></span> 
                 ) : (       
                   <></>
                 )}
@@ -83,7 +90,7 @@ const ConfigForm: React.FC<ConfigFormProps> = ({ fields, form }) =>  {
           booleanVariable = variable;
           element = (
             <div className="flex w-1/4">
-              <Checkbox key={key} label={key} name={key} />
+              <Checkbox key={key} label={titleize(key)} name={key} />
               {fields[key].tooltip !== undefined ? (
                   <TooltipSimple text={fields[key].tooltip} /> 
                 ) : (       
