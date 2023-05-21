@@ -206,12 +206,15 @@ def avatars():
 #Twilio webhook for received sms 
 # will need to configure twilio side using https://www.twilio.com/docs/sms/tutorials/how-to-receive-and-reply-python
 @app.route("/v1/sms", methods=['GET', 'POST'])
-def sms_reply():
-    """Respond to incoming calls with a simple text message."""
+def incoming_sms():
+    """Send a dynamic reply to an incoming text message"""
+    # Get the message the user sent our Twilio number
+    body = request.values.get('Body', None)
     # Start our TwiML response
     resp = MessagingResponse()
 
-    # TODO: get phone and other informaiton for user lookup and get form_data
+    promt = body
+    # TODO: get phone and other information for user lookup and generate form_data
     # form_data = {"avatar":"avatar1","phone":"+123456789"}
     # call response = executive.respond(prompt, form_data, app)
     # response = executive.respond(prompt, form_data, app)
