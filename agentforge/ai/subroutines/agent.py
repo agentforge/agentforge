@@ -2,13 +2,13 @@ import os
 
 from langchain import PromptTemplate, LLMChain
 from langchain.agents import initialize_agent
-from agentforge import helpers
+from agentforge.utils import helpers
 from langchain.agents import Tool
 from langchain.llms import HuggingFaceModel
 from langchain.utilities import SearxSearchWrapper
 from .prompt import Prompt
-from agentforge.helpers import Parser
-from agentforge.agent import Memory
+from agentforge.utils import Parser
+from agentforge.ai import Memory
 from agentforge.config import config
 
 from agentforge import LLM_CONFIG_FILE

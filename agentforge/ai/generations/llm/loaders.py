@@ -2,7 +2,7 @@ import torch, logging
 from peft import PeftModel
 from transformers import LlamaTokenizer, LlamaForCausalLM
 from transformers import AutoModelForCausalLM, AutoTokenizer, AutoConfig, GPTNeoXTokenizerFast
-from agentforge.language_model.logger import logger
+from agentforge.utils import logger
 
 ## Loaders for different models
 class Loader:

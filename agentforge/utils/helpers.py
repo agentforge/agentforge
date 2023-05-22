@@ -8,7 +8,7 @@ from pygments import highlight
 import time, re, math
 from functools import wraps
 from flask import request
-from agentforge.agent.logger import logger
+from agentforge.utils import logger
 
 def measure_time(func):
     @wraps(func)

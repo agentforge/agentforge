@@ -10,22 +10,22 @@ from datetime import timedelta
 from flask_swagger_ui import get_swaggerui_blueprint
 from werkzeug.utils import secure_filename
 
-# importing the sys module
+# # importing the sys module
 import sys, os
  
-# appending the directory of mod.py
-# in the sys.path list
+# # appending the directory of mod.py
+# # in the sys.path list
 sys.path.append(os.path.join(os.path.dirname(sys.path[0]),'/app/agentforge'))
 print(sys.path)
 
 from agentforge import AUDIO_DST_PATH, DST_PATH
-from agentforge.agent import ExecutiveCognition
-from agentforge.agent import startup
-from agentforge.helpers import measure_time
-from agentforge.worker import Worker
-from agentforge.models import User
+from agentforge.ai import ExecutiveCognition
+# from agentforge.agent import startup
+from agentforge.utils import measure_time
+from agentforge.ai import User
 from agentforge import db
-from agentforge.agent import secure_wav_filename
+from agentforge.utils import secure_wav_filename
+import agentforge as af
 
 # Create the worker queue TODO: Complete implementation
 # queue = Queue(connection=Redis())
@@ -33,18 +33,18 @@ from agentforge.agent import secure_wav_filename
 
 # Create an instance of the Flask class
 app = Flask(__name__)
-CORS(app, supports_credentials=True, resources={r"/*": {"origins": "*"}})
+CORS(app, supports_credentials=True, resources={r"/*": {"origins": af.ALLOWED_ORIGIN}})
 
 # Setup database connection
-app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{DST_PATH}/test.db"
-app.config['SESSION_TYPE'] = 'filesystem'
-app.config["REDIS_URL"] = "redis://redis:6379/0"
+# app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{DST_PATH}/test.db"
+app.config['SESSION_TYPE'] = af.SESSION_TYPE
+app.config["REDIS_URL"] = f"redis://{af.REDIS_HOST}:{af.REDIS_PORT}/{af.REDIS_DB}"
 
 # Set the ALLOWED_ORIGIN and ALLOW_CREDENTIALS configuration variables
-app.config["ALLOWED_ORIGIN"] = "*"
-app.config["ALLOW_CREDENTIALS"] = True
+app.config["ALLOWED_ORIGIN"] = af.ALLOWED_ORIGIN
+app.config["ALLOW_CREDENTIALS"] = af.ALLOW_CREDENTIALS
 
-app.secret_key = '0e529d8e-31b9-4e54-a63f-55d6b76e6d14'
+app.secret_key = af.SECRET_KEY
 
 app.register_blueprint(sse, url_prefix='/stream')
 
@@ -52,11 +52,13 @@ db.init_app(app)
 migrate = Migrate(app, db)
 
 # Setup redis connection
-redis_conn = redis.StrictRedis(host='redis', port=6379, db=0)
+redis_conn = redis.StrictRedis(host=af.REDIS_HOST, port=af.REDIS_PORT, db=af.REDIS_DB)
 
 # Setup Agent
 executive = ExecutiveCognition()
-startup()
+
+# TODO: Ensure video fidelity by pointing video src to a central filestore
+# startup()
 
 # Swagger UI setup
 SWAGGER_URL = '/swagger'
@@ -202,14 +204,15 @@ def tts():
 
   return response_obj
 
-@app.route("/v1/avatars", methods=["GET"])
-def avatars():
+# TODO Replace this with the ModelConfig API
+# @app.route("/v1/avatars", methods=["GET"])
+# def avatars():
 
-  # Get the avatars currently loaded into the config
-  response = executive.avatar.get_avatars()
+#   # Get the avatars currently loaded into the config
+#   response = executive.avatar.get_avatars()
 
-  # Create a response object with the avatars
-  return jsonify(response)
+#   # Create a response object with the avatars
+#   return jsonify(response)
 
 @app.route("/v1/llm_models", methods=["GET"])
 def llm_models():

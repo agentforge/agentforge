@@ -3,7 +3,6 @@ import time, threading, json, logging
 from transformers import GenerationConfig, StoppingCriteria
 import numpy as np
 from agentforge.config import Config
-from agentforge import DEFAULT_MAX_NEW_TOKENS
 from agentforge.language_model.logger import convert_to_serializable
 
 # Drives text generation for multiple models.
@@ -45,7 +44,7 @@ class Generator:
     if max_new_tokens != 'NaN' and max_new_tokens != None:
       max_new_tokens = int(max_new_tokens)
     else:
-      max_new_tokens = DEFAULT_MAX_NEW_TOKENS
+      max_new_tokens = 2048
     return max_new_tokens
 
   def get_probabilities(self, model, tokenizer, inputs, completion):

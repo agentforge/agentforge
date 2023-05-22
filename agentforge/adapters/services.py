@@ -3,7 +3,7 @@
 
 from agentforge.config import Config
 import requests
-from agentforge.agent.logger import logger
+from agentforge.utils import logger
 
 def handle_response_error(func):
   def wrapper(*args, **kwargs):

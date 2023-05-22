@@ -29,7 +29,7 @@ class LLM():
     self.config_controller = Config(None)
 
     # Load the default model's config
-    self.config_controller.load_config(LLM_CONFIG_FILE)
+    # self.config_controller.load_config(LLM_CONFIG_FILE)
     self.config = self.config_controller.get_config(DEFAULT_LLM)
     self.streaming = self.config.get("streaming", False)
 

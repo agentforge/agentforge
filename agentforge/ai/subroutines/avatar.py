@@ -1,7 +1,7 @@
 import os
 import json
 from agentforge.config import Config
-# from agentforge.agent.logger import logger
+from agentforge.utils import logger
 
 
 # TODO: Deprecated in favor of new ModelProfile approach, includes avatar data
@@ -22,7 +22,7 @@ class Avatar:
                     self.avatar_config[avatar_key] = avatar_data
       except Exception as e:
           raise e
-          # logger.error(f'Error loading avatar {folder_path}: {e}')
+          logger.error(f'Error loading avatar {folder_path}: {e}')
 
     def get_avatar(self, avatar_key):
       return self.avatar_config.get(avatar_key)
