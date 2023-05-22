@@ -1,0 +1,1 @@
+# TODO: Implement emotion detection and cognition sytems using sentiment analysis entity

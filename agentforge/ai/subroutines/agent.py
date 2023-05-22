@@ -21,6 +21,7 @@ os.environ["LANGCHAIN_HANDLER"] = "langchain"
 ## Future access to tools/plugins/retrieval
 
 ### Agent -- Layer over LLMChain Agent system to provide a more user friendly interface w/tools and reasoning
+### TODO: Probably deprecated, we aren't currently using tools in production but this can be added
 class Agent():
   def __init__(self, opts={}) -> None:
     self.config = config.Config(None)

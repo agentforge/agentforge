@@ -21,6 +21,7 @@ class MemDoc():
       self.page_content = text
       self.metadata = metadata
 
+# TODO: Remove entity layers and abstract embeddings and vectorstore
 class Memory:
   def __init__(self, model_name='sentence-transformers/all-mpnet-base-v2'):
     self.memories = {}

@@ -10,6 +10,14 @@ from datetime import timedelta
 from flask_swagger_ui import get_swaggerui_blueprint
 from werkzeug.utils import secure_filename
 
+# importing the sys module
+import sys, os
+ 
+# appending the directory of mod.py
+# in the sys.path list
+sys.path.append(os.path.join(os.path.dirname(sys.path[0]),'/app/agentforge'))
+print(sys.path)
+
 from agentforge import AUDIO_DST_PATH, DST_PATH
 from agentforge.agent import ExecutiveCognition
 from agentforge.agent import startup
