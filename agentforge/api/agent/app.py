@@ -18,7 +18,7 @@ import sys, os
 sys.path.append(os.path.join(os.path.dirname(sys.path[0]),'/app/agentforge'))
 print(sys.path)
 
-from agentforge import AUDIO_DST_PATH, DST_PATH
+from agentforge import DST_PATH
 from agentforge.ai import ExecutiveCognition
 # from agentforge.agent import startup
 from agentforge.utils import measure_time
@@ -36,7 +36,7 @@ app = Flask(__name__)
 CORS(app, supports_credentials=True, resources={r"/*": {"origins": af.ALLOWED_ORIGIN}})
 
 # Setup database connection
-# app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{DST_PATH}/test.db"
+app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{DST_PATH}/test.db"
 app.config['SESSION_TYPE'] = af.SESSION_TYPE
 app.config["REDIS_URL"] = f"redis://{af.REDIS_HOST}:{af.REDIS_PORT}/{af.REDIS_DB}"
 
@@ -44,7 +44,7 @@ app.config["REDIS_URL"] = f"redis://{af.REDIS_HOST}:{af.REDIS_PORT}/{af.REDIS_DB
 app.config["ALLOWED_ORIGIN"] = af.ALLOWED_ORIGIN
 app.config["ALLOW_CREDENTIALS"] = af.ALLOW_CREDENTIALS
 
-app.secret_key = af.SECRET_KEY
+app.secret_key = af.AGENT_SECRET_KEY
 
 app.register_blueprint(sse, url_prefix='/stream')
 
@@ -183,6 +183,7 @@ def prompt():
   # Return the response
   return jsonify(response)
 
+# TODO: DEPRECATE THIS
 # Define the API endpoint for hearing the agent speak
 @app.route("/v1/tts", methods=["POST"])
 @measure_time
@@ -214,11 +215,13 @@ def tts():
 #   # Create a response object with the avatars
 #   return jsonify(response)
 
-@app.route("/v1/llm_models", methods=["GET"])
-def llm_models():
+# TODO Replace this with the ModelConfig API
 
-  # Get the avatars currently loaded into the config
-  response = executive.service.get_llm_models()
+# @app.route("/v1/llm_models", methods=["GET"])
+# def llm_models():
 
-  # Create a response object with the avatars
-  return jsonify(response)
+#   # Get the avatars currently loaded into the config
+#   response = executive.service.get_llm_models()
+
+#   # Create a response object with the avatars
+#   return jsonify(response)

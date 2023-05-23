@@ -5,9 +5,8 @@
 
 import threading
 # from agentforge.ai import Avatar
-from agentforge.adapters import Service
+from agentforge.interfaces import APIService
 from agentforge.ai import Agent
-import requests, json, os
 from flask_sse import sse
 from agentforge.utils import logger
 
@@ -16,7 +15,7 @@ class ExecutiveCognition:
         self.avatar = {} # Avatar() # personality
         self.agent = Agent() # agency, reason, memory, prompt engineering
         self.thoughts = {} # thoughts hack #TODO: replace with memory
-        self.service = Service()
+        self.service = APIService()
         self.lock = threading.Lock() # for async calls
 
     # Either return a wav file or a mp4 file based on flag

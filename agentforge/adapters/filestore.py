@@ -1,7 +1,9 @@
 # TODO: Implement generic filestore
+from typing import Protocol, Any
 
-from typing import Any
+class FileStoreProtocol(Protocol):
+    def get_file(self, filepath: str) -> Any:
+        pass
 
-class FileStore():
-    def __call__(self, *args: Any, **kwds: Any) -> Any:
+    def save_file(self, filepath: str, content: Any) -> None:
         pass

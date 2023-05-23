@@ -4,42 +4,15 @@
 ### similarity functions to access memories and methods to forget
 ### Forgetting is an important part of learning and memory
 
-import uuid, datetime, threading
-from copy import deepcopy
+import datetime, threading
 from langchain.memory import ConversationBufferMemory
-from langchain.vectorstores import DeepLake
-from langchain.embeddings import HuggingFaceEmbeddings
-from langchain.document_loaders import TextLoader
-from langchain.text_splitter import CharacterTextSplitter
-from langchain.schema import Document
-from langchain.retrievers import TimeWeightedVectorStoreRetriever
-from agentforge import DST_PATH
-import shutil
-
-class MemDoc():
-   def __init__(self, text, metadata):
-      self.page_content = text
-      self.metadata = metadata
 
 # TODO: Remove entity layers and abstract embeddings and vectorstore
 class Memory:
-  def __init__(self, model_name='sentence-transformers/all-mpnet-base-v2'):
+  def __init__(self):
     self.memories = {}
-    self.embdeddings = HuggingFaceEmbeddings(model_name=model_name)
-    ### FOR TESTING DANGER LIES AHEAD
-    directory_path = DST_PATH + "/deeplake-vectorstore"
-    try:
-        shutil.rmtree(directory_path)
-        print(f"Directory '{directory_path}' has been deleted.")
-    except FileNotFoundError:
-        print(f"Directory '{directory_path}' not found.")
-    except Exception as e:
-        print(f"Error while deleting directory '{directory_path}': {e}")
-    # Use deeplake for long-term vector memory storage
-    self.deeplake = DeepLake(dataset_path=DST_PATH + "/deeplake-vectorstore", embedding_function=self.embdeddings)
-    self.long_term_memories = []
     # TODO: Replace this retriever it has internal bugs
-    self.retriever = TimeWeightedVectorStoreRetriever(vectorstore=self.deeplake, decay_rate=.0000000000000000000000001, k=4)
+    self.vectorstore = 
     self.human_prefix = "Human"
     self.ai_prefix = "AI"
 
@@ -121,8 +94,4 @@ class Memory:
       if "created_at" not in metadata:
           metadata["created_at"] = current_time
       metadata["buffer_idx"] = len(self.retriever.memory_stream)
-      # doc = MemDoc(texts, metadata)
-      # ddoc = deepcopy(doc) # Deep copy to avoid mutating input
-      # self.retriever.memory_stream.extend([ddoc])
-      # raise Exception(str(metadata))
-      return self.deeplake.add_texts([texts], [metadata])
+      return self.vectorstore.add_texts([texts], [metadata])

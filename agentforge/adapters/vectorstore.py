@@ -1,7 +1,13 @@
 # TODO: Implement generic vectorstore
+from typing import Any, List, Protocol
 
-from typing import Any
+class VectorStoreProtocol(Protocol):
+    
+    def __init__(self, config: Any) -> None:
+        pass
+    
+    def search(self, query: str) -> Any:
+        pass
 
-class VectorStore():
-    def __call__(self, *args: Any, **kwds: Any) -> Any:
+    def add_texts(self, texts: List[str], metadata: List[Any]) -> None:
         pass
