@@ -1,20 +1,12 @@
-### Memory Module for the Agent
-### This is the neuro-symbolic core for the long-term memory of the agent
-### It is responsible for storing and retrieving memories
-### similarity functions to access memories and methods to forget
-### Forgetting is an important part of learning and memory
-
 import datetime, threading
 from langchain.memory import ConversationBufferMemory
+from agentforge.adapters import VectorStoreProtocol
 
-# TODO: Remove entity layers and abstract embeddings and vectorstore
-class Memory:
-  def __init__(self):
+### ShortTermMemory users a simple conversation buffer to store recent interactions
+class ShortTermMemory:
+  def __init__(self, vectorstore: VectorStoreProtocol = None):
     self.memories = {}
-    # TODO: Replace this retriever it has internal bugs
-    self.vectorstore = 
-    self.human_prefix = "Human"
-    self.ai_prefix = "AI"
+    self.short_term_memory = ConversationBufferMemory(return_messages=True)
 
   # Stores memory for various agent avatars
   def setup_memory(self, ai_prefix = "AI", human_prefix = "Human"):
@@ -24,24 +16,40 @@ class Memory:
     if ai_prefix in self.memories:
       self.short_term_memory = self.memories[ai_prefix]
     else:
-      self.short_term_memory = ConversationBufferMemory(return_messages=True)
       self.short_term_memory.human_prefix = human_prefix
       self.short_term_memory.ai_prefix = ai_prefix
       self.memories[ai_prefix] = self.short_term_memory
 
-  # Saves a current speech artifact to the memory
-  def save_speech(self, speech):
+  # Saves a response from another individual to short-term memory
+  def save_interaction(self, prompt, response):
+    # Do not save empty interactions
+    if prompt.strip() == "":
+      return
     if self.short_term_memory:
-      self.short_term_memory.chat_memory.add_user_message(speech)
+        self.short_term_memory.chat_memory.add_user_message(prompt)
+        self.short_term_memory.chat_memory.add_ai_message(response)
 
-  # Saves a response from another individual to the memory
-  def save_response(self, speech):
-    if self.short_term_memory:
-      self.short_term_memory.chat_memory.add_ai_message(speech)
+  # Returns the last 5 interactions from the short term memory
+  def chat_history(self):
+      mem = self.short_term_memory.load_memory_variables({})
+      def get_content(obj):
+          prefix = f"{self.human_prefix}: " if obj.__class__.__name__ == "HumanMessage" else f"{self.ai_prefix}: "
+          postfix = f" {self.human_postfix}" if obj.__class__.__name__ == "HumanMessage" else f" {self.human_postfix}"
+          return prefix + obj.content + postfix
+      # TODO: Need a more robust way to ensure we don't hit token limit for prompt
+      return "\n".join(list(map(lambda obj: get_content(obj), mem["history"][-5:]))) if "history" in mem else ""
+
+### LongTermMemory makes use of the VectorStoreProtocol to store and retrieve memories
+### uses a similarity function to access memories and methods to forget
+### VectorStoreProtocol is an interface that can be implemented by any vector store
+### and uses metadata filters to filter on user, agent, and other metadata
+class LongTermMemory:
+  def __init__(self, vectorstore: VectorStoreProtocol = None):
+    self.vectorstore = vectorstore
 
   # Does a similarity search to recall memories associated with this prompt
   def recall(self, prompt):
-    docs = self.deeplake.search(prompt)
+    docs = self.vectorstore.search(prompt)
     self.long_term_memories = docs
 
   # provides long term memories to the prompt manager
@@ -64,26 +72,15 @@ class Memory:
       with app.app_context():
           self.save_interaction(prompt, response)
 
-  # Returns the last 5 interactions from the short term memory
-  def chat_history(self):
-      mem = self.short_term_memory.load_memory_variables({})
-      def get_content(obj):
-          prefix = f"{self.human_prefix}: " if obj.__class__.__name__ == "HumanMessage" else f"{self.ai_prefix}: "
-          postfix = f" {self.human_postfix}" if obj.__class__.__name__ == "HumanMessage" else f" {self.human_postfix}"
-          return prefix + obj.content + postfix
-      # TODO: Need a more robust way to ensure we don't hit token limit for prompt
-      return "\n".join(list(map(lambda obj: get_content(obj), mem["history"][-5:]))) if "history" in mem else ""
-
   # Saves a response from another individual to long-term memory
   def save_interaction(self, prompt, response):
     # Do not save empty interactions
     if prompt.strip() == "":
       return
     interaction = f"""{self.short_term_memory.human_prefix}: {prompt}\n{ self.short_term_memory.ai_prefix}: {response}"""
-    if self.deeplake is not None:
+    if self.vectorstore is not None:
         metadata = {"source": self.short_term_memory.ai_prefix}
         self.add_documents(interaction, metadata)
-
 
   def add_documents(self, texts, metadata, **kwargs):
       """Add documents to vectorstore."""

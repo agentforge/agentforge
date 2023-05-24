@@ -10,6 +10,7 @@ from agentforge.ai import Agent
 from flask_sse import sse
 from agentforge.utils import logger
 
+### TODO: Convert this to a helper for cognitive tasks
 class ExecutiveCognition:
     def __init__(self) -> None:
         self.avatar = {} # Avatar() # personality

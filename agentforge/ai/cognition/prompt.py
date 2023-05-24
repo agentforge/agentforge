@@ -1,5 +1,12 @@
 ### Prompt Manager and Prompt Engineering
 
+
+### TODO: This is going to be replaced by a more robust Prompt Engineering system
+### at the edge in the parser and at the core in the agent
+
+### The agent will receive the prompt template and the context necessary to build the prompt
+### will be forumlated by the subroutine layer and passed to the agent
+
 class Prompt:
     def __init__(self,memory=None):
         self.templates = {
