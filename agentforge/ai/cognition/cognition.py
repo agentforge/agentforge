@@ -54,8 +54,8 @@ class ExecutiveCognition:
                 return {"error": f"User must stipulate {v} for response"} # return error
 
         # Configure agent with new config
-        form_data["avatar"] = self.avatar.get_avatar(form_data["avatar"])
-        self.agent.configure(form_data)
+        # form_data["avatar"] = self.avatar.get_avatar(form_data["avatar"])
+        # self.agent.configure(form_data)
 
         # Get recent memories about this prompt
         self.agent.memory.recall(prompt)

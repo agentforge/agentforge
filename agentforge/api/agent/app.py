@@ -19,7 +19,8 @@ sys.path.append(os.path.join(os.path.dirname(sys.path[0]),'/app/agentforge'))
 print(sys.path)
 
 from agentforge import DST_PATH
-from agentforge.ai import ExecutiveCognition
+# from agentforge.ai import ExecutiveCognition
+from agentforge.factories import DecisionFactory
 # from agentforge.agent import startup
 from agentforge.utils import measure_time
 from agentforge.ai import User
@@ -55,7 +56,9 @@ migrate = Migrate(app, db)
 redis_conn = redis.StrictRedis(host=af.REDIS_HOST, port=af.REDIS_PORT, db=af.REDIS_DB)
 
 # Setup Agent
-executive = ExecutiveCognition()
+# executive = ExecutiveCognition()
+factory = DecisionFactory()
+decision = factory.create_decision()
 
 # TODO: Ensure video fidelity by pointing video src to a central filestore
 # startup()
@@ -156,54 +159,71 @@ def configure():
             return jsonify(config)
         except Exception as e:
             return jsonify({'message': str(e)}), 400
+        
+@app.route('/v1/completions', methods=['POST'])
+@measure_time
+def agent():
+    ## TODO: Verify auth, rate limiter, etc.
 
-@app.route("/v1/whisper", methods=["POST"])
-def whisper_api():
-    # Save the uploaded wav file
-    audio_file = request.files["audio"]
+    ## Parse Data --  from web accept JSON, from client we need to pull ModelConfig
+    ## and add add the prompt and user_id to the data
+    data = request.json
+    
+    ## Get Decision from Decision Factory and run it
+    decision = factory.get_decision()
+    output = decision.run(data)
 
-    wav_file_path = secure_wav_filename(audio_file.filename)
-    audio_file.save(AUDIO_DST_PATH + "/" + wav_file_path)
-
-    # Interpret the audio using the Whisper class
-    generated_text = executive.interpret({"file": AUDIO_DST_PATH + "/" + wav_file_path, "type": "wav"})
-
-    # Return the generated text
-    return {"generated_text": generated_text}
+    ## Return Decision output
+    return output
 
 # Define the API endpoint for prompting the language_model
-@app.route("/v1/completions", methods=["POST"])
-@measure_time
-def prompt():
-  # Get the message for the request
-  prompt = request.json["prompt"]
-  form_data = request.json
-  # Run the LLM agent
-  response = executive.respond(prompt, form_data, app)
-  # Return the response
-  return jsonify(response)
+# @app.route("/v1/completions", methods=["POST"])
+# @measure_time
+# def prompt():
+#   # Get the message for the request
+#   prompt = request.json["prompt"]
+#   form_data = request.json
+#   # Run the LLM agent
+#   response = executive.respond(prompt, form_data, app)
+#   # Return the response
+#   return jsonify(response)
+
+
+# @app.route("/v1/whisper", methods=["POST"])
+# def whisper_api():
+#     # Save the uploaded wav file
+#     audio_file = request.files["audio"]
+
+#     wav_file_path = secure_wav_filename(audio_file.filename)
+#     audio_file.save(AUDIO_DST_PATH + "/" + wav_file_path)
+
+#     # Interpret the audio using the Whisper class
+#     generated_text = executive.interpret({"file": AUDIO_DST_PATH + "/" + wav_file_path, "type": "wav"})
+
+#     # Return the generated text
+#     return {"generated_text": generated_text}
 
 # TODO: DEPRECATE THIS
 # Define the API endpoint for hearing the agent speak
-@app.route("/v1/tts", methods=["POST"])
-@measure_time
-def tts():
-  # Get the message for the request
-  prompt = request.json["prompt"]
-  form_data = request.json
+# @app.route("/v1/tts", methods=["POST"])
+# @measure_time
+# def tts():
+#   # Get the message for the request
+#   prompt = request.json["prompt"]
+#   form_data = request.json
 
-  # Run the agent
-  response = executive.speak(prompt, form_data)
-  filename = response["filename"]
+#   # Run the agent
+#   response = executive.speak(prompt, form_data)
+#   filename = response["filename"]
 
-  # Create a response object with the file data
-  response_obj = send_file(
-      filename,
-      mimetype=response["type"],
-      as_attachment=True
-  )
+#   # Create a response object with the file data
+#   response_obj = send_file(
+#       filename,
+#       mimetype=response["type"],
+#       as_attachment=True
+#   )
 
-  return response_obj
+#   return response_obj
 
 # TODO Replace this with the ModelConfig API
 # @app.route("/v1/avatars", methods=["GET"])

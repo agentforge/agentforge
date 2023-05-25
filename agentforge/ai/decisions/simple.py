@@ -1,9 +1,11 @@
 from typing import Dict, Any
-from .reactive import ReactiveRoutine
-from agentforge.ai import Routine
+from agentforge.ai.routines.reactive import ReactiveRoutine
 
 class SimpleDecision:
-    def decide(self, context: Dict[str, Any], config: Dict[str, Any], user_id: str) -> Routine:
+    def __init__(self):
+        self.routine = ReactiveRoutine()
+
+    def run(self, context: Dict[str, Any]) -> Dict[str, Any]:
         # Use the context, config, and user_id to decide on a routine
-        routine = ReactiveRoutine([LLM(), TTS(), W2L()])
-        return routine
+        output = ReactiveRoutine.run(context)
+        return output

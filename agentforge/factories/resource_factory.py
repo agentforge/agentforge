@@ -2,6 +2,8 @@ import os
 from typing import Any
 from agentforge.interfaces import LocalLLM, TextToSpeech, BarkTextToSpeech, Wav2LipModel
 
+### ResourceFactory brings together the resources and adapters
+### to provide access to either local GPU containers or remote
 class ResourceFactory:
     def __init__(self) -> None:
         self.__resources: dict[str, Any] = {}

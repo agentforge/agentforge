@@ -1,8 +1,7 @@
 from typing import Any, Dict
-from agentforge.ai import Subroutine
 
 ### Handles conversion of text to speech
-class Speak(Subroutine):
+class Lipsync:
     def __init__(self, avatar, service, agent):
         self.avatar = avatar
         self.service = service
@@ -23,4 +22,3 @@ class Speak(Subroutine):
             return {"filename": lipsync_response["filename"], "type": "video/mp4"}
 
         return {"filename": wav_response["filename"], "type": "audio/wav"}
-
