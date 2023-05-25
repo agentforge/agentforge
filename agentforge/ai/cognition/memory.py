@@ -4,7 +4,7 @@ from agentforge.adapters import VectorStoreProtocol
 
 ### ShortTermMemory users a simple conversation buffer to store recent interactions
 class ShortTermMemory:
-  def __init__(self, vectorstore: VectorStoreProtocol = None):
+  def __init__(self):
     self.memories = {}
     self.short_term_memory = ConversationBufferMemory(return_messages=True)
 

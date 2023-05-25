@@ -5,10 +5,9 @@ from agentforge.interfaces import MongoDBKVStore, DictKVStore, InMemoryVectorSto
 from agentforge.config import DbConfig
 from typing import Any
 
-### InterfaceFactory brings together the interfaces and adapters
-### and configuration to create the correct interface for the
-### current environment
-class InterfaceFactory:
+### ResourceFactory brings together the resources and adapters
+### to provide access to either local GPU containers or remote
+class ResourceFactory:
     def __init__(self) -> None:
         self.__interfaces: dict[str, Any] = {}
         self.config = DbConfig.from_env()

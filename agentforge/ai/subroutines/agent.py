@@ -1,14 +1,10 @@
 import os
 
-from langchain import PromptTemplate, LLMChain
-from langchain.agents import initialize_agent
 from agentforge.utils import helpers
 from langchain.agents import Tool
 from langchain.llms import HuggingFaceModel
 from langchain.utilities import SearxSearchWrapper
-from .prompt import Prompt
 from agentforge.utils import Parser
-from agentforge.ai import Memory
 from agentforge.config import config
 
 from agentforge import LLM_CONFIG_FILE
@@ -20,15 +16,16 @@ os.environ["LANGCHAIN_HANDLER"] = "langchain"
 # Dectorator to enable chat memory for the agent and get the prompt
 ## Future access to tools/plugins/retrieval
 
+### THIS IS BROKE AF -- GET RID OF IT
+
 ### Agent -- Layer over LLMChain Agent system to provide a more user friendly interface w/tools and reasoning
-### TODO: Probably deprecated, we aren't currently using tools in production but this can be added
+### TODO: Probably deprecated, we aren't currently using tools in production but this can be added as subroutines
 class Agent():
   def __init__(self, opts={}) -> None:
     self.config = config.Config(None)
     # load models.json
     self.config.load_config(LLM_CONFIG_FILE)
     self.parser = Parser()
-    self.memory = Memory()
 
   def set_avatar_context(self, avatar):
     # grab the config

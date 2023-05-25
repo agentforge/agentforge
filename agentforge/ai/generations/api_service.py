@@ -8,27 +8,30 @@ import os
 
 # Handles calls to internal services
 # Manages configuraiton and state
-class APIService:
+class Service():
     def __init__(self):
         load_dotenv()  # Load environment variables from a .env file
         self.client = APIClient()
         self.llm_url = os.getenv('LLM_URL')
         self.tts_url = os.getenv('TTS_URL')
         self.w2l_url = os.getenv('W2L_URL')
+        self.llm_url = os.getenv('LLM_ENDPOINT')
+        self.tts_url = os.getenv('TTS_ENDPOINT')
+        self.w2l_url = os.getenv('W2L_ENDPOINT')
 
     # Specific calls to services
     def call_llm(self, form_data):
-        url = f"{self.llm_url}/v1/completions"
+        url = f"{self.llm_url}"
         return self.client.post(url, form_data).json()
 
     def call_tts(self, form_data):
-        url = f"{self.tts_url}/v1/tts"
+        url = f"{self.tts_url}"
         return self.client.post(url, form_data).json()
 
     def call_interpret(self, form_data):
-        url = f"{self.tts_url}/v1/interpret"
+        url = f"{self.tts_url}"
         return self.client.post(url, form_data).json()
 
     def call_lipsync(self, form_data):
-        url = f"{self.w2l_url}/v1/lipsync"
+        url = f"{self.w2l_url}"
         return self.client.post(url, form_data).json()

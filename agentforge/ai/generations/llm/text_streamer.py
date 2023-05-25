@@ -20,7 +20,6 @@ from flask_sse import sse
 if TYPE_CHECKING:
     from ..models.auto import AutoTokenizer
 
-
 class BaseStreamer:
     """
     Base class from which `.generate()` streamers should inherit.

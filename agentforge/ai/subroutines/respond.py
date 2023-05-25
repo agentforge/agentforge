@@ -19,6 +19,7 @@ class Respond:
 
         formatted_prompt = self.agent.process_prompt(instruction=prompt, config=form_data)
         form_data["prompt"] = formatted_prompt
+
         if "reflection" in self.thoughts and self.thoughts["reflection"] is not None:
             form_data["avatar"]["prompt_context"]["reflection"] = self.thoughts["reflection"]
 
