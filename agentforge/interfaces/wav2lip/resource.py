@@ -1,12 +1,12 @@
 from os import listdir, path
 import numpy as np
 import cv2, os
-from agentforge.wav2lip import audio
+from agentforge.interfaces.wav2lip import audio
 import subprocess
 from tqdm import tqdm
 import torch
-from agentforge.wav2lip import face_detection
-from agentforge.wav2lip.models import Wav2Lip
+from agentforge.interfaces.wav2lip import face_detection
+from agentforge.interfaces.wav2lip.models import Wav2Lip
 import platform
 
 class Wav2LipModel():

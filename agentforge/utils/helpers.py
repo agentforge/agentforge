@@ -9,6 +9,7 @@ import time, re, math
 from functools import wraps
 from flask import request
 from agentforge.utils import logger
+import importlib
 
 def measure_time(func):
     @wraps(func)
@@ -129,3 +130,17 @@ def process_code_output(output):
                 processed_segments.append(segment.strip())
 
         return '\n\n'.join(processed_segments)
+
+def dynamic_import(module_name, symbol_names):
+    try:
+        module = importlib.import_module(module_name)
+        symbols = {}
+        for name in symbol_names:
+            symbol = getattr(module, name)
+            symbols[name] = symbol
+        print(f"Successfully imported {', '.join(symbol_names)} from {module_name}")
+        return symbols
+    except ImportError:
+        print(f"Could not import module: {module_name}")
+    except AttributeError:
+        print(f"Could not find symbol in module: {module_name}")

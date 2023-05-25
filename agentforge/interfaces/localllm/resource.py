@@ -8,10 +8,10 @@ import gc
 import torch
 from agentforge.config import Config
 import logging
-from agentforge.language_model.generators import Generator
+from .generator import LocalGenerator
+from .loader import LocalLoader
 from accelerate import Accelerator
-from agentforge.language_model.loaders import Loader
-from agentforge.helpers import Parser
+from agentforge.utils import Parser
 from .lib.text_streamer import TextStreamer
 from agentforge import LLM_CONFIG_FILE
 DEFAULT_LLM = 'alpaca-lora-7b'
@@ -40,13 +40,13 @@ class LocalLLM():
         self.device = self.accelerator.device
     else:
         self.device = "cuda"
-    self.loader = Loader(self.device_map, self.multi_gpu, self.device)
+    self.loader = LocalLoader(self.device_map, self.multi_gpu, self.device)
     self.parser = Parser()
 
     # create a shared dictionary to store the model to be used by other workers
     logging.info(f"LLM CUDA enabled: {torch.cuda.is_available()}")
 
-    self.generator = Generator(self.gc_name, self.multi_gpu)
+    self.generator = LocalGenerator(self.gc_name, self.multi_gpu)
 
   # Get the name of the class
   def name(self):

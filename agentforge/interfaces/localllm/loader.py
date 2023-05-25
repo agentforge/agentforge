@@ -1,5 +1,5 @@
 import torch, logging
-from peft import PeftModel
+from agentforge.utils import dynamic_import
 from transformers import LlamaTokenizer, LlamaForCausalLM
 from transformers import AutoModelForCausalLM, AutoTokenizer, AutoConfig, GPTNeoXTokenizerFast
 from agentforge.utils import logger
@@ -39,7 +39,8 @@ class LocalLoader:
             device_map=self.device_map,
         )
         if "peft_model" in self.config:
-            self.model = PeftModel.from_pretrained(
+            module = dynamic_import('peft', ['PeftModel'])
+            self.model = module["PeftModel"].from_pretrained(
                 self.model, self.config["peft_model"],
                 torch_dtype=torch.float16,
                 # device_map=device_map

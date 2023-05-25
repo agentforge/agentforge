@@ -2,11 +2,12 @@
 # from espnet2.bin.tts_inference import Text2Speech
 # from espnet2.utils.types import str_or_none
 import soundfile as sf
-from TTS.api import TTS
-from .normalize import normalize_transcription
+from agentforge.utils import normalize_transcription, dynamic_import
 
 class TextToSpeech():
   def __init__(self) -> None:
+    module = dynamic_import('TTS.api', ['TTS'])
+    TTS = module["TTS"]
     # Init TTS
     self.tts = TTS(model_name="tts_models/en/vctk/vits", progress_bar=False, gpu=True)
     self.tts_custom = TTS(model_name="tts_models/multilingual/multi-dataset/your_tts", progress_bar=False, gpu=True)
