@@ -7,8 +7,9 @@ from dotenv import load_dotenv
 import os
 
 # Handles calls to internal services
-# Manages configuraiton and state
-class Service():
+# Manages configuraiton and state -- Exposes our resources
+# This will become significantly more complex as we add more services and begin using outside APIs
+class APIService():
     def __init__(self):
         load_dotenv()  # Load environment variables from a .env file
         self.client = APIClient()

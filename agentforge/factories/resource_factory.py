@@ -25,14 +25,14 @@ class ResourceFactory:
             raise ValueError(f"Invalid TTS type: {tts_type}")
 
     def create_stt_resource(self) -> None:
-        stt_type = os.getenv("W2L_TYPE")
+        w2l_type = os.getenv("W2L_TYPE")
         # Instantiate the correct STT resource based on stt_type
-        if stt_type == "w2l":
+        if w2l_type == "w2l":
             self.__resources["stt"] = Wav2Lip()
-        elif stt_type == "type2":
-            self.__resources["stt"] = STTResourceType2()
+        elif w2l_type == "sadtalker":
+            raise NotImplementedError("SADTalker is not yet implemented")
         else:
-            raise ValueError(f"Invalid STT type: {stt_type}")
+            raise ValueError(f"Invalid W2L type: {w2l_type}")
 
     def get_resource(self, resource_name: str) -> Any:
         if resource_name in self.__resources:

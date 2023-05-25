@@ -3,15 +3,24 @@ import time, threading, json, logging
 from transformers import GenerationConfig, StoppingCriteria
 import numpy as np
 from agentforge.config import Config
-from agentforge.language_model.logger import convert_to_serializable
+
+def convert_to_serializable(obj):
+    if isinstance(obj, torch.Tensor):
+        return obj.tolist()
+    elif isinstance(obj, GenerationConfig):
+        return obj.to_dict()
+    key_err = f"""Object of type {obj.__class__.__name__} is not JSON serializable;
+      Add a new Exception to convert_to_serializable() in agentforge/language_model/logger.py"""
+    raise TypeError(key_err)
 
 # Drives text generation for multiple models.
-class Generator:
+class LocalGenerator:
+  def __init__(self, config: dict):
+    if "multi_gpu" in config:
+      self.multi_gpu = config["multi_gpu"]
+    else:
+      self.multi_gpu = False
 
-  def __init__(self, gc_name=None, multi_gpu=False):
-    self.streameer = None
-    self.multi_gpu = multi_gpu
-    
     # Set at runtime by the base LLM class.
     self.model = None
     self.tokenizer = None

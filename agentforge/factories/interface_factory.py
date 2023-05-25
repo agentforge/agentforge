@@ -7,7 +7,7 @@ from typing import Any
 
 ### ResourceFactory brings together the resources and adapters
 ### to provide access to either local GPU containers or remote
-class ResourceFactory:
+class InterfaceFactory:
     def __init__(self) -> None:
         self.__interfaces: dict[str, Any] = {}
         self.config = DbConfig.from_env()

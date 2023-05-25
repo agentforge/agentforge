@@ -5,13 +5,12 @@ from transformers import AutoModelForCausalLM, AutoTokenizer, AutoConfig, GPTNeo
 from agentforge.utils import logger
 
 ## Loaders for different models
-class Loader:
+class LocalLoader:
     def __init__(self, device_map="auto", multi_gpu=False, device="cuda"):
         self.config = None
         self.device_map = device_map
         self.multi_gpu = multi_gpu
         self.device = device
-        self.model = None
         self.model = None
 
     def load(self, config, device="cuda"):

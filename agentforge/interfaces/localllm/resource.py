@@ -4,27 +4,26 @@
 ### accessing GPU/TPU resources ###
 
 ### Imports ###
-import copy, json, gc
+import gc
 import torch
 from agentforge.config import Config
-import logging, time
-from transformers import GenerationConfig
+import logging
 from agentforge.language_model.generators import Generator
 from accelerate import Accelerator
 from agentforge.language_model.loaders import Loader
 from agentforge.helpers import Parser
-from .text_streamer import TextStreamer
+from .lib.text_streamer import TextStreamer
 from agentforge import LLM_CONFIG_FILE
 DEFAULT_LLM = 'alpaca-lora-7b'
 
 ### Manages Base LLM functions ###
-class LLM():
-  def __init__(self,  opts) -> None:
-    self.opts = {} if opts == None else opts
-    self.model_key = opts.get("model_key", DEFAULT_LLM)
-    self.gc_name = opts.get("generation_config", "llm/logical")
-    self.multi_gpu=opts.get("multi_gpu", False)
-    self.device_map=opts.get("device_map", "auto")
+class LocalLLM():
+  def __init__(self,  config) -> None:
+    self.opts = {} if config == None else config
+    self.model_key = config.get("model_key", DEFAULT_LLM)
+    self.gc_name = config.get("generation_config", "llm/logical")
+    self.multi_gpu = config.get("multi_gpu", False)
+    self.device_map = config.get("device_map", "auto")
 
     self.config_controller = Config(None)
 
