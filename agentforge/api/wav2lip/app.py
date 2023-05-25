@@ -9,6 +9,7 @@ from flask_cors import CORS
 from agentforge.wav2lip import Wav2LipModel
 from agentforge.helpers import measure_time
 from agentforge import DST_PATH
+from agentforge.factories import ResourceFactory
 
 app = Flask(__name__)
 CORS(app)
@@ -23,7 +24,12 @@ faces = [
   ("sankara", DST_PATH + "/videos/sankara.mp4"),
 ]
 opts = {}
-wav2lip = Wav2LipModel(CHKPT_PTH, opts, faces)
+# wav2lip = Wav2LipModel(CHKPT_PTH, opts, faces)
+
+factory = ResourceFactory()
+factory.create_w2l_resource()
+llm = factory.get_resource("w2l")
+
 # wav2lip = Wav2Lip()
 # Define the /interpret endpoint
 

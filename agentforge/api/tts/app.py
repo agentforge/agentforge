@@ -7,16 +7,18 @@ from flask_cors import CORS
 from agentforge.helpers import measure_time
 from agentforge import DST_PATH
 
-from . import Whisper
-from . import TextToSpeech
-from . import BarkTextToSpeech
+from agentforge.factories import ResourceFactory
 
 path_root = Path(__file__).parents[2]
 sys.path.append(str(path_root))
 app = Flask(__name__)
 CORS(app, resources={r"/v1/*": {"origins": "*"}})
-tts_inst = TextToSpeech()
-whisper = Whisper()
+# tts_inst = TextToSpeech()
+# whisper = Whisper()
+
+factory = ResourceFactory()
+factory.create_tts_resource()
+llm = factory.get_resource("tts")
 
 # Given the following text request generate a wav file and return to the client
 @app.route("/v1/tts", methods=["POST"])

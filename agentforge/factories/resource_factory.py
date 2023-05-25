@@ -1,6 +1,6 @@
 import os
 from typing import Any
-from resources import LLMResource, TTSResource, STTResource
+from agentforge.interfaces import LocalLLM, TextToSpeech, BarkTextToSpeech, Wav2LipModel
 
 class ResourceFactory:
     def __init__(self) -> None:
@@ -24,11 +24,11 @@ class ResourceFactory:
         else:
             raise ValueError(f"Invalid TTS type: {tts_type}")
 
-    def create_stt_resource(self) -> None:
+    def create_w2l_resource(self) -> None:
         w2l_type = os.getenv("W2L_TYPE")
-        # Instantiate the correct STT resource based on stt_type
+        # Instantiate the correct w2l resource based on w2l_type
         if w2l_type == "w2l":
-            self.__resources["stt"] = Wav2Lip()
+            self.__resources["w2l"] = Wav2LipModel()
         elif w2l_type == "sadtalker":
             raise NotImplementedError("SADTalker is not yet implemented")
         else:

@@ -2,9 +2,9 @@
 # from espnet2.bin.tts_inference import Text2Speech
 # from espnet2.utils.types import str_or_none
 import soundfile as sf
-from bark import SAMPLE_RATE, generate_audio
+from agentforge.interfaces.bark.resource import SAMPLE_RATE, generate_audio
 from IPython.display import Audio
-from .normalize import normalize_transcription
+from ...utils.normalize import normalize_transcription
 from scipy.io.wavfile import write as write_wav
 
 class BarkTextToSpeech():

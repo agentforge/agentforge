@@ -12,7 +12,8 @@ from flask import Flask, request, jsonify, send_file, Response
 from flask_cors import CORS
 
 from agentforge.helpers import measure_time
-from agentforge.language_model import LLM
+
+from agentforge.factories import ResourceFactory
 
 path_root = Path(__file__).parents[2]
 sys.path.append(str(path_root))
@@ -21,13 +22,17 @@ app = Flask(__name__)
 CORS(app)
 
 ### Load the LLM - single GPU example
-llm = LLM({"multi_gpu": False, "device_map": {'':0}, "model_key":"mpt-7b-chat"})
+# llm = LLM({"multi_gpu": False, "device_map": {'':0}, "model_key":"mpt-7b-chat"})
 
 ### Load the LLM - multi-GPU example
 # llm = LLM({"multi_gpu ": True, "device_map": "auto", "model_key":"alpaca-lora-7b"})
 
 # Load the defaiult model
-llm.load_model(llm.model_key)
+# llm.load_model(llm.model_key)
+
+factory = ResourceFactory()
+factory.create_llm_resource()
+llm = factory.get_resource("llm")
 
 app = Flask(__name__)
 app.config["REDIS_URL"] = "redis://redis:6379/0"
