@@ -8,7 +8,7 @@ from rq import Queue
 import redis, uuid
 from datetime import timedelta
 from flask_swagger_ui import get_swaggerui_blueprint
-from werkzeug.utils import secure_filename
+from dotenv import load_dotenv
 
 # # importing the sys module
 import sys, os
@@ -17,6 +17,9 @@ import sys, os
 # # in the sys.path list
 sys.path.append(os.path.join(os.path.dirname(sys.path[0]),'/app/agentforge'))
 print(sys.path)
+
+# Setup environmental variables
+load_dotenv('../../../.env')
 
 from agentforge import DST_PATH
 # from agentforge.ai import ExecutiveCognition
@@ -31,6 +34,11 @@ import agentforge as af
 # Create the worker queue TODO: Complete implementation
 # queue = Queue(connection=Redis())
 # worker = Worker()
+# Setup environmental variables
+
+from dotenv import load_dotenv, find_dotenv
+
+load_dotenv(find_dotenv())
 
 # Create an instance of the Flask class
 app = Flask(__name__)
