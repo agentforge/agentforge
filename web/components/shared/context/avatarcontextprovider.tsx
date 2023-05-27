@@ -1,3 +1,4 @@
+'use client';
 // AvatarProviderContext.tsx
 import React, { createContext, useContext, useEffect, useState } from 'react';
 

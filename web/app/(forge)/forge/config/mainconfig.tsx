@@ -119,7 +119,7 @@ import Button from '@/components/shared/button';
         </ToggleGroup.Item>
         </ToggleGroup.Root>
         <div className='float-right w-2/12'>
-          <Button text="Save" type="submit" onClick={ handleSubmit } extraClasses="float-right"></Button>
+          <Button type="submit" onClick={ handleSubmit } extraClasses="float-right">Save</Button>
         </div>
       </div>
       <ScrollArea.Root className="w-full h-screen rounded overflow-hidden">
