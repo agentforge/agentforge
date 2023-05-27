@@ -13,6 +13,10 @@ from agentforge.factories import ResourceFactory
 
 app = Flask(__name__)
 CORS(app)
+
+from dotenv import load_dotenv
+load_dotenv('../../../.env')
+
 CHKPT_PTH = DST_PATH + "/weights/wav2lip_gan.pth"
 # Default face loop
 # TODO: When we introduce multiple avatars this will need refactoring

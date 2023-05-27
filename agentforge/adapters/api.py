@@ -1,10 +1,9 @@
 from typing import Optional, Protocol, Callable
 from functools import wraps
-from dotenv import load_dotenv
 from requests import Session, Response
 from requests.exceptions import RequestException
 from http import HTTPStatus
-import logging
+import logging, os, requests
 
 # Generic APIClientProtocol metaclass 
 class APIClientProtocol(Protocol):
@@ -40,7 +39,6 @@ def handle_response(func: Callable[..., Response]) -> Callable[..., Response]:
 # Session-based API client
 class APIClient(APIClientProtocol):
     def __init__(self, base_url: Optional[str] = None) -> None:
-        load_dotenv()
         self.base_url = base_url
         self.session = Session()
 
@@ -68,3 +66,25 @@ class APIClient(APIClientProtocol):
     def delete(self, endpoint: str) -> Response:
         url = self.base_url + endpoint
         return self.session.delete(url)
+
+### Handles the API calls to the LLM, TTS, and other internal generative services
+class APIService():
+    def __init__(self, endpoint):
+        self.client = APIClient()
+        self.url = os.getenv(endpoint)
+
+    def call(self, form_data):
+        pass
+
+    def _heartbeat(self):
+        try:
+            response = requests.get(self.url)
+            response.raise_for_status()
+            return True
+        except requests.exceptions.RequestException as err:
+            print(f"Heartbeat failed for service at {self.url}. Error: {err}")
+            return False
+
+    def _fallback(self):
+        print(f"Fallback initiated for service at {self.url}")
+        # Implement fallback functionality here

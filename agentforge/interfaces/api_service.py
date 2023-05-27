@@ -1,38 +1,47 @@
-### Handles calls and error handling for internal services (LLM, TTS, etc)
-### Also a good place to place any calls to external APIs
-
-from agentforge.utils import logger
-from agentforge.adapters import APIClient
-from dotenv import load_dotenv
-import os
-
-# Handles calls to internal services
-# Manages configuraiton and state -- Exposes our resources
-# This will become significantly more complex as we add more services and begin using outside APIs
-class APIService():
+class LLMService(APIService):
     def __init__(self):
-        load_dotenv()  # Load environment variables from a .env file
-        self.client = APIClient()
-        self.llm_url = os.getenv('LLM_URL')
-        self.tts_url = os.getenv('TTS_URL')
-        self.w2l_url = os.getenv('W2L_URL')
-        self.llm_url = os.getenv('LLM_ENDPOINT')
-        self.tts_url = os.getenv('TTS_ENDPOINT')
-        self.w2l_url = os.getenv('W2L_ENDPOINT')
+        super().__init__('LLM_ENDPOINT')
 
-    # Specific calls to services
-    def call_llm(self, form_data):
-        url = f"{self.llm_url}"
-        return self.client.post(url, form_data).json()
+    def call(self, form_data):
+        if not self._heartbeat():
+            self._fallback()
+            return None
+        try:
+            response = self.client.post(self.url, form_data)
+            response.raise_for_status()
+            return response.json()
+        except requests.exceptions.RequestException as err:
+            print(f"Error calling service at {self.url}. Error: {err}")
+            return None
 
-    def call_tts(self, form_data):
-        url = f"{self.tts_url}"
-        return self.client.post(url, form_data).json()
+class TTSService(APIService):
+    def __init__(self):
+        super().__init__('TTS_ENDPOINT')
 
-    def call_interpret(self, form_data):
-        url = f"{self.tts_url}"
-        return self.client.post(url, form_data).json()
+    def call(self, form_data):
+        if not self._heartbeat():
+            self._fallback()
+            return None
+        try:
+            response = self.client.post(self.url, form_data)
+            response.raise_for_status()
+            return response.json()
+        except requests.exceptions.RequestException as err:
+            print(f"Error calling service at {self.url}. Error: {err}")
+            return None
 
-    def call_lipsync(self, form_data):
-        url = f"{self.w2l_url}"
-        return self.client.post(url, form_data).json()
+class W2LService(APIService):
+    def __init__(self):
+        super().__init__('W2L_ENDPOINT')
+
+    def call(self, form_data):
+        if not self._heartbeat():
+            self._fallback()
+            return None
+        try:
+            response = self.client.post(self.url, form_data)
+            response.raise_for_status()
+            return response.json()
+        except requests.exceptions.RequestException as err:
+            print(f"Error calling service at {self.url}. Error: {err}")
+            return None

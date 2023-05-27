@@ -16,6 +16,9 @@ CORS(app, resources={r"/v1/*": {"origins": "*"}})
 # tts_inst = TextToSpeech()
 # whisper = Whisper()
 
+from dotenv import load_dotenv
+load_dotenv('../../../.env')
+
 factory = ResourceFactory()
 factory.create_tts_resource()
 llm = factory.get_resource("tts")

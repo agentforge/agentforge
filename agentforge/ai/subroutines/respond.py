@@ -1,11 +1,8 @@
 from typing import Any, Dict
 
 class Respond:
-    def __init__(self, avatar, agent, service, thoughts):
-        self.avatar = avatar
-        self.agent = agent
-        self.service = service
-        self.thoughts = thoughts
+    def __init__(self):
+        pass
 
     def execute(self, context: Dict[str, Any]) -> Dict[str, Any]:
         prompt = context['prompt']

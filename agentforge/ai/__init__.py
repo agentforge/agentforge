@@ -8,6 +8,7 @@ from .subroutines.lipsync import Lipsync
 from .subroutines.base import Subroutine
 from .subroutines.parse import Parse
 from .subroutines.remember import Remember
+from .subroutines.recall import Recall
 from .subroutines.speak import Speak
 from .decisions.decision import Decision
 from .decisions.simple import SimpleDecision

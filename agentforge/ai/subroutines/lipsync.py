@@ -1,11 +1,10 @@
 from typing import Any, Dict
+from agentforge.interfaces import APIService
 
 ### Handles conversion of text to speech
 class Lipsync:
-    def __init__(self, avatar, service, agent):
-        self.avatar = avatar
-        self.service = service
-        self.agent = agent
+    def __init__(self):
+        self.service = APIService()
 
     def execute(self, context: Dict[str, Any]) -> Dict[str, Any]:
         prompt = context['prompt']

@@ -1,5 +1,4 @@
 from typing import Optional
-from dotenv import load_dotenv
 import os
 
 class DbConfig():
@@ -21,7 +20,6 @@ class DbConfig():
 
     @staticmethod
     def from_env() -> 'DbConfig':
-        load_dotenv()
         return DbConfig(
             db_name=os.getenv('DB_NAME'),
             host=os.getenv('DB_HOST', 'localhost'),
