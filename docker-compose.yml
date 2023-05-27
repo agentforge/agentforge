@@ -107,7 +107,7 @@ networks:
 
 volumes:
   cache-volume:
-    driver: localdocker compose config
+    driver: local
     driver_opts:
       type: none
       o: bind
