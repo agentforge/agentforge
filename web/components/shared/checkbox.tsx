@@ -33,24 +33,22 @@ const CheckboxElement = forwardRef<HTMLButtonElement, CheckboxElementProps>(({
   };
 
   return (
-    <form>
-      <div className="flex items-center">
-        <Checkbox.Root
-          className="shadow-blackA7 hover:bg-violet3 flex h-[25px] w-[25px] appearance-none items-center justify-center rounded-[4px] bg-white shadow-[0_2px_10px] outline-none focus:shadow-[0_0_0_2px_black]"
-          checked={checked}
-          onCheckedChange={handleCheckboxChange}
-          id={id}
-          ref={ref}
-        >
-          <Checkbox.Indicator className="text-violet11">
-            <CheckIcon />
-          </Checkbox.Indicator>
-        </Checkbox.Root>
-        <label className="pl-[15px] text-[15px] leading-none text-white" htmlFor={id}>
-          {label}
-        </label>
-      </div>
-    </form>
+    <div className="flex items-center">
+      <Checkbox.Root
+        className="shadow-blackA7 hover:bg-violet3 flex h-[25px] w-[25px] appearance-none items-center justify-center rounded-[4px] bg-white shadow-[0_2px_10px] outline-none focus:shadow-[0_0_0_2px_black]"
+        checked={checked}
+        onCheckedChange={handleCheckboxChange}
+        id={id}
+        ref={ref}
+      >
+        <Checkbox.Indicator className="text-violet11">
+          <CheckIcon />
+        </Checkbox.Indicator>
+      </Checkbox.Root>
+      <label className="pl-[15px] text-[15px] leading-none text-white" htmlFor={id}>
+        {label}
+      </label>
+    </div>
   );
 });
 

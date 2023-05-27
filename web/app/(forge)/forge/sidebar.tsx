@@ -2,12 +2,6 @@ import React from 'react';
 import VideoComponent from '@/components/shared/video';
 import MenuButton from '@/components/shared/menubutton';
 
-
-const onMenuClick = (route: string) => {
-  console.log("Menu Clicked");
-  // change route to link
-};
-
 interface SidebarProps {}
 
 const Sidebar: React.FC<SidebarProps> = () => {

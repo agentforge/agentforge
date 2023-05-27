@@ -54,7 +54,7 @@ export const AvatarProvider: React.FC<AvatarProviderProps> = ({ children }) => {
       }
     };
 
-    fetchAvatars();
+    // fetchAvatars();
   }, []);
 
   return (

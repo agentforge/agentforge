@@ -124,7 +124,7 @@ import Button from '@/components/shared/button';
       </div>
       <ScrollArea.Root className="w-full h-screen rounded overflow-hidden">
       <ScrollArea.Viewport className="w-full h-full rounded">
-      <form className="pb-28">
+      <form className="pb-28">ModelConfig
         {currentTab == "avatar" ? ( <AvatarConfig />) : (<></>) }
         {currentTab == "model" ? (<ModelConfig form={ form } />) : (<></>) }
         {currentTab == "generation" ? (<GenerationConfigForm form={ form } />) : (<></>) }
