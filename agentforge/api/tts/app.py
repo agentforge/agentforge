@@ -28,7 +28,7 @@ def text_to_speech():
   prompt = request.json["prompt"]
   avatar = request.json["avatar"]
 
-  filename = "/app/files/out.wav"
+  filename = "/app/cache/out.wav"
   speaker_wav = DST_PATH + avatar["speaker_wav"] if "speaker_wav" in avatar else None
   speaker_idx = avatar["speaker_idx"] if "speaker_idx" in avatar else 0
 

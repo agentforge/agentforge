@@ -18,7 +18,6 @@ services:
         aliases:
           - agentforge
     volumes:
-      - shared-files:/app/files
       - cache-volume:/app/cache
     deploy:
       resources:
@@ -36,7 +35,6 @@ services:
         aliases:
           - llm
     volumes:
-      - shared-files:/app/files
       - cache-volume:/app/cache
     deploy:
       resources:
@@ -54,7 +52,6 @@ services:
         aliases:
           - speech
     volumes:
-      - shared-files:/app/files
       - cache-volume:/app/cache
     deploy:
       resources:
@@ -72,7 +69,6 @@ services:
         aliases:
           - wav2lip
     volumes:
-      - shared-files:/app/files
       - cache-volume:/app/cache
     deploy:
       resources:
@@ -94,7 +90,6 @@ services:
         aliases:
           - agent
     volumes:
-      - shared-files:/app/files
       - cache-volume:/app/cache
 
   web:
@@ -111,10 +106,9 @@ networks:
   main-net:
 
 volumes:
-  shared-files:
   cache-volume:
-    driver: local
+    driver: localdocker compose config
     driver_opts:
       type: none
       o: bind
-      device: /home/fragro/Development/cache
+      device: "${LOCAL_CACHE_DIR}"
