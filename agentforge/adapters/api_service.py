@@ -2,55 +2,41 @@ import os
 import requests
 from agentforge.adapters import APIClient
 
+### API Service level handles calling the API using POST, handles fallback logic, and heartbeat logic
+### for the service it is operating
 class APIService:
     def __init__(self):
         self.client = APIClient()
-        self.llm_url = os.getenv('LLM_ENDPOINT')
-        self.tts_url = os.getenv('TTS_ENDPOINT')
-        self.w2l_url = os.getenv('W2L_ENDPOINT')
-        self.services = {
-            'llm': self.llm_url,
-            'tts': self.tts_url,
-            'w2l': self.w2l_url,
-        }
+        # Check if we are in a test environment
+        if os.getenv("ENV") == "test":
+            print("TEST ENVIRONMENT DETECTED")
+            self.test = True
 
     def _heartbeat(self):
-        for service, url in self.services.items():
-            try:
-                response = requests.get(url)
-                response.raise_for_status()
-            except requests.exceptions.RequestException as err:
-                print(f"Heartbeat failed for {service}. Error: {err}")
-                return False
+        try:
+            response = requests.get(self.url)
+            response.raise_for_status()
+        except requests.exceptions.RequestException as err:
+            print(f"Heartbeat failed for {self.service}. Error: {err}")
+            return False
         return True
 
     def _fallback(self, service):
         print(f"Fallback initiated for {service}")
         # Implement fallback functionality here
 
-    def call_service(self, service, form_data):
-        if not self._heartbeat():
-            self._fallback(service)
-            return None
-
-        url = self.services[service]
+    def call(self, form_data):
+        if self.test:
+            return self.test() # Return test fixture from Service
+        # if not self._heartbeat():
+        #     self._fallback(self.service)
+        #     return None
+        if not self.url:
+            raise Exception(f"Service URL {self.service.upper()}_URL not set in .env")
         try:
-            response = self.client.post(url, form_data)
+            response = self.client.post(self.url, form_data)
             response.raise_for_status()
             return response.json()
         except requests.exceptions.RequestException as err:
-            print(f"Error calling {service}. Error: {err}")
+            print(f"Error calling {self.service}. Error: {err}")
             return None
-
-    # Specific calls to services
-    def call_llm(self, form_data):
-        return self.call_service('llm', form_data)
-
-    def call_tts(self, form_data):
-        return self.call_service('tts', form_data)
-
-    def call_interpret(self, form_data):
-        return self.call_service('interpret', form_data)
-
-    def call_lipsync(self, form_data):
-        return self.call_service('w2l', form_data)

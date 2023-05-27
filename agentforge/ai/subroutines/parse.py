@@ -7,4 +7,5 @@ class Parse:
         pass
 
     def execute(self, context: Dict[str, Any]) -> Dict[str, Any]:
-      pass # TODO: Aggregate context into a prompt string and set the context dict 'prompt' key to the prompt string
+        # TODO: Aggregate context into a prompt string and set the context dict 'prompt' key to the prompt string
+        return context
