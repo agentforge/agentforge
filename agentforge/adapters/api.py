@@ -66,25 +66,3 @@ class APIClient(APIClientProtocol):
     def delete(self, endpoint: str) -> Response:
         url = self.base_url + endpoint
         return self.session.delete(url)
-
-### Handles the API calls to the LLM, TTS, and other internal generative services
-class APIService():
-    def __init__(self, endpoint):
-        self.client = APIClient()
-        self.url = os.getenv(endpoint)
-
-    def call(self, form_data):
-        pass
-
-    def _heartbeat(self):
-        try:
-            response = requests.get(self.url)
-            response.raise_for_status()
-            return True
-        except requests.exceptions.RequestException as err:
-            print(f"Heartbeat failed for service at {self.url}. Error: {err}")
-            return False
-
-    def _fallback(self):
-        print(f"Fallback initiated for service at {self.url}")
-        # Implement fallback functionality here

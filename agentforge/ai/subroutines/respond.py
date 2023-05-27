@@ -5,22 +5,8 @@ class Respond:
         pass
 
     def execute(self, context: Dict[str, Any]) -> Dict[str, Any]:
-        prompt = context['prompt']
-        form_data = context['form_data']
-        app = context['app']
-
-        form_data["avatar"] = self.avatar.get_avatar(form_data["avatar"])
-        self.agent.configure(form_data)
-        self.agent.memory.recall(prompt)
-        self.agent.save_speech(prompt)
-
-        formatted_prompt = self.agent.process_prompt(instruction=prompt, config=form_data)
-        form_data["prompt"] = formatted_prompt
-
-        if "reflection" in self.thoughts and self.thoughts["reflection"] is not None:
-            form_data["avatar"]["prompt_context"]["reflection"] = self.thoughts["reflection"]
-
-        response = self.service.call_llm(form_data)
+        service = APIService()
+        response = self.service.call_llm(context)
         if "choices" not in response:
             return {"error": response} # return error
 
