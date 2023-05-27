@@ -1,19 +1,17 @@
 from typing import Any, Dict
+from agentforge.factories import InterfaceFactory
 
 class Respond:
     def __init__(self):
-        pass
+        self.service_factory = InterfaceFactory()
 
     def execute(self, context: Dict[str, Any]) -> Dict[str, Any]:
-        service = APIService()
-        response = self.service.call_llm(context)
+        self.service_factory.create_service("llm")
+        service = self.service_factory.get_interface("service")
+        response = service.call(context)
+
         if "choices" not in response:
-            return {"error": response} # return error
+            return {"error": True, "msg": response} # return error
 
-        text = response["choices"][0]["text"]
-        response["choices"][0]["text"] = self.agent.process_completion(text, form_data) 
-        self.agent.save_response(response["choices"][0]["text"])
-        self.agent.memory.remember(prompt, response["choices"][0]["text"], app)
-
-        form_data["prompt"] = prompt
+        context["response"] = response["choices"][0]["text"]
         return response
