@@ -1,7 +1,8 @@
 const config = {
   // host: `${host}`,
   // host: '192.168.1.140',
-  host: '68.0.117.107',
+  // host: '68.0.117.107',
+  host: 'agent',
   port: 3000,
 };
 

@@ -161,7 +161,7 @@ const Forge: React.FC<ForgeProps> = () => {
   // Setup streaming listener
   useEffect(() => {
     // SSE Event Listener for streaming messages and more
-    const eventSource = new EventSource(`${api_url}/stream`);
+    // const eventSource = new EventSource(`${api_url}/stream`);
 
     // eventSource.onmessage = (e: MessageEvent) => {
     //   appendMessage(JSON.parse(e.data).next);
@@ -171,19 +171,19 @@ const Forge: React.FC<ForgeProps> = () => {
     //   appendMessage(JSON.parse(e.data).next);
     // });
 
-    eventSource.addEventListener('reflection', (e: MessageEvent) => {
-      const reflect = JSON.parse(e.data).reflection.choices[0].text;
-      addReflection(reflect, 'Reflection');
-    });
+    // eventSource.addEventListener('reflection', (e: MessageEvent) => {
+    //   const reflect = JSON.parse(e.data).reflection.choices[0].text;
+    //   addReflection(reflect, 'Reflection');
+    // });
 
-    eventSource.addEventListener('observation', (e: MessageEvent) => {
-      const reflect = JSON.parse(e.data).observation.choices[0].text;
-      addReflection(reflect, 'Observation');
-    });
+    // eventSource.addEventListener('observation', (e: MessageEvent) => {
+    //   const reflect = JSON.parse(e.data).observation.choices[0].text;
+    //   addReflection(reflect, 'Observation');
+    // });
 
     // Cleanup function to close the event source when the component is unmounted
     return () => {
-      eventSource.close();
+      // eventSource.close();
     };
   }, []); // Pass an empty dependency array to run the effect only once
 
@@ -217,7 +217,8 @@ const Forge: React.FC<ForgeProps> = () => {
           <Sidebar />
         </div>
           <div className="md:block w-full h-full md:w-8/12">
-            < MainConfigForm />
+            {/* < MainConfigForm /> */}
+            <ChatWidget/>
         </div>
       <div className="md:block md:w-2/12">
         <div className="mx-auto">
