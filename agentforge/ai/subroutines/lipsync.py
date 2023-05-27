@@ -11,7 +11,6 @@ class Lipsync:
         service = self.service_factory.get_interface("service")
         lipsync_response = service.call(context)
 
-        lipsync_response = self.service.call_lipsync(form_data)
         context["filename"] = lipsync_response["filename"]
         context["type"] = "video/mp4"
         return context

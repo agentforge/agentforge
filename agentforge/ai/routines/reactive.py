@@ -7,4 +7,4 @@ from agentforge.ai.routines.routine import Routine
 ### Simplest reactive routine for a decision timestep/run
 class ReactiveRoutine(Routine):
     def __init__(self):
-        self.subroutines = [Remember(), Recall(), Parse(), Respond(), Speak(), Lipsync()]
+        self.subroutines = [Remember(), Recall(), Parse(), Respond()] #, Speak(), Lipsync()]

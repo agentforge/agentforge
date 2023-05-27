@@ -18,7 +18,7 @@ def measure_time(func):
         response = func(*args, **kwargs)
         end_time = time.time()
         elapsed_time = end_time - start_time
-        logger.info(f"API call: {request.path} took {elapsed_time:.4f} seconds")
+        # logger.info(f"API call: {request.path} took {elapsed_time:.4f} seconds")
         return response
     return wrapper
 

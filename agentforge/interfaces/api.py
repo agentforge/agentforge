@@ -8,6 +8,13 @@ class LLMService(APIService):
     self.url = os.getenv('LLM_URL')
     self.service = "llm"
 
+  def test(self):
+    return {
+      "choices": [
+        { "text": "This is a test response from LLM" }
+      ]
+    }
+
 class TTSService(APIService):
   def __init__(self):
     super().__init__()
