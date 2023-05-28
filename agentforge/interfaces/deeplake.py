@@ -12,7 +12,7 @@ from langchain.embeddings import HuggingFaceEmbeddings
 from langchain.retrievers import TimeWeightedVectorStoreRetriever
 from agentforge.adapters import VectorStoreProtocol
 
-class DeepLake(VectorStoreProtocol):
+class DeepLakeVectorStore(VectorStoreProtocol):
     def __init__(self, model_name: str, deeplake_path: str) -> None:
         # Initialize your vector store here
         self.embdeddings = HuggingFaceEmbeddings(model_name=model_name)

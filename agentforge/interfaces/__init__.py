@@ -1,4 +1,4 @@
-from .deeplake import DeepLake
+from .deeplake import DeepLakeVectorStore
 from .dictkvstore import DictKVStore
 from .inmemoryvectorstore import InMemoryVectorStore
 from .mongodb import MongoDBKVStore
@@ -9,5 +9,5 @@ from .wav2lip.resource import Wav2LipModel
 from .tts.resource import TextToSpeech
 from .api import LLMService, TTSService, W2LService
 
-__all__ = ["DeepLake", "DictKVStore", "InMemoryVectorStore", "MongoDBKVStore", "LocalFileStore", "BarkTextToSpeech",
+__all__ = ["DeepLakeVectorStore", "DictKVStore", "InMemoryVectorStore", "MongoDBKVStore", "LocalFileStore", "BarkTextToSpeech",
             "LocalLLM", "Wav2LipModel", "TextToSpeech", "LLMService", "TTSService", "W2LService"]

@@ -1,7 +1,7 @@
 # TODO: Implement generic kvstore -- i.e. MongoDB
 # NoSQL specific code
 
-from typing import Any, Optional, Protocol
+from typing import Any, Optional, Protocol, Dict
 from agentforge.config import DbConfig
 
 class AbstractKVStore(Protocol):
@@ -16,4 +16,7 @@ class AbstractKVStore(Protocol):
         pass
 
     def delete(self, key: str) -> None:
+        pass
+
+    def get_many(self, filter: Dict[str, Any]) -> Optional[Any]:
         pass

@@ -7,7 +7,7 @@ from flask_cors import CORS
 from agentforge.helpers import measure_time
 from agentforge import DST_PATH
 
-from agentforge.factories import ResourceFactory
+from agentforge import resource_factory
 
 path_root = Path(__file__).parents[2]
 sys.path.append(str(path_root))
@@ -19,9 +19,7 @@ CORS(app, resources={r"/v1/*": {"origins": "*"}})
 from dotenv import load_dotenv
 load_dotenv('../../../.env')
 
-factory = ResourceFactory()
-factory.create_tts_resource()
-llm = factory.get_resource("tts")
+tts = resource_factory.get_resource("tts")
 
 # Given the following text request generate a wav file and return to the client
 @app.route("/v1/tts", methods=["POST"])
@@ -36,7 +34,7 @@ def text_to_speech():
   speaker_idx = avatar["speaker_idx"] if "speaker_idx" in avatar else 0
 
   # Enqueue a job in the TTS pipeline
-  filename = tts_inst.synthesizer(
+  filename = tts.synthesizer(
     prompt,
     filename, 
     speaker_wav=speaker_wav,

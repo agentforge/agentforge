@@ -1,5 +1,6 @@
 import os
-from agentforge.ai import SimpleDecision, Decision
+from agentforge.ai.decisions.decision import Decision
+from agentforge.ai.decisions.simple import SimpleDecision
 
 ### Delivers decision logic to the agent
 class DecisionFactory:
