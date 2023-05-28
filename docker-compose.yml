@@ -102,10 +102,29 @@ services:
         aliases:
           - web
 
+  mongodb:
+    image: mongo:latest
+    ipc: host
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${DB_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${DB_PASS}
+    ports:
+      - "${DB_PORT}:27017"
+    volumes:
+      - db_data:/data/db
+
 networks:
   main-net:
 
 volumes:
+  db_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: "${LOCAL_DB_DIR}"
+
   cache-volume:
     driver: local
     driver_opts:
