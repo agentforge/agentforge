@@ -22,5 +22,4 @@ ALLOW_CREDENTIALS=os.environ.get("ALLOW_CREDENTIALS")
 AGENT_SECRET_KEY=os.environ.get("AGENT_SECRET_KEY")
 DEEPLAKE_PATH=os.environ.get("DEEPLAKE_PATH")
 
-
 db = SQLAlchemy()

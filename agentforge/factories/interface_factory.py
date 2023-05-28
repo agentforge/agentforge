@@ -1,5 +1,5 @@
 import os
-from agentforge.interfaces import MongoDBKVStore, DictKVStore, InMemoryVectorStore, LocalFileStore, DeepLake
+from agentforge.interfaces import MongoDBKVStore, DictKVStore, InMemoryVectorStore, LocalFileStore, DeepLakeVectorStore
 from agentforge.interfaces import LLMService, TTSService, W2LService
 from agentforge.config import DbConfig
 from typing import Any
@@ -16,12 +16,16 @@ class InterfaceFactory:
             self.__interfaces["kvstore"] = MongoDBKVStore(self.config)
         elif kvstore_type == "dict":
             self.__interfaces["kvstore"] = DictKVStore()
+        else:
+            raise Exception(f"KVStore {kvstore_type} does not exist")
 
     def create_filestore(self) -> None:
         filestore_type = os.getenv("FILESTORE_TYPE")
         # Instantiate the correct FileStore based on filestore_type
         if filestore_type == "local":
             self.__interfaces["filestore"] = LocalFileStore(os.getenv("LOCAL_FILESTORE_PATH"))
+        else:
+            raise Exception(f"FileStore {filestore_type} does not exist")
 
     def create_service(self, service_type: str) -> None:
         # Instantiate the APIService with the provided APIClient
@@ -37,14 +41,20 @@ class InterfaceFactory:
         # Instantiate the correct VectorStore based on embeddings_type
         if embeddings_type == "in_memory":
             self.__interfaces["embeddings"] = InMemoryVectorStore()
+        else:
+            raise Exception(f"Embeddings {embeddings_type} does not exist")
 
     def create_vectorstore(self) -> None:
         vectorstore_type = os.getenv("VECTORSTORE_TYPE")
         # Instantiate the correct VectorStore based on embeddings_type
         if vectorstore_type == "deeplake":
-            self.__interfaces["vectorstore"] = DeepLake()
+            deeplake_path = os.getenv("DEEPLAKE_PATH")
+            model_name = os.getenv("DEEPLAKE_MODEL_NAME")    
+            self.__interfaces["vectorstore"] = DeepLakeVectorStore(model_name, deeplake_path)
         elif vectorstore_type == "in_memory":
             self.__interfaces["vectorstore"] = InMemoryVectorStore()
+        else:
+            raise Exception(f"VectorStore {vectorstore_type} does not exist")
 
     def get_interface(self, interface_name: str) -> Any:
         if interface_name in self.__interfaces:

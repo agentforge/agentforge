@@ -25,12 +25,19 @@ class APIService:
         print(f"Fallback initiated for {service}")
         # Implement fallback functionality here
 
+    ## Test harness should 1-1 match output from Service
+    def test(self):
+        return "Test Not Implemented"
+
     def call(self, form_data):
         if self.test:
             return self.test() # Return test fixture from Service
+        
+        ## TODO: Implement heartbeat logic
         # if not self._heartbeat():
         #     self._fallback(self.service)
         #     return None
+
         if not self.url:
             raise Exception(f"Service URL {self.service.upper()}_URL not set in .env")
         try:
