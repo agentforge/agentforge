@@ -1,3 +1,4 @@
+'use client';
 // LanguageModelConfigContext.tsx
 import React, { createContext, useContext, useState } from 'react';
 

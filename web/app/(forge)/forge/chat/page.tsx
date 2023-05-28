@@ -1,29 +1,13 @@
 'use client';
 import { v4 as uuidv4 } from 'uuid';
 import React, { useEffect, useRef, useState, KeyboardEvent } from 'react';
-import api, { api_url } from '@/components/shared/api';
 import { ReflectionProps } from '@/components/shared/reflection';
-import ErrorMessage from '@/components/shared/error';
-// import { getConfiguration, Configuration } from '../../components/shared/Configure';
-// import AudioRecorder from '../../components/shared/AudioRecorder';
-// import useStateWithCallback from './useStateWithCallback';
-import SwirlIcon from './mind-icon.svg';
-import CheckboxElement from '@/components/shared/checkbox';
-import SliderElement from '@/components/shared/slider';
-import SelectElement from '@/components/shared/select';
-import ChatWidget from '@/components/shared/chatwidget';
-import ButtonComponent from '@/components/shared/button';
-import { useCheckboxState } from '@/components/shared/context/checkboxstatecontext';
-import { useSelectState } from '@/components/shared/context/selectstatecontext';
-import { useSliderState } from '@/components/shared/context/sliderstatecontext';
 import { useLanguageModelConfig } from '@/components/shared/context/languagemodelconfigcontext';
-import VideoComponent from '@/components/shared/video';
-import MainConfigForm from './mainconfig';
-import Sidebar from './sidebar';
+import ChatWidget from '@/components/shared/chatwidget';
 
 interface ForgeProps {}
 
-const Forge: React.FC<ForgeProps> = () => {
+const Chat: React.FC<ForgeProps> = () => {
   // TODO: make dynamic, temporary until we can source these from the API
   // CONSTANTS
   const avatars = ['caretaker', 'default', 'makhno', 'fdr', 'sankara'];
@@ -48,11 +32,11 @@ const Forge: React.FC<ForgeProps> = () => {
     fdr: 'Franklin D. Roosevelt',
   };
 
-  const [userConfiguration, setUserConfiguration] = useState<Configuration>({
-    username: '',
-    email: '',
-    logged_in: false,
-  });
+  // const [userConfiguration, setUserConfiguration] = useState<Configuration>({
+  //   username: '',
+  //   email: '',
+  //   logged_in: false,
+  // });
 
   //Config Refs
   const avatarRef = useRef<HTMLSelectElement>(null);
@@ -145,7 +129,7 @@ const Forge: React.FC<ForgeProps> = () => {
 
   // useEffect to initialize the languageModelConfig on first render
   useEffect(() => {
-    setLanguageModelConfig('human_name', userConfiguration.username || 'Human');
+    // setLanguageModelConfig('human_name', userConfiguration.username || 'Human');
     setLanguageModelConfig('robot_name', names[getAvatar()] || 'Sam');
     setLanguageModelConfig('speech', false);
     setLanguageModelConfig('lipsync', false);
@@ -161,7 +145,7 @@ const Forge: React.FC<ForgeProps> = () => {
   // Setup streaming listener
   useEffect(() => {
     // SSE Event Listener for streaming messages and more
-    const eventSource = new EventSource(`${api_url}/stream`);
+    // const eventSource = new EventSource(`${api_url}/stream`);
 
     // eventSource.onmessage = (e: MessageEvent) => {
     //   appendMessage(JSON.parse(e.data).next);
@@ -171,19 +155,19 @@ const Forge: React.FC<ForgeProps> = () => {
     //   appendMessage(JSON.parse(e.data).next);
     // });
 
-    eventSource.addEventListener('reflection', (e: MessageEvent) => {
-      const reflect = JSON.parse(e.data).reflection.choices[0].text;
-      addReflection(reflect, 'Reflection');
-    });
+    // eventSource.addEventListener('areflection', (e: MessageEvent) => {
+    //   const reflect = JSON.parse(e.data).reflection.choices[0].text;
+    //   addReflection(reflect, 'Reflection');
+    // });
 
-    eventSource.addEventListener('observation', (e: MessageEvent) => {
-      const reflect = JSON.parse(e.data).observation.choices[0].text;
-      addReflection(reflect, 'Observation');
-    });
+    // eventSource.addEventListener('observation', (e: MessageEvent) => {
+    //   const reflect = JSON.parse(e.data).observation.choices[0].text;
+    //   addReflection(reflect, 'Observation');
+    // });
 
     // Cleanup function to close the event source when the component is unmounted
     return () => {
-      eventSource.close();
+      // eventSource.close();
     };
   }, []); // Pass an empty dependency array to run the effect only once
 
@@ -193,7 +177,7 @@ const Forge: React.FC<ForgeProps> = () => {
     if (avatarRef.current) {
       avatarRef.current.addEventListener('change', () => {
         const selectedAvatar = getAvatar();
-        playVideo(undefined, '/videos/' + selectedAvatar + '.mp4');
+        // playVideo(undefined, '/videos/' + selectedAvatar + '.mp4');
       });
     }
   }, []);
@@ -211,32 +195,26 @@ const Forge: React.FC<ForgeProps> = () => {
 
   return (
     <>
-    <main className="flex min-h-screen w-full flex-col py-32">
-      <div className="flex fixed top-0 w-full z-30 transition-all">
-        <div className="md:block h-full md:w-2/12">
-          <Sidebar />
-        </div>
-          <div className="md:block w-full h-full md:w-8/12">
-            < MainConfigForm />
-        </div>
-      <div className="md:block md:w-2/12">
-        <div className="mx-auto">
-          <ul
-            ref={thoughtHistoryRef}
-            className="thought-history"
-            style={{ maxHeight: '500px', overflow: 'scroll', fontSize: '10px' }}
-          >
-            {reflections.map((reflection, index) => (
-              <li key={index}>
-                <b>{reflection.type}: </b> {reflection.text}
-              </li>
-            ))}
-          </ul>
-            </div>
+    <div className="md:block w-full h-full md:w-8/12">
+        {/* < MainConfigForm /> */}
+        <ChatWidget/>
+    </div>
+    <div className="md:block md:w-2/12">
+      <div className="mx-auto">
+        <ul
+          ref={thoughtHistoryRef}
+          className="thought-history"
+          style={{ maxHeight: '500px', overflow: 'scroll', fontSize: '10px' }}
+        >
+          {reflections.map((reflection, index) => (
+            <li key={index}>
+              <b>{reflection.type}: </b> {reflection.text}
+            </li>
+          ))}
+        </ul>
       </div>
     </div>
-  </main >
-  </>
+    </>
 )};
 
-export default Forge;
+export default Chat;

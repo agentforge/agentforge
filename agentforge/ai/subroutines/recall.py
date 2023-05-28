@@ -1,7 +1,7 @@
 from typing import Any, Dict
 
-### Stores a context for a user in the memory
-class Remember:
+### Recalls a memory given the context
+class Recall:
     def __init__(self):
         pass
     

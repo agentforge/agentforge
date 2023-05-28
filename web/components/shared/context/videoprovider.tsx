@@ -1,3 +1,4 @@
+'use client';
 // VideoProviderContext.tsx
 import React, { createContext, useContext, useEffect, useState, useRef } from 'react';
 import { AvatarData } from '@/components/shared/context/avatarcontextprovider'

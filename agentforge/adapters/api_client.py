@@ -1,10 +1,9 @@
 from typing import Optional, Protocol, Callable
 from functools import wraps
-from dotenv import load_dotenv
 from requests import Session, Response
 from requests.exceptions import RequestException
 from http import HTTPStatus
-import logging
+import logging, os, requests
 
 # Generic APIClientProtocol metaclass 
 class APIClientProtocol(Protocol):
@@ -40,7 +39,6 @@ def handle_response(func: Callable[..., Response]) -> Callable[..., Response]:
 # Session-based API client
 class APIClient(APIClientProtocol):
     def __init__(self, base_url: Optional[str] = None) -> None:
-        load_dotenv()
         self.base_url = base_url
         self.session = Session()
 

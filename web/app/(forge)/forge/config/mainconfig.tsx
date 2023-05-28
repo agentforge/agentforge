@@ -119,12 +119,12 @@ import Button from '@/components/shared/button';
         </ToggleGroup.Item>
         </ToggleGroup.Root>
         <div className='float-right w-2/12'>
-          <Button text="Save" type="submit" onClick={ handleSubmit } extraClasses="float-right"></Button>
+          <Button type="submit" onClick={ handleSubmit } extraClasses="float-right">Save</Button>
         </div>
       </div>
       <ScrollArea.Root className="w-full h-screen rounded overflow-hidden">
       <ScrollArea.Viewport className="w-full h-full rounded">
-      <form className="pb-28">
+      <form className="pb-28">ModelConfig
         {currentTab == "avatar" ? ( <AvatarConfig />) : (<></>) }
         {currentTab == "model" ? (<ModelConfig form={ form } />) : (<></>) }
         {currentTab == "generation" ? (<GenerationConfigForm form={ form } />) : (<></>) }

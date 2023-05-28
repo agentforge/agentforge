@@ -7,6 +7,11 @@ import Nav from "@/components/layout/nav";
 import Footer from "@/components/layout/footer";
 import { Suspense } from "react";
 
+export const metadata = {
+  title: 'AgentForge',
+  description: 'Build, design, and evaluate agents.',
+};
+
 export default function RootLayout({
   children,
 }: {

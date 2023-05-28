@@ -3,9 +3,10 @@ from agentforge.ai.routines.reactive import ReactiveRoutine
 
 class SimpleDecision:
     def __init__(self):
-        self.routine = ReactiveRoutine()
+        pass
 
     def run(self, context: Dict[str, Any]) -> Dict[str, Any]:
         # Use the context, config, and user_id to decide on a routine
-        output = ReactiveRoutine.run(context)
+        self.routine = ReactiveRoutine()
+        output = self.routine.run(context)
         return output

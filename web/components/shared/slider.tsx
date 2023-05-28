@@ -42,7 +42,7 @@ const SliderElement = forwardRef<HTMLDivElement, SliderElementProps>(
       </div>
       <div className="flex flex-row w-full"> 
 
-        <form className="float-left">
+        <div className="float-left">
             <Slider.Root
               ref={ref}
               className="relative flex items-center select-none touch-none"
@@ -59,7 +59,7 @@ const SliderElement = forwardRef<HTMLDivElement, SliderElementProps>(
               </Slider.Track>
               <Slider.Thumb className="block w-5 h-5 bg-white shadow-[0_2px_10px] shadow-blackA7 rounded-[10px] hover:bg-violet3 focus:outline-none focus:shadow-[0_0_0_5px] focus:shadow-blackA8" />
             </Slider.Root>
-          </form>
+          </div>
         </div>
       </>
     );

@@ -98,16 +98,18 @@ const ChatWidget: React.FC = () => {
       },
       body: JSON.stringify(mergedObject),
     });
-  
+    console.log("COMPLETE")
     const data = await res.json();
     const av_id = languageModelConfig.languageModelConfigs["avatar"] as string;
-    if (av_id != currentAvatar.current?.avatar) { 
-      const avatarData = getAvatarData(av_id);
-      if (!avatarData) {
-        return; // TODO: handle error
-      }
-      currentAvatar.current = avatarData;
-    }
+    // TODO: USE MODEL CONFIG
+    // if (av_id != currentAvatar.current?.avatar) {
+    //   const avatarData = getAvatarData(av_id);
+    //   if (!avatarData) {
+    //     return; // TODO: handle error
+    //   }
+    //   currentAvatar.current = avatarData;
+    // }
+    console.log("DATA");
     console.log(data);
     const completion = data.choices[0].text
     const tts = languageModelConfig.languageModelConfigs["speech"] as boolean;
@@ -118,7 +120,7 @@ const ChatWidget: React.FC = () => {
     } else if (tts && lipsync) {
       playVideo(completion, currentAvatar.current);
     }
-    addMessage(completion, currentAvatar.current?.prompt_context.name, 'default', false);
+    addMessage(completion, "Sam", 'default', false);
 
     // Handle the result, update the state, etc.
     setIsLoading(false);

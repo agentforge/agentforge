@@ -1,5 +1,6 @@
+'use client';
 // VideoComponent.tsx
-import React, { useRef, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useVideo } from '@/components/shared/context/videoprovider'
 import { useLanguageModelConfig } from '@/components/shared/context/languagemodelconfigcontext';
 import { useAvatarProvider } from '@/components/shared/context/avatarcontextprovider';
@@ -24,7 +25,7 @@ const VideoComponent: React.FC = () => {
     }
   };
 
-  // Initialize first video
+  // // Initialize first video
   useEffect(() => {
     switchVideo(`/videos/${getVideoRef()}`);
   }, [languageModelConfigs]);

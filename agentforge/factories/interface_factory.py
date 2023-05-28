@@ -1,7 +1,6 @@
 import os
-
-from agentforge.adapters import APIClient
-from agentforge.interfaces import MongoDBKVStore, DictKVStore, InMemoryVectorStore, APIService, LocalFileStore, DeepLake
+from agentforge.interfaces import MongoDBKVStore, DictKVStore, InMemoryVectorStore, LocalFileStore, DeepLake
+from agentforge.interfaces import LLMService, TTSService, W2LService
 from agentforge.config import DbConfig
 from typing import Any
 
@@ -24,10 +23,14 @@ class InterfaceFactory:
         if filestore_type == "local":
             self.__interfaces["filestore"] = LocalFileStore(os.getenv("LOCAL_FILESTORE_PATH"))
 
-    def create_service(self) -> None:
-        api_client = APIClient()
+    def create_service(self, service_type: str) -> None:
         # Instantiate the APIService with the provided APIClient
-        self.__interfaces["service"] = APIService(api_client)
+        if service_type == "llm":
+            self.__interfaces["service"] = LLMService()
+        elif service_type == "tts":
+            self.__interfaces["service"] = TTSService()
+        elif service_type == "w2l":
+            self.__interfaces["service"] = W2LService()
 
     def create_embeddings(self) -> None:
         embeddings_type = os.getenv("EMBEDDINGS_TYPE")

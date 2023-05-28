@@ -46,20 +46,20 @@ export const ConfigForm: React.FC<ConfigFormProps> = ({ fields, form }) =>  {
           sliderVal = form[key]!.toString();
         }
         element = (
-          <div className="flex w-1/4">
+          <div className="flex w-1/4" key={ key }>
             <SliderElement defaultValue={512} max={2048} step={1} ariaLabel={key} sliderId="tokens" />
             <Spacer y={2.5} />
           </div>
         );
       }
       else if (type == 'text' || type == 'number') {
-
+        key
         let val = '';
         if (form[key] !== undefined) {
           val = form[key]!.toString();
         }
         element = (
-          <div className="flex w-1/4">
+          <div className="flex w-1/4" key={ key }>
             <div className="flex flex-wrap items-center gap-[15px] px-5">
               <Label.Root className="text-[15px] font-medium leading-[35px] text-white" htmlFor={ key }>
                 {titleize(key)}
@@ -89,7 +89,7 @@ export const ConfigForm: React.FC<ConfigFormProps> = ({ fields, form }) =>  {
         if (typeof variable === 'boolean' || typeof variable === 'undefined') {
           booleanVariable = variable;
           element = (
-            <div className="flex w-1/4">
+            <div className="flex w-1/4" key={ key }>
               <Checkbox key={key} label={titleize(key)} name={key} />
               {fields[key].tooltip !== undefined ? (
                   <TooltipSimple text={fields[key].tooltip} /> 

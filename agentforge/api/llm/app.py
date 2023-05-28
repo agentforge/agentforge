@@ -21,6 +21,9 @@ sys.path.append(str(path_root))
 app = Flask(__name__)
 CORS(app)
 
+from dotenv import load_dotenv
+load_dotenv('../../../.env')
+
 ### Load the LLM - single GPU example
 # llm = LLM({"multi_gpu": False, "device_map": {'':0}, "model_key":"mpt-7b-chat"})
 

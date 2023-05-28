@@ -28,9 +28,9 @@ export const PromptConfig: React.FC<ConfigProps> = ({ form }) =>  {
       </div>
       <div className="flex w-1/2 ml-4">
           <div className="flex w-full flex-col space-y-4">
-            <Button text="instruct" type="button" onClick={handleChangePrompt} extraClasses="w-full"></Button>
-            <Button text="instruct_w_memory" type="button" onClick={ handleChangePrompt } extraClasses="w-full"></Button>
-            <Button text="mpt" type="button" onClick={ handleChangePrompt } extraClasses="w-full"></Button>
+            <Button type="button" onClick={ handleChangePrompt } extraClasses="w-full">instruct</Button>
+            <Button type="button" onClick={ handleChangePrompt } extraClasses="w-full">instruct_w_memory</Button>
+            <Button type="button" onClick={ handleChangePrompt } extraClasses="w-full">mpt</Button>
         </div>  
       </div>
     </div>

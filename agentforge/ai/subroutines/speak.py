@@ -2,10 +2,8 @@ from typing import Any, Dict
 
 ### Handles conversion of text to speech
 class Speak:
-    def __init__(self, avatar, service, agent):
-        self.avatar = avatar
-        self.service = service
-        self.agent = agent
+    def __init__(self):
+        pass
 
     def execute(self, context: Dict[str, Any]) -> Dict[str, Any]:
         prompt = context['prompt']
