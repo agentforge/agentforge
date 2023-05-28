@@ -1,10 +1,6 @@
 'use client';
 import * as React from 'react';
-import CheckboxElement from '@/components/shared/checkbox';
-import SelectElement from '@/components/shared/select';
 import * as ScrollArea from '@radix-ui/react-scroll-area';
-import * as Label from '@radix-ui/react-label';
-import ConfigForm from './configform';
 import * as ToggleGroup from '@radix-ui/react-toggle-group';
 import { AvatarIcon, MixIcon, MixerHorizontalIcon, InputIcon } from '@radix-ui/react-icons';
 import AvatarConfig from './avatarconfig';
@@ -84,8 +80,9 @@ import Button from '@/components/shared/button';
     const [currentTab, setCurrentTab] = React.useState<string>('avatar'); //defaults to avatar tab
 
     const handleSubmit = () => {
-      // Handle the form su bmission...
+      // Handle the form submission...
       console.log("handleSubmit");
+      console.log(form);
     };
 
     const handleRender = (value: string) => {
@@ -124,7 +121,7 @@ import Button from '@/components/shared/button';
       </div>
       <ScrollArea.Root className="w-full h-screen rounded overflow-hidden">
       <ScrollArea.Viewport className="w-full h-full rounded">
-      <form className="pb-28">ModelConfig
+      <form className="pb-28 text-white">
         {currentTab == "avatar" ? ( <AvatarConfig />) : (<></>) }
         {currentTab == "model" ? (<ModelConfig form={ form } />) : (<></>) }
         {currentTab == "generation" ? (<GenerationConfigForm form={ form } />) : (<></>) }
