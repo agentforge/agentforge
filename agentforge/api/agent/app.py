@@ -23,7 +23,7 @@ load_dotenv('../../../.env')
 
 from agentforge import DST_PATH
 # from agentforge.ai import ExecutiveCognition
-from agentforge.factories import decision_factory
+from agentforge.ai import decision_interactor
 # from agentforge.agent import startup
 from agentforge.utils import measure_time
 from agentforge.ai import User
@@ -65,7 +65,7 @@ migrate = Migrate(app, db)
 redis_conn = redis.StrictRedis(host=af.REDIS_HOST, port=af.REDIS_PORT, db=af.REDIS_DB)
 
 # Setup Agent
-decision = decision_factory.create_decision()
+decision = decision_interactor.create_decision()
 
 # TODO: Ensure video fidelity by pointing video src to a central filestore
 # startup()
@@ -176,23 +176,23 @@ def agent():
     data = request.json
     
     ## Get Decision from Decision Factory and run it
-    decision = factory.get_decision()
+    decision = decision_interactor.get_decision()
     output = decision.run(data)
 
     ## Return Decision output
     return output
 
-@app.route('/v1/model-profiles/<user_id>', methods=['GET'])
+@app.route('/v1/model-profiles/<user_id>', methods=['GET', 'POST'])
 @measure_time
 def profiles(user_id):
-    ## Parse Data --  from web accept JSON, from client we need to pull ModelConfig
-    ## and add add the prompt and user_id to the data
-    ## Get Decision from Decision Factory and run it
-
     model_profiles = ModelProfile()
-    output = model_profiles.get(user_id)
 
-    ## Return Decision output
+    if request.method == 'POST':
+        data = request.get_json()  # retrieve data from the POST request body
+        output = model_profiles.set(user_id, data)
+    else:  # if it's not POST, then it's GET based on your route
+        output = model_profiles.get(user_id)
+
     return output
 
 # Define the API endpoint for prompting the language_model

@@ -13,7 +13,13 @@ from .subroutines.speak import Speak
 from .decisions.decision import Decision
 from .decisions.simple import SimpleDecision
 
+from agentforge.ai.decisions.decision_factory import DecisionFactory
+
+decision_interactor = DecisionFactory()
+
+decision_interactor.create_decision()
+
 __all__ = ["Prompt", "Avatar", "Agent", "ShortTermMemory", "LongTermMemory",
            "ExecutiveCognition", "startup", "Subroutine", "Respond",
            "Decision", "Emote", "Lipsync", "Remember", "Parse",
-           "SimpleDecision", "Speak"]
+           "SimpleDecision", "Speak", "decision_interactor"]

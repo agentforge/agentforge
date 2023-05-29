@@ -15,7 +15,7 @@ class MongoDBKVStore(AbstractKVStore):
 
     def connection(self, config: DbConfig) -> None:
         try:
-            self.client = MongoClient(config.host, config.port)
+            self.client = MongoClient(f"mongodb://{config.username}:{config.password}@{config.host}:{config.port}")
             self.db = self.client[config.db_name]
             logging.info('Connection established.')
         except errors.ConnectionFailure as e:
@@ -40,7 +40,7 @@ class MongoDBKVStore(AbstractKVStore):
         self._check_connection()
         collection = self.db[collection]
         try:
-            result = collection.find_one({"_id": key})/app/agentforge/agentforge/interfaces/mongodb.py
+            result = collection.find_one({"_id": key})
             return result['value'] if result else None
         except Exception as e:
             logging.error(f'Get operation failed for key {key}: {str(e)}')

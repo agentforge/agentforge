@@ -1,10 +1,10 @@
 from typing import Any, Dict
-from agentforge.factories import interface_factory
+from agentforge.interfaces import interface_interactor
 
 ### Handles conversion of text to speech
 class Lipsync:
     def __init__(self):
-        self.service_factory = interface_factory
+        self.service_factory = interface_interactor
 
     def execute(self, context: Dict[str, Any]) -> Dict[str, Any]:
         self.service_factory.create_service("w2l")

@@ -30,11 +30,13 @@ class InterfaceFactory:
     def create_service(self, service_type: str) -> None:
         # Instantiate the APIService with the provided APIClient
         if service_type == "llm":
-            self.__interfaces["service"] = LLMService()
+            self.__interfaces["llm"] = LLMService()
         elif service_type == "tts":
-            self.__interfaces["service"] = TTSService()
+            self.__interfaces["tts"] = TTSService()
         elif service_type == "w2l":
-            self.__interfaces["service"] = W2LService()
+            self.__interfaces["w2l"] = W2LService()
+        else:
+            raise Exception(f"Service {service_type} does not exist")
 
     def create_embeddings(self) -> None:
         embeddings_type = os.getenv("EMBEDDINGS_TYPE")
