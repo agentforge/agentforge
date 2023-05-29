@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import 'tailwindcss/tailwind.css';
 import MenuButton from '@/components/shared/menubutton';
+import Button from '@/components/shared/button';
 
 interface ModelProfile {
   avatar: string;
@@ -30,7 +31,19 @@ const ModelProfilesTable: React.FC<{pageSize: number}> = ({pageSize}) => {
     fetchProfiles();
   }, []);
 
-  const profilesToShow = profiles.slice((currentPage-1)*pageSize, currentPage*pageSize);
+  const profilesToShow = profiles.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+  
+  const editProfile = () => {
+    console.log("editProfile");
+  }
+
+  const deleteProfile = () => {
+    console.log("deleteProfile");
+  }
+
+  const useProfile = () => {
+    console.log("useProfile");
+  }
 
   return (
     <>
@@ -48,6 +61,9 @@ const ModelProfilesTable: React.FC<{pageSize: number}> = ({pageSize}) => {
             <th className="px-4 py-2">Creator</th>
             <th className="px-4 py-2">Description</th>
             <th className="px-4 py-2">Timestamp</th>
+            <th className="px-4 py-2">Edit</th>
+            <th className="px-4 py-2">Use</th>
+            <th className="px-4 py-2">Delete</th>  
           </tr>
         </thead>
         <tbody>
@@ -58,6 +74,21 @@ const ModelProfilesTable: React.FC<{pageSize: number}> = ({pageSize}) => {
               <td className="border px-4 py-2">{profile.creator}</td>
               <td className="border px-4 py-2">{profile.description}</td>
               <td className="border px-4 py-2">{profile.timestamp}</td>
+              <td className="border px-4 py-2">
+                <Button type='button' onClick={editProfile}>
+                  Edit
+                </Button>
+              </td>
+              <td className="border px-4 py-2">
+                <Button type='button' onClick={useProfile}>
+                  Use
+                </Button>
+              </td>
+              <td className="border px-4 py-2">
+                <Button type='button' onClick={deleteProfile}>
+                  Delete
+                </Button>
+              </td>
             </tr>
           ))}
         </tbody>
