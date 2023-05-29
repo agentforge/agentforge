@@ -18,10 +18,11 @@ const ModelProfilesTable: React.FC<{pageSize: number}> = ({pageSize}) => {
   useEffect(() => {
     const fetchProfiles = async () => {
       try {
-          const user_id = "test_user";
-          const res = await fetch(`/api/modelprofiles/${user_id}`);
-          const data = await res.json();
-          setProfiles(data);
+        const user_id = "test_user";
+        console.log(`/api/modelprofiles/${user_id}`);
+        const res = await fetch(`/api/modelprofiles/${user_id}`);
+        const data = await res.json();
+        setProfiles(data.data);
       } catch (error) {
         console.error(error);
       }

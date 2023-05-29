@@ -10,6 +10,7 @@ import { MODEL_FIELDS } from './modelconfig';
 import GenerationConfigForm from './genconfig';
 import PromptConfig from './promptconfig';
 import Button from '@/components/shared/button';
+import api_url from '@/components/shared/api';
 
   interface GenerationConfig {
     // Parameters that control the length of the output
@@ -83,7 +84,27 @@ import Button from '@/components/shared/button';
       // Handle the form submission...
       console.log("handleSubmit");
       console.log(form);
+      const postProfiles = async () => {
+        try {
+          const user_id = "test_user";
+          console.log(`/api/modelprofiles/${user_id}`);
+          const res = await fetch(`/api/modelprofiles/${user_id}`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              // 'API-Key': process.env.DATA_API_KEY,
+            },
+            body: JSON.stringify(form), // stringify the form data
+          });
+          const data = await res.json();
+          console.log(data);
+        } catch (error) {
+          console.error(error);
+        }
+      };
+      postProfiles();      
     };
+    
 
     const handleRender = (value: string) => {
       // Set the current state of the tab to `value`
