@@ -3,13 +3,19 @@
 ### from here.  This is to ensure that all interfaces are created in the
 ### same way and that the factories are not instantiated multiple times.
 
-from agentforge.factories.interface_factory import InterfaceFactory
-from agentforge.factories.decision_factory import DecisionFactory
+# from agentforge.interfaces.interface_factory import InterfaceFactory
+# from agentforge.ai.decisions.decision_factory import DecisionFactory
 
-interface_factory = InterfaceFactory()
-decision_factory = DecisionFactory()
+# interface_interactor = InterfaceFactory()
+# descision_interactor = DecisionFactory()
 
-interface_factory.create_kvstore()
-interface_factory.create_filestore()
-interface_factory.create_embeddings()
-interface_factory.create_vectorstore()
+# interface_interactor.create_kvstore()
+# interface_interactor.create_filestore()
+# interface_interactor.create_embeddings()
+# interface_interactor.create_vectorstore()
+
+# interface_interactor.create_service("llm")
+# interface_interactor.create_service("tts")
+# interface_interactor.create_service("w2l")
+
+# descision_interactor.create_decision()
