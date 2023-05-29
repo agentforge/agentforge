@@ -83,8 +83,6 @@ const ChatWidget: React.FC = () => {
       ...promptObject,
     };
 
-    console.log(mergedObject);
-
     // Add the Human message //TODO: Get the name of the human from the user
     addMessage(mergedObject.prompt, 'Human', 'human', false);
 
@@ -98,7 +96,6 @@ const ChatWidget: React.FC = () => {
       },
       body: JSON.stringify(mergedObject),
     });
-    console.log("COMPLETE")
     const data = await res.json();
     const av_id = languageModelConfig.languageModelConfigs["avatar"] as string;
     // TODO: USE MODEL CONFIG
@@ -109,8 +106,6 @@ const ChatWidget: React.FC = () => {
     //   }
     //   currentAvatar.current = avatarData;
     // }
-    console.log("DATA");
-    console.log(data);
     const completion = data.choices[0].text
     const tts = languageModelConfig.languageModelConfigs["speech"] as boolean;
     const lipsync = languageModelConfig.languageModelConfigs["lipsync"] as boolean;

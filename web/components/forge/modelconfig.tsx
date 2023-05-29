@@ -52,7 +52,7 @@ export const ModelConfig: React.FC<ModelConfigProps> = ({ form }) =>  {
       <div className='flex w-3/4'>
         <h1>Model Config</h1>
       </div>
-      <div className='flex w-1/4 mt-3'>
+      <div className='flex w-1/4'>
         <div className="flex flex-wrap items-center gap-[15px] px-5">
           <Label.Root className="text-[15px] font-medium leading-[35px] text-white" htmlFor="firstName">
             Model Presets
