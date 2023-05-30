@@ -4,8 +4,9 @@ from pymongo.cursor import Cursor
 
 from agentforge.config import DbConfig
 import logging
-from agentforge.adapters import AbstractKVStore
-class MongoDBKVStore(AbstractKVStore):
+from agentforge.adapters import DB
+
+class MongoDBKVStore(DB):
     def __init__(self, config: DbConfig) -> None:
         self.connection(config)
 
@@ -23,38 +24,42 @@ class MongoDBKVStore(AbstractKVStore):
             raise
 
     # Explicitly create document with key
-    def create(self, collection:str, key: str, value: Any) -> None:
+    def create(self, collection:str, key: str, data: Dict[str, Any]) -> None:
         self._check_connection()
         collection = self.db[collection]
         try:
             if collection.find_one({"_id": key}):
                 logging.error(f'Create operation failed for key {key}: record already exists.')
                 raise ValueError(f'A record with key {key} already exists.')
-            collection.insert_one({"_id": key, "value": value})
+            data["_id"] = key  # add the key to the data dict
+            collection.insert_one(data)
             logging.info(f'Successfully created record with key {key}.')
         except Exception as e:
             logging.error(f'Create operation failed for key {key}: {str(e)}')
             raise
 
-    def get(self, collection:str, key: str) -> Optional[Any]:
+    def get(self, collection:str, key: str) -> Optional[Dict[str, Any]]:
         self._check_connection()
         collection = self.db[collection]
         try:
             result = collection.find_one({"_id": key})
-            return result['value'] if result else None
+            if result:
+                del result["_id"]  # remove the _id field from the result
+            return result
         except Exception as e:
             logging.error(f'Get operation failed for key {key}: {str(e)}')
             raise
 
     # Create or update document
-    def set(self, collection:str, key: str, value: Any) -> None:
+    def set(self, collection:str, key: str, data: Dict[str, Any]) -> None:
         self._check_connection()
         collection = self.db[collection]
         try:
-            collection.update_one({"_id": key}, {"$set": {"value": value}}, upsert=True)
+            data["_id"] = key  # add the key to the data dict
+            collection.update_one({"_id": key}, {"$set": data}, upsert=True)
             logging.info(f'Successfully set value for key {key}.')
         except Exception as e:
-            logging.error(f'Set operation failed for key {key}: {str(e)}')
+            logging.error(f'Set operation failed for keyChange the following  {key}: {str(e)}')
             raise
 
     def delete(self, collection:str, key: str) -> None:

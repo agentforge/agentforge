@@ -182,16 +182,16 @@ def agent():
     ## Return Decision output
     return output
 
-@app.route('/v1/model-profiles/<user_id>', methods=['GET', 'POST'])
+@app.route('/v1/model-profiles/<id>', methods=['GET', 'POST'])
 @measure_time
-def profiles(user_id):
+def profiles(id):
     model_profiles = ModelProfile()
 
     if request.method == 'POST':
         data = request.get_json()  # retrieve data from the POST request body
-        output = model_profiles.set(user_id, data)
+        output = model_profiles.create(data)
     else:  # if it's not POST, then it's GET based on your route
-        output = model_profiles.get(user_id)
+        output = model_profiles.get(id)
 
     return output
 
