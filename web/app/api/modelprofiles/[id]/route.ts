@@ -24,7 +24,7 @@ export async function PUT(
     const data = await res.json();
     return NextResponse.json(data);
   } catch (error) {
-    return NextResponse.json({ message: "Error creating model profiles.", status: 500 });
+    return NextResponse.json({ message: error, status: 500 });
   }
 }
 
@@ -36,9 +36,7 @@ export async function GET(
     params: { id: string };
   },
 ) {
-  try {
     const id = params.id; // user_id
-    const request = await requestPromise.json();
     const res = await fetch(`${api_url}/v1/model-profiles/${id}`, {
       method: 'GET',
       headers: {
@@ -48,7 +46,4 @@ export async function GET(
     });
     const data = await res.json();
     return NextResponse.json(data);
-  } catch (error) {
-    return NextResponse.json({ message: "Error creating model profiles.", status: 500 });
-  }
 }

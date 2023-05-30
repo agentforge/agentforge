@@ -45,7 +45,7 @@ const ModelProfilesTable: React.FC<{ pageSize: number }> = ({ pageSize }) => {
     }
   
     try {
-      const response = await fetch(`/api/model-profiles/${profileId}`, {
+      const response = await fetch(`/api/modelprofiles/${profileId}`, {
         method: 'DELETE',
       });
       console.log("deleteProfile", await response.json());

@@ -101,14 +101,16 @@ const ModelConfigForm: React.FC<ModelConfigFormProps> = ({ form, id }) =>  {
   
 
   const handleRender = (value: string) => {
-    // Set the current state of the tab to `value`
+    // Set thModelConfigForme current state of the tab to `value`
     setCurrentTab(value);
   };
 
   const toggleGroupItemClasses =
   'hover:bg-black color-mauve11 data-[state=on]:bg-slate-600 data-[state=on]:text-white flex p-3 h-[35px] w-max items-center justify-center bg-slate-800 text-base leading-4 first:rounded-l last:rounded-r focus:z-10 focus:shadow-[0_0_0_2px] focus:shadow-black focus:outline-none';
+  
+  console.log(form);
   return (
-    <>
+    <>form
     <div className='flex w-full items-center justify-center m-3'>
       <ToggleGroup.Root
           className="inline-flex bg-black rounded shadow-[0_2px_10px] shadow-blackA7 space-x-px"
@@ -132,7 +134,7 @@ const ModelConfigForm: React.FC<ModelConfigFormProps> = ({ form, id }) =>  {
       </ToggleGroup.Root>
       <div className='float-right w-2/12'>
         <Button type="submit" onClick={ handleSubmit } extraClasses="float-right">Save</Button>
-      </div>
+      </div>form
     </div>
     <ScrollArea.Root className="w-full h-screen rounded overflow-hidden">
     <ScrollArea.Viewport className="w-full h-full rounded">
