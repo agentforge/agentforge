@@ -10,7 +10,6 @@ const Config: React.FC<ConfigProps> = () => {
     <>
       <div className="md:block w-full h-full md:w-8/12">
         <ModelProfilesTable pageSize={20}/>
-        {/* <MainConfigForm/> */}
     </div>
     </>
 )};

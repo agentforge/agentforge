@@ -196,7 +196,6 @@ const Chat: React.FC<ForgeProps> = () => {
   return (
     <>
     <div className="md:block w-full h-full md:w-8/12">
-        {/* < MainConfigForm /> */}
         <ChatWidget/>
     </div>
     <div className="md:block md:w-2/12">

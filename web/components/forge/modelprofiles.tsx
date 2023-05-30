@@ -2,8 +2,11 @@ import React, { useEffect, useState } from 'react';
 import 'tailwindcss/tailwind.css';
 import MenuButton from '@/components/shared/menubutton';
 import Button from '@/components/shared/button';
+import NewModelProfile from '@/components/forge/newprofiledialog';
+import { useRouter } from 'next/navigation';
 
 interface ModelProfile {
+  _id: string;
   avatar: string;
   name: string;
   creator: string;
@@ -12,7 +15,9 @@ interface ModelProfile {
 }
 
 const API_ENDPOINT = '/api/modelprofiles'; // replace with your actual endpoint
-const ModelProfilesTable: React.FC<{pageSize: number}> = ({pageSize}) => {
+
+const ModelProfilesTable: React.FC<{ pageSize: number }> = ({ pageSize }) => {
+  const router = useRouter();
   const [profiles, setProfiles] = useState<ModelProfile[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -20,8 +25,8 @@ const ModelProfilesTable: React.FC<{pageSize: number}> = ({pageSize}) => {
     const fetchProfiles = async () => {
       try {
         const user_id = "test_user";
-        console.log(`/api/modelprofiles/${user_id}`);
-        const res = await fetch(`/api/modelprofiles/${user_id}`);
+        console.log(`/api/user/${user_id}/modelprofiles`);
+        const res = await fetch(`/api/user/${user_id}/modelprofiles`);
         const data = await res.json();
         setProfiles(data.data);
       } catch (error) {
@@ -33,24 +38,34 @@ const ModelProfilesTable: React.FC<{pageSize: number}> = ({pageSize}) => {
 
   const profilesToShow = profiles.slice((currentPage - 1) * pageSize, currentPage * pageSize);
   
-  const editProfile = () => {
-    console.log("editProfile");
+  const deleteProfile = async (profileId: string) => {
+    if (!profileId) {
+      console.error("No profileId set!");
+      return;
+    }
+  
+    try {
+      const response = await fetch(`/api/model-profiles/${profileId}`, {
+        method: 'DELETE',
+      });
+      console.log("deleteProfile", await response.json());
+    } catch (err) {
+      console.error(err);
+    }
   }
-
-  const deleteProfile = () => {
-    console.log("deleteProfile");
+  
+  const navToEdit = (profileId: string) => {
+    router.push(`/forge/config/${profileId}`);
   }
-
-  const useProfile = () => {
-    console.log("useProfile");
+    
+  const gotoProfile = (profileId: string) => {
+    router.push(`/forge/chat/${profileId}`);
   }
 
   return (
     <>
     <div className='dark flex w-1/4'>
-    <MenuButton route="/forge/config/editor">
-      New
-    </MenuButton>
+        <NewModelProfile />
     </div>   
     <div className="dark bg-gray-800 text-white">
       <table className="table-auto w-full">
@@ -75,12 +90,12 @@ const ModelProfilesTable: React.FC<{pageSize: number}> = ({pageSize}) => {
               <td className="border px-4 py-2">{profile.description}</td>
               <td className="border px-4 py-2">{profile.timestamp}</td>
               <td className="border px-4 py-2">
-                <Button type='button' onClick={editProfile}>
-                  Edit
-                </Button>
+              <Button type='button' onClick={() => navToEdit(profile._id)}>
+                Edit
+              </Button>
               </td>
               <td className="border px-4 py-2">
-                <Button type='button' onClick={useProfile}>
+              <Button type='button' onClick={() => gotoProfile(profile._id)}>
                   Use
                 </Button>
               </td>

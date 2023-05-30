@@ -61,3 +61,15 @@ export const truncate = (str: string, length: number) => {
   if (!str || str.length <= length) return str;
   return `${str.slice(0, length)}...`;
 };
+
+// Function to flatten nested objects
+export const flattenObj = (obj: Record<string, any>) => {
+  return Object.keys(obj).reduce(function(acc: Record<string, any>, k: string) {
+      if (typeof obj[k] === 'object' && obj[k] !== null) {
+          Object.assign(acc, flattenObj(obj[k]));
+      } else {
+          acc[k] = obj[k];
+      }
+      return acc;
+  }, {});
+}

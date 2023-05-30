@@ -16,6 +16,9 @@ const Sidebar: React.FC<SidebarProps> = () => {
         <MenuButton route="/forge/config">
           Configure
         </MenuButton>
+        <MenuButton route="/user/config">
+          User Settings
+        </MenuButton>
         </footer>
     </div>
     </>

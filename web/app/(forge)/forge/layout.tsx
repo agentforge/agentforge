@@ -1,9 +1,7 @@
 'use client';
 import { Analytics } from "@vercel/analytics/react";
 import cx from "classnames";
-import { Suspense } from "react";
 import { sfPro, inter } from "../../fonts";
-import Nav from "@/components/layout/nav";
 import "../../styles/globals.css";
 import "../../styles/style.scss";
 import Sidebar from "./sidebar";
