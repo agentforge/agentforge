@@ -53,8 +53,12 @@ app.config["REDIS_URL"] = f"redis://{af.REDIS_HOST}:{af.REDIS_PORT}/{af.REDIS_DB
 # Set the ALLOWED_ORIGIN and ALLOW_CREDENTIALS configuration variables
 app.config["ALLOWED_ORIGIN"] = af.ALLOWED_ORIGIN
 app.config["ALLOW_CREDENTIALS"] = af.ALLOW_CREDENTIALS
+app.config['ENV'] = 'development'
+app.config['DEBUG'] = True
+app.config['TESTING'] = True
 
 app.secret_key = af.AGENT_SECRET_KEY
+app.debug = True
 
 app.register_blueprint(sse, url_prefix='/stream')
 
@@ -202,7 +206,9 @@ def create_profile():
 @measure_time
 def update_or_get_profile(id):
     if request.method == 'PUT':
+        print(request.method)
         model_profiles = ModelProfile()
+        print(request.json)
         data = request.get_json()  # retrieve data from the PUT request body
         output = model_profiles.set(id, data)
         return output
