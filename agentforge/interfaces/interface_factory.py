@@ -12,11 +12,19 @@ class InterfaceFactory:
         self.config = DbConfig.from_env()
         self.redis_config = RedisConfig.from_env()
 
+    def create_db(self) -> None:
+        db_type = os.getenv("DB_TYPE")
+        # Instantiate the correct Database based on db_type
+        if db_type == "mongodb":
+            self.__interfaces["db"] = MongoDBKVStore(self.config)
+        else:
+            raise Exception(f"DB {db_type} does not exist")
+
     def create_kvstore(self) -> None:
         kvstore_type = os.getenv("KVSTORE_TYPE")
         # Instantiate the correct KVStore based on kvstore_type
-        if kvstore_type == "mongodb":
-            self.__interfaces["kvstore"] = MongoDBKVStore(self.config)
+        if kvstore_type == "redis":
+            self.__interfaces["kvstore"] = RedisKVStore(self.redis_config)
         elif kvstore_type == "dict":
             self.__interfaces["kvstore"] = DictKVStore()
         else:
@@ -65,8 +73,7 @@ class InterfaceFactory:
         keygenerator_type = os.getenv("KEYGENERATOR_TYPE")
         # Instantiate the correct KeyGenerator based on keygenerator_type
         if keygenerator_type == "redis":
-            self.__interfaces["redis"] = RedisKVStore(self.redis_config)
-            self.__interfaces["keygen"] = DBKeyGenerator(self.__interfaces["redis"])
+            self.__interfaces["keygen"] = DBKeyGenerator(self.__interfaces["kvstore"])
         else:
             raise Exception(f"KeyGenerator {keygenerator_type} does not exist")    
 

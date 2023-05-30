@@ -22,7 +22,7 @@ class DBKeyGenerator:
     def _store_key(self, key: str) -> None:
         self.kvstore.set(key, True)
 
-    def get_unique_key(self) -> Optional[str]:
+    def generate(self) -> Optional[str]:
         for _ in range(5):  # Try up to 5 times
             with self.lock:
                 new_key = self._generate_key()

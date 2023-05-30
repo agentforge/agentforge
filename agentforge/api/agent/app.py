@@ -182,85 +182,33 @@ def agent():
     ## Return Decision output
     return output
 
-@app.route('/v1/model-profiles/<id>', methods=['GET', 'POST'])
+@app.route('/v1/user/<user_id>/model-profiles', methods=['GET'])
 @measure_time
-def profiles(id):
+def get_user_profiles(user_id):
     model_profiles = ModelProfile()
-
-    if request.method == 'POST':
-        data = request.get_json()  # retrieve data from the POST request body
-        output = model_profiles.create(data)
-    else:  # if it's not POST, then it's GET based on your route
-        output = model_profiles.get(id)
-
+    output = model_profiles.get_by_user(user_id)
     return output
 
-# Define the API endpoint for prompting the language_model
-# @app.route("/v1/completions", methods=["POST"])
-# @measure_time
-# def prompt():
-#   # Get the message for the request
-#   prompt = request.json["prompt"]
-#   form_data = request.json
-#   # Run the LLM agent
-#   response = executive.respond(prompt, form_data, app)
-#   # Return the response
-#   return jsonify(response)
+@app.route('/v1/model-profiles', methods=['POST'])
+@measure_time
+def create_profile():
+    model_profiles = ModelProfile()
+    data = request.get_json()  # retrieve data from the POST request body
+    output = model_profiles.create(data)
+    return output
 
+@app.route('/v1/model-profiles/<id>', methods=['PUT'])
+@measure_time
+def update_profile(id):
+    model_profiles = ModelProfile()
+    data = request.get_json()  # retrieve data from the PUT request body
+    output = model_profiles.set(id, data)
+    return output
 
-# @app.route("/v1/whisper", methods=["POST"])
-# def whisper_api():
-#     # Save the uploaded wav file
-#     audio_file = request.files["audio"]
+@app.route('/v1/model-profiles/<id>', methods=['GET'])
+@measure_time
+def get_profile(id):
+    model_profiles = ModelProfile()
+    output = model_profiles.get(id)
+    return output
 
-#     wav_file_path = secure_wav_filename(audio_file.filename)
-#     audio_file.save(AUDIO_DST_PATH + "/" + wav_file_path)
-
-#     # Interpret the audio using the Whisper class
-#     generated_text = executive.interpret({"file": AUDIO_DST_PATH + "/" + wav_file_path, "type": "wav"})
-
-#     # Return the generated text
-#     return {"generated_text": generated_text}
-
-# TODO: DEPRECATE THIS
-# Define the API endpoint for hearing the agent speak
-# @app.route("/v1/tts", methods=["POST"])
-# @measure_time
-# def tts():
-#   # Get the message for the request
-#   prompt = request.json["prompt"]
-#   form_data = request.json
-
-#   # Run the agent
-#   response = executive.speak(prompt, form_data)
-#   filename = response["filename"]
-
-#   # Create a response object with the file data
-#   response_obj = send_file(
-#       filename,
-#       mimetype=response["type"],
-#       as_attachment=True
-#   )
-
-#   return response_obj
-
-# TODO Replace this with the ModelConfig API
-# @app.route("/v1/avatars", methods=["GET"])
-# def avatars():
-
-#   # Get the avatars currently loaded into the config
-#   response = executive.avatar.get_avatars()
-
-#   # Create a response object with the avatars
-#   return jsonify(response)
-
-# TODO Replace this with the ModelConfig API
-
-# @app.route("/v1/llm_models", methods=["GET"])
-# def llm_models():
-
-#   # Get the avatars currently loaded into the config
-#   response = executive.service.get_llm_models()
-
-#   # Create a response object with the avatars
-#   return jsonify(response)
