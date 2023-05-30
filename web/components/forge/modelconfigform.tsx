@@ -78,11 +78,20 @@ const ModelConfigForm: React.FC<ModelConfigFormProps> = ({ form, id }) =>  {
     // Handle the form submission...
     console.log("handleSubmit");
     console.log(form);
+    if (!form) {
+      console.log("FORM IS NULL!!?")
+      return
+    } else { 
+      console.log("FORM!! EXIST")
+      console.log(form);
+    }id
     const postProfiles = async () => {
       try {
+        console.log("ID");
+        console.log(id);
         const user_id = "test_user";
-        console.log(`/api/modelprofiles/${user_id}`);
-        const res = await fetch(`/api/modelprofiles/${user_id}`, {
+        console.log(`/api/modelprofiles/${id}`);
+        const res = await fetch(`/api/modelprofiles/${id}`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -110,7 +119,7 @@ const ModelConfigForm: React.FC<ModelConfigFormProps> = ({ form, id }) =>  {
   
   console.log(form);
   return (
-    <>form
+    <>
     <div className='flex w-full items-center justify-center m-3'>
       <ToggleGroup.Root
           className="inline-flex bg-black rounded shadow-[0_2px_10px] shadow-blackA7 space-x-px"
@@ -134,7 +143,7 @@ const ModelConfigForm: React.FC<ModelConfigFormProps> = ({ form, id }) =>  {
       </ToggleGroup.Root>
       <div className='float-right w-2/12'>
         <Button type="submit" onClick={ handleSubmit } extraClasses="float-right">Save</Button>
-      </div>form
+      </div>
     </div>
     <ScrollArea.Root className="w-full h-screen rounded overflow-hidden">
     <ScrollArea.Viewport className="w-full h-full rounded">

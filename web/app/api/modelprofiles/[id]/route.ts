@@ -2,7 +2,7 @@
 import { NextResponse } from 'next/server';
 import api_url from '@/components/shared/api';
 
-export async function PUT(
+export async function POST(
   requestPromise: Request,
   {
     params,
@@ -10,22 +10,19 @@ export async function PUT(
     params: { id: string };
   },
 ) {
-  try {
     const id = params.id; // user_id
     const request = await requestPromise.json();
+    console.log(request);
     const res = await fetch(`${api_url}/v1/model-profiles/${id}`, {
-      method: 'PUT',
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         // 'API-Key': process.env.DATA_API_KEY,
       },
-      body: JSON.stringify(request.body),
+      body: JSON.stringify(request),
     });
     const data = await res.json();
     return NextResponse.json(data);
-  } catch (error) {
-    return NextResponse.json({ message: error, status: 500 });
-  }
 }
 
 export async function GET(
