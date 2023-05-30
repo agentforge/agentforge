@@ -92,7 +92,7 @@ const ModelConfigForm: React.FC<ModelConfigFormProps> = ({ form, id }) =>  {
         const user_id = "test_user";
         console.log(`/api/modelprofiles/${id}`);
         const res = await fetch(`/api/modelprofiles/${id}`, {
-          method: 'POST',
+          method: 'PUT',
           headers: {
             'Content-Type': 'application/json',
             // 'API-Key': process.env.DATA_API_KEY,

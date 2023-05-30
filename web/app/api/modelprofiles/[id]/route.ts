@@ -2,7 +2,7 @@
 import { NextResponse } from 'next/server';
 import api_url from '@/components/shared/api';
 
-export async function POST(
+export async function PUT(
   requestPromise: Request,
   {
     params,
@@ -14,7 +14,7 @@ export async function POST(
     const request = await requestPromise.json();
     console.log(request);
     const res = await fetch(`${api_url}/v1/model-profiles/${id}`, {
-      method: 'POST',
+      method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
         // 'API-Key': process.env.DATA_API_KEY,
