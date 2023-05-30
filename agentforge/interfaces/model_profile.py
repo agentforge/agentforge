@@ -6,17 +6,27 @@ from agentforge.interfaces import interface_interactor
 # Handles key creation, document retrieval and deletion
 class ModelProfile():
     def __init__(self):
-        self.kvstore = interface_interactor.get_interface("kvstore")
+        self.db = interface_interactor.get_interface("db")
+        self.keygen = interface_interactor.get_interface("keygen")
+
+    def create(self, data: Dict) -> None:
+        id = self.keygen.generate()
+        return self.set(id, data)
 
     def get(self, id: str) -> Optional[Any]:
         # Construct the key for this user and model-config
-        cursor = self.kvstore.get_many("model_profiles", {"_id": id})        
+        cursor = self.db.get_many("model_profiles", {"_id": id})        
+        return {"data": list(cursor.limit(20))}
+
+    def get_by_user(self, id: str) -> Optional[Any]:
+        # Construct the key for this user and model-config
+        cursor = self.db.get_many("model_profiles", {"user_id": id})        
         return {"data": list(cursor.limit(20))}
 
     def set(self, id: str, data: Dict) -> None:
-        self.kvstore.set("model_profiles", id, data)
+        self.db.set("model_profiles", id, data)
         return {"data": data}
 
     def delete(self, id: str) -> None:
-        self.kvstore.delete("model_profiles", id)
+        self.db.delete("model_profiles", id)
         return {}

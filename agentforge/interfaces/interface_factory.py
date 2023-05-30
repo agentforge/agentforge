@@ -1,19 +1,30 @@
 import os
 from agentforge.interfaces import MongoDBKVStore, DictKVStore, InMemoryVectorStore, LocalFileStore, DeepLakeVectorStore
 from agentforge.interfaces import LLMService, TTSService, W2LService
-from agentforge.config import DbConfig
+from agentforge.interfaces.dbkeygenerator import DBKeyGenerator
+from agentforge.interfaces.rediskvstore import RedisKVStore
+from agentforge.config import DbConfig, RedisConfig
 from typing import Any
 
 class InterfaceFactory:
     def __init__(self) -> None:
         self.__interfaces: dict[str, Any] = {}
         self.config = DbConfig.from_env()
+        self.redis_config = RedisConfig.from_env()
+
+    def create_db(self) -> None:
+        db_type = os.getenv("DB_TYPE")
+        # Instantiate the correct Database based on db_type
+        if db_type == "mongodb":
+            self.__interfaces["db"] = MongoDBKVStore(self.config)
+        else:
+            raise Exception(f"DB {db_type} does not exist")
 
     def create_kvstore(self) -> None:
         kvstore_type = os.getenv("KVSTORE_TYPE")
         # Instantiate the correct KVStore based on kvstore_type
-        if kvstore_type == "mongodb":
-            self.__interfaces["kvstore"] = MongoDBKVStore(self.config)
+        if kvstore_type == "redis":
+            self.__interfaces["kvstore"] = RedisKVStore(self.redis_config)
         elif kvstore_type == "dict":
             self.__interfaces["kvstore"] = DictKVStore()
         else:
@@ -57,6 +68,14 @@ class InterfaceFactory:
             self.__interfaces["vectorstore"] = InMemoryVectorStore()
         else:
             raise Exception(f"VectorStore {vectorstore_type} does not exist")
+        
+    def create_keygenerator(self) -> None:
+        keygenerator_type = os.getenv("KEYGENERATOR_TYPE")
+        # Instantiate the correct KeyGenerator based on keygenerator_type
+        if keygenerator_type == "redis":
+            self.__interfaces["keygen"] = DBKeyGenerator(self.__interfaces["kvstore"])
+        else:
+            raise Exception(f"KeyGenerator {keygenerator_type} does not exist")    
 
     def get_interface(self, interface_name: str) -> Any:
         if interface_name in self.__interfaces:
