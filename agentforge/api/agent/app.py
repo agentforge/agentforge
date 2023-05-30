@@ -192,23 +192,21 @@ def get_user_profiles(user_id):
 @app.route('/v1/model-profiles', methods=['POST'])
 @measure_time
 def create_profile():
+    print("MODEL_PROFILES")
     model_profiles = ModelProfile()
     data = request.get_json()  # retrieve data from the POST request body
     output = model_profiles.create(data)
     return output
 
-@app.route('/v1/model-profiles/<id>', methods=['PUT'])
+@app.route('/v1/model-profiles/<id>', methods=['PUT', 'GET'])
 @measure_time
-def update_profile(id):
-    model_profiles = ModelProfile()
-    data = request.get_json()  # retrieve data from the PUT request body
-    output = model_profiles.set(id, data)
-    return output
-
-@app.route('/v1/model-profiles/<id>', methods=['GET'])
-@measure_time
-def get_profile(id):
-    model_profiles = ModelProfile()
-    output = model_profiles.get(id)
-    return output
-
+def update_or_get_profile(id):
+    if request.method == 'PUT':
+        model_profiles = ModelProfile()
+        data = request.get_json()  # retrieve data from the PUT request body
+        output = model_profiles.set(id, data)
+        return output
+    elif request.method == 'GET':
+        model_profiles = ModelProfile()
+        output = model_profiles.get(id)
+        return output

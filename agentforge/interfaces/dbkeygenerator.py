@@ -20,7 +20,10 @@ class DBKeyGenerator:
         return self.kvstore.get(key) is not None
 
     def _store_key(self, key: str) -> None:
-        self.kvstore.set(key, True)
+        self.kvstore.set(key, 1)
+
+    def remove(self, key: str) -> None:
+        self.kvstore.delete(key)
 
     def generate(self) -> Optional[str]:
         for _ in range(5):  # Try up to 5 times
