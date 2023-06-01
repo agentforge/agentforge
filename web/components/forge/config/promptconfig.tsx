@@ -6,6 +6,10 @@ export interface ConfigProps {
   form: {[key: string]: string | number | boolean | undefined};
 }
 
+export const PROMPT_FIELDS = {
+  prompt_template: { type: 'text', default: 'Prompt goes here...' },
+}
+
 const handleChangePrompt = () => {
   // Handle the form su bmission...
   console.log("handleChangePrompt");
@@ -19,7 +23,7 @@ export const PromptConfig: React.FC<ConfigProps> = ({ form }) =>  {
     <div className="flex flex-row mt-9">
       <div className="flex w-1/2">
           <textarea
-          id="user-input"
+          id="prompt_template"
           defaultValue="Prompt goes here..."
           className="form-control"
           rows={4}

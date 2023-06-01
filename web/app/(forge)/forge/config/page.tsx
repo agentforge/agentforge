@@ -1,6 +1,6 @@
 'use client';
 import React from 'react';
-import ModelProfilesTable from '@/components/forge/modelprofiles';
+import ModelProfilesTable from '@/components/forge/config/modelprofiles';
 
 interface ConfigProps {}
 
