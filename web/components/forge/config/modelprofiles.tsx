@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import 'tailwindcss/tailwind.css';
 import MenuButton from '@/components/shared/menubutton';
 import Button from '@/components/shared/button';
-import NewModelProfile from '@/components/forge/newprofiledialog';
+import NewModelProfile from '@/components/forge/config/newprofiledialog';
 import { useRouter } from 'next/navigation';
 
 interface ModelProfile {
@@ -37,13 +37,11 @@ const ModelProfilesTable: React.FC<{ pageSize: number }> = ({ pageSize }) => {
   }, []);
 
   const profilesToShow = profiles.slice((currentPage - 1) * pageSize, currentPage * pageSize);
-  
   const deleteProfile = async (profileId: string) => {
     if (!profileId) {
       console.error("No profileId set!");
       return;
     }
-  
     try {
       const response = await fetch(`/api/modelprofiles/${profileId}`, {
         method: 'DELETE',
@@ -55,9 +53,8 @@ const ModelProfilesTable: React.FC<{ pageSize: number }> = ({ pageSize }) => {
   }
   
   const navToEdit = (profileId: string) => {
-    router.push(`/forge/config/${profileId}`);
+    router.push(`/forge/config/edit/${profileId}`);
   }
-    
   const gotoProfile = (profileId: string) => {
     router.push(`/forge/chat/${profileId}`);
   }
@@ -73,10 +70,7 @@ const ModelProfilesTable: React.FC<{ pageSize: number }> = ({ pageSize }) => {
           <tr>
             <th className="px-4 py-2">Avatar</th>
             <th className="px-4 py-2">Name</th>
-            <th className="px-4 py-2">Creator</th>
-            <th className="px-4 py-2">Description</th>
-            <th className="px-4 py-2">Timestamp</th>
-            <th className="px-4 py-2">Edit</th>
+            <th className="px-4 py-2">Edit</th>9185133490
             <th className="px-4 py-2">Use</th>
             <th className="px-4 py-2">Delete</th>  
           </tr>
@@ -86,9 +80,6 @@ const ModelProfilesTable: React.FC<{ pageSize: number }> = ({ pageSize }) => {
             <tr key={index} className={`${index % 2 === 0 ? 'bg-gray-700' : ''}`}>
               <td className="border px-4 py-2"><img src={profile.avatar} alt="avatar" /></td>
               <td className="border px-4 py-2">{profile.name}</td>
-              <td className="border px-4 py-2">{profile.creator}</td>
-              <td className="border px-4 py-2">{profile.description}</td>
-              <td className="border px-4 py-2">{profile.timestamp}</td>
               <td className="border px-4 py-2">
               <Button type='button' onClick={() => navToEdit(profile._id)}>
                 Edit

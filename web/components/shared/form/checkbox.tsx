@@ -8,7 +8,7 @@ import { useLanguageModelConfig } from '@/components/shared/context/languagemode
 interface CheckboxElementProps {
   label: string;
   id: string;
-  defaultVal: boolean;
+  defaultVal: boolean | undefined;
 }
 
 const CheckboxElement = forwardRef<HTMLButtonElement, CheckboxElementProps>(({
@@ -35,7 +35,7 @@ const CheckboxElement = forwardRef<HTMLButtonElement, CheckboxElementProps>(({
   return (
     <div className="flex items-center">
       <Checkbox.Root
-        className="shadow-blackA7 hover:bg-violet3 flex h-[25px] w-[25px] appearance-none items-center justify-center rounded-[4px] bg-white shadow-[0_2px_10px] outline-none focus:shadow-[0_0_0_2px_black]"
+        className="shadow-CheckboxblackA7 hover:bg-violet3 flex h-[25px] w-[25px] appearance-none items-center justify-center rounded-[4px] bg-white shadow-[0_2px_10px] outline-none focus:shadow-[0_0_0_2px_black]"
         checked={checked}
         onCheckedChange={handleCheckboxChange}
         id={id}

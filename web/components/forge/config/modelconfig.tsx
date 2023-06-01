@@ -1,8 +1,8 @@
 'use client';
 import * as React from 'react';
-import SelectElement from '@/components/shared/select';
+import SelectElement from '@/components/shared/form/select';
 import * as Label from '@radix-ui/react-label';
-import { ConfigForm } from './configform';
+import { ConfigForm } from '../../shared/form/configform';
 
 //TODO GET FROM API
 const models = [
