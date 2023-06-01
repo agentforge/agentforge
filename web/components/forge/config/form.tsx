@@ -22,6 +22,11 @@ const ModelConfigForm: React.FC<ModelConfigFormProps> = ({ form, id }) =>  {
     setCurrentTab(value);
   };
 
+  const avatar_config = form['avatar_config'] ?? {};
+  const model_config = form['model_config'] ?? {};
+  const generation_config = form['generation_config'] ?? {};
+  const prompt_config = form['prompt_config'] ?? {};
+
   const handleSubmit = () => {
     // Handle the form submission...
     console.log("handleSubmit");
@@ -90,10 +95,10 @@ const ModelConfigForm: React.FC<ModelConfigFormProps> = ({ form, id }) =>  {
     <ScrollArea.Root className="w-full h-screen rounded overflow-hidden">
     <ScrollArea.Viewport className="w-full h-full rounded">
     <form className="pb-28 text-white">
-      {currentTab == "avatar" ? ( <AvatarConfig form={ form['avatar_config'] } />) : (<></>) }
-      {currentTab == "model" ? (<ModelConfig form={ form['model_config'] } />) : (<></>) }
-      {currentTab == "generation" ? (<GenerationConfigForm form={ form['generation_config'] } />) : (<></>) }
-      {currentTab == "prompt" ? (<PromptConfig form={ form['prompt_config'] } />) : (<></>) }
+      {currentTab == "avatar" ? ( <AvatarConfig form={ avatar_config } />) : (<></>) }
+      {currentTab == "model" ? (<ModelConfig form={ model_config } />) : (<></>) }
+      {currentTab == "generation" ? (<GenerationConfigForm form={ generation_config } />) : (<></>) }
+      {currentTab == "prompt" ? (<PromptConfig form={ prompt_config } />) : (<></>) }
     </form>
     </ScrollArea.Viewport>
     <ScrollArea.Scrollbar
