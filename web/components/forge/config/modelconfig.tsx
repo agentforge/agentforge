@@ -21,6 +21,7 @@ interface ConfigField {
   min?: number;
   step?: number;
   tooltip?: string;
+  label?: string;
 }
 
 type ConfigFields = {
@@ -38,6 +39,11 @@ export const MODEL_FIELDS: ConfigFields = {
   bos_token: { type: 'text', default: undefined, tooltip: "The beginning-of-sequence token string. This token is typically used to signal the start of a new sequence, and can be important for models that are designed to generate multiple sequences in a batch." },
   eos_token: { type: 'text', default: undefined, tooltip: "The end-of-sequence token string. This token is used to signal the end of a generated sequence. If the model generates this token, it will stop generating more tokens (unless min_length or min_new_tokens is set to a higher value)." },
   load_in_8bit: { type: 'boolean', default: false, tooltip: "Determines whether the model weights should be loaded in 8-bit. Loading the model in 8-bit can drastically reduce the model size in memory at the cost of a slight degradation in quality. This can be beneficial in resource-constrained environments." },
+  load_in_4bit: { type: 'boolean', default: false, tooltip: "Determines whether the model weights should be loaded in 4-bit. Loading the model in 4-bit can drastically reduce the model size in memory at the cost of a slight degradation in quality. This can be beneficial in resource-constrained environments." },
+  attn_impl: { type: 'text', default: undefined, tooltip: "Choose 'triton' for MPT based models." },
+  speech: { type: 'boolean', default: false, label: 'Speech' },
+  video: { type: 'boolean', default: false, label: 'Video' },
+  streaming: { type: 'boolean', default: false, label: 'Streaming' },
 };
 
 
