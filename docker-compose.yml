@@ -13,6 +13,7 @@ services:
   agentforge:
     image: agentforge
     ipc: host
+    restart: always
     networks:
       main-net:
         aliases:
@@ -30,6 +31,7 @@ services:
   llm:
     image: llm
     ipc: host
+    restart: always
     networks:
       main-net:
         aliases:
@@ -46,6 +48,7 @@ services:
 
   speech:
     image: speech
+    restart: always
     ipc: host
     networks:
       main-net:
@@ -64,6 +67,7 @@ services:
   wav2lip:
     image: wav2lip
     ipc: host
+    restart: always
     networks:
       main-net:
         aliases:
@@ -85,6 +89,7 @@ services:
     ports:
       - "3000:3000"
     ipc: host
+    restart: always
     networks:
       main-net:
         aliases:

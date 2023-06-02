@@ -1,6 +1,7 @@
 from typing import Any, Optional, Protocol, Dict
 from pymongo import MongoClient, errors
 from pymongo.cursor import Cursor
+from urllib.parse import quote_plus
 
 from agentforge.config import DbConfig
 import logging
@@ -16,7 +17,11 @@ class MongoDBKVStore(DB):
 
     def connection(self, config: DbConfig) -> None:
         try:
-            self.client = MongoClient(f"mongodb://{config.username}:{config.password}@{config.host}:{config.port}")
+            username = quote_plus(config.username)
+            password = quote_plus(config.password)
+            host = config.host
+            port = config.port
+            self.client = MongoClient(f"mongodb://{username}:{password}@{host}:{port}")
             self.db = self.client[config.db_name]
             logging.info('Connection established.')
         except errors.ConnectionFailure as e:

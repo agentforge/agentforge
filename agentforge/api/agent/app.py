@@ -190,6 +190,7 @@ def agent():
 @measure_time
 def get_user_profiles(user_id):
     model_profiles = ModelProfile()
+    print(user_id)
     output = model_profiles.get_by_user(user_id)
     return output
 
