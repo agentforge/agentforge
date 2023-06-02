@@ -14,12 +14,14 @@ from accelerate import Accelerator
 from agentforge.utils import Parser
 from .lib.text_streamer import TextStreamer
 from agentforge import LLM_CONFIG_FILE
+from dotenv import load_dotenv
 DEFAULT_LLM = 'alpaca-lora-7b'
 
 ### Manages Base LLM functions ###
 class LocalLLM():
-  def __init__(self,  config) -> None:
-    self.opts = {} if config == None else config
+  def __init__(self,  config: dict = None) -> None:
+    config = {} if config == None else config
+    DEFAULT_LLM = os.environ.get("DEFAULT_LLM")
     self.model_key = config.get("model_key", DEFAULT_LLM)
     self.gc_name = config.get("generation_config", "llm/logical")
     self.multi_gpu = config.get("multi_gpu", False)
