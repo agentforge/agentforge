@@ -5,9 +5,11 @@ import { ReflectionProps } from '@/components/shared/reflection';
 import { useLanguageModelConfig } from '@/components/shared/context/languagemodelconfigcontext';
 import ChatWidget from '@/components/shared/chatwidget';
 
-interface ForgeProps {}
+interface ChatProps {
+  params: Record<string, any>;
+}
 
-const Chat: React.FC<ForgeProps> = () => {
+const Chat: React.FC<ChatProps> = ({ params }) => {
   // TODO: make dynamic, temporary until we can source these from the API
   // CONSTANTS
   const avatars = ['caretaker', 'default', 'makhno', 'fdr', 'sankara'];
@@ -196,7 +198,7 @@ const Chat: React.FC<ForgeProps> = () => {
   return (
     <>
     <div className="md:block w-full h-full md:w-8/12">
-        <ChatWidget/>
+        <ChatWidget id={ params.id } />
     </div>
     <div className="md:block md:w-2/12">
       <div className="mx-auto">

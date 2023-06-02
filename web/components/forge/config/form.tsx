@@ -18,7 +18,7 @@ const ModelConfigForm: React.FC<ModelConfigFormProps> = ({ form, id }) =>  {
   const [currentTab, setCurrentTab] = React.useState<string>('avatar'); //defaults to avatar tab
 
   const handleRender = (value: string) => {
-    // Set thModelConfigForme current state of the tab to `value`
+    // Set current state of the tab to `value`
     setCurrentTab(value);
   };
 

@@ -11,7 +11,11 @@ import { useAudio } from '@/components/shared/context/audioprovider';
 import { MessageProps } from '@/components/shared/message';
 import { v4 as uuidv4 } from 'uuid';
 
-const ChatWidget: React.FC = () => {
+export interface ChatWidgetProps {
+  id: string
+}
+
+export const ChatWidget: React.FC<ChatWidgetProps> = ({ id }) =>  {
   const languageModelConfig = useLanguageModelConfig();
   const { getAvatarData } = useAvatarProvider();
   const { messages, setMessages, textAreaValue, setTextAreaValue } = useChatWidgetState();
@@ -75,12 +79,9 @@ const ChatWidget: React.FC = () => {
 
   // Handles completion API call after user enters a prompt and clicks the send button or enter key
   const complete = async () => {
-    const promptObject = {
-      prompt: textAreaValue,
-    };
     const mergedObject = {
-      ...languageModelConfig.languageModelConfigs,
-      ...promptObject,
+      id: id,
+      prompt: textAreaValue,
     };
 
     // Add the Human message //TODO: Get the name of the human from the user
