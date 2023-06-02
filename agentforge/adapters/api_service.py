@@ -10,7 +10,7 @@ class APIService:
         # Check if we are in a test environment
         if os.getenv("ENV") == "test":
             print("TEST ENVIRONMENT DETECTED")
-            self.test = True
+            self.test_env = True
 
     def _heartbeat(self):
         try:
@@ -30,7 +30,7 @@ class APIService:
         return "Test Not Implemented"
 
     def call(self, form_data):
-        if self.test:
+        if self.test_env:
             return self.test() # Return test fixture from Service
         
         ## TODO: Implement heartbeat logic
