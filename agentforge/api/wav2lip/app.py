@@ -6,10 +6,9 @@ sys.path.append(str(path_root))
 
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from agentforge.wav2lip import Wav2LipModel
-from agentforge.helpers import measure_time
+from agentforge.utils import measure_time
 from agentforge import DST_PATH
-from agentforge import resource_factory
+from agentforge.factories import resource_factory
 
 app = Flask(__name__)
 CORS(app)
@@ -28,7 +27,6 @@ faces = [
   ("sankara", DST_PATH + "/videos/sankara.mp4"),
 ]
 opts = {}
-# wav2lip = Wav2LipModel(CHKPT_PTH, opts, faces)
 
 w2l = resource_factory.get_resource("w2l")
 
