@@ -40,6 +40,7 @@ class LocalLLM():
         self.device = self.accelerator.device
     else:
         self.device = "cuda"
+
     self.loader = LocalLoader(self.device_map, self.multi_gpu, self.device)
     self.parser = Parser()
 
