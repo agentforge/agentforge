@@ -71,8 +71,8 @@ class LocalLLM():
 
   def generate(self, prompt="", **kwargs):
     # setup the generator
-    config = kwargs
-    self.load(kwargs.get("model_key", self.model_key))
+    config = kwargs['generation_config']
+    self.load(kwargs['model_config'].get("model_key", self.model_key))
     kwargs.update(config)
     if "generator" in self.config:
         # Use custom generator based on function string
