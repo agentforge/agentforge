@@ -6,21 +6,15 @@
 # from agentforge.interfaces.interface_factory import InterfaceFactory
 # from agentforge.ai.decisions.decision_factory import DecisionFactory
 from agentforge.factories.resource_factory import ResourceFactory
+from agentforge.interfaces.model_profile import ModelProfile
+import os
 
-# interface_interactor = InterfaceFactory()
-# descision_interactor = DecisionFactory()
+model_profile = ModelProfile()
+DEFAULT_LLM = os.environ.get("DEFAULT_LLM")
+print(DEFAULT_LLM)
+model_configuration = model_profile.get_profile_by_name(DEFAULT_LLM)
 
-# interface_interactor.create_kvstore()
-# interface_interactor.create_filestore()
-# interface_interactor.create_embeddings()
-# interface_interactor.create_vectorstore()
-
-# interface_interactor.create_service("llm")
-# interface_interactor.create_service("tts")
-# interface_interactor.create_service("w2l")
-
-# descision_interactor.create_decision()
 resource_factory = ResourceFactory()
-resource_factory.create_llm_resource()
-resource_factory.create_tts_resource()
-resource_factory.create_w2l_resource()
+resource_factory.create_llm_resource(model_configuration)
+# resource_factory.create_tts_resource()
+# resource_factory.create_w2l_resource()

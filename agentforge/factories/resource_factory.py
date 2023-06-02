@@ -8,11 +8,11 @@ class ResourceFactory:
     def __init__(self) -> None:
         self.__resources: dict[str, Any] = {}
 
-    def create_llm_resource(self) -> None:
+    def create_llm_resource(self, config: dict = {}) -> None:
         llm_type = os.getenv("LLM_TYPE")
         # Instantiate the correct LLM resource based on llm_type
         if llm_type == "local":
-            self.__resources["llm"] = LocalLLM()
+            self.__resources["llm"] = LocalLLM(config)
         else:
             raise ValueError(f"Invalid LLM type: {llm_type}")
 

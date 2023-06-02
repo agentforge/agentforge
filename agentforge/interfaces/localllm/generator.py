@@ -30,18 +30,6 @@ class LocalGenerator:
 
     # simple lock to prevent async calls from stepping on each other
     self.lock = threading.Lock() # for async calls
-
-  #Prep GenerationConfig
-  # TODO: Streamline this and pull config from client request
-  def prep_generation_config(self, gc_name=None, **kwargs):
-    if gc_name is not None:
-      # grab the config
-      if gc_name not in self.configs:
-        generation_config = Config("llm/" + gc_name)
-      else:
-        generation_config = self.configs[gc_name]
-    kwargs = generation_config.to_dict()
-    return kwargs
   
   def set_models(self, model, tokenizer, streamer):
     self.model = model
