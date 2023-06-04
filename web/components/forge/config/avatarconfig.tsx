@@ -31,8 +31,10 @@ export const AvatarConfig: React.FC<AvatarConfigProps> = ({ form }) =>  {
           </Label.Root>
           <SelectElement options={avatars} id="avatar" label="Avatar" defaultVal="caretaker" />
         </div>
-    </div>
-    <ConfigForm fields={AVATAR_FIELDS} form={form} />
+      </div>
+      <div className="flex flex-row mt-9">  
+        <ConfigForm fields={AVATAR_FIELDS} form={form} />
+      </div>
     </>
   )
 }
