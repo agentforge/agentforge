@@ -4,7 +4,7 @@ import { useChatWidgetState, ChatWidgetStateProvider } from '@/components/shared
 import { ArrowRightIcon } from '@radix-ui/react-icons';
 import ProgressSpinner from '@/components/shared/progressspinner';
 import SpeechComponent from './speech';
-import { useLanguageModelConfig } from '@/components/shared/context/languagemodelconfigcontext';
+import { useModelProfileConfig } from '@/components/shared/context/modelprofileconfig';
 import { useAvatarProvider, AvatarData } from '@/components/shared/context/avatarcontextprovider';
 import { useVideo } from '@/components/shared/context/videoprovider';
 import { useAudio } from '@/components/shared/context/audioprovider';
@@ -16,7 +16,7 @@ export interface ChatWidgetProps {
 }
 
 export const ChatWidget: React.FC<ChatWidgetProps> = ({ id }) =>  {
-  const languageModelConfig = useLanguageModelConfig();
+  const modelprofileconfig = useModelProfileConfig();
   const { getAvatarData } = useAvatarProvider();
   const { messages, setMessages, textAreaValue, setTextAreaValue } = useChatWidgetState();
   const chatContainerRef = React.useRef<HTMLUListElement>(null);
@@ -98,7 +98,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ id }) =>  {
       body: JSON.stringify(mergedObject),
     });
     const data = await res.json();
-    const av_id = languageModelConfig.languageModelConfigs["avatar"] as string;
+    // const av_id = languageModelConfig.languageModelConfigs["avatar"] as string;
     // TODO: USE MODEL CONFIG
     // if (av_id != currentAvatar.current?.avatar) {
     //   const avatarData = getAvatarData(av_id);
@@ -108,14 +108,14 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ id }) =>  {
     //   currentAvatar.current = avatarData;
     // }
     const completion = data.choices[0].text
-    const tts = languageModelConfig.languageModelConfigs["speech"] as boolean;
-    const lipsync = languageModelConfig.languageModelConfigs["lipsync"] as boolean;
-    if (tts&& !lipsync) {
-      // responseSpeechRef.current = completion;
-      playAudio(completion, currentAvatar.current);
-    } else if (tts && lipsync) {
-      playVideo(completion, currentAvatar.current);
-    }
+    // const tts = languageModelConfig.languageModelConfigs["speech"] as boolean;
+    // const lipsync = languageModelConfig.languageModelConfigs["lipsync"] as boolean;
+    // if (tts&& !lipsync) {
+    //   // responseSpeechRef.current = completion;
+    //   playAudio(completion, currentAvatar.current);
+    // } else if (tts && lipsync) {
+    //   playVideo(completion, currentAvatar.current);
+    // }
     addMessage(completion, "Sam", 'default', false);
 
     // Handle the result, update the state, etc.

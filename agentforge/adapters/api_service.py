@@ -6,11 +6,9 @@ from agentforge.adapters import APIClient
 ### for the service it is operating
 class APIService:
     def __init__(self):
-        self.client = APIClient()
         # Check if we are in a test environment
-        if os.getenv("ENV") == "test":
-            print("TEST ENVIRONMENT DETECTED")
-            self.test_env = True
+        self.test_env = True if os.getenv("ENV") == "test" else False
+        self.client = APIClient()
 
     def _heartbeat(self):
         try:

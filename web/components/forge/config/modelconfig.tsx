@@ -2,7 +2,7 @@
 import * as React from 'react';
 import SelectElement from '@/components/shared/form/select';
 import * as Label from '@radix-ui/react-label';
-import { ConfigForm } from '../../shared/form/configform';
+import { ConfigForm, ConfigFields } from '../../shared/form/configform';
 
 //TODO GET FROM API
 const models = [
@@ -14,19 +14,6 @@ const models = [
   'vicuna-7b',
 ];
 
-interface ConfigField {
-  type: string;
-  default: number | string | boolean | undefined;
-  max?: number;
-  min?: number;
-  step?: number;
-  tooltip?: string;
-  label?: string;
-}
-
-type ConfigFields = {
-  [key: string]: ConfigField;
-}
 
 export const MODEL_FIELDS: ConfigFields = {
   model_name: { type: 'text', default: 'fragro/llama-7b-hf', tooltip: 'The model name used for generating completions.' },
