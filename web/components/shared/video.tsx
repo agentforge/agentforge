@@ -2,16 +2,16 @@
 // VideoComponent.tsx
 import React, { useEffect } from 'react';
 import { useVideo } from '@/components/shared/context/videoprovider'
-import { useLanguageModelConfig } from '@/components/shared/context/languagemodelconfigcontext';
+import { useModelProfileConfig } from '@/components/shared/context/modelprofileconfig';
 import { useAvatarProvider } from '@/components/shared/context/avatarcontextprovider';
 
 const VideoComponent: React.FC = () => {
   const { videoARef, videoBRef, switchVideo, playVideo, pauseVideo, isPlaying } = useVideo();
-  const { languageModelConfigs } = useLanguageModelConfig();
+  const { modelProfileConfigs } = useModelProfileConfig();
   const { getAvatarData } = useAvatarProvider();
 
   const getVideoRef = () => {
-    const av_id = languageModelConfigs["avatar"] as string;
+    const av_id = modelProfileConfigs["avatar"] as string;
     const avatarData = getAvatarData(av_id);
     if (!avatarData) return "default.mp4";
     return avatarData["mp4"];
@@ -28,7 +28,7 @@ const VideoComponent: React.FC = () => {
   // // Initialize first video
   useEffect(() => {
     switchVideo(`/videos/${getVideoRef()}`);
-  }, [languageModelConfigs]);
+  }, [modelProfileConfigs]);
 
   return (
     <div id="hero-video-wrapper">

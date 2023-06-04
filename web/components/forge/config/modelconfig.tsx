@@ -2,7 +2,7 @@
 import * as React from 'react';
 import SelectElement from '@/components/shared/form/select';
 import * as Label from '@radix-ui/react-label';
-import { ConfigForm } from '../../shared/form/configform';
+import { ConfigForm, ConfigFields } from '../../shared/form/configform';
 
 //TODO GET FROM API
 const models = [
@@ -14,18 +14,6 @@ const models = [
   'vicuna-7b',
 ];
 
-interface ConfigField {
-  type: string;
-  default: number | string | boolean | undefined;
-  max?: number;
-  min?: number;
-  step?: number;
-  tooltip?: string;
-}
-
-type ConfigFields = {
-  [key: string]: ConfigField;
-}
 
 export const MODEL_FIELDS: ConfigFields = {
   model_name: { type: 'text', default: 'fragro/llama-7b-hf', tooltip: 'The model name used for generating completions.' },
@@ -38,6 +26,11 @@ export const MODEL_FIELDS: ConfigFields = {
   bos_token: { type: 'text', default: undefined, tooltip: "The beginning-of-sequence token string. This token is typically used to signal the start of a new sequence, and can be important for models that are designed to generate multiple sequences in a batch." },
   eos_token: { type: 'text', default: undefined, tooltip: "The end-of-sequence token string. This token is used to signal the end of a generated sequence. If the model generates this token, it will stop generating more tokens (unless min_length or min_new_tokens is set to a higher value)." },
   load_in_8bit: { type: 'boolean', default: false, tooltip: "Determines whether the model weights should be loaded in 8-bit. Loading the model in 8-bit can drastically reduce the model size in memory at the cost of a slight degradation in quality. This can be beneficial in resource-constrained environments." },
+  load_in_4bit: { type: 'boolean', default: false, tooltip: "Determines whether the model weights should be loaded in 4-bit. Loading the model in 4-bit can drastically reduce the model size in memory at the cost of a slight degradation in quality. This can be beneficial in resource-constrained environments." },
+  attn_impl: { type: 'text', default: undefined, tooltip: "Choose 'triton' for MPT based models." },
+  speech: { type: 'boolean', default: false, label: 'Speech' },
+  video: { type: 'boolean', default: false, label: 'Video' },
+  streaming: { type: 'boolean', default: false, label: 'Streaming' },
 };
 
 

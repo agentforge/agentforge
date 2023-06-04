@@ -4,15 +4,19 @@ import { useChatWidgetState, ChatWidgetStateProvider } from '@/components/shared
 import { ArrowRightIcon } from '@radix-ui/react-icons';
 import ProgressSpinner from '@/components/shared/progressspinner';
 import SpeechComponent from './speech';
-import { useLanguageModelConfig } from '@/components/shared/context/languagemodelconfigcontext';
+import { useModelProfileConfig } from '@/components/shared/context/modelprofileconfig';
 import { useAvatarProvider, AvatarData } from '@/components/shared/context/avatarcontextprovider';
 import { useVideo } from '@/components/shared/context/videoprovider';
 import { useAudio } from '@/components/shared/context/audioprovider';
 import { MessageProps } from '@/components/shared/message';
 import { v4 as uuidv4 } from 'uuid';
 
-const ChatWidget: React.FC = () => {
-  const languageModelConfig = useLanguageModelConfig();
+export interface ChatWidgetProps {
+  id: string
+}
+
+export const ChatWidget: React.FC<ChatWidgetProps> = ({ id }) =>  {
+  const modelprofileconfig = useModelProfileConfig();
   const { getAvatarData } = useAvatarProvider();
   const { messages, setMessages, textAreaValue, setTextAreaValue } = useChatWidgetState();
   const chatContainerRef = React.useRef<HTMLUListElement>(null);
@@ -75,12 +79,9 @@ const ChatWidget: React.FC = () => {
 
   // Handles completion API call after user enters a prompt and clicks the send button or enter key
   const complete = async () => {
-    const promptObject = {
-      prompt: textAreaValue,
-    };
     const mergedObject = {
-      ...languageModelConfig.languageModelConfigs,
-      ...promptObject,
+      id: id,
+      prompt: textAreaValue,
     };
 
     // Add the Human message //TODO: Get the name of the human from the user
@@ -97,7 +98,7 @@ const ChatWidget: React.FC = () => {
       body: JSON.stringify(mergedObject),
     });
     const data = await res.json();
-    const av_id = languageModelConfig.languageModelConfigs["avatar"] as string;
+    // const av_id = languageModelConfig.languageModelConfigs["avatar"] as string;
     // TODO: USE MODEL CONFIG
     // if (av_id != currentAvatar.current?.avatar) {
     //   const avatarData = getAvatarData(av_id);
@@ -107,14 +108,14 @@ const ChatWidget: React.FC = () => {
     //   currentAvatar.current = avatarData;
     // }
     const completion = data.choices[0].text
-    const tts = languageModelConfig.languageModelConfigs["speech"] as boolean;
-    const lipsync = languageModelConfig.languageModelConfigs["lipsync"] as boolean;
-    if (tts&& !lipsync) {
-      // responseSpeechRef.current = completion;
-      playAudio(completion, currentAvatar.current);
-    } else if (tts && lipsync) {
-      playVideo(completion, currentAvatar.current);
-    }
+    // const tts = languageModelConfig.languageModelConfigs["speech"] as boolean;
+    // const lipsync = languageModelConfig.languageModelConfigs["lipsync"] as boolean;
+    // if (tts&& !lipsync) {
+    //   // responseSpeechRef.current = completion;
+    //   playAudio(completion, currentAvatar.current);
+    // } else if (tts && lipsync) {
+    //   playVideo(completion, currentAvatar.current);
+    // }
     addMessage(completion, "Sam", 'default', false);
 
     // Handle the result, update the state, etc.

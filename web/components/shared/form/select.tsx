@@ -3,8 +3,7 @@ import React from 'react';
 import * as Select from '@radix-ui/react-select';
 import classnames from 'classnames';
 import { CheckIcon, ChevronDownIcon, ChevronUpIcon } from '@radix-ui/react-icons';
-import { useSelectState } from '@/components/shared/context/selectstatecontext';
-import { useLanguageModelConfig } from '@/components/shared/context/languagemodelconfigcontext';
+import { useModelProfileConfig } from '@/components/shared/context/modelprofileconfig';
 
 interface SelectElementProps {
   options: string[];
@@ -19,25 +18,23 @@ const SelectElement: React.FC<SelectElementProps> = ({
   label,
   defaultVal,
 }) => {
-  const { selectedValues, setSelectedValue } = useSelectState();
-  const { languageModelConfigs, setLanguageModelConfig } = useLanguageModelConfig();
+  const { modelProfileConfigs, setModelProfileConfig } = useModelProfileConfig();
 
   // Initialize the values in the LanguageModelConfig
   React.useEffect(() => {
     if (defaultVal) {
-      setLanguageModelConfig(id, defaultVal);
+      setModelProfileConfig(id, defaultVal);
     }
   }, []);
 
   // Update config as needed
   const handleValueChange = (id: string, value: string) => {
-    setSelectedValue(id, value);
-    setLanguageModelConfig(id, value);
+    setModelProfileConfig(id, value);
   };
 
   return (
     <Select.Root onValueChange={(value) => handleValueChange(id, value)}
-    value={selectedValues[id] || defaultVal}
+    value={modelProfileConfigs[id] || defaultVal}
   >
     <Select.Trigger
       className="inline-flex items-center justify-center rounded px-[15px] text-[13px] leading-none h-[35px] gap-[5px] bg-white text-violet11 shadow-[0_2px_10px] shadow-black/10 hover:bg-mauve3 focus:shadow-[0_0_0_2px] focus:shadow-black data-[placeholder]:text-violet9 outline-none"

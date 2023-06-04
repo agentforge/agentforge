@@ -70,7 +70,7 @@ const ModelProfilesTable: React.FC<{ pageSize: number }> = ({ pageSize }) => {
           <tr>
             <th className="px-4 py-2">Avatar</th>
             <th className="px-4 py-2">Name</th>
-            <th className="px-4 py-2">Edit</th>9185133490
+            <th className="px-4 py-2">Edit</th>
             <th className="px-4 py-2">Use</th>
             <th className="px-4 py-2">Delete</th>  
           </tr>

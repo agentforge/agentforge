@@ -4,10 +4,11 @@ import SliderElement from '@/components/shared/form/slider';
 import * as Label from '@radix-ui/react-label';
 import TooltipSimple from '@/components/shared/tooltip_simple';
 import CheckboxElement from '@/components/shared/form/checkbox'
+import InputElement from '@/components/shared/form/input'
 
-interface ConfigField {
+export interface ConfigField {
     type: string;
-    label: string | undefined;
+    label?: string | undefined;
     default: number | string | boolean | undefined;
     max?: number;
     min?: number;
@@ -15,7 +16,7 @@ interface ConfigField {
     tooltip?: string;
 }
   
-type ConfigFields = {
+export type ConfigFields = {
     [key: string]: ConfigField;
 }
 
@@ -39,6 +40,11 @@ export const ConfigForm: React.FC<ConfigFormProps> = ({ fields, form }) =>  {
 
     Object.entries(fields).forEach(([key, { type, label }], index) => {
       let element: JSX.Element | null;
+      let tooltip = '';
+      const tooltipTxt = fields[key].tooltip;
+      if (tooltipTxt !== undefined) { 
+        tooltip = tooltipTxt;
+      }
       element = null;
 
       if (type == 'slider') {
@@ -52,30 +58,20 @@ export const ConfigForm: React.FC<ConfigFormProps> = ({ fields, form }) =>  {
           </div>
         );
       }
-      else if (type == 'text' || type == 'number') {
-        key
+      else if (type == 'text' || type == 'int' || type == 'float') {
         let val = '';
         if (form[key] !== undefined) {
           val = form[key]!.toString();
         }
         element = (
           <div className="flex w-1/4" key={key}>
-            <div className="flex flex-wrap items-center gap-[15px] px-5">
-              <Label.Root className="text-[15px] f1ont-medium leading-[35px] text-white" htmlFor={key}>
-                {titleize(key)}
-                {fields[key].tooltip !== undefined ? (
-                  <span className='ml-3'><TooltipSimple text={fields[key].tooltip} /></span>
-                ) : (
-                  <></>
-                )}
-              </Label.Root>
-              <input
-                className="bg-blackA5 shadow-blackA9 inline-flex h-[35px] w-full appearance-none items-center justify-center rounded-[4px] px-[10px] text-[15px] leading-none text-white shadow-[0_0_0_1px] outline-none focus:shadow-[0_0_0_2px_black] selection:color-white selection:bg-blackA9"
-                type={type}
-                id={key}
-                defaultValue={val}
-              />
-            </div>
+            <InputElement
+              id={key}
+              label={titleize(key)}
+              type={type}
+              defaultVal={val}
+              tooltipText={tooltip}
+            ></InputElement>
           </div>
         );
       }

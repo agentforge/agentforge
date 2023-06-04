@@ -2,8 +2,7 @@
 import React, { forwardRef } from 'react';
 import * as Checkbox from '@radix-ui/react-checkbox';
 import { CheckIcon } from '@radix-ui/react-icons';
-import { useCheckboxState } from '@/components/shared/context/checkboxstatecontext';
-import { useLanguageModelConfig } from '@/components/shared/context/languagemodelconfigcontext';
+import { useModelProfileConfig } from '@/components/shared/context/modelprofileconfig';
 
 interface CheckboxElementProps {
   label: string;
@@ -16,20 +15,18 @@ const CheckboxElement = forwardRef<HTMLButtonElement, CheckboxElementProps>(({
   id,
   defaultVal,
 }, ref) => {
-  const { checkboxStates, setCheckboxState } = useCheckboxState();
-  const checked = checkboxStates[id] || false;
-  const { languageModelConfigs, setLanguageModelConfig } = useLanguageModelConfig();
+  const { modelProfileConfigs, setModelProfileConfig } = useModelProfileConfig();
+  const checked = modelProfileConfigs[id] || false;
 
   // Initialize the values in the LanguageModelConfig
   React.useEffect(() => {
     if (defaultVal) {
-      setLanguageModelConfig(id, defaultVal);
+      setModelProfileConfig(id, defaultVal);
     }
   }, []);
 
   const handleCheckboxChange = () => {
-    setCheckboxState(id, !checked);
-    setLanguageModelConfig(id, !checked);
+    setModelProfileConfig(id, !checked);
   };
 
   return (
@@ -49,7 +46,7 @@ const CheckboxElement = forwardRef<HTMLButtonElement, CheckboxElementProps>(({
         {label}
       </label>
     </div>
-  );
+  );modelProfileConfigs
 });
 
 // Add a display name to the component

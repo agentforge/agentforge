@@ -8,6 +8,7 @@ import ModelConfig from '@/components/forge/config/modelconfig';
 import GenerationConfigForm from './genconfig';
 import PromptConfig from './promptconfig';
 import Button from '@/components/shared/button';
+import { useModelProfileConfig } from '@/components/shared/context/modelprofileconfig';
 
 export interface ModelConfigFormProps {
   form: { [key: string]: { [key: string]: string | number | boolean | undefined } };
@@ -16,20 +17,47 @@ export interface ModelConfigFormProps {
   
 const ModelConfigForm: React.FC<ModelConfigFormProps> = ({ form, id }) =>  {
   const [currentTab, setCurrentTab] = React.useState<string>('avatar'); //defaults to avatar tab
-
-  const handleRender = (value: string) => {
-    // Set thModelConfigForme current state of the tab to `value`
-    setCurrentTab(value);
-  };
-
+  const { modelProfileConfigs, setModelProfileConfig} = useModelProfileConfig();
+  const config_types = ['avatar_config', 'model_config', 'generation_config', 'prompt_config', 'metadata'];
   const avatar_config = form['avatar_config'] ?? {};
   const model_config = form['model_config'] ?? {};
   const generation_config = form['generation_config'] ?? {};
   const prompt_config = form['prompt_config'] ?? {};
 
+  const handleRender = (value: string) => {
+    // Set current state of the tab to `value`
+    setCurrentTab(value);
+  };
+
+  const processForm = (form: { [key: string]: { [key: string]: string | number | boolean | undefined } }) => { 
+    // Grab the data from the modelprofile config context and populate changes
+    // into the form -- iterate through `config_types` and for each key check
+    // the subsequent object in `form` and replace the values with the same key with the updated
+    // version in the modelprofile context modelProfileConfigs
+    // Iterate through `config_types` and replace values in the `form`
+    const updatedForm = { ...form };
+    config_types.forEach((config) => {
+      if (updatedForm[config] !== undefined) {         
+        Object.keys(updatedForm[config]).forEach((key) => {
+          if (modelProfileConfigs[key] !== undefined && modelProfileConfigs[key] !== null ) {
+            updatedForm[config][key] = modelProfileConfigs[key];
+          }
+        });
+      }
+    })
+
+    // Set updated_dt or other metadata
+    console.log(updatedForm);
+    updatedForm['metadata']['updated_dt'] = new Date().toISOString(); 
+    return updatedForm;
+  }
+
   const handleSubmit = () => {
     // Handle the form submission...
     console.log("handleSubmit");
+    console.log(form);
+    form = processForm(form);
+    console.log("After...")
     console.log(form);
     if (!form) {
       console.log("FORM IS NULL!!?")
@@ -64,7 +92,6 @@ const ModelConfigForm: React.FC<ModelConfigFormProps> = ({ form, id }) =>  {
   const toggleGroupItemClasses =
   'hover:bg-black color-mauve11 data-[state=on]:bg-slate-600 data-[state=on]:text-white flex p-3 h-[35px] w-max items-center justify-center bg-slate-800 text-base leading-4 first:rounded-l last:rounded-r focus:z-10 focus:shadow-[0_0_0_2px] focus:shadow-black focus:outline-none';
   
-  console.log(form);
   return (
     <>
     <div className='flex w-full items-center justify-center m-3'>
