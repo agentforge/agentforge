@@ -9,7 +9,6 @@ import ConfigForm from '@/components/shared/form/configform';
 const avatars = ['caretaker', 'default', 'makhno', 'fdr', 'sankara'];
 
 export const AVATAR_FIELDS = {
-  spacer1: {type: 'spacer', default: '', label: ''}, // for enforcing spacing between above and below content
   name: { type: 'text', default: '', label: 'Name' },
   biography: { type: 'textarea', default: '', label: 'Biography/Context' },
 }
