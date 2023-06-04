@@ -28,6 +28,8 @@ export const MODEL_FIELDS: ConfigFields = {
   load_in_8bit: { type: 'boolean', default: false, tooltip: "Determines whether the model weights should be loaded in 8-bit. Loading the model in 8-bit can drastically reduce the model size in memory at the cost of a slight degradation in quality. This can be beneficial in resource-constrained environments." },
   load_in_4bit: { type: 'boolean', default: false, tooltip: "Determines whether the model weights should be loaded in 4-bit. Loading the model in 4-bit can drastically reduce the model size in memory at the cost of a slight degradation in quality. This can be beneficial in resource-constrained environments." },
   attn_impl: { type: 'text', default: undefined, tooltip: "Choose 'triton' for MPT based models." },
+  device_map: { type: 'text', default: undefined, tooltip: "Device map selection -- auto for multi-gpu else blank" },
+  multi_gpu: { type: 'boolean', default: undefined, tooltip: "Whether or not the model-backend will be distributed among multi-gpus."},
   speech: { type: 'boolean', default: false, label: 'Speech' },
   video: { type: 'boolean', default: false, label: 'Video' },
   streaming: { type: 'boolean', default: false, label: 'Streaming' },
