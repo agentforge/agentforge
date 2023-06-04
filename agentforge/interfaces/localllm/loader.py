@@ -19,12 +19,6 @@ class LocalLoader:
             self.llama(device)
         else:
             self.huggingface(device)
-        # elif config["model_type"] == "huggingface":
-        #     self.huggingface(device)
-        # elif config["model_type"] == "mpt":
-        #     self.huggingface(device, mpt=True)
-        # else:
-        #     raise ValueError(f"Unknown model type {config['model_type']}")
         return self.model, self.tokenizer
 
     def llama(self, device="cuda"):
@@ -33,9 +27,10 @@ class LocalLoader:
         self.tokenizer = LlamaTokenizer.from_pretrained(self.config["model_name"], decode_with_prefix_space=True, clean_up_tokenization_spaces=True)
         self.tokenizer.pad_token_id = 0
         self.tokenizer.padding_side = "left"
+        load_in_8bit = self.config.get("load_in_8bit", False)
         self.model = LlamaForCausalLM.from_pretrained(
             self.config["model_name"],
-            load_in_8bit=bool(self.config["load_in_8bit"]),
+            load_in_8bit=bool(load_in_8bit),
             torch_dtype=torch.float16,
             device_map=self.device_map,
         )

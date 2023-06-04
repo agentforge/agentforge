@@ -68,29 +68,28 @@ class LocalGenerator:
     else:
       config = model.generation_config
 
-    kwargs["output_attentions"] = False
-    kwargs["output_hidden_states"] = False
-    kwargs["use_cache"] = True # config.use_cache
+    gen_config = kwargs["generation_config"]
 
-    if "stopping_criteria" in kwargs:
-      kwargs["stopping_criteria"] = StoppingCriteria(stop_token_ids=tokenizer.convert_tokens_to_ids(kwargs["stopping_criteria"]))
+    gen_config["output_attentions"] = False
+    gen_config["output_hidden_states"] = False
+    gen_config["use_cache"] = True # config.use_cache
 
-    # Collect special token IDs.
-    pad_token_id = config.pad_token_id
-    bos_token_id = config.bos_token_id
-    eos_token_id = config.eos_token_id
+    if "stopping_criteria" in gen_config:
+      gen_config["stopping_criteria"] = StoppingCriteria(stop_token_ids=tokenizer.convert_tokens_to_ids(gen_config["stopping_criteria"]))
 
-    if eos_token_id is None:
-        eos_token_id = tokenizer.eos_token_id
-    if bos_token_id is None:
-        bos_token_id = tokenizer.bos_token_id
-    if pad_token_id is None:
-        pad_token_id = tokenizer.pad_token_id
-
-    if pad_token_id is None and eos_token_id is not None:
-        model.generation_config.pad_token_id = eos_token_id
-
-    max_new_tokens = self.prep_max_new_tokens(kwargs.get("max_new_tokens", 1024))
+    # Config drive overrides
+    if "eos_token" in gen_config:
+      gen_config["eos_token_id"] = tokenizer.encode(gen_config["eos_token"])[0]
+    else:
+      gen_config["eos_token_id"] = config.eos_token_id
+    if "bos_token" in gen_config:
+      gen_config["bos_token_id"] = tokenizer.encode(gen_config["bos_token"])[0]
+    else:
+      gen_config["bos_token_id"] = config.bos_token_id
+    if "pad_token" in gen_config:
+      gen_config["pad_token_id"] = tokenizer.encode(gen_config["pad_token"])[0]
+    else:
+      gen_config["pad_token_id"] = config.pad_token_id
 
     # # Generate from eos if no input is specified.
     # if input_length == 0:
@@ -98,12 +97,13 @@ class LocalGenerator:
     #     if eos_token_id is not None:
     #         input_ids = input_ids * eos_token_id[0]
     #     input_length = 1
+
     logging.info(prompt)
     with torch.autocast("cuda"):
       inputs = tokenizer(prompt, return_tensors="pt")
       input_ids = inputs["input_ids"].cuda()
       generation_config = GenerationConfig(
-          **kwargs,
+          **gen_config,
       )
     
       start_time = time.time()
@@ -113,27 +113,26 @@ class LocalGenerator:
             gen = model.module.generate
           else:
             gen = model.generate
-          kwargs = {
+            final_kwargs = {
               'input_ids': input_ids,
               'generation_config': generation_config,
               'return_dict_in_generate': True,
               'output_scores': True,
-              'max_new_tokens': max_new_tokens,
-              'eos_token_id': eos_token_id,
-              'bos_token_id': bos_token_id,
-              'pad_token_id': pad_token_id,
+              'eos_token_id': gen_config["eos_token_id"],
+              'bos_token_id': gen_config["bos_token_id"],
+              'pad_token_id': gen_config["pad_token_id"],
           }
-          logging.info(f"Rendering with {json.dumps(kwargs, indent=4, default=convert_to_serializable)}")
+          logging.info(f"Rendering with {json.dumps(final_kwargs, indent=4, default=convert_to_serializable)}")
           if streamer != None:
-            kwargs['streamer'] = streamer
+            final_kwargs['streamer'] = streamer
           with self.lock:
-            generation_output = gen(**kwargs)
-            self.get_probabilities(model, tokenizer, inputs, generation_output)
+            generation_output = gen(**final_kwargs)
+            # self.get_probabilities(model, tokenizer, inputs, generation_output)
       end_time = time.time()
       execution_time = end_time - start_time
       logging.info(f"Execution time: {execution_time:.6f} seconds")
       s = generation_output.sequences[0]
-      output = tokenizer.decode(s)
+      output = tokenizer.decode(s, skip_special_tokens=True)
       return output
  
   def dolly(self, prompt, model, tokenizer, _, gc_name=None, **kwargs) -> str:

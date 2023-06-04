@@ -20,7 +20,6 @@ from dotenv import load_dotenv
 class LocalLLM():
   def __init__(self,  config: dict = None) -> None:
     self.config = {} if config == None else config
-    self.streaming = self.config['avatar_config'].get("streaming", False)
     self.model_key = self.config['model_config']['model_name']
     self.multi_gpu = False # TODO: Reenable
 
@@ -72,6 +71,7 @@ class LocalLLM():
   def generate(self, prompt="", **kwargs):
     # setup the generator
     config = kwargs['generation_config']
+    streaming = True if "streaming" in kwargs['model_config'] and kwargs['model_config']["streaming"] else False
     self.load(kwargs['model_config'].get("model_key", self.model_key))
     kwargs.update(config)
     if "generator" in self.config:
@@ -82,7 +82,7 @@ class LocalLLM():
             prompt,
             self.loader.model, 
             self.loader.tokenizer,
-            self.text_streamer(kwargs['model_config']["streaming"]),
+            self.text_streamer(streaming),
             **kwargs
         )
     # Use default generator
@@ -90,7 +90,7 @@ class LocalLLM():
         prompt,
         self.loader.model,
         self.loader.tokenizer,
-        self.text_streamer(kwargs['model_config']["streaming"]),
+        self.text_streamer(streaming),
         **kwargs
     )
     return self.parser.parse_output(output)
