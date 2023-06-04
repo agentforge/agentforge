@@ -20,7 +20,7 @@ class ModelProfile():
 
     def get_by_user(self, id: str) -> Optional[Any]:
         # Construct the key for this user and model-config
-        cursor = self.db.get_many("model_profiles", {"user_id": id})        
+        cursor = self.db.get_many("model_profiles", {"metadata.user_id": id})        
         return {"data": list(cursor.limit(20))}
 
     def set(self, id: str, data: Dict) -> None:
