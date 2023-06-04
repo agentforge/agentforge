@@ -23,7 +23,7 @@ from flask_cors import CORS
 
 from agentforge.utils import measure_time
 
-from agentforge.factories import resource_factory
+from agentforge.factories import resource_factory, model_profile
 
 path_root = Path(__file__).parents[2]
 sys.path.append(str(path_root))
@@ -63,7 +63,9 @@ def publish():
 @measure_time
 def output():
   config = request.json
-  response = llm.generate(**config)
+  model = model_profile.get(config['id'])
+  model['prompt'] = config['prompt']
+  response = llm.generate(**model)
   return jsonify({"choices": [{"text": response}]})
 
 @app.route("/v1/update_model", methods=["POST"])
