@@ -30,6 +30,15 @@ class InterfaceFactory:
         else:
             raise Exception(f"KVStore {kvstore_type} does not exist")
 
+    def create_session_memory(self) -> None:
+        session_type = os.getenv("SESSION_MEMORY_TYPE")
+        # Instantiate the correct KVStore based on kvstore_type
+        if session_type == "mongodb":
+            self.__interfaces["session"] = RedisKVStore(self.redis_config)
+        else:
+            raise Exception(f"KVStore {session_type} does not exist")
+
+
     def create_filestore(self) -> None:
         filestore_type = os.getenv("FILESTORE_TYPE")
         # Instantiate the correct FileStore based on filestore_type
@@ -49,17 +58,9 @@ class InterfaceFactory:
         else:
             raise Exception(f"Service {service_type} does not exist")
 
-    def create_embeddings(self) -> None:
-        embeddings_type = os.getenv("EMBEDDINGS_TYPE")
-        # Instantiate the correct VectorStore based on embeddings_type
-        if embeddings_type == "in_memory":
-            self.__interfaces["embeddings"] = InMemoryVectorStore()
-        else:
-            raise Exception(f"Embeddings {embeddings_type} does not exist")
-
     def create_vectorstore(self) -> None:
         vectorstore_type = os.getenv("VECTORSTORE_TYPE")
-        # Instantiate the correct VectorStore based on embeddings_type
+        # Instantiate the correct VectorStore based on VECTORSTORE_TYPE
         if vectorstore_type == "deeplake":
             deeplake_path = os.getenv("DEEPLAKE_PATH")
             model_name = os.getenv("DEEPLAKE_MODEL_NAME")    

@@ -17,7 +17,6 @@ interface_interactor = InterfaceFactory()
 interface_interactor.create_db()
 interface_interactor.create_kvstore()
 interface_interactor.create_filestore()
-interface_interactor.create_embeddings()
 interface_interactor.create_vectorstore()
 interface_interactor.create_keygenerator() # requires kvstore
 

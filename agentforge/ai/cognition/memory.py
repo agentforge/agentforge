@@ -40,7 +40,7 @@ class ShortTermMemory:
       return "\n".join(list(map(lambda obj: get_content(obj), mem["history"][-5:]))) if "history" in mem else ""
 
 ### LongTermMemory makes use of the VectorStoreProtocol to store and retrieve memories
-### uses a similarity function to access memories and methods to forget
+### uses a similarity function to access memories and methodsSaves to forget
 ### VectorStoreProtocol is an interface that can be implemented by any vector store
 ### and uses metadata filters to filter on user, agent, and other metadata
 class LongTermMemory:
