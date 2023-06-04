@@ -4,13 +4,10 @@ from agentforge.interfaces import interface_interactor
 ### Handles conversion of text to speech
 class Lipsync:
     def __init__(self):
-        self.service_factory = interface_interactor
+        self.service = interface_interactor.get_interface("w2l")
 
     def execute(self, context: Dict[str, Any]) -> Dict[str, Any]:
-        self.service_factory.create_service("w2l")
-        service = self.service_factory.get_interface("service")
-        lipsync_response = service.call(context)
+        lipsync_response = self.service.call(context)
 
-        context["filename"] = lipsync_response["filename"]
-        context["type"] = "video/mp4"
+        context["video"] = {"filename": lipsync_response["filename"], "type":"video/mp4" }
         return context
