@@ -12,4 +12,4 @@ class Respond:
             return {"error": True, "msg": response} # return error
 
         context["response"] = response["choices"][0]["text"]
-        return response
+        return context

@@ -9,7 +9,6 @@ import shutil
 from typing import Any, List, Optional, Dict
 from langchain.vectorstores import DeepLake
 from langchain.embeddings import HuggingFaceEmbeddings
-from langchain.retrievers import TimeWeightedVectorStoreRetriever
 from agentforge.adapters import VectorStoreProtocol
 
 class DeepLakeVectorStore(VectorStoreProtocol):
@@ -19,11 +18,10 @@ class DeepLakeVectorStore(VectorStoreProtocol):
         self.deeplake_path = deeplake_path
 
         ### TODO: Remove deletion of directory when runnnig in production
-        self.delete()
+        # self.delete()
 
         # Use deeplake for long-term vector memory storage
         self.deeplake = DeepLake(dataset_path=deeplake_path, embedding_function=self.embdeddings)
-        self.retriever = TimeWeightedVectorStoreRetriever(vectorstore=self.deeplake, decay_rate=.0000000000000000000000001, k=4)
 
     def delete(self) -> None:
         # Delete your vector store here
@@ -35,11 +33,10 @@ class DeepLakeVectorStore(VectorStoreProtocol):
         except Exception as e:
             print(f"Error while deleting directory '{self.deeplake_path}': {e}")
 
-    def search(self, query: str, filter: Optional[Dict]) -> Any:
+    def search(self, query: str, n: int = 4, filter: Optional[Dict] = {}) -> Any:
         # Perform your search here and return the result
-        docs = self.deeplake.search(query)
+        docs = self.deeplake.similarity_search(query, n, filter=filter)
         return docs
 
-    def add_texts(self, texts: List[str], metadata: List[Any], filter: Optional[Dict]) -> None:
-        # Add your texts here
-        return self.deeplake.add_texts([texts], [metadata])
+    def add_texts(self, texts: List[str], metadata: List[Any]) -> None:
+        return self.deeplake.add_texts(texts, metadata)

@@ -8,8 +8,9 @@ from agentforge.ai.subroutines.lipsync import Lipsync
 from agentforge.ai.subroutines.remember import Remember
 from agentforge.ai.subroutines.recall import Recall
 from agentforge.ai.routines.routine import Routine
+from agentforge.ai.subroutines.prep import Prep
 
 ### Simplest reactive routine for a decision timestep/run
 class ReactiveRoutine(Routine):
     def __init__(self):
-        self.subroutines = [Remember(), Recall(), Parse(), Respond()] #, Speak(), Lipsync()]
+        self.subroutines = [Recall(), Parse(), Respond(), Remember(), Prep()]  #, Speak(), Lipsync()]

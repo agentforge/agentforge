@@ -31,10 +31,13 @@ class Parse:
         name = context['model_profile']['avatar_config']['name']
         biography = context['model_profile']['avatar_config']['biography']
         instruction = context['input']['prompt']
+        recall = context['recall'] if 'recall' in context else ""
 
         prompt_template = prompt_template.replace("<name>", name)
         prompt_template = prompt_template.replace("<biography>", biography)
         prompt_template = prompt_template.replace("<instruction>", instruction)
+        prompt_template = prompt_template.replace("<memory>", recall)
 
         context['input']['prompt'] = prompt_template
+        context['input']['original_prompt'] = instruction
         return context

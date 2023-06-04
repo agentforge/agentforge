@@ -1,9 +1,14 @@
 from langchain.memory import MongoDBChatMessageHistory
 from agentforge.config import DbConfig
+from urllib.parse import quote_plus
 
 class MongoMemory:
   def __init__(self, config: DbConfig):
-    connection_string = "mongodb://mongo_user:password123@mongo:27017"
+    username = quote_plus(config.username)
+    password = quote_plus(config.password)
+    host = config.host
+    port = config.port
+    connection_string = f"mongodb://{username}:{password}@{host}:{port}"
     session = "user_test-Sam-session-XYZ"
     self.short_term_memory = MongoDBChatMessageHistory(
         connection_string=connection_string, session_id=session
@@ -22,17 +27,17 @@ class MongoMemory:
       self.memories[ai_prefix] = self.short_term_memory
 
   # Saves a response from another individual to short-term memory
-  def remember(self, prompt, response):
+  def remember(self, user: str, agent: str, prompt: str, response: str):
     # Do not save empty interactions
     if prompt.strip() == "":
       return
     if self.short_term_memory:
-        self.short_term_memory.chat_memory.add_user_message(prompt)
-        self.short_term_memory.chat_memory.add_ai_message(response)
+        self.short_term_memory.add_user_message(prompt)
+        self.short_term_memory.add_ai_message(response)
 
   # Returns the last 5 interactions from the short term memory
-  def session_history(self):
-      mem = self.short_term_memory.load_memory_variables({})
+  def recall(self, user: str, agent: str, n: int = 5):
+      mem = self.short_term_memory.messages
       def get_content(obj):
           prefix = f"{self.human_prefix}: " if obj.__class__.__name__ == "HumanMessage" else f"{self.ai_prefix}: "
           postfix = f" {self.human_postfix}" if obj.__class__.__name__ == "HumanMessage" else f" {self.human_postfix}"

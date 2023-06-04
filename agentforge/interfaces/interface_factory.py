@@ -4,6 +4,7 @@ from agentforge.interfaces import LLMService, TTSService, W2LService
 from agentforge.interfaces.dbkeygenerator import DBKeyGenerator
 from agentforge.interfaces.rediskvstore import RedisKVStore
 from agentforge.interfaces.mongomemory import MongoMemory
+from agentforge.interfaces.vectorstorememory import VectorStoreMemory
 from agentforge.config import DbConfig, RedisConfig
 from typing import Any
 
@@ -39,7 +40,6 @@ class InterfaceFactory:
         else:
             raise Exception(f"Working memory type {working_type} does not exist")
 
-
     def create_filestore(self) -> None:
         filestore_type = os.getenv("FILESTORE_TYPE")
         # Instantiate the correct FileStore based on filestore_type
@@ -66,11 +66,12 @@ class InterfaceFactory:
             deeplake_path = os.getenv("DEEPLAKE_PATH")
             model_name = os.getenv("DEEPLAKE_MODEL_NAME")    
             self.__interfaces["vectorstore"] = DeepLakeVectorStore(model_name, deeplake_path)
+            self.__interfaces["vectorstore_memory"] = VectorStoreMemory(self.__interfaces["vectorstore"])
         elif vectorstore_type == "in_memory":
             self.__interfaces["vectorstore"] = InMemoryVectorStore()
         else:
             raise Exception(f"VectorStore {vectorstore_type} does not exist")
-        
+
     def create_keygenerator(self) -> None:
         keygenerator_type = os.getenv("KEYGENERATOR_TYPE")
         # Instantiate the correct KeyGenerator based on keygenerator_type
