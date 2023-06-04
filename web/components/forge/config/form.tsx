@@ -39,7 +39,7 @@ const ModelConfigForm: React.FC<ModelConfigFormProps> = ({ form, id }) =>  {
     config_types.forEach((config) => {
       if (updatedForm[config] !== undefined) {         
         Object.keys(updatedForm[config]).forEach((key) => {
-          if (modelProfileConfigs[key] !== undefined && modelProfileConfigs[key] !== null ) {
+          if (modelProfileConfigs[key] !== undefined && modelProfileConfigs[key] !== null) {
             updatedForm[config][key] = modelProfileConfigs[key];
           }
         });

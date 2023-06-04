@@ -6,10 +6,10 @@ from agentforge.utils import logger
 
 ## Loaders for different models
 class LocalLoader:
-    def __init__(self, config, device_map="auto", multi_gpu=False, device="cuda"):
+    def __init__(self, config, device_map={'':0}, multi_gpu=False, device="cuda"):
         self.config = config
-        self.device_map = device_map
-        self.multi_gpu = multi_gpu
+        self.device_map = device_map if 'device_map' not in config else config['device_map'] 
+        self.multi_gpu = multi_gpu if 'multi_gpu' not in config else config['device_map'] 
         self.device = device
         self.model = None
 

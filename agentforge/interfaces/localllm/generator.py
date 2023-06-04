@@ -98,6 +98,8 @@ class LocalGenerator:
     #         input_ids = input_ids * eos_token_id[0]
     #     input_length = 1
 
+    gen_config = {k: v for k, v in gen_config.items() if v is not None and v != ""}
+
     logging.info(prompt)
     with torch.autocast("cuda"):
       inputs = tokenizer(prompt, return_tensors="pt")
@@ -105,7 +107,6 @@ class LocalGenerator:
       generation_config = GenerationConfig(
           **gen_config,
       )
-    
       start_time = time.time()
       with torch.no_grad():
           # If we are using multi-gpu, we need to use the model.module.generate method.
