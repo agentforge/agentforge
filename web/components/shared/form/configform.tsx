@@ -1,10 +1,9 @@
 'use client';
 import React from 'react';
 import SliderElement from '@/components/shared/form/slider';
-import * as Label from '@radix-ui/react-label';
-import TooltipSimple from '@/components/shared/tooltip_simple';
 import CheckboxElement from '@/components/shared/form/checkbox'
 import InputElement from '@/components/shared/form/input'
+import TextareaElement from '@/components/shared/form/textarea'
 
 export interface ConfigField {
     type: string;
@@ -83,12 +82,7 @@ export const ConfigForm: React.FC<ConfigFormProps> = ({ fields, form }) =>  {
           booleanVariable = variable;
           element = (
             <div className="flex w-1/4" key={key}>
-              <CheckboxElement label={titleize(key)} id={key} defaultVal={booleanVariable} />
-              {fields[key].tooltip !== undefined ? (
-                <TooltipSimple text={fields[key].tooltip} />
-              ) : (
-                <></>
-              )}
+              <CheckboxElement label={titleize(key)} id={key} defaultVal={booleanVariable} tooltipText={tooltip}/>
             </div>
           );
         } else {
@@ -96,32 +90,29 @@ export const ConfigForm: React.FC<ConfigFormProps> = ({ fields, form }) =>  {
         }
       }
       else if (type == 'textarea') {
+        let val = '';
+        if (form[key] !== undefined) {
+          val = form[key]!.toString();
+        }
         element = (
-          <div className="flex w-3/4" key={key}>
-            <Label.Root className="flex w-1/6 text-[15px] font-medium leading-[35px] text-white" htmlFor="firstName">
-              {label}
-            </Label.Root>
-            <div className="flex w-4/6">
-              <textarea
-                id="user-input"
-                defaultValue=""
-                className="form-control"
-                rows={4}
-                style={{ width: '100%' }}
-              ></textarea>
-            </div>
+          <div className="flex w-full" key={key}>
+            <TextareaElement
+              id={ key }
+              label={ titleize(key) }
+              defaultVal={val}
+            ></TextareaElement>
           </div>
         )
       } else if (type == 'spacer') { 
         element = (
-          <hr></hr> 
+          <hr></hr>
         )
       }
       if (element) {
         elements.push(element);
         counter++;
         if (counter === N || index === Object.keys(fields).length - 1) {
-          rows.push(<div className="flex flex-row mt-9" key={`row${index}`}>{elements}</div>);
+          rows.push(<div className="flex flex-row w-full" key={`row${index}`}>{elements}</div>);
           elements = [];
           counter = 0;
         }

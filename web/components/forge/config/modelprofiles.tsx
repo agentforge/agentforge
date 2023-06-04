@@ -28,7 +28,7 @@ const ModelProfilesTable: React.FC<{ pageSize: number }> = ({ pageSize }) => {
         console.log(`/api/user/${user_id}/modelprofiles`);
         const res = await fetch(`/api/user/${user_id}/modelprofiles`);
         const data = await res.json();
-        setProfiles(data.data);
+        setProfiles(data);
       } catch (error) {
         console.error(error);
       }
