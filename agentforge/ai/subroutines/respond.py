@@ -6,7 +6,7 @@ class Respond:
         self.service = interface_interactor.get_interface("llm")
 
     def execute(self, context: Dict[str, Any]) -> Dict[str, Any]:
-        response = self.service.call(context)
+        response = self.service.call(context['input'])
 
         if "choices" not in response:
             return {"error": True, "msg": response} # return error

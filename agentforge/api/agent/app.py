@@ -173,15 +173,20 @@ def configure():
 @app.route('/v1/completions', methods=['POST'])
 @measure_time
 def agent():
-    ## TODO: Verify auth, rate limiter, etc.
-
     ## Parse Data --  from web accept JSON, from client we need to pull ModelConfig
     ## and add add the prompt and user_id to the data
     data = request.json
+
+    ## TODO: Verify auth, rate limiter, etc -- should be handled by validation layer
+    if 'id' not in data:
+        return {"error": "No model profile specified."}
+
+    model_profiles = ModelProfile()
+    model_profile = model_profiles.get(data['id'])
     
     ## Get Decision from Decision Factory and run it
     decision = decision_interactor.get_decision()
-    output = decision.run(data)
+    output = decision.run({"input": data, "model_profile": model_profile})
 
     ## Return Decision output
     return output
