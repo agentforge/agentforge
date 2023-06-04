@@ -1,4 +1,4 @@
-from .cognition.memory import ShortTermMemory, LongTermMemory
+from .cognition.memory import Memory
 from .subroutines.agent import Agent
 from .cognition.cognition import ExecutiveCognition
 from .worldmodel.user import User

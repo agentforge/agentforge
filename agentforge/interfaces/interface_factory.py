@@ -3,6 +3,7 @@ from agentforge.interfaces import MongoDBKVStore, DictKVStore, InMemoryVectorSto
 from agentforge.interfaces import LLMService, TTSService, W2LService
 from agentforge.interfaces.dbkeygenerator import DBKeyGenerator
 from agentforge.interfaces.rediskvstore import RedisKVStore
+from agentforge.interfaces.mongomemory import MongoMemory
 from agentforge.config import DbConfig, RedisConfig
 from typing import Any
 
@@ -30,13 +31,13 @@ class InterfaceFactory:
         else:
             raise Exception(f"KVStore {kvstore_type} does not exist")
 
-    def create_session_memory(self) -> None:
-        session_type = os.getenv("SESSION_MEMORY_TYPE")
+    def create_working_memory(self) -> None:
+        working_type = os.getenv("WORKING_MEMORY_TYPE")
         # Instantiate the correct KVStore based on kvstore_type
-        if session_type == "mongodb":
-            self.__interfaces["session"] = RedisKVStore(self.redis_config)
+        if working_type == "mongodb":
+            self.__interfaces["working_memory"] = MongoMemory(self.config)
         else:
-            raise Exception(f"KVStore {session_type} does not exist")
+            raise Exception(f"Working memory type {working_type} does not exist")
 
 
     def create_filestore(self) -> None:
