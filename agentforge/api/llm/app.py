@@ -63,6 +63,7 @@ def publish():
 @measure_time
 def output():
   config = request.json
+  model = {}
   model = model_profile.get(config['id'])
   model['prompt'] = config['prompt']
   response = llm.generate(**model)
