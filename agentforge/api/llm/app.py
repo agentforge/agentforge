@@ -23,7 +23,7 @@ from flask_cors import CORS
 
 from agentforge.utils import measure_time
 
-from agentforge.factories import resource_factory, model_profile
+from agentforge.factories import resource_factory
 
 path_root = Path(__file__).parents[2]
 sys.path.append(str(path_root))
@@ -34,19 +34,10 @@ CORS(app)
 from dotenv import load_dotenv
 load_dotenv('../../../.env')
 
-### Load the LLM - single GPU example
-# llm = LLM({"multi_gpu": False, "device_map": {'':0}, "model_key":"mpt-7b-chat"})
-
-### Load the LLM - multi-GPU example
-# llm = LLM({"multi_gpu ": True, "device_map": "auto", "model_key":"alpaca-lora-7b"})
-
-# Load the defaiult model
-# llm.load_model(llm.model_key)
-
 llm = resource_factory.get_resource("llm")
 
 app = Flask(__name__)
-app.config["REDIS_URL"] = "redis://redis:6379/0"
+app.config["REDIS_URL"] = "redis://redis:6379/0" # TODO: Use ENV Variables
 
 redis_store = redis.StrictRedis().from_url(app.config["REDIS_URL"])
 
@@ -63,9 +54,7 @@ def publish():
 @measure_time
 def output():
   config = request.json
-  model = model_profile.get(config['id'])
-  model['prompt'] = config['prompt']
-  response = llm.generate(**model)
+  response = llm.generate(**config)
   return jsonify({"choices": [{"text": response}]})
 
 @app.route("/v1/update_model", methods=["POST"])

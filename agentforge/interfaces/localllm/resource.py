@@ -20,7 +20,7 @@ from dotenv import load_dotenv
 class LocalLLM():
   def __init__(self,  config: dict = None) -> None:
     self.config = {} if config == None else config
-    self.model_key = self.config['model_config']['model_name']
+    self.model_key = self.config['model_config']['model_name'] if 'model_config' in self.config else None
     self.multi_gpu = False # TODO: Reenable
 
     self.tokenizer = None
@@ -32,14 +32,18 @@ class LocalLLM():
     else:
         self.device = "cuda"
 
-    self.loader = LocalLoader(self.config['model_config'])
-    self.parser = Parser()
-
     # create a shared dictionary to store the model to be used by other workers
     logging.info(f"LLM CUDA enabled: {torch.cuda.is_available()}")
 
-    self.generator = LocalGenerator(self.config)
-    self.load_model(self.model_key)
+    if self.model_key:
+        self.setup(self.config)
+        self.load_model(self.model_key)
+
+  def setup(self, config: dict):
+    if config['model_config']['model_name'] != self.model_key:
+      self.parser = Parser()
+      self.loader = LocalLoader(config['model_config'])
+      self.generator = LocalGenerator(config)
 
   # Get the name of the class
   def name(self):
@@ -58,7 +62,7 @@ class LocalLLM():
       # If we are already using this model, don't reload
       return
     # Load the model
-    self.switch_model(model_key)
+    self.switch_model(model_key, kwargs)
 
     self.generator.set_models(self.model, self.tokenizer, self.text_streamer(False))
 
@@ -72,11 +76,13 @@ class LocalLLM():
     # setup the generator
     config = kwargs['generation_config']
     streaming = True if "streaming" in kwargs['model_config'] and kwargs['model_config']["streaming"] else False
-    self.load(kwargs['model_config'].get("model_key", self.model_key))
+    self.setup(kwargs)
+    self.load(model_key=kwargs['model_config'].get("model_name", self.model_key), **kwargs)
     kwargs.update(config)
-    if "generator" in self.config:
+
+    if "generator" in kwargs:
         # Use custom generator based on function string
-        function_name = self.config["generator"]
+        function_name = kwargs["generator"]
         function = getattr(self.generator, function_name)
         return function(
             prompt,
@@ -95,31 +101,31 @@ class LocalLLM():
     )
     return self.parser.parse_output(output)
 
-  def load_model(self, model_key):
-      # Check key and load logic according to key
-      # self.config = self.config_controller.get_config(model_key)
-      model, tokenizer = self.loader.load(self.config['model_config'], device=self.device)
-      self.model = model
-      self.tokenizer = tokenizer
-      self.model_key = model_key
+  def load_model(self, config):
+    # Check key and load logic according to key
+    # self.config = self.config_controller.get_config(model_key)
+    model, tokenizer = self.loader.load(config['model_config'], device=self.device)
+    self.model = model
+    self.tokenizer = tokenizer
+    self.model_key = config['model_config']['model_name']
 
   def unload_model(self):
-      if self.tokenizer is not None:
-          del self.tokenizer
-          self.tokenizer = None
+    if self.tokenizer is not None:
+        del self.tokenizer
+        self.tokenizer = None
 
-      if self.model is not None:
-          if not self.multi_gpu:
-              self.model = self.model.cpu()
-          del self.model
-          self.model = None
+    if self.model is not None:
+        if not self.multi_gpu:
+            self.model = self.model.cpu()
+        del self.model
+        self.model = None
 
-      gc.collect()
-      torch.cuda.empty_cache()
+    gc.collect()
+    torch.cuda.empty_cache()
 
   # Switches model to a new model
-  def switch_model(self, key):
-      if self.model_key != key:
-        self.unload_model()
-        self.load_model(key)
-        self.model_key = key
+  def switch_model(self, key, config):
+    if self.model_key != key:
+      self.unload_model()
+      self.load_model(config)
+      self.model_key = key

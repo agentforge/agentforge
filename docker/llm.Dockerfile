@@ -1,4 +1,5 @@
 FROM agentforge:latest
+ENV RESOURCE=LLM
 
 WORKDIR /app/agentforge/agentforge/language_model
 RUN pip install peft einops

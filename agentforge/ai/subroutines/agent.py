@@ -2,7 +2,7 @@ import os
 
 from agentforge.utils import helpers
 from langchain.agents import Tool
-from langchain.llms import HuggingFaceModel
+# from langchain.llms import HuggingFaceModel
 from langchain.utilities import SearxSearchWrapper
 from agentforge.utils import Parser
 from agentforge.config import config
@@ -82,8 +82,9 @@ class Agent():
 
   def load_agent(self):
     # Loads the model and tokenizer into langchain compatible agent class
-    self.hfm = HuggingFaceModel(model=self.model, tokenizer=self.tokenizer, device=1, model_kwargs=self.generation_config.to_dict())
-
+    # self.hfm = HuggingFaceModel(model=self.model, tokenizer=self.tokenizer, device=1, model_kwargs=self.generation_config.to_dict())
+    pass
+  
   def init_tools(self):
     self.search = SearxSearchWrapper(searx_host=SEARX_HOST)
     self.tools = [

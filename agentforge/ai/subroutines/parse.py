@@ -1,10 +1,11 @@
 from typing import Any, Dict
+from agentforge.interfaces.model_profile import ModelProfile
 
 ### Final aggregation of prompt template and other prompt context into
 ### a single prompt string
 class Parse:
     def __init__(self):
-        pass
+        self.model_profile = ModelProfile()
     
     """
     Exception: {'input': {'id': '4CdJEH2BS9Gedj7eL4OvZA', 'prompt': 'Hey!'}, 'context': {'_id': '4CdJEH2BS9Gedj7eL4OvZA', 'avatar_config': 
@@ -31,10 +32,15 @@ class Parse:
         name = context['model_profile']['avatar_config']['name']
         biography = context['model_profile']['avatar_config']['biography']
         instruction = context['input']['prompt']
+        recall = context['recall'] if 'recall' in context else ""
 
         prompt_template = prompt_template.replace("<name>", name)
         prompt_template = prompt_template.replace("<biography>", biography)
         prompt_template = prompt_template.replace("<instruction>", instruction)
+        prompt_template = prompt_template.replace("<memory>", recall)
 
         context['input']['prompt'] = prompt_template
+        context['input']['original_prompt'] = instruction
+
+        # Parse ID from frontend and translate into model_profile
         return context

@@ -6,15 +6,16 @@
 # from agentforge.interfaces.interface_factory import InterfaceFactory
 # from agentforge.ai.decisions.decision_factory import DecisionFactory
 from agentforge.factories.resource_factory import ResourceFactory
-from agentforge.interfaces.model_profile import ModelProfile
-import os
+import os, importlib
 
-model_profile = ModelProfile()
 DEFAULT_LLM = os.environ.get("DEFAULT_LLM")
+RESOURCE = os.environ.get("RESOURCE")
 print(DEFAULT_LLM)
-model_configuration = model_profile.get_profile_by_name(DEFAULT_LLM)
 
 resource_factory = ResourceFactory()
-resource_factory.create_llm_resource(model_configuration)
-# resource_factory.create_tts_resource()
-# resource_factory.create_w2l_resource()
+if RESOURCE == "LLM":
+    resource_factory.create_llm_resource({})
+if RESOURCE == "TTS":
+    resource_factory.create_tts_resource()
+if RESOURCE == "W2L":
+    resource_factory.create_w2l_resource()
