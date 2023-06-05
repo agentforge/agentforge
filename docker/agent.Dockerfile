@@ -1,4 +1,5 @@
 FROM agentforge:latest
+ENV RESOURCE=AGENT
 
 # agent
 WORKDIR /app/agentforge/agentforge/agent

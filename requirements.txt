@@ -29,3 +29,6 @@ flask-sse
 deeplake
 tiktoken
 sentence_transformers
+bcrypt
+pymongo
+inflect
