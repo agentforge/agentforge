@@ -15,6 +15,15 @@ export interface ChatWidgetProps {
   id: string
 }
 
+async function setAudio(audio: any, data: any) {
+  console.log(data.audio)
+  const encoder = new TextEncoder();
+  const audioBytes = encoder.encode(data.audio.data);
+  console.log(audioBytes);
+  audio.src = URL.createObjectURL(new Blob([audioBytes.buffer], { type: 'audio/wav' }))
+  audio.play()
+}
+
 export const ChatWidget: React.FC<ChatWidgetProps> = ({ id }) =>  {
   const modelprofileconfig = useModelProfileConfig();
   const { getAvatarData } = useAvatarProvider();
@@ -107,7 +116,26 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ id }) =>  {
     //   }
     //   currentAvatar.current = avatarData;
     // }
+    console.log(data);
     const completion = data.choices[0].text
+    if (data.audio) {
+      const buffer = Buffer.from(data.audio, 'base64');
+      const decodedAudioData = Buffer.from(data.audio, 'base64');
+
+      // Create a Blob from the Uint8Array with the correct MIME type
+      const blob = new Blob([decodedAudioData], { type: 'audio/wav' });
+
+      // Create an object URL for the Blob
+      const objectURL = URL.createObjectURL(blob);
+
+      // Create an Audio element and play the audio
+      const audioElement = new Audio();
+      audioElement.src = objectURL;
+      audioElement.play();
+
+      // Create a new Audio object and play the audio
+      // const audioElement = new Audio(`data:audio/wav;base64,${audio}`);
+    }
     // const tts = languageModelConfig.languageModelConfigs["speech"] as boolean;
     // const lipsync = languageModelConfig.languageModelConfigs["lipsync"] as boolean;
     // if (tts&& !lipsync) {
