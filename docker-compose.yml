@@ -118,7 +118,10 @@ services:
       - "${DB_PORT}:27017"
     volumes:
       - db_data:/data/db
-
+    networks:
+      main-net:
+        aliases:
+          - mongodb
 networks:
   main-net:
 
