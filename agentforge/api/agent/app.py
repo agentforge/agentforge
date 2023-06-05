@@ -9,6 +9,7 @@ import redis, uuid
 from datetime import timedelta
 from flask_swagger_ui import get_swaggerui_blueprint
 from dotenv import load_dotenv
+from base64 import b64encode
 
 # # importing the sys module
 import sys, os
@@ -187,6 +188,16 @@ def agent():
     ## Get Decision from Decision Factory and run it
     decision = decision_interactor.get_decision()
     output = decision.run({"input": data, "model_profile": model_profile})
+
+    ### Parse audio/video if needed
+    if 'audio' in output:
+        filename = output['audio']["filename"]
+
+        with open(filename, 'rb') as fh:
+            return jsonify(
+                choices = [{"text": output["response"]}],
+                audio = b64encode(fh.read()).decode()
+            )
 
     ## Return Decision output
     return output
