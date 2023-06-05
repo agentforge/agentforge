@@ -21,7 +21,7 @@ class InterfaceFactory:
         kvstore_type = os.getenv("KVSTORE_TYPE")
         # Instantiate the correct KVStore based on kvstore_type
         if kvstore_type == "redis":
-            RedisKVStore = getattr(importlib.import_module('agentforge.interfaces.rediskvstores'), 'RedisKVStore')
+            RedisKVStore = getattr(importlib.import_module('agentforge.interfaces.rediskvstore'), 'RedisKVStore')
             self.__interfaces["kvstore"] = RedisKVStore(self.redis_config)
         elif kvstore_type == "dict":
             DictKVStore = getattr(importlib.import_module('agentforge.interfaces.dictkvstore'), 'DictKVStore')
