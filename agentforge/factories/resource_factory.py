@@ -7,13 +7,12 @@ import importlib
 class ResourceFactory:
     def __init__(self) -> None:
         self.__resources: dict[str, Any] = {}
-        self.module = importlib.import_module('agentforge.interfaces')
 
     def create_llm_resource(self, config: dict = {}) -> None:
         llm_type = os.getenv("LLM_TYPE")
         # Instantiate the correct LLM resource based on llm_type
         if llm_type == "local":
-            LocalLLM = getattr(self.module, 'LocalLLM')
+            LocalLLM = getattr(importlib.import_module('agentforge.interfaces.localllm.resource'), 'LocalLLM')
             self.__resources["llm"] = LocalLLM(config)
         else:
             raise ValueError(f"Invalid LLM type: {llm_type}")
@@ -22,10 +21,10 @@ class ResourceFactory:
         tts_type = os.getenv("TTS_TYPE")
         # Instantiate the correct TTS resource based on tts_type
         if tts_type == "tts":
-            TextToSpeech = getattr(self.module, 'TextToSpeech')
+            TextToSpeech = getattr(importlib.import_module('agentforge.interfaces.tts.resource'), 'TextToSpeech')
             self.__resources["tts"] = TextToSpeech()
         elif tts_type == "bark":
-            BarkTextToSpeech = getattr(self.module, 'BarkTextToSpeech')
+            BarkTextToSpeech = getattr(importlib.import_module('agentforge.interfaces.barktts.resource'), 'BarkTextToSpeech')
             self.__resources["tts"] = BarkTextToSpeech()
         else:
             raise ValueError(f"Invalid TTS type: {tts_type}")
@@ -34,7 +33,7 @@ class ResourceFactory:
         w2l_type = os.getenv("W2L_TYPE")
         # Instantiate the correct w2l resource based on w2l_type
         if w2l_type == "w2l":
-            Wav2LipModel = getattr(self.module, 'Wav2LipModel')
+            Wav2LipModel = getattr(importlib.import_module('agentforge.interfaces.wav2lip.resource'), 'Wav2LipModel')
             self.__resources["w2l"] = Wav2LipModel()
         elif w2l_type == "sadtalker":
             raise NotImplementedError("SADTalker is not yet implemented")
