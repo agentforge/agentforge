@@ -5,6 +5,8 @@ FROM huggingface/transformers-pytorch-deepspeed-latest-gpu-push-ci
 RUN mkdir -p /app/agentforge
 COPY . /app/agentforge/
 
+ENV RESOURCE=TTS
+
 RUN apt-get update
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y software-properties-common
 RUN add-apt-repository ppa:ubuntu-toolchain-r/test

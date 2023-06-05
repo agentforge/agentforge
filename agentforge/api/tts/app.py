@@ -3,21 +3,33 @@ from pathlib import Path
 import sys
 from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
+# # importing the sys module
+import sys, os
+ 
+# # appending the directory of mod.py
+# # in the sys.path list
+sys.path.append(os.path.join(os.path.dirname(sys.path[0]),'/app/agentforge'))
+print(sys.path)
+
+# # importing the sys module
+import sys, os
+ 
+# # appending the directory of mod.py
+# # in the sys.path list
+sys.path.append(os.path.join(os.path.dirname(sys.path[0]),'/app/agentforge'))
+print(sys.path)
 
 from agentforge.utils import measure_time
 from agentforge import DST_PATH
 
 from agentforge.factories import resource_factory
 
-path_root = Path(__file__).parents[2]
-sys.path.append(str(path_root))
-app = Flask(__name__)
-CORS(app, resources={r"/v1/*": {"origins": "*"}})
-# tts_inst = TextToSpeech()
-# whisper = Whisper()
-
+# Setup environmental variables
 from dotenv import load_dotenv
 load_dotenv('../../../.env')
+
+app = Flask(__name__)
+CORS(app, resources={r"/v1/*": {"origins": "*"}})
 
 tts = resource_factory.get_resource("tts")
 
@@ -26,8 +38,8 @@ tts = resource_factory.get_resource("tts")
 @measure_time
 def text_to_speech():
   # Get the text and filename from the request
-  prompt = request.json["prompt"]
-  avatar = request.json["avatar"]
+  prompt = request.json["input"]["prompt"]
+  avatar = request.json["avatar_config"]
 
   filename = "/app/cache/out.wav"
   speaker_wav = DST_PATH + avatar["speaker_wav"] if "speaker_wav" in avatar else None

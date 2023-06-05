@@ -1,10 +1,20 @@
 ### Ensure local libs are available for Flask
 from pathlib import Path
-import sys
+from dotenv import load_dotenv
 
 ### RESTful API for the LLM services
 ### Maintains any necessary queue and rate limiting for
 ### accessing GPU/TPU resources
+# # importing the sys module
+import sys, os
+ 
+# # appending the directory of mod.py
+# # in the sys.path list
+sys.path.append(os.path.join(os.path.dirname(sys.path[0]),'/app/agentforge'))
+print(sys.path)
+
+# Setup environmental variables
+load_dotenv('../../../.env')
 
 ### Imports ###
 import redis
@@ -13,7 +23,7 @@ from flask_cors import CORS
 
 from agentforge.utils import measure_time
 
-from agentforge.factories import resource_factory
+from agentforge.factories import resource_factory, model_profile
 
 path_root = Path(__file__).parents[2]
 sys.path.append(str(path_root))
@@ -53,7 +63,9 @@ def publish():
 @measure_time
 def output():
   config = request.json
-  response = llm.generate(**config)
+  model = model_profile.get(config['id'])
+  model['prompt'] = config['prompt']
+  response = llm.generate(**model)
   return jsonify({"choices": [{"text": response}]})
 
 @app.route("/v1/update_model", methods=["POST"])

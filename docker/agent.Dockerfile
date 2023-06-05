@@ -1,8 +1,11 @@
 FROM agentforge:latest
+ENV RESOURCE=AGENT
 
 # agent
 WORKDIR /app/agentforge/agentforge/agent
 RUN apt-get install -y python3-dev
+RUN pip install bcrypt pymongo
+RUN pip install inflect
 # Expose port 3000
 EXPOSE 3000
 

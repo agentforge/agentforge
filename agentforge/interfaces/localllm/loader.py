@@ -6,23 +6,19 @@ from agentforge.utils import logger
 
 ## Loaders for different models
 class LocalLoader:
-    def __init__(self, device_map="auto", multi_gpu=False, device="cuda"):
-        self.config = None
-        self.device_map = device_map
-        self.multi_gpu = multi_gpu
+    def __init__(self, config, device_map={'':0}, multi_gpu=False, device="cuda"):
+        self.config = config
+        self.device_map = device_map if 'device_map' not in config else config['device_map'] 
+        self.multi_gpu = multi_gpu if 'multi_gpu' not in config else config['device_map'] 
         self.device = device
         self.model = None
 
     def load(self, config, device="cuda"):
         self.config = config
-        if config["model_type"] == "llama":
+        if "llama" in config["model_name"]:
             self.llama(device)
-        elif config["model_type"] == "huggingface":
-            self.huggingface(device)
-        elif config["model_type"] == "mpt":
-            self.huggingface(device, mpt=True)
         else:
-            raise ValueError(f"Unknown model type {config['model_type']}")
+            self.huggingface(device)
         return self.model, self.tokenizer
 
     def llama(self, device="cuda"):
@@ -31,10 +27,10 @@ class LocalLoader:
         self.tokenizer = LlamaTokenizer.from_pretrained(self.config["model_name"], decode_with_prefix_space=True, clean_up_tokenization_spaces=True)
         self.tokenizer.pad_token_id = 0
         self.tokenizer.padding_side = "left"
-
+        load_in_8bit = self.config.get("load_in_8bit", False)
         self.model = LlamaForCausalLM.from_pretrained(
             self.config["model_name"],
-            # load_in_8bit=True,
+            load_in_8bit=bool(load_in_8bit),
             torch_dtype=torch.float16,
             device_map=self.device_map,
         )

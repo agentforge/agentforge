@@ -23,7 +23,7 @@ export default function Landing() {
           style={{ animationDelay: "0.25s", animationFillMode: "forwards" }}
         >
           <Balancer>
-            Develop, train, eval, deploy, and manage multi-modal intelligent agents
+            Develop, train, eval, deploy, and mademonage multi-modal intelligent agents
           </Balancer>
         </p>
         <div
@@ -36,7 +36,7 @@ export default function Landing() {
             target="_blank"
             rel="noopener noreferrer"
           >
-            <p>To the Forge</p>
+            <p>To the Forge</p>demo
           </a>
         </div>
       </div>

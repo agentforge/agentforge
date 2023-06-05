@@ -1,8 +1,7 @@
 // SliderElement.tsx
 import React, { forwardRef } from 'react';
 import * as Slider from '@radix-ui/react-slider';
-import { useSliderState } from '@/components/shared/context/sliderstatecontext';
-import { useLanguageModelConfig } from '@/components/shared/context/languagemodelconfigcontext';
+import { useModelProfileConfig } from '@/components/shared/context/modelprofileconfig';
 import { Text } from '@nextui-org/react';
 
 interface SliderElementProps {
@@ -16,20 +15,18 @@ interface SliderElementProps {
 
 const SliderElement = forwardRef<HTMLDivElement, SliderElementProps>(
   ({ defaultValue = 50, max = 100, step = 1, ariaLabel = 'Slider', width = '200px', sliderId }, ref) => {
-    const { sliderValues, setSliderValue } = useSliderState();
-    const { languageModelConfigs, setLanguageModelConfig } = useLanguageModelConfig();
+    const { modelProfileConfigs, setModelProfileConfig } = useModelProfileConfig();
 
   // Initialize the values in the LanguageModelConfig
   React.useEffect(() => {
     if (defaultValue) {
-      setLanguageModelConfig(sliderId, defaultValue);
+      setModelProfileConfig(sliderId, defaultValue);
     }
   }, []);
 
     const handleValueChange = (value: number[]) => {
       console.log("setting slider value")
-      setSliderValue(sliderId, value[0]);
-      setLanguageModelConfig(sliderId, value[0]);
+      setModelProfileConfig(sliderId, value[0]);
     };
 
     return (
@@ -37,7 +34,7 @@ const SliderElement = forwardRef<HTMLDivElement, SliderElementProps>(
       <div className="flex flex-row w-full mt-3"> 
         <Text h6>{ariaLabel}</Text>
         <div id="max_new_tokens_value" className="flex w-2/12">
-          { sliderValues[sliderId] || defaultValue }
+          { modelProfileConfigs[sliderId] || defaultValue }
         </div>
       </div>
       <div className="flex flex-row w-full"> 
@@ -52,7 +49,7 @@ const SliderElement = forwardRef<HTMLDivElement, SliderElementProps>(
               step={step}
               aria-label={ariaLabel}
               onValueChange={handleValueChange}
-              value={[sliderValues[sliderId] ?? defaultValue]}
+              value={[modelProfileConfigs[sliderId] ?? defaultValue]}
             >
               <Slider.Track className="bg-blackA10 relative grow rounded-full h-[3px]">
                 <Slider.Range className="absolute bg-white rounded-full h-full" />

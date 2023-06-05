@@ -6,21 +6,21 @@
 # from agentforge.interfaces.interface_factory import InterfaceFactory
 # from agentforge.ai.decisions.decision_factory import DecisionFactory
 from agentforge.factories.resource_factory import ResourceFactory
+import os, importlib
 
-# interface_interactor = InterfaceFactory()
-# descision_interactor = DecisionFactory()
+DEFAULT_LLM = os.environ.get("DEFAULT_LLM")
+RESOURCE = os.environ.get("RESOURCE")
+print(DEFAULT_LLM)
 
-# interface_interactor.create_kvstore()
-# interface_interactor.create_filestore()
-# interface_interactor.create_embeddings()
-# interface_interactor.create_vectorstore()
-
-# interface_interactor.create_service("llm")
-# interface_interactor.create_service("tts")
-# interface_interactor.create_service("w2l")
-
-# descision_interactor.create_decision()
 resource_factory = ResourceFactory()
-resource_factory.create_llm_resource()
-resource_factory.create_tts_resource()
-resource_factory.create_w2l_resource()
+if RESOURCE == "LLM":
+    module_name = 'agentforge.interfaces.model_profile'
+    module = importlib.import_module(module_name)
+    ModelProfile = getattr(module, 'ModelProfile')
+    model_profile = ModelProfile()
+    model_configuration = model_profile.get_profile_by_name(DEFAULT_LLM)
+    resource_factory.create_llm_resource(model_configuration)
+if RESOURCE == "TTS":
+    resource_factory.create_tts_resource()
+if RESOURCE == "W2L":
+    resource_factory.create_w2l_resource()

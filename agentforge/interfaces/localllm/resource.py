@@ -4,7 +4,7 @@
 ### accessing GPU/TPU resources ###
 
 ### Imports ###
-import gc
+import gc, os
 import torch
 from agentforge.config import Config
 import logging
@@ -14,23 +14,14 @@ from accelerate import Accelerator
 from agentforge.utils import Parser
 from .lib.text_streamer import TextStreamer
 from agentforge import LLM_CONFIG_FILE
-DEFAULT_LLM = 'alpaca-lora-7b'
+from dotenv import load_dotenv
 
 ### Manages Base LLM functions ###
 class LocalLLM():
-  def __init__(self,  config) -> None:
-    self.opts = {} if config == None else config
-    self.model_key = config.get("model_key", DEFAULT_LLM)
-    self.gc_name = config.get("generation_config", "llm/logical")
-    self.multi_gpu = config.get("multi_gpu", False)
-    self.device_map = config.get("device_map", "auto")
-
-    self.config_controller = Config(None)
-
-    # Load the default model's config
-    # self.config_controller.load_config(LLM_CONFIG_FILE)
-    self.config = self.config_controller.get_config(DEFAULT_LLM)
-    self.streaming = self.config.get("streaming", False)
+  def __init__(self,  config: dict = None) -> None:
+    self.config = {} if config == None else config
+    self.model_key = self.config['model_config']['model_name']
+    self.multi_gpu = False # TODO: Reenable
 
     self.tokenizer = None
     self.model = None
@@ -40,13 +31,15 @@ class LocalLLM():
         self.device = self.accelerator.device
     else:
         self.device = "cuda"
-    self.loader = LocalLoader(self.device_map, self.multi_gpu, self.device)
+
+    self.loader = LocalLoader(self.config['model_config'])
     self.parser = Parser()
 
     # create a shared dictionary to store the model to be used by other workers
     logging.info(f"LLM CUDA enabled: {torch.cuda.is_available()}")
 
-    self.generator = LocalGenerator(self.gc_name, self.multi_gpu)
+    self.generator = LocalGenerator(self.config)
+    self.load_model(self.model_key)
 
   # Get the name of the class
   def name(self):
@@ -63,8 +56,7 @@ class LocalLLM():
       model_key = self.model_key
     elif model_key is not None and model_key == self.model_key:
       # If we are already using this model, don't reload
-      return  
-    
+      return
     # Load the model
     self.switch_model(model_key)
 
@@ -78,8 +70,9 @@ class LocalLLM():
 
   def generate(self, prompt="", **kwargs):
     # setup the generator
-    config = self.generator.prep_generation_config(kwargs.get("generation_config", "logical"))
-    self.load(kwargs.get("model_key", self.model_key))
+    config = kwargs['generation_config']
+    streaming = True if "streaming" in kwargs['model_config'] and kwargs['model_config']["streaming"] else False
+    self.load(kwargs['model_config'].get("model_key", self.model_key))
     kwargs.update(config)
     if "generator" in self.config:
         # Use custom generator based on function string
@@ -89,7 +82,7 @@ class LocalLLM():
             prompt,
             self.loader.model, 
             self.loader.tokenizer,
-            self.text_streamer(kwargs["streaming"]),
+            self.text_streamer(streaming),
             **kwargs
         )
     # Use default generator
@@ -97,15 +90,15 @@ class LocalLLM():
         prompt,
         self.loader.model,
         self.loader.tokenizer,
-        self.text_streamer(kwargs["streaming"]),
+        self.text_streamer(streaming),
         **kwargs
     )
     return self.parser.parse_output(output)
 
   def load_model(self, model_key):
       # Check key and load logic according to key
-      self.config = self.config_controller.get_config(model_key)
-      model, tokenizer = self.loader.load(self.config, device=self.device)
+      # self.config = self.config_controller.get_config(model_key)
+      model, tokenizer = self.loader.load(self.config['model_config'], device=self.device)
       self.model = model
       self.tokenizer = tokenizer
       self.model_key = model_key
@@ -127,6 +120,6 @@ class LocalLLM():
   # Switches model to a new model
   def switch_model(self, key):
       if self.model_key != key:
-          self.unload_model()
-          self.load_model(key)
-          self.model_key = key
+        self.unload_model()
+        self.load_model(key)
+        self.model_key = key

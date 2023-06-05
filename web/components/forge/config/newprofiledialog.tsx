@@ -20,7 +20,7 @@ export const NewModelProfile: React.FC<NewModelProfileProps> = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ name: name.current?.value, user_id: "test_user"}), // TODO: Remove hardcoded user_id
+        body: JSON.stringify({ avatar_config: {name: name.current?.value}, metadata: {user_id: "test_user", created_dt: new Date().toISOString() } }), // TODO: Remove hardcoded user_id
       });
       const profile = await response.json();
       console.log(profile)

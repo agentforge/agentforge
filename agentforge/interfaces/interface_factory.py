@@ -3,6 +3,8 @@ from agentforge.interfaces import MongoDBKVStore, DictKVStore, InMemoryVectorSto
 from agentforge.interfaces import LLMService, TTSService, W2LService
 from agentforge.interfaces.dbkeygenerator import DBKeyGenerator
 from agentforge.interfaces.rediskvstore import RedisKVStore
+from agentforge.interfaces.mongomemory import MongoMemory
+from agentforge.interfaces.vectorstorememory import VectorStoreMemory
 from agentforge.config import DbConfig, RedisConfig
 from typing import Any
 
@@ -30,6 +32,14 @@ class InterfaceFactory:
         else:
             raise Exception(f"KVStore {kvstore_type} does not exist")
 
+    def create_working_memory(self) -> None:
+        working_type = os.getenv("WORKING_MEMORY_TYPE")
+        # Instantiate the correct KVStore based on kvstore_type
+        if working_type == "mongodb":
+            self.__interfaces["working_memory"] = MongoMemory(self.config)
+        else:
+            raise Exception(f"Working memory type {working_type} does not exist")
+
     def create_filestore(self) -> None:
         filestore_type = os.getenv("FILESTORE_TYPE")
         # Instantiate the correct FileStore based on filestore_type
@@ -49,26 +59,19 @@ class InterfaceFactory:
         else:
             raise Exception(f"Service {service_type} does not exist")
 
-    def create_embeddings(self) -> None:
-        embeddings_type = os.getenv("EMBEDDINGS_TYPE")
-        # Instantiate the correct VectorStore based on embeddings_type
-        if embeddings_type == "in_memory":
-            self.__interfaces["embeddings"] = InMemoryVectorStore()
-        else:
-            raise Exception(f"Embeddings {embeddings_type} does not exist")
-
     def create_vectorstore(self) -> None:
         vectorstore_type = os.getenv("VECTORSTORE_TYPE")
-        # Instantiate the correct VectorStore based on embeddings_type
+        # Instantiate the correct VectorStore based on VECTORSTORE_TYPE
         if vectorstore_type == "deeplake":
             deeplake_path = os.getenv("DEEPLAKE_PATH")
             model_name = os.getenv("DEEPLAKE_MODEL_NAME")    
             self.__interfaces["vectorstore"] = DeepLakeVectorStore(model_name, deeplake_path)
+            self.__interfaces["vectorstore_memory"] = VectorStoreMemory(self.__interfaces["vectorstore"])
         elif vectorstore_type == "in_memory":
             self.__interfaces["vectorstore"] = InMemoryVectorStore()
         else:
             raise Exception(f"VectorStore {vectorstore_type} does not exist")
-        
+
     def create_keygenerator(self) -> None:
         keygenerator_type = os.getenv("KEYGENERATOR_TYPE")
         # Instantiate the correct KeyGenerator based on keygenerator_type

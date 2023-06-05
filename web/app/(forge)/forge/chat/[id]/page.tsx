@@ -2,12 +2,14 @@
 import { v4 as uuidv4 } from 'uuid';
 import React, { useEffect, useRef, useState, KeyboardEvent } from 'react';
 import { ReflectionProps } from '@/components/shared/reflection';
-import { useLanguageModelConfig } from '@/components/shared/context/languagemodelconfigcontext';
+import { useModelProfileConfig } from '@/components/shared/context/modelprofileconfig';
 import ChatWidget from '@/components/shared/chatwidget';
 
-interface ForgeProps {}
+interface ChatProps {
+  params: Record<string, any>;
+}
 
-const Chat: React.FC<ForgeProps> = () => {
+const Chat: React.FC<ChatProps> = ({ params }) => {
   // TODO: make dynamic, temporary until we can source these from the API
   // CONSTANTS
   const avatars = ['caretaker', 'default', 'makhno', 'fdr', 'sankara'];
@@ -44,7 +46,7 @@ const Chat: React.FC<ForgeProps> = () => {
   // useState values
   const [reflections, setReflections] = useState<ReflectionProps[]>([]);
 
-  const { setLanguageModelConfig } = useLanguageModelConfig();
+  const { setModelProfileConfig } = useModelProfileConfig();
 
   const heroVideoWrapperRef = useRef<HTMLDivElement | null>(null);
 
@@ -127,18 +129,17 @@ const Chat: React.FC<ForgeProps> = () => {
     return avatar;
   };
 
-  // useEffect to initialize the languageModelConfig on first render
+  // useEffect to initialize the modelprofileconfig on first render
   useEffect(() => {
-    // setLanguageModelConfig('human_name', userConfiguration.username || 'Human');
-    setLanguageModelConfig('robot_name', names[getAvatar()] || 'Sam');
-    setLanguageModelConfig('speech', false);
-    setLanguageModelConfig('lipsync', false);
-    setLanguageModelConfig('streaming', false);
-    setLanguageModelConfig('max_new_tokens', 512);
-    setLanguageModelConfig('avatar', getAvatar());
-    setLanguageModelConfig('generation_config', modelConfigs[0]);
-    setLanguageModelConfig('model_key', models[0]);
-    setLanguageModelConfig('prompt', '');
+    setModelProfileConfig('robot_name', names[getAvatar()] || 'Sam');
+    setModelProfileConfig('speech', false);
+    setModelProfileConfig('lipsync', false);
+    setModelProfileConfig('streaming', false);
+    setModelProfileConfig('max_new_tokens', 512);
+    setModelProfileConfig('avatar', getAvatar());
+    setModelProfileConfig('generation_config', modelConfigs[0]);
+    setModelProfileConfig('model_key', models[0]);
+    setModelProfileConfig('prompt', '');
   }, []);
 
 
@@ -196,7 +197,7 @@ const Chat: React.FC<ForgeProps> = () => {
   return (
     <>
     <div className="md:block w-full h-full md:w-8/12">
-        <ChatWidget/>
+        <ChatWidget id={ params.id } />
     </div>
     <div className="md:block md:w-2/12">
       <div className="mx-auto">

@@ -9,10 +9,6 @@ import ConfigForm from '@/components/shared/form/configform';
 const avatars = ['caretaker', 'default', 'makhno', 'fdr', 'sankara'];
 
 export const AVATAR_FIELDS = {
-  speech: { type: 'boolean', default: false, label: 'Speech' },
-  video: { type: 'boolean', default: false, label: 'Video' },
-  streaming: { type: 'boolean', default: false, label: 'Streaming' },
-  spacer1: {type: 'spacer', default: '', label: ''}, // for enforcing spacing between above and below content
   name: { type: 'text', default: '', label: 'Name' },
   biography: { type: 'textarea', default: '', label: 'Biography/Context' },
 }
@@ -35,8 +31,10 @@ export const AvatarConfig: React.FC<AvatarConfigProps> = ({ form }) =>  {
           </Label.Root>
           <SelectElement options={avatars} id="avatar" label="Avatar" defaultVal="caretaker" />
         </div>
-    </div>
-    <ConfigForm fields={AVATAR_FIELDS} form={form} />
+      </div>
+      <div className="flex flex-row mt-9">  
+        <ConfigForm fields={AVATAR_FIELDS} form={form} />
+      </div>
     </>
   )
 }
