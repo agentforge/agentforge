@@ -1,23 +1,14 @@
 from typing import Any, Dict
+from agentforge.interfaces import interface_interactor
 
 ### Handles conversion of text to speech
 class Speak:
     def __init__(self):
-        pass
+        self.service = interface_interactor.get_interface("tts")
 
     def execute(self, context: Dict[str, Any]) -> Dict[str, Any]:
-        prompt = context['prompt']
-        form_data = context['form_data']
-        avatar = self.avatar.get_avatar(form_data["avatar"])
-        form_data["avatar"] = avatar
+        wav_response = self.service.call({'input': context['input'], 'avatar_config': context['model_profile']['avatar_config']})
+        context['audio'] = {"filename": wav_response["filename"], "type": "audio/wav"}
 
-        prompt = self.agent.parser.parse_prompt(prompt)
-        wav_response = self.service.call_tts(form_data)
-
-        if "lipsync" in form_data and form_data["lipsync"] != 'false':
-            form_data["wav_file"] = wav_response["filename"]
-            lipsync_response = self.service.call_lipsync(form_data)
-            return {"filename": lipsync_response["filename"], "type": "video/mp4"}
-
-        return {"filename": wav_response["filename"], "type": "audio/wav"}
+        return context
 
