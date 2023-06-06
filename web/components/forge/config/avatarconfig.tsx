@@ -11,6 +11,7 @@ const avatars = ['caretaker', 'default', 'makhno', 'fdr', 'sankara'];
 export const AVATAR_FIELDS = {
   name: { type: 'text', default: '', label: 'Name' },
   biography: { type: 'textarea', default: '', label: 'Biography/Context' },
+  speaker_idx: { type: 'int', default: '', label: 'coqAI Speaker IDX' },
 }
 
 export interface AvatarConfigProps {
