@@ -15,15 +15,6 @@ export interface ChatWidgetProps {
   id: string
 }
 
-async function setAudio(audio: any, data: any) {
-  console.log(data.audio)
-  const encoder = new TextEncoder();
-  const audioBytes = encoder.encode(data.audio.data);
-  console.log(audioBytes);
-  audio.src = URL.createObjectURL(new Blob([audioBytes.buffer], { type: 'audio/wav' }))
-  audio.play()
-}
-
 export const ChatWidget: React.FC<ChatWidgetProps> = ({ id }) =>  {
   const modelprofileconfig = useModelProfileConfig();
   const { getAvatarData } = useAvatarProvider();
@@ -116,7 +107,13 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ id }) =>  {
     //   }
     //   currentAvatar.current = avatarData;
     // }
-    console.log(data);
+
+    if (data.error_type) { 
+      // TODO: Replace with a proper modal
+      alert(data.error_message);
+      setIsLoading(false);
+      return;
+    }
     const completion = data.choices[0].text
     if (data.audio) {
       const buffer = Buffer.from(data.audio, 'base64');
