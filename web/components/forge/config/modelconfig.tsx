@@ -33,6 +33,7 @@ export const MODEL_FIELDS: ConfigFields = {
   speech: { type: 'boolean', default: false, label: 'Speech' },
   video: { type: 'boolean', default: false, label: 'Video' },
   streaming: { type: 'boolean', default: false, label: 'Streaming' },
+  llama: { type: 'boolean', default: false, label: 'Llama' },
 };
 
 
