@@ -1,5 +1,4 @@
-import os
-import requests
+import requests, json, os
 from agentforge.adapters import APIClient
 from agentforge.utils import logger
 
@@ -47,7 +46,8 @@ class APIService:
                 # if there is an error type we need to log the stacktrace
                 # and raise the message for the end user
                 logger.error(data)
-                raise Exception(f"<{data['error_message']}> {data['error_message']}")
+                error = f"{data['error_message']}"
+                raise Exception(error)
             else:
                 return response.json()
         except requests.exceptions.RequestException as err:

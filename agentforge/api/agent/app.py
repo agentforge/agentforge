@@ -23,13 +23,11 @@ print(sys.path)
 load_dotenv('../../../.env')
 
 from agentforge import DST_PATH
-from agentforge.utils import comprehensive_error_handler
 from agentforge.ai import decision_interactor
-from agentforge.utils import measure_time
+from agentforge.utils import measure_time, comprehensive_error_handler
 from agentforge.ai import User
 from agentforge import db
 from agentforge.interfaces.model_profile import ModelProfile
-from agentforge.utils import secure_wav_filename
 import agentforge as af
 
 # Create the worker queue TODO: Complete implementation
