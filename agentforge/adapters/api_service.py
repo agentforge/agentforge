@@ -47,7 +47,7 @@ class APIService:
                 # if there is an error type we need to log the stacktrace
                 # and raise the message for the end user
                 logger.error(data)
-                raise Exception(f"<{data['error_message']}> {data['error_message']}")
+                raise Exception(f"<{data['error_type']}> {data['error_message']}")
             else:
                 return response.json()
         except requests.exceptions.RequestException as err:
