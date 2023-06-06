@@ -15,7 +15,7 @@ class LocalLoader:
 
     def load(self, config, device="cuda"):
         self.config = config
-        if "llama" in config["model_name"]:
+        if "llama" in config and bool(config["llama"]):
             self.llama(device)
         else:
             self.huggingface(device)
@@ -103,6 +103,7 @@ class LocalLoader:
             logger.info(f"Using {torch.cuda.device_count()} GPUs")
             self.model = torch.nn.DataParallel(self.model)
     
-        self.model = self.model.to(self.device)
+        if not load_in_4bit and not load_in_8bit:
+            self.model = self.model.to(self.device)
         self.model.eval()  # Set the model to evaluation mode
         logger.info(f"Model loaded and online...")
