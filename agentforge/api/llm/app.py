@@ -21,8 +21,7 @@ import redis
 from flask import Flask, request, jsonify, send_file, Response
 from flask_cors import CORS
 
-from agentforge.utils import measure_time
-
+from agentforge.utils import measure_time, comprehensive_error_handler
 from agentforge.factories import resource_factory
 
 path_root = Path(__file__).parents[2]
@@ -51,6 +50,7 @@ def publish():
 
 # Given the following text request generate a wav file and return to the client
 @app.route("/v1/completions", methods=["POST"])
+@comprehensive_error_handler
 @measure_time
 def output():
   config = request.json

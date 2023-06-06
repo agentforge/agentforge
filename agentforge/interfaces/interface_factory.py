@@ -72,6 +72,7 @@ class InterfaceFactory:
             self.__interfaces["vectorstore"] = DeepLakeVectorStore(model_name, deeplake_path)
             self.__interfaces["vectorstore_memory"] = VectorStoreMemory(self.__interfaces["vectorstore"])
         elif vectorstore_type == "in_memory":
+            InMemoryVectorStore = getattr(importlib.import_module('agentforge.interfaces.inmemoryvectorstore'), 'InMemoryVectorStore')
             self.__interfaces["vectorstore"] = InMemoryVectorStore()
         else:
             raise Exception(f"VectorStore {vectorstore_type} does not exist")

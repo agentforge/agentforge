@@ -18,7 +18,7 @@ class DeepLakeVectorStore(VectorStoreProtocol):
         self.deeplake_path = deeplake_path
 
         ### TODO: Remove deletion of directory when runnnig in production
-        # self.delete()
+        self.delete()
 
         # Use deeplake for long-term vector memory storage
         self.deeplake = DeepLake(dataset_path=deeplake_path, embedding_function=self.embdeddings)

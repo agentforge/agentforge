@@ -1,6 +1,7 @@
 import os
 import requests
 from agentforge.adapters import APIClient
+from agentforge.utils import logger
 
 ### API Service level handles calling the API using POST, handles fallback logic, and heartbeat logic
 ### for the service it is operating
@@ -41,7 +42,14 @@ class APIService:
         try:
             response = self.client.post(self.url, form_data)
             response.raise_for_status()
-            return response.json()
+            data = response.json()
+            if 'error_type' in data:
+                # if there is an error type we need to log the stacktrace
+                # and raise the message for the end user
+                logger.error(data)
+                raise Exception(f"<{data['error_type']}> {data['error_message']}")
+            else:
+                return response.json()
         except requests.exceptions.RequestException as err:
             print(f"Error calling {self.service}. Error: {err}")
             return None

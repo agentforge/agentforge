@@ -9,6 +9,7 @@ import redis, uuid
 from datetime import timedelta
 from flask_swagger_ui import get_swaggerui_blueprint
 from dotenv import load_dotenv
+from base64 import b64encode
 
 # # importing the sys module
 import sys, os
@@ -22,9 +23,8 @@ print(sys.path)
 load_dotenv('../../../.env')
 
 from agentforge import DST_PATH
-# from agentforge.ai import ExecutiveCognition
+from agentforge.utils import comprehensive_error_handler
 from agentforge.ai import decision_interactor
-# from agentforge.agent import startup
 from agentforge.utils import measure_time
 from agentforge.ai import User
 from agentforge import db
@@ -171,6 +171,7 @@ def configure():
             return jsonify({'message': str(e)}), 400
         
 @app.route('/v1/completions', methods=['POST'])
+@comprehensive_error_handler
 @measure_time
 def agent():
     ## Parse Data --  from web accept JSON, from client we need to pull ModelConfig
@@ -186,12 +187,24 @@ def agent():
     
     ## Get Decision from Decision Factory and run it
     decision = decision_interactor.get_decision()
+    
     output = decision.run({"input": data, "model_profile": model_profile})
+
+    ### Parse audio/video if needed
+    if 'audio' in output:
+        filename = output['audio']["filename"]
+
+        with open(filename, 'rb') as fh:
+            return jsonify(
+                choices = [{"text": output["response"]}],
+                audio = b64encode(fh.read()).decode()
+            )
 
     ## Return Decision output
     return output
 
 @app.route('/v1/user/<user_id>/model-profiles', methods=['GET'])
+@comprehensive_error_handler
 @measure_time
 def get_user_profiles(user_id):
     model_profiles = ModelProfile()
@@ -200,6 +213,7 @@ def get_user_profiles(user_id):
     return output
 
 @app.route('/v1/model-profiles', methods=['POST'])
+@comprehensive_error_handler
 @measure_time
 def create_profile():
     print("MODEL_PROFILES")
@@ -209,6 +223,7 @@ def create_profile():
     return output
 
 @app.route('/v1/model-profiles/<id>', methods=['PUT', 'GET'])
+@comprehensive_error_handler
 @measure_time
 def update_or_get_profile(id):
     if request.method == 'PUT':

@@ -13,8 +13,5 @@ class Respond:
         }
         response = self.service.call(input)
 
-        if response is None or "choices" not in response:
-            return {"error": True, "msg": response} # return error
-
         context["response"] = response["choices"][0]["text"]
         return context

@@ -7,8 +7,9 @@ class Speak:
         self.service = interface_interactor.get_interface("tts")
 
     def execute(self, context: Dict[str, Any]) -> Dict[str, Any]:
-        wav_response = self.service.call({'input': context['input'], 'avatar_config': context['model_profile']['avatar_config']})
-        context['audio'] = {"filename": wav_response["filename"], "type": "audio/wav"}
+        wav_response = self.service.call({'response': context['response'], 'avatar_config': context['model_profile']['avatar_config']})
+        if wav_response is not None:
+            context['audio'] = {"filename": wav_response["filename"], "type": "audio/wav"}
 
         return context
 
