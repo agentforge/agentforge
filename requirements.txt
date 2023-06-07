@@ -32,3 +32,4 @@ sentence_transformers
 bcrypt
 pymongo
 inflect
+tokenizers>=0.13.3

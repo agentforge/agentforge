@@ -15,7 +15,7 @@ class LocalLoader:
 
     def load(self, config, device="cuda"):
         self.config = config
-        if "llama" in config["model_name"]:
+        if "llama" in config and bool(config["llama"]):
             self.llama(device)
         else:
             self.huggingface(device)
@@ -28,13 +28,17 @@ class LocalLoader:
         self.tokenizer.pad_token_id = 0
         self.tokenizer.padding_side = "left"
         load_in_8bit = self.config.get("load_in_8bit", False)
+        load_in_4bit = self.config.get("load_in_4bit", False)
+        half = self.config.get("half", False)
+
         self.model = LlamaForCausalLM.from_pretrained(
             self.config["model_name"],
             load_in_8bit=bool(load_in_8bit),
+            load_in_4bit=bool(load_in_4bit),
             torch_dtype=torch.float16,
             device_map=self.device_map,
         )
-        if "peft_model" in self.config:
+        if "peft_model" in self.config and self.config["peft_model"] != "":
             module = dynamic_import('peft', ['PeftModel'])
             self.model = module["PeftModel"].from_pretrained(
                 self.model, self.config["peft_model"],
@@ -48,7 +52,7 @@ class LocalLoader:
             logger.info(f"Using {torch.cuda.device_count()} GPUs")
             self.model = torch.nn.DataParallel(self.model)
         
-        if not self.multi_gpu:
+        if not self.multi_gpu and half and not load_in_4bit and not load_in_8bit:
             self.model.half()
 
     def huggingface(self, device="cuda", mpt=False):
@@ -58,6 +62,7 @@ class LocalLoader:
 
         revision = self.config.get("revision", "main")
         load_in_8bit = self.config.get("load_in_8bit", False)
+        load_in_4bit = self.config.get("load_in_4bit", False)
         torch_dtype = self.config.get("torch_dtype", torch.float16)
         padding_side = self.config.get("padding_side", "left")
         model_name = self.config["model_name"]
@@ -72,7 +77,8 @@ class LocalLoader:
         self.model = AutoModelForCausalLM.from_pretrained(
             model_name,
             config=config,
-            # load_in_8bit=load_in_8bit,
+            load_in_8bit=bool(load_in_8bit),
+            load_in_4bit=bool(load_in_4bit),
             torch_dtype=torch_dtype,
             device_map=self.device_map,
             revision=revision,
@@ -97,6 +103,7 @@ class LocalLoader:
             logger.info(f"Using {torch.cuda.device_count()} GPUs")
             self.model = torch.nn.DataParallel(self.model)
     
-        self.model = self.model.to(self.device)
+        if not load_in_4bit and not load_in_8bit:
+            self.model = self.model.to(self.device)
         self.model.eval()  # Set the model to evaluation mode
         logger.info(f"Model loaded and online...")

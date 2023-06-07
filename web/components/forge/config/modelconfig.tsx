@@ -16,10 +16,9 @@ const models = [
 
 
 export const MODEL_FIELDS: ConfigFields = {
-  model_name: { type: 'text', default: 'fragro/llama-7b-hf', tooltip: 'The model name used for generating completions.' },
-  tokenizer_name: { type: 'text', default: 'fragro/llama-7b-hf', tooltip: 'The tokenizer name used for generating completions.' },
-  peft_model: { type: 'text', default: 'tloen/alpaca-lora-7b', tooltip: 'The model used for post-edit fine-tuning.' },
-  prompt_type: { type: 'text', default: 'instruct_w_memory', tooltip: 'The type of prompt used in the model.' },
+  model_name: { type: 'text', default: undefined, tooltip: 'The model name used for generating completions.' },
+  tokenizer_name: { type: 'text', default: undefined, tooltip: 'The tokenizer name used for generating completions.' },
+  peft_model: { type: 'text', default: undefined, tooltip: 'The model used for post-edit fine-tuning.' },
   model_class: { type: 'text', default: 'AutoCasualModel', tooltip: 'The class of the model.' },
   tokenizer_class: { type: 'text', default: 'AutoTokenizer', tooltip: 'The class of the tokenizer.' },
   pad_token: { type: 'text', default: undefined, tooltip: "The padding token string. Padding tokens are used in batched generation when sequences of different lengths are generated, to make the output a rectangular tensor." },
@@ -27,12 +26,14 @@ export const MODEL_FIELDS: ConfigFields = {
   eos_token: { type: 'text', default: undefined, tooltip: "The end-of-sequence token string. This token is used to signal the end of a generated sequence. If the model generates this token, it will stop generating more tokens (unless min_length or min_new_tokens is set to a higher value)." },
   load_in_8bit: { type: 'boolean', default: false, tooltip: "Determines whether the model weights should be loaded in 8-bit. Loading the model in 8-bit can drastically reduce the model size in memory at the cost of a slight degradation in quality. This can be beneficial in resource-constrained environments." },
   load_in_4bit: { type: 'boolean', default: false, tooltip: "Determines whether the model weights should be loaded in 4-bit. Loading the model in 4-bit can drastically reduce the model size in memory at the cost of a slight degradation in quality. This can be beneficial in resource-constrained environments." },
+  half: { type: 'boolean', default: false, tooltip: "An additional choice to reduce the GPU memory footprint of models when loaded, do not use with 8 or 4 bit." },
   attn_impl: { type: 'text', default: undefined, tooltip: "Choose 'triton' for MPT based models." },
-  device_map: { type: 'text', default: undefined, tooltip: "Device map selection -- auto for multi-gpu else blank" },
+  device_map: { type: 'text', default: 'cuda:0', tooltip: "Device map selection -- auto for multi-gpu else cuda:0" },
   multi_gpu: { type: 'boolean', default: undefined, tooltip: "Whether or not the model-backend will be distributed among multi-gpus."},
   speech: { type: 'boolean', default: false, label: 'Speech' },
   video: { type: 'boolean', default: false, label: 'Video' },
   streaming: { type: 'boolean', default: false, label: 'Streaming' },
+  llama: { type: 'boolean', default: false, label: 'Llama' },
 };
 
 
