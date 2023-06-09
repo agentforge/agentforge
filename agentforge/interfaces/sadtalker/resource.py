@@ -15,6 +15,7 @@ class SadTalker():
   def __init__(self) -> None:
 
     self.loaded_model = None
+    self.config_dir = os.environ.get('CONFIG_DIR', '/app/agentforge/config')
     self.checkpoint_dir = os.environ.get('SADTALKER_CHECKPOINT_DIR', './checkpoints')
     self.result_dir = os.environ.get('SADTALKER_RESULT_DIR', './results')
     self.batch_size = int(os.environ.get('SADTALKER_BATCH_SIZE', 1))
@@ -40,15 +41,15 @@ class SadTalker():
     wav2lip_checkpoint = os.path.join(self.checkpoint_dir, 'wav2lip.pth')
 
     audio2pose_checkpoint = os.path.join(self.checkpoint_dir, 'auido2pose_00140-model.pth')
-    audio2pose_yaml_path = os.path.join('src', 'config', 'auido2pose.yaml')
+    audio2pose_yaml_path = os.path.join(self.config_dir, 'auido2pose.yaml')
 
     audio2exp_checkpoint = os.path.join(self.checkpoint_dir, 'auido2exp_00300-model.pth')
-    audio2exp_yaml_path = os.path.join('src', 'config', 'auido2exp.yaml')
+    audio2exp_yaml_path = os.path.join(self.config_dir, 'auido2exp.yaml')
 
     free_view_checkpoint = os.path.join(self.checkpoint_dir, 'facevid2vid_00189-model.pth.tar')
 
     mapping_checkpoint = os.path.join(self.checkpoint_dir, 'mapping_00109-model.pth.tar')
-    facerender_yaml_path = os.path.join('src', 'config', 'facerender_still.yaml')
+    facerender_yaml_path = os.path.join(self.config_dir, 'facerender_still.yaml')
 
     # init model
     print(path_of_net_recon_model)
