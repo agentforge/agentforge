@@ -51,6 +51,8 @@ class SadTalker():
     mapping_checkpoint = os.path.join(self.checkpoint_dir, 'mapping_00109-model.pth.tar')
     facerender_yaml_path = os.path.join(self.config_dir, 'facerender_still.yaml')
 
+    gfpgan_path = os.path.join(self.checkpoint_dir, 'GFPGANv1.3.pth')
+
     # init model
     print(path_of_net_recon_model)
     self.preprocess_model = CropAndExtract(path_of_lm_croper, path_of_net_recon_model, dir_of_BFM_fitting, device)
@@ -63,7 +65,7 @@ class SadTalker():
     print(mapping_checkpoint)
     self.animate_from_coeff = AnimateFromCoeff(free_view_checkpoint, mapping_checkpoint, facerender_yaml_path, device)
 
-    self.restorer_model = GFPGANer(model_path='checkpoints/GFPGANv1.3.pth', upscale=1, arch='clean',
+    self.restorer_model = GFPGANer(model_path=gfpgan_path, upscale=1, arch='clean',
                               channel_multiplier=2, bg_upsampler=None)
     self.enhancer_model = FaceEnhancement(base_dir='checkpoints', size=512, model='GPEN-BFR-512', use_sr=False,
                                     sr_model='rrdb_realesrnet_psnr', channel_multiplier=2, narrow=1, device=device)
