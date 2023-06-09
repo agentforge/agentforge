@@ -5,12 +5,12 @@ import sys
 sys.path.append('third_part/GPEN')
 
 ######### face enhancement
-from face_parse.face_parsing import FaceParse
-from face_detect.retinaface_detection import RetinaFaceDetection
-from face_parse.face_parsing import FaceParse
-from face_model.face_gan import FaceGAN
+from agentforge.interfaces.sadtalker.third_part.GPEN.face_parse.face_parsing import FaceParse
+from agentforge.interfaces.sadtalker.third_part.GPEN.face_detect.retinaface_detection import RetinaFaceDetection
+from agentforge.interfaces.sadtalker.third_part.GPEN.face_parse.face_parsing import FaceParse
+from agentforge.interfaces.sadtalker.third_part.GPEN.face_model.face_gan import FaceGAN
 # from sr_model.real_esrnet import RealESRNet
-from align_faces import warp_and_crop_face, get_reference_facial_points
+from agentforge.interfaces.sadtalker.third_part.GPEN.align_faces import warp_and_crop_face, get_reference_facial_points
 from agentforge.interfaces.sadtalker.src.inference_utils import Laplacian_Pyramid_Blending_with_mask
 
 class FaceEnhancement(object):

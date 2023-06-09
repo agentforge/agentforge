@@ -2,8 +2,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from torch.autograd import Variable
-from face_detect.utils.box_utils import match, log_sum_exp
-from face_detect.data import cfg_mnet
+from agentforge.interfaces.sadtalker.third_part.GPEN.face_detect.utils.box_utils import match, log_sum_exp
+from agentforge.interfaces.sadtalker.third_part.GPEN.face_detect.data import cfg_mnet
 GPU = cfg_mnet['gpu_train']
 
 class MultiBoxLoss(nn.Module):

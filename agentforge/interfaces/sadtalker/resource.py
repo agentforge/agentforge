@@ -8,7 +8,7 @@ from agentforge.interfaces.sadtalker.src.test_audio2coeff import Audio2Coeff
 from agentforge.interfaces.sadtalker.src.facerender.animate import AnimateFromCoeff
 from agentforge.interfaces.sadtalker.third_part.GFPGAN.gfpgan import GFPGANer
 from agentforge.interfaces.sadtalker.third_part.GPEN.gpen_face_enhancer import FaceEnhancement
-from agentforge.interfaces.sadtalker.src.test_audio2coeff import get_data
+from agentforge.interfaces.sadtalker.src.generate_batch import get_data
 from agentforge.interfaces.sadtalker.src.dain_model import dain_predictor
 
 class SadTalker():
@@ -33,25 +33,25 @@ class SadTalker():
     save_dir = os.path.join(self.result_dir, strftime("%Y_%m_%d_%H.%M.%S"))
     os.makedirs(save_dir, exist_ok=True)
     device = "cuda" if torch.cuda.is_available() and not cpu else "cpu"
-    current_code_path = sys.argv[0]
-    current_root_path = os.pathCropAndExtract.split(current_code_path)[0]
-    os.environ['TORCH_HOME'] = os.path.join(current_root_path, self.checkpoint_dir)
+    # current_code_path = sys.argv[0]
+    # current_root_path = os.path.split(current_code_path)[0]
+    # os.environ['TORCH_HOME'] = os.path.join(current_root_path, self.checkpoint_dir)
 
-    path_of_lm_croper = os.path.join(current_root_path, self.checkpoint_dir, 'shape_predictor_68_face_landmarks.dat')
-    path_of_net_recon_model = os.path.join(current_root_path, self.checkpoint_dir, 'epoch_20.pth')
-    dir_of_BFM_fitting = os.path.join(current_root_path, self.checkpoint_dir, 'BFM_Fitting')
-    wav2lip_checkpoint = os.path.join(current_root_path, self.checkpoint_dir, 'wav2lip.pth')
+    path_of_lm_croper = os.path.join(self.checkpoint_dir, 'shape_predictor_68_face_landmarks.dat')
+    path_of_net_recon_model = os.path.join(self.checkpoint_dir, 'epoch_20.pth')
+    dir_of_BFM_fitting = os.path.join(self.checkpoint_dir, 'BFM_Fitting')
+    wav2lip_checkpoint = os.path.join(self.checkpoint_dir, 'wav2lip.pth')
 
-    audio2pose_checkpoint = os.path.join(current_root_path, self.checkpoint_dir, 'auido2pose_00140-model.pth')
-    audio2pose_yaml_path = os.path.join(current_root_path, 'src', 'config', 'auido2pose.yaml')
+    audio2pose_checkpoint = os.path.join(self.checkpoint_dir, 'auido2pose_00140-model.pth')
+    audio2pose_yaml_path = os.path.join('src', 'config', 'auido2pose.yaml')
 
-    audio2exp_checkpoint = os.path.join(current_root_path, self.checkpoint_dir, 'auido2exp_00300-model.pth')
-    audio2exp_yaml_path = os.path.join(current_root_path, 'src', 'config', 'auido2exp.yaml')
+    audio2exp_checkpoint = os.path.join(self.checkpoint_dir, 'auido2exp_00300-model.pth')
+    audio2exp_yaml_path = os.path.join('src', 'config', 'auido2exp.yaml')
 
-    free_view_checkpoint = os.path.join(current_root_path, self.checkpoint_dir, 'facevid2vid_00189-model.pth.tar')
+    free_view_checkpoint = os.path.join(self.checkpoint_dir, 'facevid2vid_00189-model.pth.tar')
 
-    mapping_checkpoint = os.path.join(current_root_path, self.checkpoint_dir, 'mapping_00109-model.pth.tar')
-    facerender_yaml_path = os.path.join(current_root_path, 'src', 'config', 'facerender_still.yaml')
+    mapping_checkpoint = os.path.join(self.checkpoint_dir, 'mapping_00109-model.pth.tar')
+    facerender_yaml_path = os.path.join('src', 'config', 'facerender_still.yaml')
 
     # init model
     print(path_of_net_recon_model)
@@ -82,7 +82,7 @@ class SadTalker():
     self.loaded_model = source_video
     
   def run(self, opts={}):
-    
+    app/agentforge/agentforge/interfaces/sadtalker/resource.py
     audio_path = opts["audio"]
     face = opts["face"]
     save_path = opts["outfile"]

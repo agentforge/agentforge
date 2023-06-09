@@ -13,7 +13,7 @@ from torch import nn
 from torch.nn import functional as F
 from torch.autograd import Function
 
-from face_model.op import FusedLeakyReLU, fused_leaky_relu, upfirdn2d
+from agentforge.interfaces.sadtalker.third_part.GPEN.face_model.op import FusedLeakyReLU, fused_leaky_relu, upfirdn2d
 
 class PixelNorm(nn.Module):
     def __init__(self):
