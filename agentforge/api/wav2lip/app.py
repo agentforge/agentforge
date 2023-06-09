@@ -4,7 +4,6 @@ import sys, os
 # # appending the directory of mod.py
 # # in the sys.path list
 sys.path.append(os.path.join(os.path.dirname(sys.path[0]),'/app/agentforge'))
-print(sys.path)
 
 from flask import Flask, request, jsonify
 from flask_cors import CORS
@@ -26,16 +25,15 @@ def lipsync():
   # Get the wav file from the request
   wav_file = request.json["audio_response"]
   avatar = request.json["avatar_config"]
-  output_file = "/app/cache/lipsync.mp4"
 
   # Interpret the wav file
   opts = {
     "face": "/app/cache/default.mp4", # TODO: pull this from avatar, add to frontend
     "audio": wav_file,
-    "outfile": output_file,
+    "outfile": "/app/cache/lipsync.mp4"
   }
 
-  response  = w2l.run(opts)
+  response = w2l.run(opts)
 
   # Return the text in the response
   return jsonify(response)

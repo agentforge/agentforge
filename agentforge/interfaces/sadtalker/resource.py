@@ -10,6 +10,7 @@ from agentforge.interfaces.sadtalker.third_part.GFPGAN.gfpgan import GFPGANer
 from agentforge.interfaces.sadtalker.third_part.GPEN.gpen_face_enhancer import FaceEnhancement
 from agentforge.interfaces.sadtalker.src.generate_batch import get_data
 from agentforge.interfaces.sadtalker.src.dain_model import dain_predictor
+from agentforge.interfaces.sadtalker.src.generate_facerender_batch import get_facerender_data
 
 class SadTalker():
   def __init__(self) -> None:
@@ -31,9 +32,9 @@ class SadTalker():
     self.remove_duplicates = os.environ.get('SADTALKER_REMOVE_DUPLICATES', 'False').lower() in ['true', '1', 'yes']
 
     # Remaining variables
-    save_dir = os.path.join(self.result_dir, strftime("%Y_%m_%d_%H.%M.%S"))
-    os.makedirs(save_dir, exist_ok=True)
-    device = "cuda" if torch.cuda.is_available() and not cpu else "cpu"
+    self.save_dir = os.path.join(self.result_dir, strftime("%Y_%m_%d_%H.%M.%S"))
+    os.makedirs(self.save_dir, exist_ok=True)
+    self.device = "cuda" if torch.cuda.is_available() and not cpu else "cpu"
 
     path_of_lm_croper = os.path.join(self.checkpoint_dir, 'shape_predictor_68_face_landmarks.dat')
     path_of_net_recon_model = os.path.join(self.checkpoint_dir, 'epoch_20.pth')
@@ -55,20 +56,20 @@ class SadTalker():
 
     # init model
     print(path_of_net_recon_model)
-    self.preprocess_model = CropAndExtract(path_of_lm_croper, path_of_net_recon_model, dir_of_BFM_fitting, device)
+    self.preprocess_model = CropAndExtract(path_of_lm_croper, path_of_net_recon_model, dir_of_BFM_fitting, self.device)
 
     print(audio2pose_checkpoint)
     print(audio2exp_checkpoint)
-    self.audio_to_coeff = Audio2Coeff(audio2pose_checkpoint, audio2pose_yaml_path, audio2exp_checkpoint, audio2exp_yaml_path, wav2lip_checkpoint, device)
+    self.audio_to_coeff = Audio2Coeff(audio2pose_checkpoint, audio2pose_yaml_path, audio2exp_checkpoint, audio2exp_yaml_path, wav2lip_checkpoint, self.device)
 
     print(free_view_checkpoint)
     print(mapping_checkpoint)
-    self.animate_from_coeff = AnimateFromCoeff(free_view_checkpoint, mapping_checkpoint, facerender_yaml_path, device)
+    self.animate_from_coeff = AnimateFromCoeff(free_view_checkpoint, mapping_checkpoint, facerender_yaml_path, self.device)
 
     self.restorer_model = GFPGANer(model_path=gfpgan_path, upscale=1, arch='clean',
                               channel_multiplier=2, bg_upsampler=None)
-    self.enhancer_model = FaceEnhancement(base_dir='checkpoints', size=512, model='GPEN-BFR-512', use_sr=False,
-                                    sr_model='rrdb_realesrnet_psnr', channel_multiplier=2, narrow=1, device=device)
+    self.enhancer_model = FaceEnhancement(base_dir=self.checkpoint_dir, size=512, model='GPEN-BFR-512', use_sr=False,
+                                    sr_model='rrdb_realesrnet_psnr', channel_multiplier=2, narrow=1, device=self.device)
 
 
   def load(self, source_video: str):
@@ -94,8 +95,8 @@ class SadTalker():
     batch = get_data(self.first_coeff_path, audio_path, self.device)
     coeff_path = self.audio_to_coeff.generate(batch, self.save_dir)
     # coeff2video
-    data = self.get_facerender_data(coeff_path, self.crop_pic_path, self.first_coeff_path, self.audio_path, self.batch_size, self.device)
-    tmp_path, new_audio_path, return_path = self.animate_from_coeff.generate(data, self.save_dir, self.pic_path, self.crop_info,
+    data = get_facerender_data(coeff_path, self.crop_pic_path, self.first_coeff_path, audio_path, self.batch_size, self.device)
+    tmp_path, new_audio_path, return_path = self.animate_from_coeff.generate(data, self.save_dir, self.loaded_model, self.crop_info,
                                                                           self.restorer_model, self.enhancer_model, self.enhancer_region)
     torch.cuda.empty_cache()
     if self.use_DAIN:
@@ -105,6 +106,10 @@ class SadTalker():
                                                       remove_duplicates=self.remove_duplicates)
         frames_path, temp_video_path = predictor_dian.run(tmp_path)
         paddle.disable_static()
+        print(save_path)
         command = r'ffmpeg -y -i "%s" -i "%s" -vcodec copy "%s"' % (temp_video_path, new_audio_path, save_path)
+        print(command)
         os.system(command)
     os.remove(tmp_path)
+
+    return {'filename': return_path }
