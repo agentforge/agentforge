@@ -36,7 +36,9 @@ class ResourceFactory:
             Wav2LipModel = getattr(importlib.import_module('agentforge.interfaces.wav2lip.resource'), 'Wav2LipModel')
             self.__resources["w2l"] = Wav2LipModel()
         elif w2l_type == "sadtalker":
-            raise NotImplementedError("SADTalker is not yet implemented")
+            SadTalker = getattr(importlib.import_module('agentforge.interfaces.sadtalker.resource'), 'SadTalker')
+            self.__resources["w2l"] = SadTalker()
+
         else:
             raise ValueError(f"Invalid W2L type: {w2l_type}")
 
