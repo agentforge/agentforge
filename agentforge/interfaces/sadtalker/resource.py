@@ -1,28 +1,33 @@
 import os
 import sys
 import torch
+import paddle
 from time import strftime
 from agentforge.interfaces.sadtalker.src.utils.preprocess import CropAndExtract
 from agentforge.interfaces.sadtalker.src import Audio2Coeff
 from agentforge.interfaces.sadtalker.src.facerender import AnimateFromCoeff
 from agentforge.interfaces.sadtalker.third_part.GFPGAN import GFPGANer
 from agentforge.interfaces.sadtalker.third_part.GPEN import FaceEnhancement
+from agentforge.interfaces.sadtalker.src import get_data
+from agentforge.interfaces.sadtalker.src.dain_model import dain_predictor
 
 class SadTalker():
   def __init__(self) -> None:
-      
-    # Read environment variables
-    driven_audio = os.environ.get('DRIVEN_AUDIO', './examples/driven_audio/bus_chinese.wav')
-    source_video = os.environ.get('SOURCE_VIDEO', './examples/source_image/input.mp4')
 
-    self.checkpoint_dir = os.environ.get('CHECKPOINT_DIR', './checkpoints')
-    self.result_dir = os.environ.get('RESULT_DIR', './results')
-    self.batch_size = int(os.environ.get('BATCH_SIZE', 1))
-    self.enhancer_region = os.environ.get('ENHANCER', 'lip')
+    self.loaded_model = None
+    self.checkpoint_dir = os.environ.get('SADTALKER_CHECKPOINT_DIR', './checkpoints')
+    self.result_dir = os.environ.get('SADTALKER_RESULT_DIR', './results')
+    self.batch_size = int(os.environ.get('SADTALKER_BATCH_SIZE', 1))
+    self.enhancer_region = os.environ.get('SADTALKER_ENHANCER', 'lip')
     
-    cpu = os.environ.get('CPU', 'False').lower() in ['true', '1', 'yes']
+    cpu = os.environ.get('SADTALKER_CPU', 'False').lower() in ['true', '1', 'yes']
 
-    self.use_DAIN = os.environ.get('USE_DAIN', 'False').lower() in ['true', '1', 'yes']
+    self.use_DAIN = os.environ.get('SADTALKER_USE_DAIN', 'False').lower() in ['true', '1', 'yes']
+
+    self.DAIN_weight = os.environ.get('SADTALKER_DAIN_WEIGHT', './checkpoints/DAIN_weight')
+    self.dian_output = os.environ.get('SADTALKER_DIAN_OUTPUT', 'dian_output')
+    self.time_step = float(os.environ.get('SADTALKER_TIME_STEP', 0.5))
+    self.remove_duplicates = os.environ.get('SADTALKER_REMOVE_DUPLICATES', 'False').lower() in ['true', '1', 'yes']
 
     # Remaining variables
     save_dir = os.path.join(self.result_dir, strftime("%Y_%m_%d_%H.%M.%S"))
@@ -71,30 +76,36 @@ class SadTalker():
     first_frame_dir = os.path.join(self.save_dir, 'first_frame_dir')
     os.makedirs(first_frame_dir, exist_ok=True)
     print('3DMM Extraction for source image')
-    first_coeff_path, crop_pic_path, crop_info = self.preprocess_model.generate(source_video, first_frame_dir)
-    if first_coeff_path is None:
-        print("Can't get the coeffs of the input")
-        return
+    self.first_coeff_path, self.crop_pic_path, self.crop_info = self.preprocess_model.generate(source_video, first_frame_dir)
+    if self.first_coeff_path is None:
+        raise Exception("Can't get the coeffs of the input")
+    self.loaded_model = source_video
+    
+  def run(self, opts={}):
+    
+    audio_path = opts["audio"]
+    face = opts["face"]
+    save_path = opts["outfile"]
 
-  def synthesizer(self, text, filename, speaker_wav=None, speaker_idx=0):
+    # See if model is loaded and if not load the requested model
+    if self.loaded_model is not face:
+       self.load(face)
+
     # audio2ceoff
-    batch = get_data(first_coeff_path, audio_path, device)
-    coeff_path = audio_to_coeff.generate(batch, save_dir)
+    batch = get_data(self.first_coeff_path, audio_path, self.device)
+    coeff_path = self.audio_to_coeff.generate(batch, self.save_dir)
     # coeff2video
-    data = get_facerender_data(coeff_path, crop_pic_path, first_coeff_path, audio_path, batch_size, device)
-    tmp_path, new_audio_path, return_path = animate_from_coeff.generate(data, save_dir, pic_path, crop_info,
-                                                                        restorer_model, enhancer_model, enhancer_region)
+    data = self.get_facerender_data(coeff_path, self.crop_pic_path, self.first_coeff_path, self.audio_path, self.batch_size, self.device)
+    tmp_path, new_audio_path, return_path = self.animate_from_coeff.generate(data, self.save_dir, self.pic_path, self.crop_info,
+                                                                          self.restorer_model, self.enhancer_model, self.enhancer_region)
     torch.cuda.empty_cache()
-    if args.use_DAIN:
-        import paddle
-        from src.dain_model import dain_predictor
+    if self.use_DAIN:
         paddle.enable_static()
-        predictor_dian = dain_predictor.DAINPredictor(args.dian_output, weight_path=args.DAIN_weight,
-                                                      time_step=args.time_step,
-                                                      remove_duplicates=args.remove_duplicates)
+        predictor_dian = dain_predictor.DAINPredictor(self.dian_output, weight_path=self.DAIN_weight,
+                                                      time_step=self.time_step,
+                                                      remove_duplicates=self.remove_duplicates)
         frames_path, temp_video_path = predictor_dian.run(tmp_path)
         paddle.disable_static()
-        save_path = return_path[:-4] + '_dain.mp4'
         command = r'ffmpeg -y -i "%s" -i "%s" -vcodec copy "%s"' % (temp_video_path, new_audio_path, save_path)
         os.system(command)
     os.remove(tmp_path)

@@ -26,6 +26,7 @@ RUN pip install -r /app/agentforge/agentforge/interfaces/sadtalker/requirements.
 
 #如需使用DAIN模型进行补帧需安装paddle
 # CUDA 11.2
+
 RUN python -m pip install paddlepaddle-gpu==2.3.2.post112 -f https://www.paddlepaddle.org.cn/whl/linux/mkl/avx/stable.html
 
 RUN pip uninstall -y opencv-python && pip install opencv-python==4.7.0.72

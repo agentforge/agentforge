@@ -16,38 +16,21 @@ CORS(app)
 from dotenv import load_dotenv
 load_dotenv('../../../.env')
 
-CHKPT_PTH = DST_PATH + "/weights/wav2lip_gan.pth"
-# Default face loop
-# TODO: When we introduce multiple avatars this will need refactoring
-faces = [
-  ("default", DST_PATH + "/videos/default.mp4"),
-  ("caretaker", DST_PATH + "/videos/default.mp4"),
-  ("makhno", DST_PATH + "/videos/makhno.mp4"),
-  ("fdr", DST_PATH + "/videos/fdr.mp4"),
-  ("sankara", DST_PATH + "/videos/sankara.mp4"),
-]
-opts = {}
-
 w2l = resource_factory.get_resource("w2l")
-
-# wav2lip = Wav2Lip()
-# Define the /interpret endpoint
 
 @app.route("/v1/lipsync", methods=["POST"])
 @measure_time
 def lipsync():
   # Get the wav file from the request
   wav_file = request.json["wav_file"]
-  avatar = request.json["avatar"]
-
+  avatar = request.json["avatar_config"]
   output_file = "/app/cache/lipsync.mp4"
 
   # Interpret the wav file
   opts = {
-    "face": avatar["mp4"],
+    "face": "/app/cache/default.mp4", # TODO: pull this from avatar, add to frontend
     "audio": wav_file,
     "outfile": output_file,
-    "avatar": avatar["avatar"]
   }
 
   w2l.run(opts)
