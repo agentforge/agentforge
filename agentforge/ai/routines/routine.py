@@ -10,5 +10,6 @@ class Routine():
 
     def run(self, context: Optional[Dict[str, Any]]) -> Dict[str, Any]:
         for subroutine in self.subroutines:
+            print(subroutine)
             context = subroutine.execute(context)
         return context

@@ -9,7 +9,6 @@ class Speak:
     def execute(self, context: Dict[str, Any]) -> Dict[str, Any]:
         wav_response = self.service.call({'response': context['response'], 'avatar_config': context['model_profile']['avatar_config']})
         if wav_response is not None:
-            context['audio'] = {"filename": wav_response["filename"], "type": "audio/wav"}
-
+            context['audio'] = {"audio_response": wav_response["filename"], "type": "audio/wav"}
         return context
 
