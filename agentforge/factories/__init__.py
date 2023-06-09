@@ -14,12 +14,7 @@ print(DEFAULT_LLM)
 
 resource_factory = ResourceFactory()
 if RESOURCE == "LLM":
-    module_name = 'agentforge.interfaces.model_profile'
-    module = importlib.import_module(module_name)
-    ModelProfile = getattr(module, 'ModelProfile')
-    model_profile = ModelProfile()
-    model_configuration = model_profile.get_profile_by_name(DEFAULT_LLM)
-    resource_factory.create_llm_resource(model_configuration)
+    resource_factory.create_llm_resource({})
 if RESOURCE == "TTS":
     resource_factory.create_tts_resource()
 if RESOURCE == "W2L":

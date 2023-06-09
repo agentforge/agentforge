@@ -38,7 +38,7 @@ tts = resource_factory.get_resource("tts")
 @measure_time
 def text_to_speech():
   # Get the text and filename from the request
-  prompt = request.json["input"]["prompt"]
+  prompt = request.json["response"]
   avatar = request.json["avatar_config"]
 
   filename = "/app/cache/out.wav"

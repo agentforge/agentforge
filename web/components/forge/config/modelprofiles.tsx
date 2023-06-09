@@ -8,10 +8,12 @@ import { useRouter } from 'next/navigation';
 interface ModelProfile {
   _id: string;
   avatar: string;
+  avatar_config: avatar_config;
+}
+
+interface avatar_config {
+  // Define properties related to the avatar configuration
   name: string;
-  creator: string;
-  description: string;
-  timestamp: string;
 }
 
 const API_ENDPOINT = '/api/modelprofiles'; // replace with your actual endpoint
@@ -28,6 +30,7 @@ const ModelProfilesTable: React.FC<{ pageSize: number }> = ({ pageSize }) => {
         console.log(`/api/user/${user_id}/modelprofiles`);
         const res = await fetch(`/api/user/${user_id}/modelprofiles`);
         const data = await res.json();
+        console.log(data);
         setProfiles(data);
       } catch (error) {
         console.error(error);
@@ -79,7 +82,7 @@ const ModelProfilesTable: React.FC<{ pageSize: number }> = ({ pageSize }) => {
           {profilesToShow.map((profile, index) => (
             <tr key={index} className={`${index % 2 === 0 ? 'bg-gray-700' : ''}`}>
               <td className="border px-4 py-2"><img src={profile.avatar} alt="avatar" /></td>
-              <td className="border px-4 py-2">{profile.name}</td>
+              <td className="border px-4 py-2">{profile.avatar_config.name}</td>
               <td className="border px-4 py-2">
               <Button type='button' onClick={() => navToEdit(profile._id)}>
                 Edit
