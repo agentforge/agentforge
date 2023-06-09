@@ -6,7 +6,7 @@ import numpy as np
 from tqdm import tqdm
 from imageio import imread, imsave
 
-from src.dain_model.base_predictor import BasePredictor
+from agentforge.interfaces.sadtalker.src.dain_model.base_predictor import BasePredictor
 
 DAIN_WEIGHT_URL = 'https://paddlegan.bj.bcebos.com/applications/DAIN_weight.tar'
 
@@ -229,7 +229,7 @@ class DAINPredictor(BasePredictor):
 
         for i in range(num1):
             src = frames1[i]
-            imgname = int(src.split(os.sep)[-1].split('.')[-2])
+            imgname = int(agentforge.interfaces.sadtalker.src.split(os.sep)[-1].split('.')[-2])
             assert i == imgname
             dst = os.path.join(combined,
                                '{:08d}.png'.format(i * (num_frames + 1)))
@@ -254,14 +254,14 @@ class DAINPredictor(BasePredictor):
 
         for i in range(num1):
             src = frames1[i]
-            index = int(src.split(os.sep)[-1].split('.')[-2])
+            index = int(agentforge.interfaces.sadtalker.src.split(os.sep)[-1].split('.')[-2])
             dst = os.path.join(combined,
                                '{:08d}.png'.format(times_interp * index))
             shutil.copy2(src, dst)
 
         for i in range(num2):
             src = frames2[i]
-            imgname = src.split(os.sep)[-1]
+            imgname = agentforge.interfaces.sadtalker.src.split(os.sep)[-1]
             dst = os.path.join(combined, imgname)
             shutil.copy2(src, dst)
 

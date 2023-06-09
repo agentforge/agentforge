@@ -33,6 +33,7 @@ RUN pip uninstall -y opencv-python && pip install opencv-python==4.7.0.72
 RUN pip uninstall -y opencv-contrib-python && pip install opencv-contrib-python==4.7.0.72
 RUN pip uninstall -y numpy && pip install numpy==1.23.5
 RUN pip install "opencv-python-headless<4.3"
+RUN pip install flask_cors flask_sqlalchemy python-dotenv inflect
 
 WORKDIR /app/agentforge/agentforge/api/wav2lip
 

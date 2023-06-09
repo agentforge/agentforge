@@ -4,11 +4,11 @@ import torch
 import paddle
 from time import strftime
 from agentforge.interfaces.sadtalker.src.utils.preprocess import CropAndExtract
-from agentforge.interfaces.sadtalker.src import Audio2Coeff
-from agentforge.interfaces.sadtalker.src.facerender import AnimateFromCoeff
-from agentforge.interfaces.sadtalker.third_part.GFPGAN import GFPGANer
-from agentforge.interfaces.sadtalker.third_part.GPEN import FaceEnhancement
-from agentforge.interfaces.sadtalker.src import get_data
+from agentforge.interfaces.sadtalker.src.test_audio2coeff import Audio2Coeff
+from agentforge.interfaces.sadtalker.src.facerender.animate import AnimateFromCoeff
+from agentforge.interfaces.sadtalker.third_part.GFPGAN.gfpgan import GFPGANer
+from agentforge.interfaces.sadtalker.third_part.GPEN.gpen_face_enhancer import FaceEnhancement
+from agentforge.interfaces.sadtalker.src.test_audio2coeff import get_data
 from agentforge.interfaces.sadtalker.src.dain_model import dain_predictor
 
 class SadTalker():

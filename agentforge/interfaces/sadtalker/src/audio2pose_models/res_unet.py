@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from src.audio2pose_models.networks import ResidualConv, Upsample
+from agentforge.interfaces.sadtalker.src.audio2pose_models.networks import ResidualConv, Upsample
 
 
 class ResUnet(nn.Module):

@@ -2,8 +2,8 @@ from torch import nn
 import torch
 import torch.nn.functional as F
 
-from src.facerender.sync_batchnorm import SynchronizedBatchNorm2d as BatchNorm2d
-from src.facerender.modules.util import KPHourglass, make_coordinate_grid, AntiAliasInterpolation2d, ResBottleneck
+from agentforge.interfaces.sadtalker.src.facerender.sync_batchnorm import SynchronizedBatchNorm2d as BatchNorm2d
+from agentforge.interfaces.sadtalker.src.facerender.modules.util import KPHourglass, make_coordinate_grid, AntiAliasInterpolation2d, ResBottleneck
 
 
 class KPDetector(nn.Module):

@@ -5,9 +5,9 @@ from scipy.io import savemat, loadmat
 from yacs.config import CfgNode as CN
 from scipy.signal import savgol_filter
 
-from src.audio2pose_models.audio2pose import Audio2Pose
-from src.audio2exp_models.networks import SimpleWrapperV2
-from src.audio2exp_models.audio2exp import Audio2Exp
+from agentforge.interfaces.sadtalker.src.audio2pose_models.audio2pose import Audio2Pose
+from agentforge.interfaces.sadtalker.src.audio2exp_models.networks import SimpleWrapperV2
+from agentforge.interfaces.sadtalker.src.audio2exp_models.audio2exp import Audio2Exp
 
 
 def load_cpk(checkpoint_path, model=None, optimizer=None, device="cpu"):

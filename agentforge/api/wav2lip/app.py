@@ -1,8 +1,10 @@
-### Ensure local libs are available for Flask
-from pathlib import Path
-import sys
-path_root = Path(__file__).parents[2]
-sys.path.append(str(path_root))
+# # importing the sys module
+import sys, os
+ 
+# # appending the directory of mod.py
+# # in the sys.path list
+sys.path.append(os.path.join(os.path.dirname(sys.path[0]),'/app/agentforge'))
+print(sys.path)
 
 from flask import Flask, request, jsonify
 from flask_cors import CORS
@@ -15,7 +17,13 @@ CORS(app)
 
 from dotenv import load_dotenv
 load_dotenv('../../../.env')
-
+# # importing the sys module
+import sys, os
+ 
+# # appending the directory of mod.py
+# # in the sys.path list
+sys.path.append(os.path.join(os.path.dirname(sys.path[0]),'/app/agentforge'))
+print(sys.path)
 w2l = resource_factory.get_resource("w2l")
 
 @app.route("/v1/lipsync", methods=["POST"])

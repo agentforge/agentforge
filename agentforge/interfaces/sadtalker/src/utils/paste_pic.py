@@ -2,7 +2,7 @@ import cv2, os
 import numpy as np
 from tqdm import tqdm
 import uuid
-from src.inference_utils import Laplacian_Pyramid_Blending_with_mask
+from agentforge.interfaces.sadtalker.src.inference_utils import Laplacian_Pyramid_Blending_with_mask
 
 
 def paste_pic(video_path, pic_path, crop_info, new_audio_path, full_video_path, restorer, enhancer, enhancer_region):

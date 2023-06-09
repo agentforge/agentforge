@@ -43,11 +43,11 @@ def _umeyama(src, dst, estimate_scale=True, scale=1.0):
             point patterns", Shinji Umeyama, PAMI 1991, :DOI:`10.1109/34.88573`
     """
 
-    num = src.shape[0]
-    dim = src.shape[1]
+    num = agentforge.interfaces.sadtalker.src.shape[0]
+    dim = agentforge.interfaces.sadtalker.src.shape[1]
 
     # Compute mean of src and dst.
-    src_mean = src.mean(axis=0)
+    src_mean = agentforge.interfaces.sadtalker.src.mean(axis=0)
     dst_mean = dst.mean(axis=0)
 
     # Subtract mean from src and dst.
