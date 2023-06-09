@@ -33,9 +33,6 @@ class SadTalker():
     save_dir = os.path.join(self.result_dir, strftime("%Y_%m_%d_%H.%M.%S"))
     os.makedirs(save_dir, exist_ok=True)
     device = "cuda" if torch.cuda.is_available() and not cpu else "cpu"
-    # current_code_path = sys.argv[0]
-    # current_root_path = os.path.split(current_code_path)[0]
-    # os.environ['TORCH_HOME'] = os.path.join(current_root_path, self.checkpoint_dir)
 
     path_of_lm_croper = os.path.join(self.checkpoint_dir, 'shape_predictor_68_face_landmarks.dat')
     path_of_net_recon_model = os.path.join(self.checkpoint_dir, 'epoch_20.pth')
@@ -82,7 +79,6 @@ class SadTalker():
     self.loaded_model = source_video
     
   def run(self, opts={}):
-    app/agentforge/agentforge/interfaces/sadtalker/resource.py
     audio_path = opts["audio"]
     face = opts["face"]
     save_path = opts["outfile"]
