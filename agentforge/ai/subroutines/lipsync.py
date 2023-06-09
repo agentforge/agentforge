@@ -1,7 +1,7 @@
 from typing import Any, Dict
 from agentforge.interfaces import interface_interactor
 
-### Handles conversion of text to speech
+### Handles conversion of lipsyncing operations
 class Lipsync:
     def __init__(self):
         self.service = interface_interactor.get_interface("w2l")

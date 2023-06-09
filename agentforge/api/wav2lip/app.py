@@ -4,7 +4,6 @@ import sys, os
 # # appending the directory of mod.py
 # # in the sys.path list
 sys.path.append(os.path.join(os.path.dirname(sys.path[0]),'/app/agentforge'))
-print(sys.path)
 
 from flask import Flask, request, jsonify
 from flask_cors import CORS
@@ -17,13 +16,7 @@ CORS(app)
 
 from dotenv import load_dotenv
 load_dotenv('../../../.env')
-# # importing the sys module
-import sys, os
- 
-# # appending the directory of mod.py
-# # in the sys.path list
-sys.path.append(os.path.join(os.path.dirname(sys.path[0]),'/app/agentforge'))
-print(sys.path)
+
 w2l = resource_factory.get_resource("w2l")
 
 @app.route("/v1/lipsync", methods=["POST"])
@@ -32,19 +25,18 @@ def lipsync():
   # Get the wav file from the request
   wav_file = request.json["wav_file"]
   avatar = request.json["avatar_config"]
-  output_file = "/app/cache/lipsync.mp4"
 
   # Interpret the wav file
   opts = {
     "face": "/app/cache/default.mp4", # TODO: pull this from avatar, add to frontend
     "audio": wav_file,
-    "outfile": output_file,
+    "outfile": "/app/cache/lipsync.mp4"
   }
 
-  w2l.run(opts)
+  response = w2l.run(opts)
 
   # Return the text in the response
-  return jsonify({"filename": output_file})
+  return jsonify(response)
 
 if __name__ == '__main__':
   app.run()

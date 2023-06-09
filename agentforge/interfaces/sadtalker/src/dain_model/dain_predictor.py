@@ -229,7 +229,7 @@ class DAINPredictor(BasePredictor):
 
         for i in range(num1):
             src = frames1[i]
-            imgname = int(agentforge.interfaces.sadtalker.src.split(os.sep)[-1].split('.')[-2])
+            imgname = int(src.split(os.sep)[-1].split('.')[-2])
             assert i == imgname
             dst = os.path.join(combined,
                                '{:08d}.png'.format(i * (num_frames + 1)))
@@ -254,14 +254,14 @@ class DAINPredictor(BasePredictor):
 
         for i in range(num1):
             src = frames1[i]
-            index = int(agentforge.interfaces.sadtalker.src.split(os.sep)[-1].split('.')[-2])
+            index = int(src.split(os.sep)[-1].split('.')[-2])
             dst = os.path.join(combined,
                                '{:08d}.png'.format(times_interp * index))
             shutil.copy2(src, dst)
 
         for i in range(num2):
             src = frames2[i]
-            imgname = agentforge.interfaces.sadtalker.src.split(os.sep)[-1]
+            imgname = src.split(os.sep)[-1]
             dst = os.path.join(combined, imgname)
             shutil.copy2(src, dst)
 
