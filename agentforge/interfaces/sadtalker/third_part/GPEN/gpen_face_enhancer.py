@@ -3,11 +3,11 @@ import numpy as np
 import sys
 sys.path.append('third_part/GPEN')
 
-from face_detect.retinaface_detection import RetinaFaceDetection
-from face_parse.face_parsing import FaceParse
-from face_model.face_gan import FaceGAN
-from align_faces import warp_and_crop_face, get_reference_facial_points
-from src.inference_utils import Laplacian_Pyramid_Blending_with_mask
+from agentforge.interfaces.sadtalker.third_part.GPEN.face_detect.retinaface_detection import RetinaFaceDetection
+from agentforge.interfaces.sadtalker.third_part.GPEN.face_parse.face_parsing import FaceParse
+from agentforge.interfaces.sadtalker.third_part.GPEN.face_model.face_gan import FaceGAN
+from agentforge.interfaces.sadtalker.third_part.GPEN.align_faces import warp_and_crop_face, get_reference_facial_points
+from agentforge.interfaces.sadtalker.src.inference_utils import Laplacian_Pyramid_Blending_with_mask
 
 class FaceEnhancement(object):
     def __init__(self, base_dir='./', size=512, model=None, use_sr=True, sr_model=None, channel_multiplier=2, narrow=1, device='cuda'):

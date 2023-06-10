@@ -1,8 +1,8 @@
 import torch
 from torch import nn
 import torch.nn.functional as F
-from src.facerender.modules.util import ResBlock2d, SameBlock2d, UpBlock2d, DownBlock2d, ResBlock3d, SPADEResnetBlock
-from src.facerender.modules.dense_motion import DenseMotionNetwork
+from agentforge.interfaces.sadtalker.src.facerender.modules.util import ResBlock2d, SameBlock2d, UpBlock2d, DownBlock2d, ResBlock3d, SPADEResnetBlock
+from agentforge.interfaces.sadtalker.src.facerender.modules.dense_motion import DenseMotionNetwork
 
 
 class OcclusionAwareGenerator(nn.Module):

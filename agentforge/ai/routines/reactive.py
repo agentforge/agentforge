@@ -13,4 +13,4 @@ from agentforge.ai.subroutines.prep import Prep
 ### Simplest reactive routine for a decision timestep/run
 class ReactiveRoutine(Routine):
     def __init__(self):
-        self.subroutines = [Recall(), Parse(), Respond(), Remember(), Speak(), Prep()] # Lipsync(), Prep()]
+        self.subroutines = [Recall(), Parse(), Respond(), Remember(), Speak(), Lipsync(), Prep()]

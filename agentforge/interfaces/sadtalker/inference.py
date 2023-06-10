@@ -2,11 +2,11 @@ import torch
 from time import strftime
 import os, sys
 from argparse import ArgumentParser
-from src.utils.preprocess import CropAndExtract
-from src.test_audio2coeff import Audio2Coeff
-from src.facerender.animate import AnimateFromCoeff
-from src.generate_batch import get_data
-from src.generate_facerender_batch import get_facerender_data
+from agentforge.interfaces.sadtalker.src.utils.preprocess import CropAndExtract
+from agentforge.interfaces.sadtalker.src.test_audio2coeff import Audio2Coeff
+from agentforge.interfaces.sadtalker.src.facerender.animate import AnimateFromCoeff
+from agentforge.interfaces.sadtalker.src.generate_batch import get_data
+from agentforge.interfaces.sadtalker.src.generate_facerender_batch import get_facerender_data
 from third_part.GFPGAN.gfpgan import GFPGANer
 from third_part.GPEN.gpen_face_enhancer import FaceEnhancement
 import warnings
@@ -78,7 +78,7 @@ def main(args):
     torch.cuda.empty_cache()
     if args.use_DAIN:
         import paddle
-        from src.dain_model import dain_predictor
+        from agentforge.interfaces.sadtalker.src.dain_model import dain_predictor
         paddle.enable_static()
         predictor_dian = dain_predictor.DAINPredictor(args.dian_output, weight_path=args.DAIN_weight,
                                                       time_step=args.time_step,

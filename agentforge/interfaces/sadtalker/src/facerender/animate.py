@@ -6,13 +6,13 @@ import warnings
 from skimage import img_as_ubyte
 import imageio
 import torch
-from src.facerender.modules.keypoint_detector import HEEstimator, KPDetector
-from src.facerender.modules.mapping import MappingNet
-from src.facerender.modules.generator import OcclusionAwareSPADEGenerator
-from src.facerender.modules.make_animation import make_animation
+from agentforge.interfaces.sadtalker.src.facerender.modules.keypoint_detector import HEEstimator, KPDetector
+from agentforge.interfaces.sadtalker.src.facerender.modules.mapping import MappingNet
+from agentforge.interfaces.sadtalker.src.facerender.modules.generator import OcclusionAwareSPADEGenerator
+from agentforge.interfaces.sadtalker.src.facerender.modules.make_animation import make_animation
 from pydub import AudioSegment
-from src.utils.paste_pic import paste_pic
-from src.utils.videoio import save_video_with_watermark
+from agentforge.interfaces.sadtalker.src.utils.paste_pic import paste_pic
+from agentforge.interfaces.sadtalker.src.utils.videoio import save_video_with_watermark
 
 warnings.filterwarnings('ignore')
 

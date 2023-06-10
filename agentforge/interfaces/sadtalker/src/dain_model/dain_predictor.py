@@ -6,7 +6,7 @@ import numpy as np
 from tqdm import tqdm
 from imageio import imread, imsave
 
-from src.dain_model.base_predictor import BasePredictor
+from agentforge.interfaces.sadtalker.src.dain_model.base_predictor import BasePredictor
 
 DAIN_WEIGHT_URL = 'https://paddlegan.bj.bcebos.com/applications/DAIN_weight.tar'
 

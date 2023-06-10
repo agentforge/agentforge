@@ -3,13 +3,6 @@ from pathlib import Path
 import sys
 from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
-# # importing the sys module
-import sys, os
- 
-# # appending the directory of mod.py
-# # in the sys.path list
-sys.path.append(os.path.join(os.path.dirname(sys.path[0]),'/app/agentforge'))
-print(sys.path)
 
 # # importing the sys module
 import sys, os

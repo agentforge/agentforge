@@ -6,12 +6,12 @@ import os
 import torch
 import torch.backends.cudnn as cudnn
 import numpy as np
-from face_detect.data import cfg_re50
-from face_detect.layers.functions.prior_box import PriorBox
-from face_detect.utils.nms.py_cpu_nms import py_cpu_nms
+from agentforge.interfaces.sadtalker.third_part.GPEN.face_detect.data import cfg_re50
+from agentforge.interfaces.sadtalker.third_part.GPEN.face_detect.layers.functions.prior_box import PriorBox
+from agentforge.interfaces.sadtalker.third_part.GPEN.face_detect.utils.nms.py_cpu_nms import py_cpu_nms
 import cv2
-from face_detect.facemodels.retinaface import RetinaFace
-from face_detect.utils.box_utils import decode, decode_landm
+from agentforge.interfaces.sadtalker.third_part.GPEN.face_detect.facemodels.retinaface import RetinaFace
+from agentforge.interfaces.sadtalker.third_part.GPEN.face_detect.utils.box_utils import decode, decode_landm
 import time
 import torch.nn.functional as F
 

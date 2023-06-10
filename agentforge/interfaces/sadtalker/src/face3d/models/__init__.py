@@ -19,7 +19,7 @@ See our template model class 'template_model.py' for more details.
 """
 
 import importlib
-from src.face3d.models.base_model import BaseModel
+from agentforge.interfaces.sadtalker.src.face3d.models.base_model import BaseModel
 
 
 def find_model_using_name(model_name):
