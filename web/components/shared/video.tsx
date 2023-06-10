@@ -6,9 +6,10 @@ import { useModelProfileConfig } from '@/components/shared/context/modelprofilec
 import { useAvatarProvider } from '@/components/shared/context/avatarcontextprovider';
 
 const VideoComponent: React.FC = () => {
-  const { videoARef, videoBRef, switchVideo, playVideo, pauseVideo, isPlaying } = useVideo();
+  const { playVideo, setIdleVideoSource } = useVideo();
   const { modelProfileConfigs } = useModelProfileConfig();
   const { getAvatarData } = useAvatarProvider();
+  const { isStreaming, idleVideoRef, streamVideoRef } = useVideo();
 
   const getVideoRef = () => {
     const av_id = modelProfileConfigs["avatar"] as string;
@@ -21,37 +22,19 @@ const VideoComponent: React.FC = () => {
     if (!videoRef.current) return;
     const timeRemaining = videoRef.current.duration - videoRef.current.currentTime;
     if (timeRemaining < 0.1) {
-      switchVideo(`/videos/${getVideoRef()}`);
+      playVideo(`/videos/${getVideoRef()}`);
     }
   };
 
   // // Initialize first video
   useEffect(() => {
-    switchVideo(`/videos/${getVideoRef()}`);
-  }, [modelProfileConfigs]);
+    setIdleVideoSource(`/videos/${getVideoRef()}`);
+  }, []);
 
   return (
-    <div id="hero-video-wrapper">
-      <div className="relative">
-        <video
-          id="videoA"
-          className="hero-video"
-          ref={videoARef}
-          preload="auto"
-          autoPlay={isPlaying}
-          style={{ display: 'none' }}
-          onTimeUpdate={() => handleTimeUpdate(videoARef)}
-        />
-        <video
-          id="videoB"
-          className="hero-video"
-          ref={videoBRef}
-          preload="auto"
-          autoPlay={isPlaying}
-          style={{ display: 'none' }}
-          onTimeUpdate={() => handleTimeUpdate(videoBRef)}
-        />
-      </div>
+    <div className="video-container">
+      <video ref={idleVideoRef} loop autoPlay className="video"></video>
+      <video ref={streamVideoRef} className={`video ${isStreaming ? 'active' : ''}`}></video>
     </div>
   );
 };
