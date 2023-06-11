@@ -57,7 +57,7 @@ export default function Tooltip({
                   <span className="block max-w-xs text-center text-sm text-gray-700">
                     {content}
                   </span>
-                </div>
+                </div>text-white
               ) : (
                 content
               )}

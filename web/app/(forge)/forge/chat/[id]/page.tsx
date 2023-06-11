@@ -63,23 +63,23 @@ const Chat: React.FC<ChatProps> = ({ params }) => {
     // heroVideoWrapperRef.current.style.top = `${chatHistoryRect.top}px`; 
   }
 
-  const handleResize = () => {
-    const video = document.getElementById('hero-video') as HTMLVideoElement;
-    const videoWrapper = document.getElementById('hero-video-wrapper') as HTMLElement;
-    // const chatHistory = document.querySelector('.chat-history') as HTMLElement;
-    // const chatHistoryRect = chatHistory.getBoundingClientRect();
-    const userInput = document.getElementById('user-input') as HTMLElement;
-    if (userInput) {
-      const userInputRect = userInput.getBoundingClientRect();
-      const distanceFromTop = userInputRect.top;
-      if (videoWrapper.style.position === 'absolute') {
-        videoWrapper.style.top = '0';
-        videoWrapper.style.left = userInputRect.left + 'px';
-        video.style.width = userInputRect.width + 'px';
-        video.style.height = distanceFromTop + 'px';
-      }
-    }
-  };
+  // const handleResize = () => {
+  //   const video = document.getElementById('hero-video') as HTMLVideoElement;
+  //   const videoWrapper = document.getElementById('hero-video-wrapper') as HTMLElement;
+  //   // const chatHistory = document.querySelector('.chat-history') as HTMLElement;
+  //   // const chatHistoryRect = chatHistory.getBoundingClientRect();
+  //   const userInput = document.getElementById('user-input') as HTMLElement;
+  //   if (userInput) {
+  //     const userInputRect = userInput.getBoundingClientRect();
+  //     const distanceFromTop = userInputRect.top;
+  //     if (videoWrapper.style.position === 'absolute') {
+  //       videoWrapper.style.top = '0';
+  //       videoWrapper.style.left = userInputRect.left + 'px';
+  //       video.style.width = userInputRect.width + 'px';
+  //       video.style.height = distanceFromTop + 'px';
+  //     }
+  //   }
+  // };
 
   // Append a string to the latest message for streaming
   // const appendMessage = (newText: string) => {
@@ -131,15 +131,15 @@ const Chat: React.FC<ChatProps> = ({ params }) => {
 
   // useEffect to initialize the modelprofileconfig on first render
   useEffect(() => {
-    setModelProfileConfig('robot_name', names[getAvatar()] || 'Sam');
-    setModelProfileConfig('speech', false);
-    setModelProfileConfig('lipsync', false);
-    setModelProfileConfig('streaming', false);
-    setModelProfileConfig('max_new_tokens', 512);
-    setModelProfileConfig('avatar', getAvatar());
-    setModelProfileConfig('generation_config', modelConfigs[0]);
-    setModelProfileConfig('model_key', models[0]);
-    setModelProfileConfig('prompt', '');
+    // setModelProfileConfig('robot_name', names[getAvatar()] || 'Sam');
+    // setModelProfileConfig('speech', false);
+    // setModelProfileConfig('lipsync', false);
+    // setModelProfileConfig('streaming', false);
+    // setModelProfileConfig('max_new_tokens', 512);
+    // setModelProfileConfig('avatar', getAvatar());
+    // setModelProfileConfig('generation_config', modelConfigs[0]);
+    // setModelProfileConfig('model_key', models[0]);
+    // setModelProfileConfig('prompt', '');
   }, []);
 
 
@@ -173,26 +173,26 @@ const Chat: React.FC<ChatProps> = ({ params }) => {
   }, []); // Pass an empty dependency array to run the effect only once
 
   // Setup the Configuration Interface
-  useEffect(() => {
-    // Avatar change event
-    if (avatarRef.current) {
-      avatarRef.current.addEventListener('change', () => {
-        const selectedAvatar = getAvatar();
-        // playVideo(undefined, '/videos/' + selectedAvatar + '.mp4');
-      });
-    }
-  }, []);
+  // useEffect(() => {
+  //   // Avatar change event
+  //   if (avatarRef.current) {
+  //     avatarRef.current.addEventListener('change', () => {
+  //       const selectedAvatar = getAvatar();
+  //       // playVideo(undefined, '/videos/' + selectedAvatar + '.mp4');
+  //     });
+  //   }
+  // }, []);
 
-  useEffect(() => {
-    // Add resize event listener (use a method instead of @resizeVideo)
-    window.addEventListener('resize', handleResize);
+  // useEffect(() => {
+  //   // Add resize event listener (use a method instead of @resizeVideo)
+  //   window.addEventListener('resize', handleResize);
 
-    // Cleanup event listeners on unmount
-    return () => {
-      // Remove all event listeners here TODO
-      window.removeEventListener('resize', handleResize);
-    };
-  }, []);
+  //   // Cleanup event listeners on unmount
+  //   return () => {
+  //     // Remove all event listeners here TODO
+  //     window.removeEventListener('resize', handleResize);
+  //   };
+  // }, []);
 
   return (
     <>

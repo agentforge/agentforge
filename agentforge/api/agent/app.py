@@ -188,9 +188,20 @@ def agent():
     
     output = decision.run({"input": data, "model_profile": model_profile})
 
-    ### Parse audio/video if needed
+
+    ### Parse video if needed
+    if 'video' in output:
+        filename = output['video']["lipsync_response"]
+
+        with open(filename, 'rb') as fh:
+            return jsonify(
+                choices = [{"text": output["response"]}],
+                video = b64encode(fh.read()).decode()
+            )
+
+    ### Parse audio if needed
     if 'audio' in output:
-        filename = output['audio']["filename"]
+        filename = output['audio']["audio_response"]
 
         with open(filename, 'rb') as fh:
             return jsonify(

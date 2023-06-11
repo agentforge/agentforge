@@ -23,7 +23,7 @@ w2l = resource_factory.get_resource("w2l")
 @measure_time
 def lipsync():
   # Get the wav file from the request
-  wav_file = request.json["wav_file"]
+  wav_file = request.json["audio_response"]
   avatar = request.json["avatar_config"]
 
   # Interpret the wav file

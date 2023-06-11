@@ -115,7 +115,21 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ id }) =>  {
       return;
     }
     const completion = data.choices[0].text
-    if (data.audio) {
+    console.log(data)
+    if (data.video) {
+      const buffer = Buffer.from(data.video, 'base64'); // Assume that data.video contains the base64 encoded MP4 data
+      const decodedVideoData = Buffer.from(data.video, 'base64');
+
+      // Create a Blob from the Uint8Array with the correct MIME type
+      const blob = new Blob([decodedVideoData], { type: 'video/mp4' });
+
+      // Create an object URL for the Blob
+      const objectURL = URL.createObjectURL(blob);
+      
+      playVideo(objectURL);
+
+    }
+    else if (data.audio) {
       const buffer = Buffer.from(data.audio, 'base64');
       const decodedAudioData = Buffer.from(data.audio, 'base64');
 

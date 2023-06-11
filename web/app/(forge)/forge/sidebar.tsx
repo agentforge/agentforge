@@ -10,14 +10,8 @@ const Sidebar: React.FC<SidebarProps> = () => {
     <div className="flex flex-col h-screen justify-between">
         <VideoComponent />
         <footer>
-        <MenuButton route="/forge/chat">
-          Test
-        </MenuButton>
         <MenuButton route="/forge/config">
-          Configure
-        </MenuButton>
-        <MenuButton route="/user/config">
-          User Settings
+          Forge
         </MenuButton>
         </footer>
     </div>
