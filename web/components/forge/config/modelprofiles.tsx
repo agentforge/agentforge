@@ -4,6 +4,7 @@ import MenuButton from '@/components/shared/menubutton';
 import Button from '@/components/shared/button';
 import NewModelProfile from '@/components/forge/config/newprofiledialog';
 import { useRouter } from 'next/navigation';
+import { TrashIcon, CopyIcon, Pencil1Icon, PlayIcon } from '@radix-ui/react-icons';
 
 interface ModelProfile {
   _id: string;
@@ -22,6 +23,7 @@ const ModelProfilesTable: React.FC<{ pageSize: number }> = ({ pageSize }) => {
   const router = useRouter();
   const [profiles, setProfiles] = useState<ModelProfile[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
 
   useEffect(() => {
     const fetchProfiles = async () => {
@@ -37,10 +39,10 @@ const ModelProfilesTable: React.FC<{ pageSize: number }> = ({ pageSize }) => {
       }
     };
     fetchProfiles();
-  }, []);
+  }, [lastUpdated]);
 
   const profilesToShow = profiles.slice((currentPage - 1) * pageSize, currentPage * pageSize);
-  const deleteProfile = async (profileId: string) => {
+  const handleDelete = async (profileId: string) => {
     if (!profileId) {
       console.error("No profileId set!");
       return;
@@ -50,10 +52,27 @@ const ModelProfilesTable: React.FC<{ pageSize: number }> = ({ pageSize }) => {
         method: 'DELETE',
       });
       console.log("deleteProfile", await response.json());
+      setLastUpdated(new Date());
     } catch (err) {
       console.error(err);
     }
   }
+
+  const handleCopy = async (profileId: string) => {
+    if (!profileId) {
+      console.error("No profileId set!");
+      return;
+    }
+    try {
+      const response = await fetch(`/api/modelprofiles/copy/${profileId}`, {
+        method: 'POST',
+      });
+      console.log("copyProfile", await response.json());
+      setLastUpdated(new Date());
+    } catch (err) {
+      console.error(err);
+    }
+  };
   
   const navToEdit = (profileId: string) => {
     router.push(`/forge/config/edit/${profileId}`);
@@ -73,9 +92,8 @@ const ModelProfilesTable: React.FC<{ pageSize: number }> = ({ pageSize }) => {
           <tr>
             <th className="px-4 py-2">Avatar</th>
             <th className="px-4 py-2">Name</th>
-            <th className="px-4 py-2">Edit</th>
-            <th className="px-4 py-2">Use</th>
-            <th className="px-4 py-2">Delete</th>  
+            <th className="px-4 py-2">Last Edited</th>
+            <th className="px-4 py-2"></th>  
           </tr>
         </thead>
         <tbody>
@@ -84,20 +102,21 @@ const ModelProfilesTable: React.FC<{ pageSize: number }> = ({ pageSize }) => {
               <td className="border px-4 py-2"><img src={profile.avatar} alt="avatar" /></td>
               <td className="border px-4 py-2">{profile.avatar_config.name}</td>
               <td className="border px-4 py-2">
-              <Button type='button' onClick={() => navToEdit(profile._id)}>
-                Edit
-              </Button>
               </td>
               <td className="border px-4 py-2">
-              <Button type='button' onClick={() => gotoProfile(profile._id)}>
-                  Use
+                <Button type='button' onClick={() => handleDelete(profile._id)} extraClasses="float-right">
+                  <TrashIcon />
                 </Button>
-              </td>
-              <td className="border px-4 py-2">
-                <Button type='button' onClick={deleteProfile}>
-                  Delete
+                <Button type='button' onClick={() => gotoProfile(profile._id)}>
+                  <PlayIcon/>
                 </Button>
-              </td>
+                <Button type='button' onClick={() => navToEdit(profile._id)}>
+                  <Pencil1Icon/>
+                </Button>
+                <Button type='button' onClick={() => handleCopy(profile._id)}>
+                  <CopyIcon />
+                </Button>
+                </td>
             </tr>
           ))}
         </tbody>
