@@ -28,6 +28,7 @@ def lipsync():
 
   # Interpret the wav file
   opts = {
+    "avatar": "default", # TODO: pull this from avatar, add to frontend
     "face": "/app/cache/default.mp4", # TODO: pull this from avatar, add to frontend
     "audio": wav_file,
     "outfile": "/app/cache/lipsync.mp4"

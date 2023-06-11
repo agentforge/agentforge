@@ -10,11 +10,11 @@ from agentforge.interfaces.wav2lip.models import Wav2Lip
 import platform
 
 class Wav2LipModel():
-  def __init__(self, checkpoint_path, opts={}, faces=["loop"]) -> None:
+  def __init__(self, opts={}, faces=["loop"]) -> None:
     MyNamespace = type('MyNamespace', (object,), {})
     self.args = MyNamespace()
     self.device = 'cuda' if torch.cuda.is_available() else 'cpu'
-    self.args.checkpoint_path = checkpoint_path
+    self.args.checkpoint_path = os.environ.get('WAV2LIP_CHKPT')
     self.args.outfile = opts['outfile'] if 'outfile' in opts else 'results/result_voice.mp4'
     
     self.args.static = False if 'static' not in opts else opts['static']
@@ -46,14 +46,17 @@ class Wav2LipModel():
 
     self.avatar = opts['box'] if "avatar" in opts else "loop"
 
-    self.load_face(faces)
+    self.cache_dir = os.environ.get('DST_PATH')
+
+    # self.load_face({})
 
   def run(self, opts={}):
     self.avatar = opts['avatar'] if 'avatar' in opts else 'loop'
     self.args.face = opts['face'] if 'face' in opts else 'results/test.mp4'
     self.args.audio = opts['audio'] if 'audio' in opts else 'results/test.wav'
     self.args.outfile = opts['outfile'] if 'outfile' in opts else 'results/result_voice.mp4'
-    self.main()
+    self.load_face([(self.avatar, self.args.face)])
+    return self.main()
 
   def get_smoothened_boxes(boxes, T):
     for i in range(len(boxes)):
@@ -258,7 +261,7 @@ class Wav2LipModel():
       if i == 0:
         print("write first frame")
         frame_h, frame_w = frame_chunk[0].shape[:-1]
-        out = cv2.VideoWriter('temp/result.avi', 
+        out = cv2.VideoWriter(os.path.join(self.cache_dir, 'temp/result.avi'), 
                     cv2.VideoWriter_fourcc(*'DIVX'), self.fps, (frame_w, frame_h))
 
       img_batch = torch.FloatTensor(np.transpose(img_batch, (0, 3, 1, 2))).to(self.device)
@@ -278,8 +281,9 @@ class Wav2LipModel():
 
     out.release()
 
-    command = 'ffmpeg -y -i {} -i {} -strict -2 -q:v 1 {}'.format(self.args.audio, 'temp/result.avi', self.args.outfile)
+    command = 'ffmpeg -y -i {} -i {} -strict -2 -q:v 1 {}'.format(self.args.audio, os.path.join(self.cache_dir, 'temp/result.avi'), self.args.outfile)
     subprocess.call(command, shell=platform.system() != 'Windows')
+    return {'filename': self.args.outfile}
 
 if __name__ == '__main__':
   pass
