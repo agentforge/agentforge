@@ -217,7 +217,6 @@ def agent():
 @measure_time
 def get_user_profiles(user_id):
     model_profiles = ModelProfile()
-    print(user_id)
     output = model_profiles.get_by_user(user_id)
     return output
 
@@ -225,24 +224,27 @@ def get_user_profiles(user_id):
 @comprehensive_error_handler
 @measure_time
 def create_profile():
-    print("MODEL_PROFILES")
     model_profiles = ModelProfile()
     data = request.get_json()  # retrieve data from the POST request body
     output = model_profiles.create(data)
     return output
 
-@app.route('/v1/model-profiles/<id>', methods=['PUT', 'GET'])
+@app.route('/v1/model-profiles/copy/<id>', methods=['POST'])
+@comprehensive_error_handler
+@measure_time
+def copy_profile(id):
+    model_profiles = ModelProfile()
+    return {"success": model_profiles.copy(id)}
+
+@app.route('/v1/model-profiles/<id>', methods=['PUT', 'GET', 'DELETE'])
 @comprehensive_error_handler
 @measure_time
 def update_or_get_profile(id):
+    model_profiles = ModelProfile()
     if request.method == 'PUT':
-        print(request.method)
-        model_profiles = ModelProfile()
-        print(request.json)
         data = request.get_json()  # retrieve data from the PUT request body
-        output = model_profiles.set(id, data)
-        return output
+        return model_profiles.set(id, data)
     elif request.method == 'GET':
-        model_profiles = ModelProfile()
-        output = model_profiles.get(id)
-        return output
+        return model_profiles.get(id)
+    elif request.method == 'DELETE':
+        return model_profiles.delete(id)
