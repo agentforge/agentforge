@@ -11,15 +11,12 @@ export async function POST(
   },
 ) {
     const id = params.id; // user_id
-    const request = await requestPromise.json();
-    console.log(request);
     const res = await fetch(`${api_url}/v1/model-profiles/copy/${id}`, {
-      method: 'PUT',
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         // 'API-Key': process.env.DATA_API_KEY,
       },
-      body: JSON.stringify(request),
     });
     const data = await res.json();
     return NextResponse.json(data);

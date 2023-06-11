@@ -23,6 +23,7 @@ const ModelProfilesTable: React.FC<{ pageSize: number }> = ({ pageSize }) => {
   const router = useRouter();
   const [profiles, setProfiles] = useState<ModelProfile[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
+  const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
 
   useEffect(() => {
     const fetchProfiles = async () => {
@@ -38,7 +39,7 @@ const ModelProfilesTable: React.FC<{ pageSize: number }> = ({ pageSize }) => {
       }
     };
     fetchProfiles();
-  }, []);
+  }, [lastUpdated]);
 
   const profilesToShow = profiles.slice((currentPage - 1) * pageSize, currentPage * pageSize);
   const handleDelete = async (profileId: string) => {
@@ -51,6 +52,7 @@ const ModelProfilesTable: React.FC<{ pageSize: number }> = ({ pageSize }) => {
         method: 'DELETE',
       });
       console.log("deleteProfile", await response.json());
+      setLastUpdated(new Date());
     } catch (err) {
       console.error(err);
     }
@@ -66,6 +68,7 @@ const ModelProfilesTable: React.FC<{ pageSize: number }> = ({ pageSize }) => {
         method: 'POST',
       });
       console.log("copyProfile", await response.json());
+      setLastUpdated(new Date());
     } catch (err) {
       console.error(err);
     }
