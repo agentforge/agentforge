@@ -3,8 +3,7 @@ from pathlib import Path
 import sys
 from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
-from agentforge.utils import measure_time
-from agentforge import DST_PATH
+from agentforge.utils import measure_time, comprehensive_error_handler
 from agentforge.factories import resource_factory
 from dotenv import load_dotenv
 
@@ -16,6 +15,7 @@ tts = resource_factory.get_resource("tts")
 
 # Given the following text request generate a wav file and return to the client
 @app.route("/v1/tts", methods=["POST"])
+@comprehensive_error_handler
 @measure_time
 def text_to_speech():
   # Get the text and filename from the request
@@ -23,7 +23,7 @@ def text_to_speech():
   avatar = request.json["avatar_config"]
 
   filename = "/app/cache/out.wav"
-  speaker_wav = DST_PATH + avatar["speaker_wav"] if "speaker_wav" in avatar else None
+  speaker_wav = os.environ.get('DST_PATH') + avatar["speaker_wav"] if "speaker_wav" in avatar else None
   speaker_idx = avatar["speaker_idx"] if "speaker_idx" in avatar else 0
 
   # Enqueue a job in the TTS pipeline

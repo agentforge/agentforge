@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-from agentforge.utils import measure_time
+from agentforge.utils import measure_time, comprehensive_error_handler
 from agentforge.factories import resource_factory
 
 app = Flask(__name__)
@@ -12,6 +12,7 @@ load_dotenv('../../../.env')
 w2l = resource_factory.get_resource("w2l")
 
 @app.route("/v1/lipsync", methods=["POST"])
+@comprehensive_error_handler
 @measure_time
 def lipsync():
   # Get the wav file from the request

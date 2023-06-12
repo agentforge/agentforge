@@ -70,10 +70,6 @@ class LocalGenerator:
 
     gen_config = kwargs["generation_config"]
 
-    gen_config["output_attentions"] = False
-    gen_config["output_hidden_states"] = False
-    gen_config["use_cache"] = True # config.use_cache
-
     if "stopping_criteria" in gen_config:
       gen_config["stopping_criteria"] = StoppingCriteria(stop_token_ids=tokenizer.convert_tokens_to_ids(gen_config["stopping_criteria"]))
 
@@ -90,13 +86,6 @@ class LocalGenerator:
       gen_config["pad_token_id"] = tokenizer.encode(gen_config["pad_token"])[0]
     else:
       gen_config["pad_token_id"] = config.pad_token_id
-
-    # # Generate from eos if no input is specified.
-    # if input_length == 0:
-    #     input_ids = input_ids.new_ones((batch_size, 1)).long()
-    #     if eos_token_id is not None:
-    #         input_ids = input_ids * eos_token_id[0]
-    #     input_length = 1
 
     gen_config = {k: v for k, v in gen_config.items() if v is not None and v != ""}
 
@@ -116,9 +105,7 @@ class LocalGenerator:
             gen = model.generate
             final_kwargs = {
               'input_ids': input_ids,
-              'generation_config': generation_config,
-              'return_dict_in_generate': True,
-              'output_scores': True,
+              'generation_config': generation_config
           }
           if "eos_token_id" in gen_config:
             final_kwargs['eos_token_id'] = gen_config["eos_token_id"]
@@ -132,7 +119,8 @@ class LocalGenerator:
             final_kwargs['streamer'] = streamer
           with self.lock:
             generation_output = gen(**final_kwargs)
-            # self.get_probabilities(model, tokenizer, inputs, generation_output)
+            if 'return_probabilities' in gen_config and gen_config['return_probabilities']:
+              self.get_probabilities(model, tokenizer, inputs, generation_output)
       end_time = time.time()
       execution_time = end_time - start_time
       logging.info(f"Execution time: {execution_time:.6f} seconds")
