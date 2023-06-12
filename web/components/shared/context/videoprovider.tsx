@@ -34,20 +34,36 @@ export const VideoProvider: React.FC<VideoProviderProps> = ({ children, defaultI
 
   useEffect(() => {
     const videoElement = videoRef.current;
-    if (videoElement) {
-      videoElement.addEventListener('ended', () => {
+    
+    const handleCanPlayThrough = () => {
         if (videoRef.current) {
-          videoRef.current.src = idleVideoSource;
-          videoRef.current.play();
+            videoRef.current.play();
         }
-      });
-    }
-    return () => {
-      if (videoElement) {
-        videoElement.removeEventListener('ended', () => {});
-      }
     };
-  }, [idleVideoSource]);
+    
+    const handleEnded = () => {
+        if (videoRef.current) {
+            videoRef.current.src = idleVideoSource;
+            // Remove the play() call here, because we want to wait for canplaythrough
+        }
+    };
+
+    if (videoElement) {
+        // Listen for the canplaythrough event to know when we can safely play the video
+        videoElement.addEventListener('canplaythrough', handleCanPlayThrough);
+
+        // Listen for the ended event to know when to change the source
+        videoElement.addEventListener('ended', handleEnded);
+    }
+
+    // Clean up the event listeners when the component unmounts
+    return () => {
+        if (videoElement) {
+            videoElement.removeEventListener('canplaythrough', handleCanPlayThrough);
+            videoElement.removeEventListener('ended', handleEnded);
+        }
+    };
+}, [idleVideoSource]);
 
   // // Initialize first video
   useEffect(() => {
