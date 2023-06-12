@@ -3,68 +3,39 @@ from flask_migrate import Migrate
 from flask import Flask, request, jsonify, send_file, render_template, Response, make_response
 from flask_cors import CORS
 from flask_sse import sse
-from redis import Redis
-from rq import Queue
 import redis, uuid
 from datetime import timedelta
 from flask_swagger_ui import get_swaggerui_blueprint
 from dotenv import load_dotenv
 from base64 import b64encode
+import os
 
-# # importing the sys module
-import sys, os
- 
-# # appending the directory of mod.py
-# # in the sys.path list
-sys.path.append(os.path.join(os.path.dirname(sys.path[0]),'/app/agentforge'))
-print(sys.path)
-
-# Setup environmental variables
-load_dotenv('../../../.env')
-
-from agentforge import DST_PATH
 from agentforge.ai import decision_interactor
 from agentforge.utils import measure_time, comprehensive_error_handler
 from agentforge.ai import User
-from agentforge import db
 from agentforge.interfaces.model_profile import ModelProfile
-import agentforge as af
-
-# Create the worker queue TODO: Complete implementation
-# queue = Queue(connection=Redis())
-# worker = Worker()
-# Setup environmental variables
-
-from dotenv import load_dotenv, find_dotenv
-
-load_dotenv(find_dotenv())
 
 # Create an instance of the Flask class
 app = Flask(__name__)
-CORS(app, supports_credentials=True, resources={r"/*": {"origins": af.ALLOWED_ORIGIN}})
+CORS(app, supports_credentials=True, resources={r"/*": {"origins": os.environ.get('ALLOWED_ORIGIN')}})
 
 # Setup database connection
-app.config['SQLALCHEMY_DATABASE_URI'] = f"sqlite:///{DST_PATH}/test.db"
-app.config['SESSION_TYPE'] = af.SESSION_TYPE
-app.config["REDIS_URL"] = f"redis://{af.REDIS_HOST}:{af.REDIS_PORT}/{af.REDIS_DB}"
+app.config["REDIS_URL"] = f"redis://{os.environ.get('REDIS_HOST')}:{os.environ.get('REDIS_PORT')}/{os.environ.get('REDIS_DB')}"
 
 # Set the ALLOWED_ORIGIN and ALLOW_CREDENTIALS configuration variables
-app.config["ALLOWED_ORIGIN"] = af.ALLOWED_ORIGIN
-app.config["ALLOW_CREDENTIALS"] = af.ALLOW_CREDENTIALS
+app.config["ALLOWED_ORIGIN"] = os.environ.get('ALLOWED_ORIGIN')
+app.config["ALLOW_CREDENTIALS"] = os.environ.get('ALLOW_CREDENTIALS')
 app.config['ENV'] = 'development'
 app.config['DEBUG'] = True
 app.config['TESTING'] = True
 
-app.secret_key = af.AGENT_SECRET_KEY
+app.secret_key = os.environ.get('AGENT_SECRET_KEY')
 app.debug = True
 
 app.register_blueprint(sse, url_prefix='/stream')
 
-db.init_app(app)
-migrate = Migrate(app, db)
-
 # Setup redis connection
-redis_conn = redis.StrictRedis(host=af.REDIS_HOST, port=af.REDIS_PORT, db=af.REDIS_DB)
+redis_conn = redis.StrictRedis(host=os.environ.get('REDIS_HOST'), port=os.environ.get('REDIS_PORT'), db=os.environ.get('REDIS_DB'))
 
 # Setup Agent
 decision = decision_interactor.create_decision()
@@ -187,7 +158,6 @@ def agent():
     decision = decision_interactor.get_decision()
     
     output = decision.run({"input": data, "model_profile": model_profile})
-
 
     ### Parse video if needed
     if 'video' in output:

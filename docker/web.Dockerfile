@@ -32,7 +32,7 @@ RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | b
     && npm install next@latest react@latest react-dom@latest
 
 RUN apt-get update
-RUN apt-get install -y tig
+RUN apt-get install -y tig libvips libvips-dev libvips-tools
 
 # Expose the port used by the app (if any)
 EXPOSE 8080

@@ -1,4 +1,4 @@
-# TODO: Implement generic kvstore -- i.e. MongoDB
+# TODO: Implement generic kvstore
 # NoSQL specific code
 
 from typing import Any, Optional, Protocol, Dict
