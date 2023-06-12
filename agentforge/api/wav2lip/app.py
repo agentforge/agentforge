@@ -1,14 +1,6 @@
-# # importing the sys module
-import sys, os
- 
-# # appending the directory of mod.py
-# # in the sys.path list
-sys.path.append(os.path.join(os.path.dirname(sys.path[0]),'/app/agentforge'))
-
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 from agentforge.utils import measure_time
-from agentforge import DST_PATH
 from agentforge.factories import resource_factory
 
 app = Flask(__name__)

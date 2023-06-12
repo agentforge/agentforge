@@ -8,7 +8,9 @@ class Parse:
         self.model_profile = ModelProfile()
     
     """
-    Exception: {'input': {'id': '4CdJEH2BS9Gedj7eL4OvZA', 'prompt': 'Hey!'}, 'context': {'_id': '4CdJEH2BS9Gedj7eL4OvZA', 'avatar_config': 
+    Example input:
+    
+    {'input': {'id': '4CdJEH2BS9Gedj7eL4OvZA', 'prompt': 'Hey!'}, 'context': {'_id': '4CdJEH2BS9Gedj7eL4OvZA', 'avatar_config': 
     {'name': 'Sam', 'biography': 'You are a general purpose open source AI model. You are able to process and understand large amounts of text,
     and can use this knowledge to provide accurate and informative responses to a wide range of questions.  Overall, you are a powerful tool 
     that can help with a wide range of tasks and provide valuable insights and information on a wide range of topics. You will do your best to 
@@ -24,7 +26,8 @@ class Parse:
     'prompt_type': 'instruct_w_memory', 'model_class': 'AutoCasualModel', 'tokenizer_class': 'AutoTokenizer', 
     'bos_token': '<s>', 'eos_token': '</s>', 'load_in_8bit': True, 'load_in_4bit': False, 'device_map': 'cuda:0', 
     'speech': False, 'video': False, 'streaming': False}, 'prompt_config': 
-    {'prompt_template': 'Below is an instruction that describes a task. Write a response that appropriately completes the request. Write a response that appropriately completes the request.\n        ### Instruction:\n        {instruction}\n        ### Response:'}}}
+    {'prompt_template': 'Below is an instruction that describes a task. Write a response that appropriately completes the request.
+    Write a response that appropriately completes the request.\n        ### Instruction:\n        {instruction}\n        ### Response:'}}}
     """
 
     def execute(self, context: Dict[str, Any]) -> Dict[str, Any]:
