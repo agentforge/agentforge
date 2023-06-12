@@ -23,7 +23,7 @@ def lipsync():
     "avatar": "default", # TODO: pull this from avatar, add to frontend
     "face": "/app/cache/default.mp4", # TODO: pull this from avatar, add to frontend
     "audio": wav_file,
-    "outfile": "/app/cache/lipsy, and more importantly anyone can eat their lunch.nc.mp4"
+    "outfile": "/app/cache/lipsync.mp4"
   }
 
   response = w2l.run(opts)
