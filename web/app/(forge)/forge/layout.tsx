@@ -9,7 +9,7 @@ import { ModelProfileConfigProvider } from '@/components/shared/context/modelpro
 import { ChatWidgetStateProvider } from '@/components/shared/context/chatwidgetstatecontext';
 import { AvatarProvider } from '@/components/shared/context/avatarcontextprovider';
 import { VideoProvider } from '@/components/shared/context/videoprovider';
-import { AudioProvider } from '@/components/shared/context/audioprovider';
+import { AudioRecorderProvider } from '@/components/shared/context/audioprovider'
 
 export default function ForgeLayout({
   children,
@@ -19,8 +19,8 @@ export default function ForgeLayout({
   return (
     <html lang="en">
       <body className={cx(sfPro.variable, inter.variable)}>
-        <VideoProvider>
-        <AudioProvider>
+        <VideoProvider defaultIdleVideoSource="/videos/default.mp4">
+        <AudioRecorderProvider>
         <ChatWidgetStateProvider>
         <ModelProfileConfigProvider>
         <AvatarProvider>
@@ -36,7 +36,7 @@ export default function ForgeLayout({
         </AvatarProvider>
         </ModelProfileConfigProvider>
         </ChatWidgetStateProvider>
-        </AudioProvider>
+        </AudioRecorderProvider>
         </VideoProvider>
         <Analytics />
       </body>

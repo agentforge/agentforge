@@ -92,7 +92,6 @@ const ModelProfilesTable: React.FC<{ pageSize: number }> = ({ pageSize }) => {
           <tr>
             <th className="px-4 py-2">Avatar</th>
             <th className="px-4 py-2">Name</th>
-            <th className="px-4 py-2">Last Edited</th>
             <th className="px-4 py-2"></th>  
           </tr>
         </thead>
@@ -101,8 +100,6 @@ const ModelProfilesTable: React.FC<{ pageSize: number }> = ({ pageSize }) => {
             <tr key={index} className={`${index % 2 === 0 ? 'bg-gray-700' : ''}`}>
               <td className="border px-4 py-2"><img src={profile.avatar} alt="avatar" /></td>
               <td className="border px-4 py-2">{profile.avatar_config.name}</td>
-              <td className="border px-4 py-2">
-              </td>
               <td className="border px-4 py-2">
                 <Button type='button' onClick={() => handleDelete(profile._id)} extraClasses="float-right">
                   <TrashIcon />

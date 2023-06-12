@@ -135,3 +135,4 @@ tmp/
 web/public/mp4/*
 web/public/wav/*
 *phoneme_cache*
+node_modules/

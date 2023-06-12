@@ -9,8 +9,9 @@ import ConfigForm from '@/components/shared/form/configform';
 const avatars = ['caretaker', 'default', 'makhno', 'fdr', 'sankara'];
 
 export const AVATAR_FIELDS = {
-  name: { type: 'text', default: '', label: 'Name' },
-  biography: { type: 'textarea', default: '', label: 'Biography/Context' },
+  name: { type: 'text', default: '', label: 'Avatar Name' },
+  display_name: { type: 'text', default: '', label: 'ModelProfile Name' },
+  biography: { type: 'textarea', default: '', label: 'Biography' },
   speaker_idx: { type: 'int', default: '', label: 'coqAI Speaker IDX' },
 }
 
