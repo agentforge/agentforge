@@ -2,6 +2,7 @@ from typing import Any, Optional, Protocol, Dict
 from pymongo import MongoClient, errors
 from pymongo.cursor import Cursor
 from urllib.parse import quote_plus
+import uuid
 
 from agentforge.config import DbConfig
 import logging
@@ -66,6 +67,29 @@ class MongoDBKVStore(DB):
         except Exception as e:
             logging.error(f'Set operation failed for keyChange the following  {key}: {str(e)}')
             raise
+
+    def copy(self, src_collection: str, dest_collection: str, key: str, new_key: Optional[str] = None) -> None:
+        self._check_connection()
+        src_collection = self.db[src_collection]
+        dest_collection = self.db[dest_collection]
+        
+        try:
+            document = src_collection.find_one({"_id": key})
+            if document is not None:
+                if new_key is None:
+                    new_key = str(uuid.uuid4())
+                    
+                document["_id"] = new_key
+                dest_collection.update_one({"_id": new_key}, {"$set": document}, upsert=True)
+                
+                logging.info(f'Successfully copied document for key {key}. New key: {new_key}')
+                return True
+            else:
+                logging.warning(f'No document found for key {key}. Nothing to copy.')
+        except Exception as e:
+            logging.error(f'Copy operation failed for key {key}: {str(e)}')
+            return False
+
 
     def delete(self, collection:str, key: str) -> None:
         self._check_connection()

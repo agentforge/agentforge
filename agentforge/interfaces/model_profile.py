@@ -19,6 +19,10 @@ class ModelProfile():
         vals = list(cursor.limit(1))
         return {} if len(vals) == 0 else vals[0]
 
+    def copy(self, id: str) -> Optional[Any]:
+        # Construct the key for this user and model-config
+        return self.db.copy("model_profiles", "model_profiles", id, new_key=self.keygen.generate())
+
     def get_by_user(self, id: str, limit: int = 20) -> Optional[Any]:
         # Construct the key for this user and model-config
         cursor = self.db.get_many("model_profiles", {"metadata.user_id": id})
