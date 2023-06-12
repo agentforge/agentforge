@@ -1,3 +1,4 @@
+'use client';
 // AvatarProviderContext.tsx
 import React, { createContext, useContext, useEffect, useState } from 'react';
 
@@ -53,7 +54,7 @@ export const AvatarProvider: React.FC<AvatarProviderProps> = ({ children }) => {
       }
     };
 
-    fetchAvatars();
+    // fetchAvatars();
   }, []);
 
   return (

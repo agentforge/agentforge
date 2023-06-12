@@ -41,7 +41,7 @@
         "model_name": "decapoda-research/llama-13b-hf",
         "tokenizer_name": "decapoda-research/llama-13b-hf",
         "peft_model": "chansung/alpaca-lora-13b",
-        "prompt_type": "instruct_prompt",
+        "prompt_type": "instruct",
         "model_type": "alpaca"
     },
     "gpt-j-6B": {
@@ -58,5 +58,19 @@
         "prompt_type": "simple_open_assistant",
         "load_in_8bit": false,
         "model_type": "huggingface"
+    },
+    "mpt-7b-instruct": {
+        "model_name": "mosaicml/mpt-7b-instruct",
+        "tokenizer_name": "EleutherAI/gpt-neox-20b",
+        "prompt_type": "instruct",
+        "model_type": "mpt",
+        "stopping_criteria": ["<|endoftext|>"]
+    },
+    "mpt-7b-chat": {
+        "model_name": "mosaicml/mpt-7b-chat",
+        "tokenizer_name": "EleutherAI/gpt-neox-20b",
+        "prompt_type": "ml_prompt",
+        "model_type": "mpt",
+        "stopping_criteria": ["<|endoftext|>"]
     }
 }

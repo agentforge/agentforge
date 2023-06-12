@@ -2,6 +2,7 @@ import os
 import shutil
 from agentforge import VIDEO_SRC_PATH, DST_PATH
 
+### Consider replacement
 def startup():
   # Iterate through all files in the source directory
   for file in os.listdir(VIDEO_SRC_PATH):

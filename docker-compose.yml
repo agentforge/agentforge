@@ -1,0 +1,141 @@
+version: '3'
+
+services:
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    networks:
+      main-net:
+        aliases:
+          - redis
+
+  agentforge:
+    image: agentforge
+    ipc: host
+    restart: always
+    networks:
+      main-net:
+        aliases:
+          - agentforge
+    volumes:
+      - cache-volume:/app/cache
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+
+  llm:
+    image: llm
+    ipc: host
+    restart: always
+    networks:
+      main-net:
+        aliases:
+          - llm
+    volumes:
+      - cache-volume:/app/cache
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ['0', '1']
+              capabilities: [gpu]
+
+  speech:
+    image: speech
+    restart: always
+    ipc: host
+    networks:
+      main-net:
+        aliases:
+          - speech
+    volumes:
+      - cache-volume:/app/cache
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ['1']
+              capabilities: [gpu]
+
+  wav2lip:
+    image: wav2lip
+    ipc: host
+    restart: always
+    networks:
+      main-net:
+        aliases:
+          - wav2lip
+    volumes:
+      - cache-volume:/app/cache
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ['1']
+              capabilities: [gpu] 
+
+  agent:
+    image: agent
+    environment:
+      - CONFIG_DIR=""
+    ports:
+      - "3000:3000"
+    ipc: host
+    restart: always
+    networks:
+      main-net:
+        aliases:
+          - agent
+    volumes:
+      - cache-volume:/app/cache
+
+  web:
+    image: web
+    ports:
+      - "8080:8080"
+    ipc: host
+    networks:
+      main-net:
+        aliases:
+          - web
+
+  mongodb:
+    image: mongo:latest
+    ipc: host
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${DB_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${DB_PASS}
+    ports:
+      - "${DB_PORT}:27017"
+    volumes:
+      - db_data:/data/db
+    networks:
+      main-net:
+        aliases:
+          - mongodb
+networks:
+  main-net:
+
+volumes:
+  db_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: "${LOCAL_DB_DIR}"
+
+  cache-volume:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: "${LOCAL_CACHE_DIR}"

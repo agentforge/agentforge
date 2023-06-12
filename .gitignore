@@ -25,6 +25,9 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
+checkpoints/
+dian_output/
+results/
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -132,3 +135,4 @@ tmp/
 web/public/mp4/*
 web/public/wav/*
 *phoneme_cache*
+node_modules/

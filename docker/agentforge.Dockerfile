@@ -4,6 +4,7 @@ FROM huggingface/transformers-pytorch-deepspeed-latest-gpu-push-ci
 # Set the working directory to /app
 RUN mkdir -p /app/agentforge
 COPY . /app/agentforge/
+ENV PYTHONPATH "${PYTHONPATH}:/app/agentforge"
 
 RUN apt-get update
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y software-properties-common
@@ -16,7 +17,8 @@ RUN pip install --upgrade pip
 
 WORKDIR /app/agentforge/agentforge/
 RUN mkdir /app/agentforge/logs/
-RUN pip install -r /app/agentforge/agentforge/requirements.txt
+RUN pip install -r /app/agentforge/requirements.txt
+COPY .env /app/agentforge/.env
 
 # #CMD ["flask", "run", "--host=0.0.0.0", "--port=3000"]
 CMD tail -f /dev/null

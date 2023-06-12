@@ -1,4 +1,5 @@
 FROM agentforge:latest
+ENV RESOURCE=W2L
 
 RUN apt update && apt install -y libsm6 libxext6
 RUN apt-get install -y libxrender-dev
@@ -13,9 +14,9 @@ RUN mkdir -p /root/.cache/torch/checkpoints && \
 # Clone wave2lip
 RUN git clone https://github.com/Rudrabha/Wav2Lip.git
 
-RUN mkdir /app/agentforge/agentforge/wav2lip/temp
+#RUN mkdir /app/agentforge/agentforge/wav2lip/temp
 
-WORKDIR /app/agentforge/agentforge/wav2lip
+WORKDIR /app/agentforge/agentforge/api/wav2lip
 
 # Expose port 3000
 EXPOSE 3000

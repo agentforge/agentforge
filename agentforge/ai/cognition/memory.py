@@ -1,0 +1,27 @@
+from typing import List, Dict
+from agentforge.interfaces import interface_interactor
+
+### Memory accesses underlying long-term and working memory
+### This abstract class allows us to access a singular memory instance
+### and generalize those memories to multiple memory stores
+
+class Memory:
+    def __init__(self) -> None:
+        self.working_memory = interface_interactor.get_interface("working_memory")
+        self.deep_memory = interface_interactor.get_interface("vectorstore_memory")
+
+    # Saves the latest interaction between user and agent
+    def remember(self, user: str, agent: str, prompt: str, response: str):
+        self.working_memory.remember(user, agent, prompt, response)
+        self.deep_memory.remember(user, agent, prompt, response)
+
+    # Recall relevant memories from this agent based on this prompt
+    def recall(self, user: str, agent: str, prompt: str):
+        return self.deep_memory.recall(user, agent, prompt)
+
+    # Retrieves the latest N interaction between user and agent
+    def session_history(self, user: str, agent: str, n: int = 5):
+        return self.working_memory.recall(user, agent, n)
+
+    def ingest(self, texts: List[str], metadata: List[Dict], **kwargs):
+        self.deep_memory.ingest(texts, metadata, **kwargs)

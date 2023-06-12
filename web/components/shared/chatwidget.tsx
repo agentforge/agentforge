@@ -4,24 +4,24 @@ import { useChatWidgetState, ChatWidgetStateProvider } from '@/components/shared
 import { ArrowRightIcon } from '@radix-ui/react-icons';
 import ProgressSpinner from '@/components/shared/progressspinner';
 import SpeechComponent from './speech';
-import { useLanguageModelConfig } from '@/components/shared/context/languagemodelconfigcontext';
+import { useModelProfileConfig } from '@/components/shared/context/modelprofileconfig';
 import { useAvatarProvider, AvatarData } from '@/components/shared/context/avatarcontextprovider';
 import { useVideo } from '@/components/shared/context/videoprovider';
-import { useAudio } from '@/components/shared/context/audioprovider';
+import AudioRecorder from '@/components/shared/audiorecorder';
 import { MessageProps } from '@/components/shared/message';
 import { v4 as uuidv4 } from 'uuid';
 
-const ChatWidget: React.FC = () => {
-  const languageModelConfig = useLanguageModelConfig();
-  const { getAvatarData } = useAvatarProvider();
+export interface ChatWidgetProps {
+  id: string
+}
+
+export const ChatWidget: React.FC<ChatWidgetProps> = ({ id }) =>  {
   const { messages, setMessages, textAreaValue, setTextAreaValue } = useChatWidgetState();
   const chatContainerRef = React.useRef<HTMLUListElement>(null);
   const [isLoading, setIsLoading] = React.useState(false);
   const responseSpeechRef = React.useRef<string>('');
-  const responseVideoRef = React.useRef<string>('');
   const currentAvatar = React.useRef<AvatarData>();
   const { playVideo } = useVideo();
-  const { playAudio } = useAudio();
 
   // When loading state changes scroll to the bottom of the chat container
   React.useEffect(() => {
@@ -75,21 +75,18 @@ const ChatWidget: React.FC = () => {
 
   // Handles completion API call after user enters a prompt and clicks the send button or enter key
   const complete = async () => {
-    const promptObject = {
+
+    // set is loading, hitting API now
+    setIsLoading(true);
+
+    const mergedObject = {
+      id: id,
       prompt: textAreaValue,
     };
-    const mergedObject = {
-      ...languageModelConfig.languageModelConfigs,
-      ...promptObject,
-    };
-
-    console.log(mergedObject);
 
     // Add the Human message //TODO: Get the name of the human from the user
     addMessage(mergedObject.prompt, 'Human', 'human', false);
 
-    // set is loading, hitting API now
-    setIsLoading(true);
     // Scroll to the top of the chat container after human message is added
     const res = await fetch('/api/completions', {
       method: 'POST',
@@ -98,27 +95,46 @@ const ChatWidget: React.FC = () => {
       },
       body: JSON.stringify(mergedObject),
     });
-  
     const data = await res.json();
-    const av_id = languageModelConfig.languageModelConfigs["avatar"] as string;
-    if (av_id != currentAvatar.current?.avatar) { 
-      const avatarData = getAvatarData(av_id);
-      if (!avatarData) {
-        return; // TODO: handle error
-      }
-      currentAvatar.current = avatarData;
+
+    if (data.error_type) { 
+      // TODO: Replace with a proper modal
+      alert(data.error_message);
+      setIsLoading(false);
+      return;
     }
-    console.log(data);
     const completion = data.choices[0].text
-    const tts = languageModelConfig.languageModelConfigs["speech"] as boolean;
-    const lipsync = languageModelConfig.languageModelConfigs["lipsync"] as boolean;
-    if (tts&& !lipsync) {
-      // responseSpeechRef.current = completion;
-      playAudio(completion, currentAvatar.current);
-    } else if (tts && lipsync) {
-      playVideo(completion, currentAvatar.current);
+    console.log(data)
+    if (data.video) {
+      const buffer = Buffer.from(data.video, 'base64'); // Assume that data.video contains the base64 encoded MP4 data
+      const decodedVideoData = Buffer.from(data.video, 'base64');
+
+      // Create a Blob from the Uint8Array with the correct MIME type
+      const blob = new Blob([decodedVideoData], { type: 'video/mp4' });
+
+      // Create an object URL for the Blob
+      const objectURL = URL.createObjectURL(blob);
+      
+      playVideo(objectURL);
+
     }
-    addMessage(completion, currentAvatar.current?.prompt_context.name, 'default', false);
+    else if (data.audio) {
+      const buffer = Buffer.from(data.audio, 'base64');
+      const decodedAudioData = Buffer.from(data.audio, 'base64');
+
+      // Create a Blob from the Uint8Array with the correct MIME type
+      const blob = new Blob([decodedAudioData], { type: 'audio/wav' });
+
+      // Create an object URL for the Blob
+      const objectURL = URL.createObjectURL(blob);
+
+      // Create an Audio element and play the audio
+      const audioElement = new Audio();
+      audioElement.src = objectURL;
+      audioElement.play();
+
+    }
+    addMessage(completion, "Sam", 'default', false);
 
     // Handle the result, update the state, etc.
     setIsLoading(false);
@@ -130,13 +146,12 @@ const ChatWidget: React.FC = () => {
   };
 
   const useEnterKey = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.code === 'Enter' && !e.shiftKey) {
+    if (!isLoading && e.code === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       complete();
     }
   };
 
-  // ... Your existing component JSX ...
   return (
     <ChatWidgetStateProvider>
       <div className="chat-widget">
@@ -172,7 +187,7 @@ const ChatWidget: React.FC = () => {
                 <ArrowRightIcon />
               </button>
               )}
-            {/* <AudioRecorder /> */}
+            <AudioRecorder />
             <SpeechComponent lastResponseRef={responseSpeechRef} currentAvatar={currentAvatar} />
           </div>
         </div>

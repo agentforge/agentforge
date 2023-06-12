@@ -1,40 +1,29 @@
-'use client';
-// ForgeComponent.tsx
-// Expose Store Providers to the Child Components
 import React from 'react';
-import ReactDOM from 'react-dom';
-import { CheckboxStateProvider } from '@/components/shared/context/checkboxstatecontext';
-import { SelectStateProvider } from '@/components/shared/context/selectstatecontext';
-import { SliderStateProvider } from '@/components/shared/context/sliderstatecontext';
-import { LanguageModelConfigProvider } from '@/components/shared/context/languagemodelconfigcontext';
-import { ChatWidgetStateProvider } from '@/components/shared/context/chatwidgetstatecontext';
-import { AvatarProvider } from '@/components/shared/context/avatarcontextprovider';
-import { VideoProvider } from '@/components/shared/context/videoprovider';
-import { AudioProvider } from '@/components/shared/context/audioprovider';
-import Forge from './app';
 
-const ForgeComponent = () => {
+interface MainProps { }
+
+const features = [
+  {
+    title: "AgentForge",
+    description:
+      "Click Test Agent to test an existing agent or Configure to create/modifiy an existing agent"
+  }];
+
+const Main: React.FC<MainProps> = () => {
+
   return (
-    <VideoProvider>
-    <AudioProvider>
-    <ChatWidgetStateProvider>
-    <LanguageModelConfigProvider>
-    <SliderStateProvider>
-    <SelectStateProvider>
-    <CheckboxStateProvider>
-    <AvatarProvider>
-      <Forge />
-    </AvatarProvider>
-    </CheckboxStateProvider>
-    </SelectStateProvider>
-    </SliderStateProvider>
-    </LanguageModelConfigProvider>
-    </ChatWidgetStateProvider>
-    </AudioProvider>
-    </VideoProvider>
+    <div className="md:block w-full h-full md:w-8/12">
+
+      <div className="center-items justify-center text-center">
+          {features.map(({ title, description }) => (
+            <div key={title} className='text-white'>
+              <h3 className="text-2xl font-bold">{title}</h3>
+              <p>{description}</p>
+            </div>
+          ))}
+      </div>
+    </div>
   );
 };
-// ReactDOM.render(<ForgeComponent />, document.getElementById('main'));
 
-export default ForgeComponent;
-
+export default Main;

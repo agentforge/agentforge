@@ -1,6 +1,7 @@
 import json
 import os
 
+# Loads config from JSON
 class Config:
   def __init__(self, config_name):
     self.CONFIG_DIR = os.getenv('CONFIG_DIR')
