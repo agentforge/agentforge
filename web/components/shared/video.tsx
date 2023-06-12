@@ -6,10 +6,10 @@ import { useModelProfileConfig } from '@/components/shared/context/modelprofilec
 import { useAvatarProvider } from '@/components/shared/context/avatarcontextprovider';
 
 const VideoComponent: React.FC = () => {
-  const { playVideo, setIdleVideoSource } = useVideo();
+  const { playVideo } = useVideo();
   const { modelProfileConfigs } = useModelProfileConfig();
   const { getAvatarData } = useAvatarProvider();
-  const { isStreaming, idleVideoRef, streamVideoRef } = useVideo();
+  const { videoRef, setIdleVideoSource } = useVideo();
 
   const getVideoRef = () => {
     const av_id = modelProfileConfigs["avatar"] as string;
@@ -25,16 +25,10 @@ const VideoComponent: React.FC = () => {
       playVideo(`/videos/${getVideoRef()}`);
     }
   };
-
-  // // Initialize first video
-  useEffect(() => {
-    setIdleVideoSource(`/videos/${getVideoRef()}`);
-  }, []);
-
+  
   return (
     <div className="video-container">
-      <video ref={idleVideoRef} loop autoPlay className="video"></video>
-      <video ref={streamVideoRef} className={`video ${isStreaming ? 'active' : ''}`}></video>
+      <video ref={videoRef} autoPlay muted className="video"></video>
     </div>
   );
 };

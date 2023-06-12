@@ -19,7 +19,7 @@ export default function ForgeLayout({
   return (
     <html lang="en">
       <body className={cx(sfPro.variable, inter.variable)}>
-        <VideoProvider>
+        <VideoProvider defaultIdleVideoSource="/videos/default.mp4">
         <AudioProvider>
         <ChatWidgetStateProvider>
         <ModelProfileConfigProvider>
