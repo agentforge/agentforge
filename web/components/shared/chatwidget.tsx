@@ -7,7 +7,7 @@ import SpeechComponent from './speech';
 import { useModelProfileConfig } from '@/components/shared/context/modelprofileconfig';
 import { useAvatarProvider, AvatarData } from '@/components/shared/context/avatarcontextprovider';
 import { useVideo } from '@/components/shared/context/videoprovider';
-import { useAudio } from '@/components/shared/context/audioprovider';
+import AudioRecorder from '@/components/shared/audiorecorder';
 import { MessageProps } from '@/components/shared/message';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -16,16 +16,12 @@ export interface ChatWidgetProps {
 }
 
 export const ChatWidget: React.FC<ChatWidgetProps> = ({ id }) =>  {
-  const modelprofileconfig = useModelProfileConfig();
-  const { getAvatarData } = useAvatarProvider();
   const { messages, setMessages, textAreaValue, setTextAreaValue } = useChatWidgetState();
   const chatContainerRef = React.useRef<HTMLUListElement>(null);
   const [isLoading, setIsLoading] = React.useState(false);
   const responseSpeechRef = React.useRef<string>('');
-  const responseVideoRef = React.useRef<string>('');
   const currentAvatar = React.useRef<AvatarData>();
   const { playVideo } = useVideo();
-  const { playAudio } = useAudio();
 
   // When loading state changes scroll to the bottom of the chat container
   React.useEffect(() => {
@@ -156,7 +152,6 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ id }) =>  {
     }
   };
 
-  // ... Your existing component JSX ...
   return (
     <ChatWidgetStateProvider>
       <div className="chat-widget">
@@ -192,7 +187,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ id }) =>  {
                 <ArrowRightIcon />
               </button>
               )}
-            {/* <AudioRecorder /> */}
+            <AudioRecorder />
             <SpeechComponent lastResponseRef={responseSpeechRef} currentAvatar={currentAvatar} />
           </div>
         </div>

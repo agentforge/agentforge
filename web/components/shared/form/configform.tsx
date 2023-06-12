@@ -46,6 +46,10 @@ export const ConfigForm: React.FC<ConfigFormProps> = ({ fields, form }) =>  {
       }
       element = null;
 
+      if (label === undefined) { 
+        label = titleize(key);
+      }
+
       if (type == 'slider') {
         let sliderVal = '';
         if (form[key] !== undefined) {
@@ -66,7 +70,7 @@ export const ConfigForm: React.FC<ConfigFormProps> = ({ fields, form }) =>  {
           <div className="flex w-1/4" key={key}>
             <InputElement
               id={key}
-              label={titleize(key)}
+              label={label}
               type={type}
               defaultVal={val}
               tooltipText={tooltip}
@@ -82,7 +86,7 @@ export const ConfigForm: React.FC<ConfigFormProps> = ({ fields, form }) =>  {
           booleanVariable = variable;
           element = (
             <div className="flex w-1/4" key={key}>
-              <CheckboxElement label={titleize(key)} id={key} defaultVal={booleanVariable} tooltipText={tooltip}/>
+              <CheckboxElement label={label} id={key} defaultVal={booleanVariable} tooltipText={tooltip}/>
             </div>
           );
         } else {
@@ -98,8 +102,8 @@ export const ConfigForm: React.FC<ConfigFormProps> = ({ fields, form }) =>  {
           <div className="flex w-full" key={key}>
             <TextareaElement
               id={ key }
-              label={ titleize(key) }
-              defaultVal={val}
+              label={ label }
+              defaultVal={ val }
             ></TextareaElement>
           </div>
         )
