@@ -7,6 +7,8 @@ class Lipsync:
         self.service = interface_interactor.get_interface("w2l")
 
     def execute(self, context: Dict[str, Any]) -> Dict[str, Any]:
+        if 'audio' not in context or 'model_profile' not in context:
+            return context
         lipsync_response = self.service.call({'avatar_config': context['model_profile']['avatar_config'], 'audio_response': context['audio']['audio_response']})
         if lipsync_response is not None:
             context["video"] = {"lipsync_response": lipsync_response["filename"], "type":"video/mp4" }
