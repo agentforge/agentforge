@@ -10,7 +10,6 @@ import os, importlib
 
 DEFAULT_LLM = os.environ.get("DEFAULT_LLM")
 RESOURCE = os.environ.get("RESOURCE")
-print(DEFAULT_LLM)
 
 resource_factory = ResourceFactory()
 if RESOURCE == "LLM":

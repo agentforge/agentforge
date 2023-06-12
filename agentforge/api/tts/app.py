@@ -3,27 +3,15 @@ from pathlib import Path
 import sys
 from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
-
-# # importing the sys module
-import sys, os
- 
-# # appending the directory of mod.py
-# # in the sys.path list
-sys.path.append(os.path.join(os.path.dirname(sys.path[0]),'/app/agentforge'))
-print(sys.path)
-
 from agentforge.utils import measure_time
 from agentforge import DST_PATH
-
 from agentforge.factories import resource_factory
-
-# Setup environmental variables
 from dotenv import load_dotenv
-load_dotenv('../../../.env')
 
+# Setup services and environmental variables
+load_dotenv('../../../.env')
 app = Flask(__name__)
 CORS(app, resources={r"/v1/*": {"origins": "*"}})
-
 tts = resource_factory.get_resource("tts")
 
 # Given the following text request generate a wav file and return to the client

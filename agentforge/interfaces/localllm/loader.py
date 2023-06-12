@@ -1,8 +1,16 @@
-import torch, logging
+import torch, logging, importlib
 from agentforge.utils import dynamic_import
 from transformers import LlamaTokenizer, LlamaForCausalLM
 from transformers import AutoModelForCausalLM, AutoTokenizer, AutoConfig, GPTNeoXTokenizerFast
 from agentforge.utils import logger
+
+def import_transformer_model_class(class_name):
+    # Try to import the model class dynamically and return the model
+    try:
+        transformers_module = importlib.import_module("transformers")
+        return getattr(transformers_module, class_name)
+    except AttributeError:
+        raise ImportError(f"Class {class_name} was not found in the transformers module")
 
 ## Loaders for different models
 class LocalLoader:
@@ -67,14 +75,16 @@ class LocalLoader:
         padding_side = self.config.get("padding_side", "left")
         model_name = self.config["model_name"]
 
+        model_klass = import_transformer_model_class(self.config["model_class"])
+        tokenizer_klass = import_transformer_model_class(self.config["tokenizer_class"])
+
         logger.info(f"Loading model... {model_name}")
 
         config = AutoConfig.from_pretrained(model_name, trust_remote_code=True)
-        if mpt:
-            # config.update({"max_seq_len": 4096})
+        if self.config['attn_impl'] == 'triton':
             config.attn_config['attn_impl'] = 'triton'
 
-        self.model = AutoModelForCausalLM.from_pretrained(
+        self.model = model_klass.from_pretrained(
             model_name,
             config=config,
             load_in_8bit=bool(load_in_8bit),
@@ -84,12 +94,8 @@ class LocalLoader:
             revision=revision,
             trust_remote_code=True
         )
-        if mpt:
-            logger.info("Loading GPTNeoXTokenizerFast...")
-            self.tokenizer = GPTNeoXTokenizerFast.from_pretrained("EleutherAI/gpt-neox-20b")
-        else:
-            logger.info("Loading AutoTokenizer...")
-            self.tokenizer = AutoTokenizer.from_pretrained(self.config["tokenizer_name"], padding_side=padding_side)
+        logger.info(f"Loading AutoTokenizer... {tokenizer_klass}")
+        self.tokenizer = tokenizer_klass.from_pretrained(self.config["tokenizer_name"], padding_side=padding_side)
 
         # if self.config["tokenizer_name"] == "OpenAssistant/oasst-sft-1-pythia-12b":
         #     special_tokens_dict = {'additional_special_tokens': ['<|prompter|>', '<|assistant|>']}

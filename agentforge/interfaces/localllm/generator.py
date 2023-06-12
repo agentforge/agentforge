@@ -119,10 +119,14 @@ class LocalGenerator:
               'generation_config': generation_config,
               'return_dict_in_generate': True,
               'output_scores': True,
-              'eos_token_id': gen_config["eos_token_id"],
-              'bos_token_id': gen_config["bos_token_id"],
-              'pad_token_id': gen_config["pad_token_id"],
           }
+          if "eos_token_id" in gen_config:
+            final_kwargs['eos_token_id'] = gen_config["eos_token_id"]
+          if "bos_token_id" in gen_config:
+            final_kwargs['bos_token_id'] = gen_config["bos_token_id"]
+          if "pad_token_id" in gen_config:
+            final_kwargs['pad_token_id'] = gen_config["pad_token_id"]
+  
           logging.info(f"Rendering with {json.dumps(final_kwargs, indent=4, default=convert_to_serializable)}")
           if streamer != None:
             final_kwargs['streamer'] = streamer
