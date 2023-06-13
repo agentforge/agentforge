@@ -19,7 +19,7 @@ class Prep:
             code = input_string[code_language_end_index + 1:code_end_index]
 
             lexer = get_lexer_by_name(code_language, stripall=True)
-            formatter = HtmlFormatter(style='solarizedlight', oclasses=True)
+            formatter = HtmlFormatter(style='solarizeddark', oclasses=True)
             highlighted_code = highlight(code, lexer, formatter)
 
             output = (
