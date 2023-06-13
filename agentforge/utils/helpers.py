@@ -10,6 +10,31 @@ from functools import wraps
 from flask import request
 from agentforge.utils import logger
 import importlib
+import threading
+from functools import wraps
+
+def timer_decorator(func):
+    @wraps(func)
+    def wrapper(self, data):
+        start_time = time.time()
+        result = func(self, data)  # Run the original function
+        end_time = time.time()
+        elapsed_time = end_time - start_time
+
+        # Add the function's execution time to the dict
+        result[func.__name__] = elapsed_time
+        return result
+    return wrapper
+
+def async_execution_decorator(func):
+    def wrapper(self, original_dict):
+        # Define the thread that will execute the function in the background
+        thread = threading.Thread(target=func, args=(self, original_dict))
+        # Start the thread
+        thread.start()
+        # Return the original dictionary immediately
+        return original_dict
+    return wrapper
 
 def measure_time(func):
     @wraps(func)
