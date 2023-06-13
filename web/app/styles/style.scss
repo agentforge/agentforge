@@ -260,6 +260,9 @@ pre code .comment {
   font-weight: bold;
   color: #f0f0f0;
   display: inline-block;
+  max-width: 765px;
+  max-height: 500px;
+  overflow: 'scroll'
 }
 /* Shadow and style for the user input element */
 #user-input {
