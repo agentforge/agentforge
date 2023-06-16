@@ -3,7 +3,7 @@ from typing import Any, List, Protocol
 
 class VectorStoreProtocol(Protocol):
     
-    def __init__(self, config: Any) -> None:
+    def __init__(self, config: Any, reset: bool = False) -> None:
         pass
     
     def search(self, n: int, query: str, filter: dict) -> Any:
