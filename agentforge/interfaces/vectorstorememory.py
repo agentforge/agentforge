@@ -11,8 +11,8 @@ class VectorStoreMemory:
     self.app = app
 
   # Does a similarity search to recall memories associated with this prompt
-  def recall(self, user, agent, prompt):
-    docs = self.vectorstore.search(prompt, n=4, filter={"user": user, "agent": agent})
+  def recall(self, prompt, filter={}):
+    docs = self.vectorstore.search(prompt, n=4, filter=filter)
     result = ""
     for doc in docs:
         content = doc.page_content.replace('\n', ' ')

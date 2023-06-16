@@ -6,6 +6,8 @@ RUN pip install peft einops
 RUN pip install 'accelerate @ git+https://github.com/huggingface/accelerate.git'
 RUN pip install flash-attn==1.0.3.post0
 RUN pip install triton==2.0.0.dev20221202
+RUN pip install torch==2.0.1
+RUN pip install xformers
 # Expose port 3000
 EXPOSE 3000
 

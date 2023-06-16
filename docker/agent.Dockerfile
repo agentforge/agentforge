@@ -6,6 +6,7 @@ WORKDIR /app/agentforge/agentforge/agent
 RUN apt-get install -y python3-dev
 RUN pip install bcrypt pymongo
 RUN pip install inflect
+RUN pip install twilio
 # Expose port 3000
 EXPOSE 3000
 

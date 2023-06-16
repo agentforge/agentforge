@@ -9,6 +9,7 @@ from flask_swagger_ui import get_swaggerui_blueprint
 from dotenv import load_dotenv
 from base64 import b64encode
 import os
+from twilio.twiml.messaging_response import MessagingResponse
 
 from agentforge.ai import decision_interactor
 from agentforge.utils import measure_time, comprehensive_error_handler
@@ -63,6 +64,28 @@ app.register_blueprint(swaggerui_blueprint, url_prefix=SWAGGER_URL)
 #     return response
 
 # app.view_functions['sse.stream'] = sse_stream_with_cors
+
+
+@app.route('/', methods=['GET'])
+def hello():
+    return jsonify({"response": "Hello world"})
+
+@app.route('/sms', methods=['POST'])
+def sms_reply():
+    # Get message body
+    data = request.form.get('Body')
+
+    model_profiles = ModelProfile()
+    model_profile = model_profiles.get_profile_by_name('sms')
+    
+    ## Get Decision from Decision Factory and run it
+    decision = decision_interactor.get_decision()
+
+    output = decision.run({"input": {"prompt": data}, "model_profile": model_profile})
+    # Respond to the SMS
+    twilio_resp = MessagingResponse()
+    twilio_resp.message(output["response"])
+    return str(twilio_resp)
 
 @app.route('/login', methods=['POST'])
 def login():
