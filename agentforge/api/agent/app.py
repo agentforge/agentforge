@@ -74,22 +74,14 @@ def hello():
 def sms_reply():
     # Get message body
     data = request.form.get('Body')
-    print(data)
-
-    # twilio_resp = MessagingResponse()
-    # twilio_resp.message("TEST")
-    # return str(twilio_resp)
 
     model_profiles = ModelProfile()
     model_profile = model_profiles.get_profile_by_name('sms')
-    print(model_profiles)
     
     ## Get Decision from Decision Factory and run it
     decision = decision_interactor.get_decision()
-    print(decision)
 
     output = decision.run({"input": {"prompt": data}, "model_profile": model_profile})
-    print(output["response"])
     # Respond to the SMS
     twilio_resp = MessagingResponse()
     twilio_resp.message(output["response"])

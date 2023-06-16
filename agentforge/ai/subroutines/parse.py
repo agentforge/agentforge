@@ -14,7 +14,6 @@ class Parse:
         instruction = context['input']['prompt']
         recall = context['recall'] if 'recall' in context else ""
 
-        print(recall)
         prompt_template = prompt_template.replace("<name>", name)
         prompt_template = prompt_template.replace("<biography>", biography)
         prompt_template = prompt_template.replace("<instruction>", instruction)

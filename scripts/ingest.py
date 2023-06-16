@@ -1,5 +1,6 @@
 import os
 import json
+import shutil
 from typing import Any, Dict
 from dotenv import load_dotenv
 from agentforge.interfaces.interface_factory import InterfaceFactory
@@ -12,6 +13,12 @@ def read_json_files_from_directory(directory: str) -> Dict[str, Any]:
     for json_file in json_files:
         with open(os.path.join(directory, json_file), 'r') as file:
             json_contents.append(json.load(file))
+            
+        # Move the processed file to the 'processed' folder
+        processed_directory = os.path.join(directory, '../processed')
+        if not os.path.exists(processed_directory):
+            os.makedirs(processed_directory)
+        shutil.move(os.path.join(directory, json_file), os.path.join(processed_directory, json_file))
             
     return json_contents
 
