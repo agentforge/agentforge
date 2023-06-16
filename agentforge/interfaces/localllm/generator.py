@@ -19,10 +19,12 @@ class StopOnTokens(StoppingCriteria):
   def __init__(self, stop_token_ids):
     self.stop_token_ids = stop_token_ids
   def __call__(self, input_ids: torch.LongTensor, scores: torch.FloatTensor, **kwargs) -> bool:
+    idx = len(self.stop_token_ids)
     for stop_id in self.stop_token_ids:
-      if input_ids[0][-1] == stop_id:
-        return True
-    return False
+      if input_ids[0][-idx] != stop_id:
+        return False
+      idx -= 1
+    return True
 
 # Drives text generation for multiple models.
 class LocalGenerator:
@@ -81,8 +83,10 @@ class LocalGenerator:
 
     gen_config = kwargs["generation_config"]
 
-    stop = StopOnTokens([tokenizer.eos_token_id])
-    stopping_criteria=StoppingCriteriaList([stop])
+    if 'stopping_criteria' in gen_config:
+      stop_val = tokenizer.encode(gen_config['stopping_criteria'])
+      stop = StopOnTokens(stop_val)
+      stopping_criteria=StoppingCriteriaList([stop])
 
     # # Generate from eos if no input is specified.
     # if input_length == 0:
