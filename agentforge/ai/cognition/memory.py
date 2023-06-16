@@ -24,6 +24,7 @@ class Memory:
 
     # Retrieves the latest N interaction between user and agent
     def session_history(self, user: str, agent: str, n: int = 5):
+        self.working_memory.setup_memory(user, agent)
         return self.working_memory.recall(user, agent, n)
 
     def ingest(self, texts: List[str], metadata: List[Dict], **kwargs):
