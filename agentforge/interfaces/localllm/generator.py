@@ -1,10 +1,12 @@
 import torch
 import time, threading, json, logging
-from transformers import GenerationConfig, StoppingCriteria
+from transformers import GenerationConfig, StoppingCriteria, StoppingCriteriaList
 import numpy as np
 from agentforge.config import Config
 
 def convert_to_serializable(obj):
+    if isinstance(obj, StopOnTokens):
+        return obj.stop_token_ids
     if isinstance(obj, torch.Tensor):
         return obj.tolist()
     elif isinstance(obj, GenerationConfig):
@@ -12,6 +14,15 @@ def convert_to_serializable(obj):
     key_err = f"""Object of type {obj.__class__.__name__} is not JSON serializable;
       Add a new Exception to convert_to_serializable() in agentforge/language_model/logger.py"""
     raise TypeError(key_err)
+
+class StopOnTokens(StoppingCriteria):
+  def __init__(self, stop_token_ids):
+    self.stop_token_ids = stop_token_ids
+  def __call__(self, input_ids: torch.LongTensor, scores: torch.FloatTensor, **kwargs) -> bool:
+    for stop_id in self.stop_token_ids:
+      if input_ids[0][-1] == stop_id:
+        return True
+    return False
 
 # Drives text generation for multiple models.
 class LocalGenerator:
@@ -70,26 +81,8 @@ class LocalGenerator:
 
     gen_config = kwargs["generation_config"]
 
-    gen_config["output_attentions"] = False
-    gen_config["output_hidden_states"] = False
-    gen_config["use_cache"] = True # config.use_cache
-
-    if "stopping_criteria" in gen_config:
-      gen_config["stopping_criteria"] = StoppingCriteria(stop_token_ids=tokenizer.convert_tokens_to_ids(gen_config["stopping_criteria"]))
-
-    # Config drive overrides
-    if "eos_token" in gen_config:
-      gen_config["eos_token_id"] = tokenizer.encode(gen_config["eos_token"])[0]
-    else:
-      gen_config["eos_token_id"] = config.eos_token_id
-    if "bos_token" in gen_config:
-      gen_config["bos_token_id"] = tokenizer.encode(gen_config["bos_token"])[0]
-    else:
-      gen_config["bos_token_id"] = config.bos_token_id
-    if "pad_token" in gen_config:
-      gen_config["pad_token_id"] = tokenizer.encode(gen_config["pad_token"])[0]
-    else:
-      gen_config["pad_token_id"] = config.pad_token_id
+    stop = StopOnTokens([tokenizer.eos_token_id])
+    stopping_criteria=StoppingCriteriaList([stop])
 
     # # Generate from eos if no input is specified.
     # if input_length == 0:
@@ -103,7 +96,7 @@ class LocalGenerator:
     logging.info(prompt)
     with torch.autocast("cuda"):
       inputs = tokenizer(prompt, return_tensors="pt")
-      input_ids = inputs["input_ids"].cuda()
+      input_ids = inputs.input_ids.cuda()
       generation_config = GenerationConfig(
           **gen_config,
       )
@@ -119,13 +112,21 @@ class LocalGenerator:
               'generation_config': generation_config,
               'return_dict_in_generate': True,
               'output_scores': True,
+              'attention_mask': inputs.attention_mask,
+              'stopping_criteria': stopping_criteria,
           }
           if "eos_token_id" in gen_config:
             final_kwargs['eos_token_id'] = gen_config["eos_token_id"]
+          else:
+            final_kwargs['eos_token_id'] = tokenizer.eos_token_id
           if "bos_token_id" in gen_config:
             final_kwargs['bos_token_id'] = gen_config["bos_token_id"]
+          else:
+            final_kwargs['bos_token_id'] = tokenizer.bos_token_id
           if "pad_token_id" in gen_config:
             final_kwargs['pad_token_id'] = gen_config["pad_token_id"]
+          else:
+            final_kwargs['pad_token_id'] = tokenizer.eos_token_id
   
           logging.info(f"Rendering with {json.dumps(final_kwargs, indent=4, default=convert_to_serializable)}")
           if streamer != None:
@@ -147,6 +148,10 @@ class LocalGenerator:
     )
 
     kwargs["output_attentions"] = False
+    kwargs["output_attentions"] = False
+    kwargs["output_hidden_states"] = False
+    kwargs["use_cache"] = True # config.use_cache
+
     kwargs["output_hidden_states"] = False
     kwargs["use_cache"] = True # config.use_cache
 
