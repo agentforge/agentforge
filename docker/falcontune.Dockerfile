@@ -9,7 +9,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 # Install system dependencies
 RUN apt-get update && \
-    apt-get install -y git python3 python3-pip python3-dev && \
+    apt-get install -y git python3 python3-pip python3-dev ninja-build && \
     ln -s /usr/bin/python3 /usr/bin/python
 
 # Set CUDA_HOME environment variable
@@ -26,6 +26,9 @@ RUN pip install -r requirements.txt
 
 # Install falcontune
 RUN python setup.py install
+
+# Set environment variable for Torch CUDA architecture
+ENV TORCH_CUDA_ARCH_LIST="6.0 6.1 7.0+PTX"
 
 # Install falcontune with CUDA support
 RUN python setup_cuda.py install
