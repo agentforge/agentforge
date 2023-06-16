@@ -27,7 +27,8 @@ json_contents = read_json_files_from_directory(directory_path)
 
 # Initialize the VectorStore
 interface_interactor = InterfaceFactory()
-vector_store = interface_interactor.create_vectorstore()
+interface_interactor.create_vectorstore()
+vector_store = interface_interactor.get_interface("vectorstore")
 
 # Add texts and metadata from each JSON file to the VectorStore
 for content in json_contents:
