@@ -46,6 +46,24 @@ services:
               device_ids: ['0', '1']
               capabilities: [gpu]
 
+  falcontune:
+    image: falcontune
+    ipc: host
+    restart: always
+    networks:
+      main-net:
+        aliases:
+          - falcontune
+    volumes:
+      - cache-volume:/app/cache
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ['0', '1']
+              capabilities: [gpu]
+
   speech:
     image: speech
     restart: always
