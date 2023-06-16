@@ -71,7 +71,11 @@ class LocalLoader:
         revision = self.config.get("revision", "main")
         load_in_8bit = self.config.get("load_in_8bit", False)
         load_in_4bit = self.config.get("load_in_4bit", False)
-        torch_dtype = self.config.get("torch_dtype", torch.float16)
+        torch_dtype = self.config.get("torch_dtype", "torch.float16")
+        if torch_dtype == "torch.bfloat16":
+            computed_torch = torch.bfloat16
+        else:
+            computed_torch = torch.float16
         padding_side = self.config.get("padding_side", "left")
         model_name = self.config["model_name"]
 
@@ -81,7 +85,7 @@ class LocalLoader:
         logger.info(f"Loading model... {model_name}")
 
         config = AutoConfig.from_pretrained(model_name, trust_remote_code=True)
-        if self.config['attn_impl'] == 'triton':
+        if 'attn_impl' in self.config and self.config['attn_impl'] == 'triton':
             config.attn_config['attn_impl'] = 'triton'
 
         self.model = model_klass.from_pretrained(
@@ -89,13 +93,17 @@ class LocalLoader:
             config=config,
             load_in_8bit=bool(load_in_8bit),
             load_in_4bit=bool(load_in_4bit),
-            torch_dtype=torch_dtype,
+            torch_dtype=computed_torch,
             device_map=self.device_map,
             revision=revision,
             trust_remote_code=True
         )
         logger.info(f"Loading AutoTokenizer... {tokenizer_klass}")
-        self.tokenizer = tokenizer_klass.from_pretrained(self.config["tokenizer_name"], padding_side=padding_side)
+        self.tokenizer = tokenizer_klass.from_pretrained(
+            self.config["tokenizer_name"],
+            padding=False,
+            add_special_tokens=False
+        )
 
         # if self.config["tokenizer_name"] == "OpenAssistant/oasst-sft-1-pythia-12b":
         #     special_tokens_dict = {'additional_special_tokens': ['<|prompter|>', '<|assistant|>']}
