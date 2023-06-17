@@ -29,6 +29,31 @@ class LocalLoader:
             self.huggingface(device)
         return self.model, self.tokenizer
 
+
+    # LOADING PEFT LORA
+    def load_adapter(self, orig_model, lora_apply_dir=None, lora_config=None, ddp=None):
+        print(f"Loading {lora_apply_dir}")
+        module = dynamic_import('peft', ['PeftModel'])
+        if ddp:
+            device_map = {'': 0}
+        else:
+            if torch.cuda.device_count() > 1:
+                device_map = "auto"
+            else:
+                device_map = {'': 0}
+
+        print('Device map for lora:', device_map)
+
+        model = module["PeftModel"].from_pretrained(
+            orig_model, lora_apply_dir, device_map=device_map,
+            torch_dtype=torch.float32, is_trainable=True)
+
+        model.to(orig_model.device)
+        print(lora_apply_dir, 'loaded')
+
+        return model
+
+
     def llama(self, device="cuda"):
         logger.info("Loading llama...")
         # self.tokenizer = LlamaTokenizer.from_pretrained(self.config["model_name"], decode_with_prefix_space=True, clean_up_tokenization_spaces=True)
@@ -98,6 +123,20 @@ class LocalLoader:
             revision=revision,
             trust_remote_code=True
         )
+
+
+        if "peft_model" in self.config and self.config["peft_model"] != "":
+            logger.info(f"Loading PEFT... {self.config['peft_model']}")
+            if self.config["peft_model"][0] == "/": # hack to check for dirs -- this is what we use locally
+                self.model = self.load_adapter(self.model, lora_apply_dir=self.config["peft_model"])
+            else:
+                # Coming from the HF repo
+                module = dynamic_import('peft', ['PeftModel'])
+                self.model = module["PeftModel"].from_pretrained(
+                    self.model, self.config["peft_model"],
+                    torch_dtype=torch_dtype,
+                )
+
         logger.info(f"Loading AutoTokenizer... {tokenizer_klass}")
         self.tokenizer = tokenizer_klass.from_pretrained(
             self.config["tokenizer_name"],

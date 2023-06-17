@@ -133,12 +133,18 @@ class LocalGenerator:
           with self.lock:
             generation_output = gen(**final_kwargs)
             if 'return_probabilities' in gen_config and gen_config['return_probabilities']:
-              self.get_probabilities(model, tokenizer, inputs, generation_output)
+              self.get_probabilities(model, skip_special_tokens=True, tokenizer, inputs, generation_output)
       end_time = time.time()
       execution_time = end_time - start_time
       logging.info(f"Execution time: {execution_time:.6f} seconds")
-      s = generation_output.sequences[0]
-      output = tokenizer.decode(s, skip_special_tokens=True)
+
+      # When no dict, only tensor
+      if isinstance(generation_output, torch.Tensor):
+        output = tokenizer.decode(*generation_output.tolist(), skip_special_tokens=True)
+        print(output)
+      else:
+        s = generation_output.sequences[0]
+        output = tokenizer.decode(s, skip_special_tokens=True)
       return output
  
   def dolly(self, prompt, model, tokenizer, _, gc_name=None, **kwargs) -> str:
