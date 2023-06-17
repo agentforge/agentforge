@@ -100,7 +100,9 @@ export const GENERATION_FIELDS: ConfigFields = {
   output_scores: { type: 'boolean', default: false, tooltip: "Whether or not to return the prediction scores. Defaults to False." },
   return_dict_in_generate: { type: 'boolean', default: false, tooltip: "Whether or not to return a ModelOutput instead of a plain tuple. Defaults to False." },
   encoder_no_repeat_ngram_size: { type: 'int', default: 0, tooltip: "If set to an integer greater than 0, any ngrams of that size that occur in the encoder input cannot occur in the decoder output. This can be useful in tasks like summarization to prevent the model from simply copying large chunks of the input." },
-  decoder_start_token: { type: 'text', default: undefined, tooltip: "If an encoder-decoder model starts decoding with a different token than bos, the id of that token.  the token that should be used as the first token for the decoder when generating a sequence. This is typically used in sequence-to-sequence tasks where the start token for the decoder may be different from the BOS token." }
+  decoder_start_token: { type: 'text', default: undefined, tooltip: "If an encoder-decoder model starts decoding with a different token than bos, the id of that token.  the token that should be used as the first token for the decoder when generating a sequence. This is typically used in sequence-to-sequence tasks where the start token for the decoder may be different from the BOS token." },
+  stopping_criteria: { type: 'text', default: undefined, tooltip: "Additional stopping criteria tokens." },
+
 };
 
 export interface ConfigProps {

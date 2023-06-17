@@ -29,6 +29,31 @@ class LocalLoader:
             self.huggingface(device)
         return self.model, self.tokenizer
 
+
+    # LOADING PEFT LORA
+    def load_adapter(self, orig_model, lora_apply_dir=None, lora_config=None, ddp=None):
+        print(f"Loading {lora_apply_dir}")
+        module = dynamic_import('peft', ['PeftModel'])
+        if ddp:
+            device_map = {'': 0}
+        else:
+            if torch.cuda.device_count() > 1:
+                device_map = "auto"
+            else:
+                device_map = {'': 0}
+
+        print('Device map for lora:', device_map)
+
+        model = module["PeftModel"].from_pretrained(
+            orig_model, lora_apply_dir, device_map=device_map,
+            torch_dtype=torch.float32, is_trainable=True)
+
+        model.to(orig_model.device)
+        print(lora_apply_dir, 'loaded')
+
+        return model
+
+
     def llama(self, device="cuda"):
         logger.info("Loading llama...")
         # self.tokenizer = LlamaTokenizer.from_pretrained(self.config["model_name"], decode_with_prefix_space=True, clean_up_tokenization_spaces=True)
@@ -71,7 +96,11 @@ class LocalLoader:
         revision = self.config.get("revision", "main")
         load_in_8bit = self.config.get("load_in_8bit", False)
         load_in_4bit = self.config.get("load_in_4bit", False)
-        torch_dtype = self.config.get("torch_dtype", torch.float16)
+        torch_dtype = self.config.get("torch_dtype", "torch.float16")
+        if torch_dtype == "torch.bfloat16":
+            computed_torch = torch.bfloat16
+        else:
+            computed_torch = torch.float16
         padding_side = self.config.get("padding_side", "left")
         model_name = self.config["model_name"]
 
@@ -81,7 +110,7 @@ class LocalLoader:
         logger.info(f"Loading model... {model_name}")
 
         config = AutoConfig.from_pretrained(model_name, trust_remote_code=True)
-        if self.config['attn_impl'] == 'triton':
+        if 'attn_impl' in self.config and self.config['attn_impl'] == 'triton':
             config.attn_config['attn_impl'] = 'triton'
 
         self.model = model_klass.from_pretrained(
@@ -89,13 +118,31 @@ class LocalLoader:
             config=config,
             load_in_8bit=bool(load_in_8bit),
             load_in_4bit=bool(load_in_4bit),
-            torch_dtype=torch_dtype,
+            torch_dtype=computed_torch,
             device_map=self.device_map,
             revision=revision,
             trust_remote_code=True
         )
+
+
+        if "peft_model" in self.config and self.config["peft_model"] != "":
+            logger.info(f"Loading PEFT... {self.config['peft_model']}")
+            if self.config["peft_model"][0] == "/": # hack to check for dirs -- this is what we use locally
+                self.model = self.load_adapter(self.model, lora_apply_dir=self.config["peft_model"])
+            else:
+                # Coming from the HF repo
+                module = dynamic_import('peft', ['PeftModel'])
+                self.model = module["PeftModel"].from_pretrained(
+                    self.model, self.config["peft_model"],
+                    torch_dtype=torch_dtype,
+                )
+
         logger.info(f"Loading AutoTokenizer... {tokenizer_klass}")
-        self.tokenizer = tokenizer_klass.from_pretrained(self.config["tokenizer_name"], padding_side=padding_side)
+        self.tokenizer = tokenizer_klass.from_pretrained(
+            self.config["tokenizer_name"],
+            padding=False,
+            add_special_tokens=False
+        )
 
         # if self.config["tokenizer_name"] == "OpenAssistant/oasst-sft-1-pythia-12b":
         #     special_tokens_dict = {'additional_special_tokens': ['<|prompter|>', '<|assistant|>']}
