@@ -77,4 +77,4 @@ async def agent(request: Request) -> AgentResponse:
             )
 
     ## Return Decision output
-    return AgentResponse(data=output)
+    return AgentResponse(output)
