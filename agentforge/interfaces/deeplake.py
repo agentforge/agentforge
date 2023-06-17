@@ -16,7 +16,6 @@ class DeepLakeVectorStore(VectorStoreProtocol):
         # Initialize your vector store here
         self.embdeddings = HuggingFaceEmbeddings(model_name=model_name)
         self.deeplake_path = deeplake_path
-
         if reset:
             self.delete()
 

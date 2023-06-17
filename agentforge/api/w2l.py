@@ -1,20 +1,36 @@
-from flask import Flask, request, jsonify
-from flask_cors import CORS
+from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
+
+from pydantic import BaseModel
+
 from agentforge.utils import measure_time, comprehensive_error_handler
 from agentforge.factories import resource_factory
 
-app = Flask(__name__)
-CORS(app)
+
+app = FastAPI()
+
+cors_origins = ["*"]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=cors_origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 from dotenv import load_dotenv
 load_dotenv('../../../.env')
 
 w2l = resource_factory.get_resource("w2l")
 
-@app.route("/v1/lipsync", methods=["POST"])
+class lipsyncResponse(BaseModel):
+  filename: str
+
+@app.post("/v1/lipsync")
 @comprehensive_error_handler
 @measure_time
-def lipsync():
+async def lipsync(request: Request) -> lipsyncResponse:
   # Get the wav file from the request
   wav_file = request.json["audio_response"]
   avatar = request.json["avatar_config"]
@@ -30,7 +46,7 @@ def lipsync():
   response = w2l.run(opts)
 
   # Return the text in the response
-  return jsonify(response)
+  return lipsyncResponse(filename=response)
 
 if __name__ == '__main__':
   app.run()

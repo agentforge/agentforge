@@ -7,7 +7,7 @@ from agentforge.utils import logger
 class APIService:
     def __init__(self):
         # Check if we are in a test environment
-        self.test_env = True if os.getenv("ENV") == "test" else False
+        self.test_env = True if os.getenv("AGENTFORGE_ENV").lower() == "test" else False
         self.client = APIClient()
 
     def _heartbeat(self):
