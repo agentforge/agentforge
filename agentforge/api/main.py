@@ -20,10 +20,9 @@ class LoggingMiddleware(BaseHTTPMiddleware):
 
 app = init_api()
 app.add_middleware(LoggingMiddleware)
-app.include_router(model_profiles_router, prefix="/v1/model_profiles", tags=["model_profiles"])
+app.include_router(model_profiles_router, prefix="/v1/model-profiles", tags=["model_profiles"])
 app.include_router(user_router, prefix="/v1/user", tags=["users"])
 app.include_router(agent_router, prefix="", tags=["main"])
-
 
 @app.exception_handler(Exception)
 async def custom_exception_handler(request: Request, exc: Exception):
