@@ -103,8 +103,8 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ id }) =>  {
       setIsLoading(false);
       return;
     }
-    const completion = data.choices[0].text
-    console.log(data)
+    console.log(data.data);
+    const completion = data.data.choices[0].text
     if (data.video) {
       const buffer = Buffer.from(data.video, 'base64'); // Assume that data.video contains the base64 encoded MP4 data
       const decodedVideoData = Buffer.from(data.video, 'base64');
