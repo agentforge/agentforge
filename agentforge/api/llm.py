@@ -1,7 +1,6 @@
-from fastapi import Request
+from fastapi import Request, Depends
 from pydantic import BaseModel
 from typing import List
-from agentforge.utils import measure_time, comprehensive_error_handler
 from agentforge.factories import resource_factory
 from .app import init_api
 
@@ -15,10 +14,7 @@ class CompletionsResponse(BaseModel):
    choices: List[TextResponse]
 
 # Given the following text request generate a wav file and return to the client
-@app.post("/v1/completions")
-@comprehensive_error_handler
-
-@measure_time
+@app.post("/v1/completions", operation_id="createLanguageModelCompletion")
 def output(request: Request) -> CompletionsResponse:
   config = request.json
   response = llm.generate(**config)

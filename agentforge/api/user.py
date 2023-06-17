@@ -9,7 +9,7 @@ router = APIRouter()
 class StandardDictResponse(BaseModel):
   data: dict
 
-@router.get('/{user_id}/model-profiles')
+@router.get('/{user_id}/model-profiles', operation_id="listModelProfilesByUser")
 @comprehensive_error_handler
 @measure_time
 def get_user_profiles(user_id: str):

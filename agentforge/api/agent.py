@@ -1,11 +1,11 @@
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Request, Depends
 from starlette.responses import StreamingResponse
 from pydantic import BaseModel
 from agentforge.interfaces import interface_interactor
 from base64 import b64encode
 from agentforge.ai import decision_interactor
-from agentforge.utils import measure_time, comprehensive_error_handler
 from agentforge.interfaces.model_profile import ModelProfile
+from agentforge.api.auth import get_api_key
 
 # Setup Agent
 decision = decision_interactor.create_decision()
@@ -26,15 +26,15 @@ def redis_pubsub_channel(redis_client, channel_name="mychannel"):
             yield f"data: {data}\n\n"
 
 
-@router.get("/stream")
+@router.get("/stream", operation_id="createStream", dependencies=[Depends(get_api_key)])
 async def stream():
     return StreamingResponse(redis_pubsub_channel(), media_type="text/event-stream")
 
-@router.get("/")
+@router.get("/", operation_id="helloWorld", dependencies=[Depends(get_api_key)])
 def hello() -> AgentResponse:
     return AgentResponse(data={"response": "Hello world"})
 
-@router.post('/v1/completions')
+@router.post('/v1/completions', operation_id="createChatCompletion", dependencies=[Depends(get_api_key)])
 async def agent(request: Request) -> AgentResponse:
     ## Parse Data --  from web accept JSON, from client we need to pull ModelConfig
     ## and add add the prompt and user_id to the data

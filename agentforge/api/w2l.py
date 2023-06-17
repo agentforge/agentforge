@@ -27,7 +27,7 @@ w2l = resource_factory.get_resource("w2l")
 class lipsyncResponse(BaseModel):
   filename: str
 
-@app.post("/v1/lipsync")
+@app.post("/v1/lipsync", operation_id="createVideoResponse")
 @comprehensive_error_handler
 @measure_time
 async def lipsync(request: Request) -> lipsyncResponse:

@@ -7,7 +7,7 @@ from agentforge.interfaces.model_profile import ModelProfile
 
 router = APIRouter()
 
-@router.post("/")
+@router.post("/", operation_id="createSmsCompletion")
 def sms_reply(request: Request) -> PlainTextResponse:
     # Get message body
     data = request.form.get('Body')

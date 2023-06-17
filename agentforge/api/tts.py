@@ -14,7 +14,7 @@ class TtsResponse(BaseModel):
   filename: str
 
 # Given the following text request generate a wav file and return to the client
-@app.post("/v1/tts")
+@app.post("/v1/tts", operation_id="createAudioResponse")
 @comprehensive_error_handler
 @measure_time
 async def text_to_speech(request: Request) -> TtsResponse:
@@ -22,7 +22,7 @@ async def text_to_speech(request: Request) -> TtsResponse:
   prompt = request.json["prompt"]
   avatar = request.json["avatar"]
 
-  filename = "/app/cache/out.wav"
+  filename = "/app/cache/out.wav" # TODO: This is not scalable we need to establish a different filename per request
   speaker_wav = os.environ.get('DST_PATH') + avatar["speaker_wav"] if "speaker_wav" in avatar else None
   speaker_idx = avatar["speaker_idx"] if "speaker_idx" in avatar else 0
 
