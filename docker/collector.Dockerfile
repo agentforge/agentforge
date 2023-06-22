@@ -19,13 +19,8 @@ WORKDIR /app
 # Clone the git repository
 RUN git clone https://github.com/agentforge/anything-llm.git .
 
-# Install virtualenv
-RUN python3 -m pip install virtualenv
-
-# Setup virtual environment and install dependencies
-RUN python3 -m virtualenv v-env && \
-    . v-env/bin/activate && \
-    pip install -r collector/requirements.txt
+# Install dependencies
+RUN pip install -r collector/requirements.txt
 
 # Copy example env file as .env
 RUN cp collector/.env.example collector/.env
