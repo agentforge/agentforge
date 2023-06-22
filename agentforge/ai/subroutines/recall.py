@@ -15,5 +15,6 @@ class Recall:
             context['model_profile']['metadata']['user_id'],
             context['model_profile']['avatar_config']['name'],            
         )
+        print(working)
         context['recall'] = memories + " \n " + working
         return context

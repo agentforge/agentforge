@@ -12,13 +12,12 @@ from langchain.embeddings import HuggingFaceEmbeddings
 from agentforge.adapters import VectorStoreProtocol
 
 class DeepLakeVectorStore(VectorStoreProtocol):
-    def __init__(self, model_name: str, deeplake_path: str) -> None:
+    def __init__(self, model_name: str, deeplake_path: str, reset: bool) -> None:
         # Initialize your vector store here
         self.embdeddings = HuggingFaceEmbeddings(model_name=model_name)
         self.deeplake_path = deeplake_path
-
-        ### TODO: Remove deletion of directory when runnnig in production
-        self.delete()
+        if reset:
+            self.delete()
 
         # Use deeplake for long-term vector memory storage
         self.deeplake = DeepLake(dataset_path=deeplake_path, embedding_function=self.embdeddings)

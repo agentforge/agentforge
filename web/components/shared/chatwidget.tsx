@@ -103,8 +103,8 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ id }) =>  {
       setIsLoading(false);
       return;
     }
-    const completion = data.choices[0].text
-    console.log(data)
+    console.log(data.data);
+    const completion = data.data.choices[0].text
     if (data.video) {
       const buffer = Buffer.from(data.video, 'base64'); // Assume that data.video contains the base64 encoded MP4 data
       const decodedVideoData = Buffer.from(data.video, 'base64');
@@ -155,7 +155,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ id }) =>  {
   return (
     <ChatWidgetStateProvider>
       <div className="chat-widget">
-        <ul className="no-bullets chat-history" ref={chatContainerRef} style={{ maxHeight: '500px', overflow: 'scroll' }}>
+        <ul className="no-bullets chat-history" ref={chatContainerRef} style={{ maxHeight: '500px', overflowY: 'scroll', overflowX: 'hidden' }}>
           {messages.map((message) => (
             <li key={message.id} className={message.author_type}>
               <div>

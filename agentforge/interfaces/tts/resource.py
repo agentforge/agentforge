@@ -13,10 +13,12 @@ class TextToSpeech():
     self.tts_custom = TTS(model_name="tts_models/multilingual/multi-dataset/your_tts", progress_bar=False, gpu=True)
 
   def synthesizer(self, text, filename, speaker_wav=None, speaker_idx=0):
-    if speaker_wav == None:
-      self.tts.tts_to_file(text=text, speaker=self.tts.speakers[speaker_idx], file_path=filename)
-    else:
+    if speaker_wav is not None:
       self.tts_custom.tts_to_file(text=normalize_transcription(text), file_path=filename, speaker_wav=speaker_wav, language="en")
+    else:
+      if speaker_idx is None:
+        speaker_idx = 0
+      self.tts.tts_to_file(text=text, speaker=self.tts.speakers[speaker_idx], file_path=filename)
     return filename
 
 if __name__ == "__main__":

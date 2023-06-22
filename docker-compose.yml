@@ -3,6 +3,7 @@ version: '3'
 services:
   redis:
     image: redis:latest
+    restart: always
     ports:
       - "6379:6379"
     networks:
@@ -43,7 +44,7 @@ services:
         reservations:
           devices:
             - driver: nvidia
-              device_ids: ['0', '1']
+              device_ids: ['0']
               capabilities: [gpu]
 
   falcontune:
@@ -83,7 +84,7 @@ services:
               capabilities: [gpu]
 
   wav2lip:
-    image: wav2lip
+    image: sadtalker
     ipc: host
     restart: always
     networks:
@@ -98,7 +99,7 @@ services:
           devices:
             - driver: nvidia
               device_ids: ['1']
-              capabilities: [gpu] 
+              capabilities: [gpu]
 
   agent:
     image: agent
@@ -140,6 +141,20 @@ services:
       main-net:
         aliases:
           - mongodb
+
+  collector:
+    image: collector
+    restart: always
+    networks:
+      main-net:
+        aliases:
+          - collector
+    volumes:
+      - cache-volume:/app/cache
+    environment:
+      - GOOGLE_CLOUD_CREDENTIALS=your-google-cloud-credentials
+    tty: true
+
 networks:
   main-net:
 

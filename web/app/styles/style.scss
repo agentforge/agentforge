@@ -260,6 +260,12 @@ pre code .comment {
   font-weight: bold;
   color: #f0f0f0;
   display: inline-block;
+  max-width: 765px;
+}
+pre > span {
+  display: inline;
+  white-space: break-spaces;
+  overflow-wrap: break-word;
 }
 /* Shadow and style for the user input element */
 #user-input {

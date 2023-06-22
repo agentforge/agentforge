@@ -34,6 +34,7 @@ export const MODEL_FIELDS: ConfigFields = {
   video: { type: 'boolean', default: false, label: 'Video' },
   streaming: { type: 'boolean', default: false, label: 'Streaming' },
   llama: { type: 'boolean', default: false, label: 'Llama' },
+  torch_dtype: { type: 'text', default: 'torch.float16', tooltip: "Determinging torch dtype -- set to torch.bfloat16 for certain models like Falcon" },
 };
 
 
