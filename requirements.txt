@@ -9,7 +9,7 @@ fuzzywuzzy
 fuzzysearch
 python-Levenshtein
 diffusers[torch]
-langchain @ git+https://github.com/fragro/langchain.git
+langchain 
 packaging==21.3
 torchmetrics<0.8
 numpy==1.23.5
@@ -36,3 +36,4 @@ tokenizers>=0.13.3
 pygments
 pygments-solarized-style
 fastapi
+uvicorn
