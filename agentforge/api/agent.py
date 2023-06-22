@@ -34,7 +34,7 @@ async def stream():
 def hello() -> AgentResponse:
     return AgentResponse(data={"response": "Hello world"})
 
-@router.post('/v1/completions', operation_id="createChatCompletion", dependencies=[Depends(get_api_key)])
+@router.post('/v1/completions', operation_id="createChatCompletion") #, dependencies=[Depends(get_api_key)])
 async def agent(request: Request) -> AgentResponse:
     ## Parse Data --  from web accept JSON, from client we need to pull ModelConfig
     ## and add add the prompt and user_id to the data

@@ -19,7 +19,7 @@ class InMemoryVectorStore(VectorStoreProtocol):
             self.vectors.append(outputs.last_hidden_state.mean(dim=1).detach().numpy())
         self.vectors = np.array(self.vectors).squeeze()  # Convert list of vectors to numpy array for efficient computation
 
-    def search(self, text: str) -> List[Tuple[str, float]]:
+    def search(self, text: str, n: int, filter: dict) -> List[Tuple[str, float]]:
         inputs = self.tokenizer(text, return_tensors='pt', truncation=True, padding=True)
         outputs = self.model(**inputs)
         vector = outputs.last_hidden_state.mean(dim=1).detach().numpy().reshape(1, -1)
