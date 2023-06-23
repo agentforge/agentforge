@@ -49,6 +49,8 @@ async def agent(request: Request) -> AgentResponse:
     
     ## Get Decision from Decision Factory and run it
     decision = decision_interactor.get_decision()
+
+    # print("[DEBUG][api][agent][agent] decision: ", decision)
     
     output = decision.run({"input": data, "model_profile": model_profile})
 
@@ -76,5 +78,7 @@ async def agent(request: Request) -> AgentResponse:
                 }
             )
 
+    # print("[DEBUG][api][agent][agent] output: ", output)
+
     ## Return Decision output
-    return AgentResponse(output)
+    return AgentResponse(data=output)
