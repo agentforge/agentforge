@@ -2,7 +2,7 @@ from fastapi import Request, Depends
 from pydantic import BaseModel
 from typing import List
 from agentforge.factories import resource_factory
-from .app import init_api
+from agentforge.api.app import init_api
 
 app = init_api()
 llm = resource_factory.get_resource("llm")
