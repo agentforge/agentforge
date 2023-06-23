@@ -9,8 +9,14 @@ from agentforge.ai.subroutines.remember import Remember
 from agentforge.ai.subroutines.recall import Recall
 from agentforge.ai.routines.routine import Routine
 from agentforge.ai.subroutines.prep import Prep
+from agentforge.ai.subroutines.planner import Planner
 
 ### Simplest reactive routine for a decision timestep/run
 class ReactiveRoutine(Routine):
     def __init__(self):
         self.subroutines = [Recall(), Parse(), Respond(), Remember(), Speak(), Lipsync(), Prep()]
+
+### Simplest planning routine for a decision timestep/run
+class PlanningRoutine(Routine):
+    def __init__(self):
+        self.subroutines = [Recall(), Parse(), Planner(), Respond(), Remember(), Speak(), Lipsync(), Prep()]

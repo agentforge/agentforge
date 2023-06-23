@@ -29,9 +29,11 @@ def get_cost(x):
         cost = float(splitted[counter+2])
     return cost
 
+class PlanningController:
+    def __init__(self, llm, input_values: dict = {}) -> None:
+        ### llm is a service that exposes a call method taking
+        ### a single dictionary of inputs
 
-class PLanningController:
-    def __init__(self, input_values: dict) -> None:
         input_values = {
             "domain": "barman",
             "method": "llm_ic_pddl_planner",

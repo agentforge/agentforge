@@ -1,10 +1,10 @@
 from typing import Dict, Any
-from agentforge.ai.routines.reactive import ReactiveRoutine
+from agentforge.ai.routines.reactive import ReactiveRoutine, PlanningRoutine
 from agentforge.ai.cognition.memory import Memory
 
 class SimpleDecision:
     def __init__(self):
-        self.routine = ReactiveRoutine()
+        self.routine = PlanningRoutine()
         self.memory = Memory()
 
     def run(self, context: Dict[str, Any]) -> Dict[str, Any]:
