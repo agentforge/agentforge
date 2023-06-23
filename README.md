@@ -103,6 +103,12 @@ To run the flask server(s) from inside a container:
 
 ```PYTHONPATH="/app/agentforge/" flask run --host=0.0.0.0 --port=3000```
 
+FastAPI servers(s) from inside a container: 
+```
+cd /app/agentforge/agentforge/api
+uvicorn main:app --reload --host=0.0.0.0 --port=3000
+```
+
 ## SSL
 
 Create an ssl key and cert for the Flask API:
