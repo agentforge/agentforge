@@ -35,4 +35,5 @@ inflect
 tokenizers>=0.13.3
 pygments
 pygments-solarized-style
-fast_api
+fastapi
+uvicorn

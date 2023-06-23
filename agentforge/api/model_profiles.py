@@ -11,7 +11,7 @@ class ModelProfileResponse(BaseModel):
 @router.post('', operation_id="createModelProfile")
 async def create_profile(request: Request) -> ModelProfileResponse:
     model_profiles = ModelProfile()
-    data = request.get_json()  # retrieve data from the POST request body
+    data = request # request.get_json()  # retrieve data from the POST request body
     output = model_profiles.create(data)
     return ModelProfileResponse(data=output)
 

@@ -6,7 +6,7 @@ import random
 import sys
 import time
 
-import openai
+# import openai
 
 FAST_DOWNWARD_ALIAS = "lama"
 
@@ -29,62 +29,56 @@ def get_cost(x):
         cost = float(splitted[counter+2])
     return cost
 
-class PlanningController:
-    def __init__(self, llm, input_values: dict = {}) -> None:
-        ### llm is a service that exposes a call method taking
-        ### a single dictionary of inputs
-
-        input_values = {
-            "domain": "barman",
-            "method": "llm_ic_pddl_planner",
-            "time_limit": 200,
-            "task": 0,
-            "run": 0,
-            "print_prompts": False,
-        }
-
+class PlanningControllerConfig:
+    def __init__(self, input_values: dict):
         # Validate and/or set default values
         def get_arg(arg_name, valid_choices=None, default_value=None):
             value = input_values.get(arg_name, default_value)
             if valid_choices is not None and value not in valid_choices:
                 raise ValueError(f"Invalid value for {arg_name}. Must be one of {valid_choices}")
             return value
+        
+        # initialize the attributes
+        self.domain = get_arg("domain", valid_choices=DOMAINS, default_value="barman")
+        self.method = get_arg("method", valid_choices=["llm_ic_pddl_planner",
+                                                        "llm_pddl_planner",
+                                                        "llm_planner",
+                                                        "llm_stepbystep_planner",
+                                                        "llm_ic_planner"],
+                              default_value="llm_ic_pddl_planner")
+        self.time_limit = get_arg("time_limit", default_value=200)
+        self.task = get_arg("task", default_value=0)
+        self.run = get_arg("run", default_value=0)
+        self.print_prompts = get_arg("print_prompts", default_value=False)
 
-        self.args = {
-            "domain": get_arg("domain", valid_choices=DOMAINS, default_value="barman"),
-            "method": get_arg("method", valid_choices=["llm_ic_pddl_planner",
-                                                    "llm_pddl_planner",
-                                                    "llm_planner",
-                                                    "llm_stepbystep_planner",
-                                                    "llm_ic_planner"],
-                            default_value="llm_ic_pddl_planner"),
-            "time_limit": get_arg("time_limit", default_value=200),
-            "task": get_arg("task", default_value=0),
-            "run": get_arg("run", default_value=0),
-            "print_prompts": get_arg("print_prompts", default_value=False),
-        }
-
-
-        # 1. initialize problem domain
-        self.domain = eval(self.args.domain.capitalize())()
-
-        # 2. initialize the planner
+class PlanningController:
+    def __init__(self, llm, input_values: dict = {}):
+        # llm is a service that exposes a call method taking a single dictionary of inputs
+        
+        # Create a PlanningControllerConfig object
+        self.config = PlanningControllerConfig(input_values)
+        
+        # Initialize problem domain
+        self.domain = eval(self.config.domain.capitalize())()
+        
+        # Initialize the planner
         self.planner = Planner()
-    
-    def execute(self):
-        # 3. execute the llm planner
+
+    def execute(self, input):
+        # Execute the llm planner
         method = {
             "llm_ic_pddl_planner"   : llm_ic_pddl_planner,
             "llm_pddl_planner"      : llm_pddl_planner,
             "llm_planner"           : llm_planner,
             "llm_stepbystep_planner": llm_stepbystep_planner,
             "llm_ic_planner"        : llm_ic_planner,
-        }[self.args.method]
-
-        if self.args.print_prompts:
+        }[self.config.method]
+        
+        # Execute planner with or without prompts
+        if self.config.print_prompts:
             print_all_prompts(self.planner)
         else:
-            method(self.args, self.planner, self.domain)
+            method(self.config, self.planner, self.domain)
 
 
 
@@ -120,7 +114,7 @@ class Domain:
         self.grab_tasks()
 
     def grab_tasks(self):
-        path = f"./domains/{self.name}"
+        path = f"./planner/domains/{self.name}"
         nls = []
         for fn in glob.glob(f"{path}/*.nl"):
             fn_ = fn.split("/")[-1]
@@ -139,7 +133,7 @@ class Domain:
 
     def get_task_file(self, i):
         nl, pddl = self.tasks[i]
-        return f"./domains/{self.name}/{nl}", f"./domains/{self.name}/{pddl}"
+        return f"./planner/domains/{self.name}/{nl}", f"./planner/domains/{self.name}/{pddl}"
 
     def get_task(self, i):
         nl_f, pddl_f = self.get_task_file(i)
@@ -150,9 +144,9 @@ class Domain:
         return postprocess(nl), postprocess(pddl)
 
     def get_context(self):
-        nl_f   = f"./domains/{self.name}/{self.context[0]}"
-        pddl_f = f"./domains/{self.name}/{self.context[1]}"
-        sol_f  = f"./domains/{self.name}/{self.context[2]}"
+        nl_f   = f"./planner/domains/{self.name}/{self.context[0]}"
+        pddl_f = f"./planner/domains/{self.name}/{self.context[1]}"
+        sol_f  = f"./planner/domains/{self.name}/{self.context[2]}"
         with open(nl_f, 'r') as f:
             nl   = f.read()
         with open(pddl_f, 'r') as f:
@@ -168,7 +162,7 @@ class Domain:
         return postprocess(domain_pddl)
 
     def get_domain_pddl_file(self):
-        domain_pddl_f = f"./domains/{self.name}/domain.pddl"
+        domain_pddl_f = f"./planner/domains/{self.name}/domain.pddl"
         return domain_pddl_f
 
     def get_domain_nl(self):
@@ -181,7 +175,7 @@ class Domain:
         return postprocess(domain_nl)
 
     def get_domain_nl_file(self):
-        domain_nl_f = f"./domains/{self.name}/domain.nl"
+        domain_nl_f = f"./planner/domains/{self.name}/domain.nl"
         return domain_nl_f
 
 
@@ -215,16 +209,10 @@ class Blocksworld(Domain):
 
 class Planner:
     def __init__(self):
-        self.openai_api_keys = self.load_openai_keys()
         self.use_chatgpt = False
 
     def load_openai_keys(self,):
-        openai_keys_file = os.path.join(os.getcwd(), "keys/openai_keys.txt")
-        with open(openai_keys_file, "r") as f:
-            context = f.read()
-        context_lines = context.strip().split('\n')
-        print(context_lines)
-        return context_lines
+        pass
 
     def create_llm_prompt(self, task_nl, domain_nl):
         # Baseline 1 (LLM-as-P): directly ask the LLM for plan

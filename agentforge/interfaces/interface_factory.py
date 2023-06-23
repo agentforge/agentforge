@@ -78,6 +78,9 @@ class InterfaceFactory:
         elif vectorstore_type == "in_memory":
             InMemoryVectorStore = getattr(importlib.import_module('agentforge.interfaces.inmemoryvectorstore'), 'InMemoryVectorStore')
             self.__interfaces["vectorstore"] = InMemoryVectorStore()
+            
+            VectorStoreMemory = getattr(importlib.import_module('agentforge.interfaces.vectorstorememory'), 'VectorStoreMemory')
+            self.__interfaces["vectorstore_memory"] = VectorStoreMemory(self.__interfaces["vectorstore"])
         else:
             raise Exception(f"VectorStore {vectorstore_type} does not exist")
     
