@@ -22,7 +22,6 @@ def read_json_files_from_directory(directory: str) -> Dict[str, Any]:
             
     return json_contents
 
-
 # Load .env file
 load_dotenv()
 

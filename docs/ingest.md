@@ -23,14 +23,24 @@ or upload documents (PDF, MD, DOCX) to the hotdir after running:
 
 `python3 watch.py`
 
-move files into the `/app/collector/hotdir` from the local docker cache volume.
+move files into the `/app/collector/hotdir` from the local docker cache volume. JSON files will
+be stored from here in the `/app/collector/` dir.
 
 ## Pre-processing Guide
 
+TODO: Clean up the JSON files with this handy script
+
 ## How to Process Documents
+
+Run the ingestion script from agentforge:
+
+`python3 scripts/ingest.py`
+
+This will take some time. After this complete the data is uploaded into specified vectorstore in your `.env` and can be loaded into an Agent model.
 
 ## Backup Computed Vectorstore to Disk
 
+Move the saved vectorstore into the backup folder.
 
 ## User Guide for Domain 
 
