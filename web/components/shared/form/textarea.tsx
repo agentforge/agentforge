@@ -45,7 +45,7 @@ const TextareaElement: React.FC<TextareaElementProps> = ({
       <textarea
         id={ id }
         defaultValue={ modelProfileConfigs[id] }
-        className="form-control bg-blackA5 shadow-blackA9 inline-flex w-full appearance-none items-center justify-center rounded-[4px] px-[10px] text-[15px] leading-none text-white shadow-[0_0_0_1px] outline-none focus:shadow-[0_0_0_2px_black] selection:color-white selection:bg-blackA9"
+        className="form-control bg-blackA5 shadow-blackA9 inline-flex w-full appearance-none items-center justify-center rounded-[4px] px-[10px] text-[15px] leading-none text-white shadow-[0_0_0_1px] outline-none focus:shadow-[0_0_0_2px_black]"
         rows={4}
         style={{ width: '100%' }}
         onChange={handleValueChange}
