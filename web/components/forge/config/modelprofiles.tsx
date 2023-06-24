@@ -30,10 +30,8 @@ const ModelProfilesTable: React.FC<{ pageSize: number }> = ({ pageSize }) => {
     const fetchProfiles = async () => {
       try {
         const user_id = "test_user";
-        console.log(`/api/user/${user_id}/modelprofiles`);
         const res = await fetch(`/api/user/${user_id}/modelprofiles`);
         const data = await res.json();
-        console.log(data);
         setProfiles(data);
       } catch (error) {
         console.error(error);
@@ -52,7 +50,6 @@ const ModelProfilesTable: React.FC<{ pageSize: number }> = ({ pageSize }) => {
       const response = await fetch(`/api/modelprofiles/${profileId}`, {
         method: 'DELETE',
       });
-      console.log("deleteProfile", await response.json());
       setLastUpdated(new Date());
     } catch (err) {
       console.error(err);
@@ -68,7 +65,6 @@ const ModelProfilesTable: React.FC<{ pageSize: number }> = ({ pageSize }) => {
       const response = await fetch(`/api/modelprofiles/copy/${profileId}`, {
         method: 'POST',
       });
-      console.log("copyProfile", await response.json());
       setLastUpdated(new Date());
     } catch (err) {
       console.error(err);

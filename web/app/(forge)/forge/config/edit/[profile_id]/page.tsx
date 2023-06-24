@@ -57,15 +57,13 @@ const Page: React.FC<ConfigProps> = ({ params }) => {
       try {
         const res = await fetch(`/api/modelprofiles/${id}`);
         const json = await res.json();
-        console.log("json", json);
         setForm(initForm(json));
-        console.log(form);
       } catch (error) {
         console.error("Error fetching data: ", error);
       }
     };
     fetchData();
-  }, []); // Run once
+  }, [id]); // Run only on id change
 
 
   return (

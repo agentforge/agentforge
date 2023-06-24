@@ -29,6 +29,19 @@ const ModelConfigForm: React.FC<ModelConfigFormProps> = ({ form, id }) =>  {
     setCurrentTab(value);
   };
 
+  React.useEffect(() => {
+    if (id) { // Ensuring that 'id' is not undefined
+      Object.keys(form).forEach(mainKey => {
+        Object.keys(form[mainKey]).forEach(key => {
+          // If there is a change in the value
+          if (JSON.stringify(modelProfileConfigs[key]) !== JSON.stringify(form[mainKey][key])) {
+            setModelProfileConfig(key, form[mainKey][key]);
+          }
+        });
+    });
+    }
+  }, [form, id, modelProfileConfigs, setModelProfileConfig]);
+
   const processForm = (form: { [key: string]: { [key: string]: string | number | boolean | undefined } }) => { 
     // Grab the data from the modelprofile config context and populate changes
     // into the form -- iterate through `config_types` and for each key check
