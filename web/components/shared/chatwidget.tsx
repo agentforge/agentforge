@@ -42,15 +42,15 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ id }) =>  {
   ) => {
 
     if (author == null) {
-      console.log('ERROR: Must set author.');
+      console.error('ERROR: Must set author.');
       return;
     }
     if (message == null) {
-      console.log('ERROR: Must set message.');
+      console.error('ERROR: Must set message.');
       return;
     }
     if (author_type == null) {
-      console.log('ERROR: Must set author_type.');
+      console.error('ERROR: Must set author_type.');
       return;
     }
   
@@ -103,7 +103,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ id }) =>  {
       setIsLoading(false);
       return;
     }
-    console.log(data.data);
+    // TODO More robust error handling
     const completion = data.data.choices[0].text
     if (data.video) {
       const buffer = Buffer.from(data.video, 'base64'); // Assume that data.video contains the base64 encoded MP4 data

@@ -49,14 +49,6 @@ export const ModelConfig: React.FC<ModelConfigProps> = ({ form }) =>  {
       <div className='flex w-3/4'>
         <h1>Model Config</h1>
       </div>
-      <div className='flex w-1/4'>
-        <div className="flex flex-wrap items-center gap-[15px] px-5">
-          <Label.Root className="text-[15px] font-medium leading-[35px] text-white" htmlFor="firstName">
-            Model Presets
-          </Label.Root>
-          <SelectElement options={models} id="model_key" label="Model" defaultVal="alpaca-lora-7b" />
-        </div>
-      </div>
     </div>
     <p className="text-gray-600">Configure the model, tokenizer, and peft if needed. Be sure to set appropriate EOS tokens for expected behavior.</p>
     <ConfigForm fields={MODEL_FIELDS} form={form} />

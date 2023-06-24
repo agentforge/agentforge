@@ -36,7 +36,6 @@ const ModelConfigForm: React.FC<ModelConfigFormProps> = ({ form, id }) =>  {
     // version in the modelprofile context modelProfileConfigs
     // Iterate through `config_types` and replace values in the `form`
     const updatedForm = { ...form };
-    console.log(modelProfileConfigs);
     config_types.forEach((config) => {
       if (updatedForm[config] !== undefined) {
         Object.keys(updatedForm[config]).forEach((key) => {
@@ -48,31 +47,19 @@ const ModelConfigForm: React.FC<ModelConfigFormProps> = ({ form, id }) =>  {
     })
 
     // Set updated_dt or other metadata
-    console.log(updatedForm);
     updatedForm['metadata']['updated_dt'] = new Date().toISOString(); 
     return updatedForm;
   }
 
   const handleSubmit = () => {
     // Handle the form submission...
-    console.log("handleSubmit");
-    console.log(form);
     form = processForm(form);
-    console.log("After...")
-    console.log(form);
     if (!form) {
-      console.log("FORM IS NULL!!?")
       return
-    } else { 
-      console.log("FORM!! EXIST")
-      console.log(form);
-    }id
+    }
     const postProfiles = async () => {
       try {
-        console.log("ID");
-        console.log(id);
         const user_id = "test_user";
-        console.log(`/api/modelprofiles/${id}`);
         const res = await fetch(`/api/modelprofiles/${id}`, {
           method: 'PUT',
           headers: {
@@ -82,7 +69,6 @@ const ModelConfigForm: React.FC<ModelConfigFormProps> = ({ form, id }) =>  {
           body: JSON.stringify(form), // stringify the form data
         });
         const data = await res.json();
-        console.log(data);
       } catch (error) {
         console.error(error);
       }

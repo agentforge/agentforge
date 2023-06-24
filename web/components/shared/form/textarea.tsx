@@ -1,3 +1,4 @@
+'use client';
 // TextareaElement.tsx
 import React from 'react';
 import * as Select from '@radix-ui/react-select';
@@ -19,6 +20,10 @@ const TextareaElement: React.FC<TextareaElementProps> = ({
   defaultVal,
 }) => {
   const { modelProfileConfigs, setModelProfileConfig } = useModelProfileConfig();
+
+  if (!modelProfileConfigs[id]) { 
+    modelProfileConfigs[id] = defaultVal;
+  }
 
   const setVal = (val: string) => {
       setModelProfileConfig(id, val);

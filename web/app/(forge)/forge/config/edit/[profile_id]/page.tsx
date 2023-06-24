@@ -28,10 +28,7 @@ const initForm = (data: DataObject) => {
   let prompt_config = data.prompt_config;
   let avatar_config = data.avatar_config;
   // Else grab the defaults
-  console.log(data);
-  console.log("data.metadata?.updated_dt");
   const flattenedData = flattenObj(data);
-  console.log(flattenedData)
     generation_config = Object.fromEntries(Object.entries(GENERATION_FIELDS).map(([key, { default: defaultValue }]) => [key, flattenedData[key] || defaultValue]))
     model_config = Object.fromEntries(Object.entries(MODEL_FIELDS).map(([key, { default: defaultValue }]) => [key, flattenedData[key] || defaultValue]))
     prompt_config = Object.fromEntries(Object.entries(PROMPT_FIELDS).map(([key, { default: defaultValue }]) => [key, flattenedData[key] || defaultValue]))
@@ -48,8 +45,6 @@ const initForm = (data: DataObject) => {
     avatar_config: avatar_config,
     metadata: metadata,
   };
-  console.log("merged object")
-  console.log(mergedObject);
   return mergedObject
 }
 

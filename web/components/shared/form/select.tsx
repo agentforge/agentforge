@@ -27,6 +27,10 @@ const SelectElement: React.FC<SelectElementProps> = ({
     }
   }, []);
 
+  if (!modelProfileConfigs[id]) { 
+    modelProfileConfigs[id] = defaultVal;
+  }
+
   // Update config as needed
   const handleValueChange = (id: string, value: string) => {
     setModelProfileConfig(id, value);

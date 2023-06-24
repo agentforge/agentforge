@@ -34,6 +34,10 @@ const InputElement: React.FC<InputElementProps> = ({
     }
   }
 
+  if (!modelProfileConfigs[id]) { 
+    modelProfileConfigs[id] = defaultVal;
+  }
+
   // Initialize the values in the LanguageModelConfig
   React.useEffect(() => {
     if (defaultVal) {

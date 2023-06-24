@@ -67,7 +67,6 @@ export const VideoProvider: React.FC<VideoProviderProps> = ({ children, defaultI
 
   // // Initialize first video
   useEffect(() => {
-    console.log(defaultIdleVideoSource);
     setIdleVideoSource(defaultIdleVideoSource);
     if (videoRef.current) {
       videoRef.current.muted = false;
