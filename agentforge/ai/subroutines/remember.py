@@ -8,7 +8,7 @@ class Remember:
     
     @async_execution_decorator
     def execute(self, context: Dict[str, Any]) -> Dict[str, Any]:
-        if 'memory' not in context:
+        if 'memory' not in context or 'response' not in context:
             return context # No memory setup -- return context
         # raise Exception(context)
         context['memory'].remember(

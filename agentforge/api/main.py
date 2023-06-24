@@ -13,13 +13,6 @@ from typing import Dict, Deque
 from collections import deque
 from datetime import datetime, timedelta
 
-class LoggingMiddleware(BaseHTTPMiddleware):
-    async def dispatch(self, request: Request, call_next):
-        logger.info(f"Request: {request.method} {request.url}")
-        response = await call_next(request)
-        logger.info(f"Response: {response.status_code}")
-        return response
-
 class RateLimiterMiddleware(BaseHTTPMiddleware):
     def __init__(self, app, max_requests: int, time_window: int):
         super().__init__(app)
@@ -51,7 +44,6 @@ class RateLimiterMiddleware(BaseHTTPMiddleware):
         return response
 
 app = init_api()
-app.add_middleware(LoggingMiddleware)
 app.add_middleware(
     RateLimiterMiddleware,
     max_requests=100,
@@ -60,8 +52,3 @@ app.add_middleware(
 app.include_router(model_profiles_router, prefix="/v1/model-profiles", tags=["model_profiles"])
 app.include_router(user_router, prefix="/v1/user", tags=["users"])
 app.include_router(agent_router, prefix="", tags=["agent_forge"])
-
-@app.exception_handler(Exception)
-async def custom_exception_handler(request: Request, exc: Exception):
-    logger.error(f"An error occurred: {exc}", exc_info=True)
-    return JSONResponse(status_code=500, content={"detail": "Internal Server Error"})
