@@ -34,7 +34,7 @@ const SelectElement: React.FC<SelectElementProps> = ({
 
   return (
     <Select.Root onValueChange={(value) => handleValueChange(id, value)}
-    value={modelProfileConfigs[id] || defaultVal}
+    value={modelProfileConfigs[id]}
   >
     <Select.Trigger
       className="inline-flex items-center justify-center rounded px-[15px] text-[13px] leading-none h-[35px] gap-[5px] bg-white text-violet11 shadow-[0_2px_10px] shadow-black/10 hover:bg-mauve3 focus:shadow-[0_0_0_2px] focus:shadow-black data-[placeholder]:text-violet9 outline-none"
