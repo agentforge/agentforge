@@ -35,11 +35,11 @@ class LocalLLM():
     logging.info(f"LLM CUDA enabled: {torch.cuda.is_available()}")
 
     if self.model_key:
-        self.setup(self.config)
-        self.load_model(self.model_key)
+        self.setup(self.config, init=True)
+        self.load_model(self.config)
 
-  def setup(self, config: dict):
-    if config['model_config']['model_name'] != self.model_key:
+  def setup(self, config: dict, init: bool = False):
+    if config['model_config']['model_name'] != self.model_key or init:
       self.parser = Parser()
       self.loader = LocalLoader(config['model_config'])
       self.generator = LocalGenerator(config)
@@ -73,11 +73,16 @@ class LocalLLM():
 
   def generate(self, prompt="", **kwargs):
     # setup the generator
+    print('GENERATE...............................................................')
+    logging.info(kwargs)
     config = kwargs['generation_config']
+    logging.info(config)
     streaming = True if "streaming" in kwargs['model_config'] and kwargs['model_config']["streaming"] else False
+    logging.info(kwargs)
     self.setup(kwargs)
     self.load(model_key=kwargs['model_config'].get("model_name", self.model_key), **kwargs)
     kwargs.update(config)
+    print('LOADED...............................................................')
 
     if "generator" in kwargs:
         # Use custom generator based on function string
@@ -98,6 +103,7 @@ class LocalLLM():
         self.text_streamer(streaming),
         **kwargs
     )
+    print('OUTPUT...............................................................')
     return self.parser.parse_output(output)
 
   def load_model(self, config):

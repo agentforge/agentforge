@@ -1,8 +1,8 @@
 import torch, logging, importlib
 from agentforge.utils import dynamic_import
-from transformers import LlamaTokenizer, LlamaForCausalLM
 from transformers import AutoModelForCausalLM, AutoTokenizer, AutoConfig, GPTNeoXTokenizerFast
 from agentforge.utils import logger
+import importlib
 
 def import_transformer_model_class(class_name):
     # Try to import the model class dynamically and return the model
@@ -55,6 +55,9 @@ class LocalLoader:
 
 
     def llama(self, device="cuda"):
+        # from transformers import LlamaTokenizer, LlamaForCausalLM
+        LlamaForCausalLM = getattr(importlib.import_module('transformers'), 'LlamaForCausalLM')
+        LlamaTokenizer = getattr(importlib.import_module('transformers'), 'LlamaTokenizer')
         logger.info("Loading llama...")
         # self.tokenizer = LlamaTokenizer.from_pretrained(self.config["model_name"], decode_with_prefix_space=True, clean_up_tokenization_spaces=True)
         self.tokenizer = LlamaTokenizer.from_pretrained(self.config["model_name"], decode_with_prefix_space=True, clean_up_tokenization_spaces=True)
@@ -155,7 +158,7 @@ class LocalLoader:
         if torch.cuda.device_count() > 1 and self.multi_gpu:
             logger.info(f"Using {torch.cuda.device_count()} GPUs")
             self.model = torch.nn.DataParallel(self.model)
-    
+
         if not load_in_4bit and not load_in_8bit:
             self.model = self.model.to(self.device)
         self.model.eval()  # Set the model to evaluation mode
