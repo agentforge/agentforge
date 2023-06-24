@@ -1,5 +1,4 @@
 from fastapi import FastAPI, Request
-from starlette.middleware.base import BaseHTTPMiddleware
 from fastapi.middleware.cors import CORSMiddleware
 from agentforge.utils import logger
 
@@ -10,6 +9,7 @@ def init_api():
       Documentation for Public Facing API
       """
       app = FastAPI(
+            debug=True,
             title="AgentForge",
             description=description,
             version="0.0.1",
@@ -23,12 +23,12 @@ def init_api():
                   "url": "https://www.apache.org/licenses/LICENSE-2.0.html",
             },
       )
-      cors_origins = ["*"]
-      app.add_middleware(
-            CORSMiddleware,
-            allow_origins=cors_origins,
-            allow_credentials=True,
-            allow_methods=["*"],
-            allow_headers=["*"],
-      )
+      # cors_origins = ["*"]
+      # app.add_middleware(
+      #       CORSMiddleware,
+      #       allow_origins=cors_origins,
+      #       allow_credentials=True,
+      #       allow_methods=["*"],
+      #       allow_headers=["*"],
+      # )
       return app
