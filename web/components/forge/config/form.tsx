@@ -36,8 +36,9 @@ const ModelConfigForm: React.FC<ModelConfigFormProps> = ({ form, id }) =>  {
     // version in the modelprofile context modelProfileConfigs
     // Iterate through `config_types` and replace values in the `form`
     const updatedForm = { ...form };
+    console.log(modelProfileConfigs);
     config_types.forEach((config) => {
-      if (updatedForm[config] !== undefined) {         
+      if (updatedForm[config] !== undefined) {
         Object.keys(updatedForm[config]).forEach((key) => {
           if (modelProfileConfigs[key] !== undefined && modelProfileConfigs[key] !== null) {
             updatedForm[config][key] = modelProfileConfigs[key];

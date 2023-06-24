@@ -30,7 +30,6 @@ const initForm = (data: DataObject) => {
   // Else grab the defaults
   console.log(data);
   console.log("data.metadata?.updated_dt");
-  console.log(data.metadata?.updated_dt);
   const flattenedData = flattenObj(data);
   console.log(flattenedData)
     generation_config = Object.fromEntries(Object.entries(GENERATION_FIELDS).map(([key, { default: defaultValue }]) => [key, flattenedData[key] || defaultValue]))
