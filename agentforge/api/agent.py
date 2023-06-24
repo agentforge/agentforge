@@ -50,9 +50,11 @@ async def agent(request: Request) -> AgentResponse:
     ## Get Decision from Decision Factory and run it
     decision = decision_interactor.get_decision()
 
-    # print("[DEBUG][api][agent][agent] decision: ", decision)
+    print("[DEBUG][api][agent][agent] decision: ", decision)
     
     output = decision.run({"input": data, "model_profile": model_profile})
+
+    print("[DEBUG][api][agent][agent] decision: ", output)
 
     ### Parse video if needed
     if 'video' in output:

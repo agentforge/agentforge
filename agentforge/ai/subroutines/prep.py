@@ -49,6 +49,8 @@ class Prep:
 
     def execute(self, context: Dict[str, Any]) -> Dict[str, Any]:
         del context['memory']
+        if 'response' not in context:
+            return context
         presentation = context['model_config']['presentation'] if 'model_config' in context and 'presentation' in context['model_config'] else "html"
         if presentation == 'html':
             context['response'] = self.convert_html(context['response'])

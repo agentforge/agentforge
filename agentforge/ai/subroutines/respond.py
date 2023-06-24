@@ -14,5 +14,6 @@ class Respond:
         }
         response = self.service.call(input)
 
-        context["response"] = response["choices"][0]["text"]
+        if response is not None and "choices" in response:
+            context["response"] = response["choices"][0]["text"]
         return context

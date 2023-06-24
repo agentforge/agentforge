@@ -60,3 +60,8 @@ app = init_api()
 app.include_router(model_profiles_router, prefix="/v1/model-profiles", tags=["model_profiles"])
 app.include_router(user_router, prefix="/v1/user", tags=["users"])
 app.include_router(agent_router, prefix="", tags=["agent_forge"])
+
+@app.exception_handler(Exception)
+async def custom_exception_handler(request: Request, exc: Exception):
+    logger.info(f"An error occurred: {exc}", exc_info=True)
+    return JSONResponse(status_code=500, content={"detail": f"{exc.with_traceback()}"})

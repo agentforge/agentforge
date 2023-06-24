@@ -3,7 +3,7 @@ from functools import wraps
 from requests import Session, Response
 from requests.exceptions import RequestException
 from http import HTTPStatus
-import logging, os, requests
+import logging, os, requests, traceback
 
 # Generic APIClientProtocol metaclass 
 class APIClientProtocol(Protocol):
