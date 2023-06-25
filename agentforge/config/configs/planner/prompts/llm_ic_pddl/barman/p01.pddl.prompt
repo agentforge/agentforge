@@ -53,4 +53,4 @@ The first ingredient of cocktail2 is ingredient2. The second ingredient of cockt
 The first ingredient of cocktail3 is ingredient1. The second ingredient of cocktail3 is ingredient2. 
 Your goal is to make 3 cocktails. 
 shot1 contains cocktail1. shot2 contains cocktail3. shot3 contains cocktail2. 
-Provide me with the problem PDDL file that describes the new planning problem directly without further explanations?
+Provide me with the problem PDDL file that describes the new planning problem that includes :init directly without further explanations? 

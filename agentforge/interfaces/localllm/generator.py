@@ -88,16 +88,11 @@ class LocalGenerator:
 
   # Generates a response given a prompt
   def generate(self, prompt, model, tokenizer, streamer, **kwargs):
-    print(prompt)
-    print('model')
     # Set model arguments from generation config.
     if self.multi_gpu:
       config = model.module.generation_config
     else:
       config = model.generation_config
-    print('gen_config')
-    print("generation_config" in kwargs)
-
     gen_config = kwargs["generation_config"]
 
     # Config drive overrides
@@ -105,8 +100,6 @@ class LocalGenerator:
       gen_config["eos_token_id"] = tokenizer.encode(gen_config["eos_token"])[0]
     else:
       gen_config["eos_token_id"] = config.eos_token_id
-    print(gen_config["eos_token_id"])
-
     if "bos_token" in gen_config:
       gen_config["bos_token_id"] = tokenizer.encode(gen_config["bos_token"])[0]
     else:
@@ -117,25 +110,19 @@ class LocalGenerator:
       gen_config["pad_token_id"] = config.pad_token_id
 
     gen_config = {k: v for k, v in gen_config.items() if v is not None and v != ""}
-    print('gen_config')
 
     stops = [tokenizer.encode(i.strip()) for i in gen_config["stopping_criteria"].split(",")]
     stop = StopOnTokens(stops)
     stopping_criteria = StoppingCriteriaList([stop])
     gen_config["stopping_criteria"] = stopping_criteria
     
-    print(stopping_criteria)
-
-    logging.info(prompt)
     with torch.autocast("cuda"):
-      print('cuda')
       inputs = tokenizer(prompt, return_tensors="pt")
       input_ids = inputs["input_ids"].cuda()
       generation_config = GenerationConfig(
           **gen_config,
       )
       start_time = time.time()
-      print('start_time')
 
       with torch.no_grad():
           # If we are using multi-gpu, we need to use the model.module.generate method.
@@ -149,13 +136,11 @@ class LocalGenerator:
               'return_dict_in_generate': True,
               'stopping_criteria': stopping_criteria,
           }
-          print('final kwargs')
 
           logging.info(f"Rendering with {json.dumps(final_kwargs, indent=4, default=convert_to_serializable)}")
           if streamer != None:
             final_kwargs['streamer'] = streamer
           with self.lock:
-            print('gen')
             generation_output = gen(**final_kwargs)
             if 'return_probabilities' in gen_config and gen_config['return_probabilities']:
               self.get_probabilities(model, tokenizer, inputs, generation_output)

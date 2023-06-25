@@ -31,12 +31,10 @@ class MongoMemory:
   # Returns the last 5 interactions from the short term memory
   def recall(self, user: str, agent: str, n: int = 5):
       mem = self.short_term_memory.messages
-      print(mem[-5:])
       def get_content(obj):
           prefix = f"{self.human_prefix}: " if obj.__class__.__name__ == "HumanMessage" else f"{self.ai_prefix}: "
           # postfix = f" {self.human_postfix}" if obj.__class__.__name__ == "HumanMessage" else f" {self.human_postfix}"
           return prefix + obj.content # + postfix
       # TODO: Need a more robust way to ensure we don't hit token limit for prompt
       hist = "\n".join(list(map(lambda obj: get_content(obj), mem[-5:])))
-      print(hist)
       return hist
