@@ -43,10 +43,10 @@ const TextareaElement: React.FC<TextareaElementProps> = ({
 
   return (
     <>
-    <Label.Root className="flex w-1/6 text-[15px] font-medium leading-[35px] text-white" htmlFor="firstName">
+    <Label.Root className="flex w-1/6 text-[15px] font-medium leading-[35px] text-white" htmlFor="textarea">
       {label}
     </Label.Root>
-    <div className="flex w-4/6">
+    <div className="flex w-4/6 mt-6">
       <textarea
         id={ id }
         defaultValue={ modelProfileConfigs[id] }

@@ -11,8 +11,10 @@ const avatars = ['caretaker', 'default', 'makhno', 'fdr', 'sankara'];
 export const AVATAR_FIELDS = {
   name: { type: 'text', default: '', label: 'Avatar Name' },
   display_name: { type: 'text', default: '', label: 'ModelProfile Name' },
-  biography: { type: 'textarea', default: '', label: 'Biography' },
   speaker_idx: { type: 'int', default: '', label: 'coqAI Speaker IDX' },
+  vectorstore: { type: 'text', default: '', label: 'Memory' },
+  biography: { type: 'textarea', default: '', label: 'Biography' },
+
 }
 
 export interface AvatarConfigProps {
@@ -28,9 +30,7 @@ export const AvatarConfig: React.FC<AvatarConfigProps> = ({ form }) =>  {
         <p className="text-gray-600">Configure the instruction prompt that is hidden from the user. Usually specific to model based on training or fine-tuning.</p>
       </div>
       </div>
-      <div className="flex flex-row mt-9">  
-        <ConfigForm fields={AVATAR_FIELDS} form={form} />
-      </div>
+      <ConfigForm fields={AVATAR_FIELDS} form={form} />
     </>
   )
 }

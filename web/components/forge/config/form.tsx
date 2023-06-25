@@ -9,6 +9,7 @@ import GenerationConfigForm from './genconfig';
 import PromptConfig from './promptconfig';
 import Button from '@/components/shared/button';
 import { useModelProfileConfig } from '@/components/shared/context/modelprofileconfig';
+import { PlayIcon } from '@radix-ui/react-icons';
 
 export interface ModelConfigFormProps {
   form: { [key: string]: { [key: string]: string | number | boolean | undefined } };
@@ -28,19 +29,6 @@ const ModelConfigForm: React.FC<ModelConfigFormProps> = ({ form, id }) =>  {
     // Set current state of the tab to `value`
     setCurrentTab(value);
   };
-
-  React.useEffect(() => {
-    if (id) { // Ensuring that 'id' is not undefined
-      Object.keys(form).forEach(mainKey => {
-        Object.keys(form[mainKey]).forEach(key => {
-          // If there is a change in the value
-          if (JSON.stringify(modelProfileConfigs[key]) !== JSON.stringify(form[mainKey][key])) {
-            setModelProfileConfig(key, form[mainKey][key]);
-          }
-        });
-    });
-    }
-  }, [form, id, modelProfileConfigs, setModelProfileConfig]);
 
   const processForm = (form: { [key: string]: { [key: string]: string | number | boolean | undefined } }) => { 
     // Grab the data from the modelprofile config context and populate changes
@@ -116,6 +104,11 @@ const ModelConfigForm: React.FC<ModelConfigFormProps> = ({ form, id }) =>  {
       </ToggleGroup.Item>
       </ToggleGroup.Root>
       <div className='float-right w-2/12'>
+        <a href={`/forge/chat/${id}`} role="button" aria-label="Edit" className="float-right">
+          <div className="cursor-pointer inline-block w-[48px] bg-transparent hover:bg-slate-500 text-slate-100 font-semibold hover:text-white py-3 ml-3 px-4 border border-slate-100 hover:border-transparent rounded">
+            <PlayIcon/>
+          </div>
+        </a>
         <Button type="submit" onClick={ handleSubmit } extraClasses="float-right">Save</Button>
       </div>
     </div>
