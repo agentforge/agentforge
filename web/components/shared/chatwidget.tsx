@@ -104,7 +104,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ id }) =>  {
       return;
     }
     // TODO More robust error handling
-    const completion = data.data.choices[0].text
+    const completion = data.data?.choices?.[0].text
     if (data.video) {
       const buffer = Buffer.from(data.video, 'base64'); // Assume that data.video contains the base64 encoded MP4 data
       const decodedVideoData = Buffer.from(data.video, 'base64');
@@ -134,7 +134,9 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ id }) =>  {
       audioElement.play();
 
     }
-    addMessage(completion, "Sam", 'default', false);
+    if (completion) { 
+      addMessage(completion, "Sam", 'default', false);
+    }
 
     // Handle the result, update the state, etc.
     setIsLoading(false);

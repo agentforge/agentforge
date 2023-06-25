@@ -26,6 +26,35 @@ const ModelProfilesTable: React.FC<{ pageSize: number }> = ({ pageSize }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
 
+
+  // Custom Hook for handling client-side navigation
+  function useLinkHandler() {
+    let router = useRouter();
+
+    useEffect(() => {
+      let onClick = e => {
+        let link = e.target.closest('a');
+        if (
+          link &&
+          link instanceof HTMLAnchorElement &&
+          link.href &&
+          (!link.target || link.target === '_self') &&
+          link.origin === location.origin &&
+          !link.hasAttribute('download') &&
+          e.button === 0 && // left clicks only
+          !e.metaKey && // open in new tab (mac)
+          !e.ctrlKey && // open in new tab (windows)
+          !e.altKey && // download
+          !e.shiftKey &&
+          !e.defaultPrevented
+        ) {
+          e.preventDefault();
+          router.push(link.href);
+        }
+      };
+    })
+  };
+
   useEffect(() => {
     const fetchProfiles = async () => {
       try {
@@ -70,13 +99,6 @@ const ModelProfilesTable: React.FC<{ pageSize: number }> = ({ pageSize }) => {
       console.error(err);
     }
   };
-  
-  const navToEdit = (profileId: string) => {
-    router.push(`/forge/config/edit/${profileId}`);
-  }
-  const gotoProfile = (profileId: string) => {
-    router.push(`/forge/chat/${profileId}`);
-  }
 
   return (
     <>
@@ -103,13 +125,20 @@ const ModelProfilesTable: React.FC<{ pageSize: number }> = ({ pageSize }) => {
                 <Button type='button' onClick={() => handleDelete(profile._id)} extraClasses="float-right">
                   <TrashIcon />
                 </Button>
-                <Button type='button' onClick={() => gotoProfile(profile._id)}>
+                <a href={`/forge/chat/${profile._id}`} role="button" aria-label="Edit">
+                  <div className="cursor-pointer inline-block w-[48px] bg-transparent hover:bg-slate-500 text-slate-100 font-semibold hover:text-white py-2 px-4 border border-slate-100 hover:border-transparent rounded">
+                    <PlayIcon/>
+                  </div>
+                </a>
+                {/* <Button type='button' onClick={() => gotoProfile(profile._id)}>
                   <PlayIcon/>
-                </Button>
-                <Button type='button' onClick={() => navToEdit(profile._id)}>
-                  <Pencil1Icon/>
-                </Button>
-                <Button type='button' onClick={() => handleCopy(profile._id)}>
+                </Button> */}
+                <a href={`/forge/config/edit/${profile._id}`} role="button" aria-label="Edit">
+                  <div className="cursor-pointer inline-block w-[48px] bg-transparent hover:bg-slate-500 text-slate-100 font-semibold hover:text-white py-2 px-4 border border-slate-100 hover:border-transparent rounded">
+                      <Pencil1Icon />
+                  </div>
+                </a>
+                <Button type='button' onClick={() => handleCopy(profile._id)} extraClasses="float-left">
                   <CopyIcon />
                 </Button>
                 </td>
