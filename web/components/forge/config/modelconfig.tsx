@@ -19,7 +19,7 @@ export const MODEL_FIELDS: ConfigFields = {
   model_name: { type: 'text', default: undefined, tooltip: 'The model name used for generating completions.' },
   tokenizer_name: { type: 'text', default: undefined, tooltip: 'The tokenizer name used for generating completions.' },
   peft_model: { type: 'text', default: undefined, tooltip: 'The model used for post-edit fine-tuning.' },
-  model_class: { type: 'text', default: 'AutoCasualModel', tooltip: 'The class of the model.' },
+  model_class: { type: 'text', default: 'AutoModelForCausalLM', tooltip: 'The class of the model.' },
   tokenizer_class: { type: 'text', default: 'AutoTokenizer', tooltip: 'The class of the tokenizer.' },
   pad_token: { type: 'text', default: undefined, tooltip: "The padding token string. Padding tokens are used in batched generation when sequences of different lengths are generated, to make the output a rectangular tensor." },
   bos_token: { type: 'text', default: undefined, tooltip: "The beginning-of-sequence token string. This token is typically used to signal the start of a new sequence, and can be important for models that are designed to generate multiple sequences in a batch." },
@@ -48,14 +48,6 @@ export const ModelConfig: React.FC<ModelConfigProps> = ({ form }) =>  {
       <div className='flex flex-row w-full'>
       <div className='flex w-3/4'>
         <h1>Model Config</h1>
-      </div>
-      <div className='flex w-1/4'>
-        <div className="flex flex-wrap items-center gap-[15px] px-5">
-          <Label.Root className="text-[15px] font-medium leading-[35px] text-white" htmlFor="firstName">
-            Model Presets
-          </Label.Root>
-          <SelectElement options={models} id="model_key" label="Model" defaultVal="alpaca-lora-7b" />
-        </div>
       </div>
     </div>
     <p className="text-gray-600">Configure the model, tokenizer, and peft if needed. Be sure to set appropriate EOS tokens for expected behavior.</p>

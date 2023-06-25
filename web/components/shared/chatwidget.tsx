@@ -42,15 +42,15 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ id }) =>  {
   ) => {
 
     if (author == null) {
-      console.log('ERROR: Must set author.');
+      console.error('ERROR: Must set author.');
       return;
     }
     if (message == null) {
-      console.log('ERROR: Must set message.');
+      console.error('ERROR: Must set message.');
       return;
     }
     if (author_type == null) {
-      console.log('ERROR: Must set author_type.');
+      console.error('ERROR: Must set author_type.');
       return;
     }
   
@@ -103,8 +103,8 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ id }) =>  {
       setIsLoading(false);
       return;
     }
-    console.log(data.data);
-    const completion = data.data.choices[0].text
+    // TODO More robust error handling
+    const completion = data.data?.choices?.[0].text
     if (data.video) {
       const buffer = Buffer.from(data.video, 'base64'); // Assume that data.video contains the base64 encoded MP4 data
       const decodedVideoData = Buffer.from(data.video, 'base64');
@@ -134,7 +134,9 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ id }) =>  {
       audioElement.play();
 
     }
-    addMessage(completion, "Sam", 'default', false);
+    if (completion) { 
+      addMessage(completion, "Sam", 'default', false);
+    }
 
     // Handle the result, update the state, etc.
     setIsLoading(false);
@@ -171,7 +173,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ id }) =>  {
               onChange={handleTextAreaChange}
               value={textAreaValue}
               id="user-input"
-              className="form-control"
+              className="form-control bg-blackA5 shadow-blackA9 inline-flex w-full appearance-none items-center justify-center rounded-[4px] px-[10px] text-[15px] leading-none text-white shadow-[0_0_0_1px] outline-none focus:shadow-[0_0_0_2px_black]"
               rows={4}
               style={{ width: '100%' }}
               onKeyDown={useEnterKey}

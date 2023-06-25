@@ -34,9 +34,13 @@ const InputElement: React.FC<InputElementProps> = ({
     }
   }
 
+  if (!modelProfileConfigs[id]) { 
+    modelProfileConfigs[id] = defaultVal;
+  }
+
   // Initialize the values in the LanguageModelConfig
   React.useEffect(() => {
-    if (defaultVal !== undefined) {
+    if (defaultVal) {
       setVal(defaultVal);
     }
   }, []);
@@ -62,10 +66,10 @@ const InputElement: React.FC<InputElementProps> = ({
         )}
       </Label.Root>
       <input
-          className="bg-blackA5 shadow-blackA9 inline-flex h-[35px] w-full appearance-none items-center justify-center rounded-[4px] px-[10px] text-[15px] leading-none text-white shadow-[0_0_0_1px] outline-none focus:shadow-[0_0_0_2px_black] selection:color-white selection:bg-blackA9"
+          className="bg-blackA5 shadow-blackA9 inline-flex h-[35px] w-full appearance-none items-center justify-center rounded-[4px] px-[10px] text-[15px] leading-none text-white shadow-[0_0_0_1px] outline-none focus:shadow-[0_0_0_2px_black]"
           type={inputType}
           id={id}
-          defaultValue={defaultVal}
+          value={modelProfileConfigs[id]}
           onChange={(event) => handleValueChange(event)}
       />
   </div>

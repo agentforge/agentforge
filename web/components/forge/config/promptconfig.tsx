@@ -12,8 +12,8 @@ export const PROMPT_FIELDS = {
 }
 
 const handleChangePrompt = () => {
-  // Handle the form su bmission...
-  console.log("handleChangePrompt");
+  // Handle the form submission for default prompts
+  // TODO: Grab some common prompts
 };
 
 export const PromptConfig: React.FC<ConfigProps> = ({ form }) =>  {

@@ -9,6 +9,7 @@ import GenerationConfigForm from './genconfig';
 import PromptConfig from './promptconfig';
 import Button from '@/components/shared/button';
 import { useModelProfileConfig } from '@/components/shared/context/modelprofileconfig';
+import { PlayIcon } from '@radix-ui/react-icons';
 
 export interface ModelConfigFormProps {
   form: { [key: string]: { [key: string]: string | number | boolean | undefined } };
@@ -37,7 +38,7 @@ const ModelConfigForm: React.FC<ModelConfigFormProps> = ({ form, id }) =>  {
     // Iterate through `config_types` and replace values in the `form`
     const updatedForm = { ...form };
     config_types.forEach((config) => {
-      if (updatedForm[config] !== undefined) {         
+      if (updatedForm[config] !== undefined) {
         Object.keys(updatedForm[config]).forEach((key) => {
           if (modelProfileConfigs[key] !== undefined && modelProfileConfigs[key] !== null) {
             updatedForm[config][key] = modelProfileConfigs[key];
@@ -47,31 +48,19 @@ const ModelConfigForm: React.FC<ModelConfigFormProps> = ({ form, id }) =>  {
     })
 
     // Set updated_dt or other metadata
-    console.log(updatedForm);
     updatedForm['metadata']['updated_dt'] = new Date().toISOString(); 
     return updatedForm;
   }
 
   const handleSubmit = () => {
     // Handle the form submission...
-    console.log("handleSubmit");
-    console.log(form);
     form = processForm(form);
-    console.log("After...")
-    console.log(form);
     if (!form) {
-      console.log("FORM IS NULL!!?")
       return
-    } else { 
-      console.log("FORM!! EXIST")
-      console.log(form);
-    }id
+    }
     const postProfiles = async () => {
       try {
-        console.log("ID");
-        console.log(id);
         const user_id = "test_user";
-        console.log(`/api/modelprofiles/${id}`);
         const res = await fetch(`/api/modelprofiles/${id}`, {
           method: 'PUT',
           headers: {
@@ -81,7 +70,6 @@ const ModelConfigForm: React.FC<ModelConfigFormProps> = ({ form, id }) =>  {
           body: JSON.stringify(form), // stringify the form data
         });
         const data = await res.json();
-        console.log(data);
       } catch (error) {
         console.error(error);
       }
@@ -116,6 +104,11 @@ const ModelConfigForm: React.FC<ModelConfigFormProps> = ({ form, id }) =>  {
       </ToggleGroup.Item>
       </ToggleGroup.Root>
       <div className='float-right w-2/12'>
+        <a href={`/forge/chat/${id}`} role="button" aria-label="Edit" className="float-right">
+          <div className="cursor-pointer inline-block w-[48px] bg-transparent hover:bg-slate-500 text-slate-100 font-semibold hover:text-white py-3 ml-3 px-4 border border-slate-100 hover:border-transparent rounded">
+            <PlayIcon/>
+          </div>
+        </a>
         <Button type="submit" onClick={ handleSubmit } extraClasses="float-right">Save</Button>
       </div>
     </div>

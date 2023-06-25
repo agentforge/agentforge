@@ -110,20 +110,11 @@ export interface ConfigProps {
 }
 
 export const GenerationConfigForm: React.FC<ConfigProps> = ({ form }) => {
-  console.log(form);
   return (
     <>
     <div className='flex flex-row w-full'>
     <div className='flex w-3/4'>
       <h1>Generation Config</h1>
-      </div>
-      <div className='flex w-1/4 mt-3'>
-        <div className="flex flex-wrap items-center gap-[15px] px-5">
-          <Label.Root className="text-[15px] font-medium leading-[35px] text-white" htmlFor="firstName">
-            Generation Presets
-          </Label.Root>
-          <SelectElement options={ modelConfigs } id="generation_config" label="Presets" defaultVal="logical" />
-        </div>
       </div>
     </div>
     <p className="text-gray-600">Configure the generation parameters for inference and prompt completion.</p>
