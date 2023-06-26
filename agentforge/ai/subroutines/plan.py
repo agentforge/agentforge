@@ -12,15 +12,32 @@ class Plan:
 
     @async_execution_decorator
     def execute(self, context: Dict[str, Any]) -> Dict[str, Any]:
-        if self.detect_plan(context):
-          input = {
-              "prompt": context['input']['prompt'],
-              "generation_config": context['model_profile']['generation_config'],
-              "model_config": context['model_profile']['model_config'],
-          }
+        input = {
+            "prompt": context['input']['prompt'],
+            "generation_config": context['model_profile']['generation_config'],
+            "model_config": context['model_profile']['model_config'],
+        }
 
-          # response = self.service.call(input)
-          response = self.planner.execute(input)
+        response = self.planner.execute(input)
 
-          context["response"] = response
+        context["plan"] = response
+        return context
+
+
+class EnsurePlan:
+    ### Sycnronous subroutine ensures that we want to execute Planning...
+    def __init__(self):
+        self.service = interface_interactor.get_interface("llm")
+        # self.sentiment = interface_interactor.get_interface("sentiment")
+
+    def execute(self, context: Dict[str, Any]) -> Dict[str, Any]:
+        input = {
+            "prompt": "Ask the user if they are sure they want to initiate a plan.",
+            "generation_config": context['model_profile']['generation_config'],
+            "model_config": context['model_profile']['model_config'],
+        }
+
+        response = self.service.call(input)
+        print(response)
+        context["response"] = response["choices"][0]["text"]
         return context

@@ -57,4 +57,4 @@ app.include_router(agent_router, prefix="", tags=["agent_forge"])
 @app.exception_handler(Exception)
 async def custom_exception_handler(request: Request, exc: Exception):
     logger.info(f"An error occurred: {exc}", exc_info=True)
-    return JSONResponse(status_code=500, content={"detail": f"{traceback.format_exc()}"})
+    return JSONResponse(status_code=500, content={"err": exc, "detail": f"{traceback.format_exc()}"})
