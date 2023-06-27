@@ -148,6 +148,7 @@ class LocalGenerator:
               'generation_config': generation_config,
               'return_dict_in_generate': True,
               'stopping_criteria': stopping_criteria,
+              'attention_mask': torch.ones_like(input_ids),
           }
           print('final kwargs')
 
