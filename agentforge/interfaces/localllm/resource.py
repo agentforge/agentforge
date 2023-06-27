@@ -77,18 +77,12 @@ class LocalLLM():
 
   async def generate(self, prompt="", **kwargs):
     # setup the generator
-    print('GENERATE...............................................................')
     config = kwargs['generation_config']
-    print('kwargs...............................................................')
     streaming = True if "streaming" in kwargs['model_config'] and kwargs['model_config']["streaming"] else False
-    print('setup...............................................................')
-    print(kwargs['model_config'])
-    print(kwargs['model_config'].get("model_name", self.model_key))
     self.setup(kwargs)
     print('load')
     self.load(model_key=kwargs['model_config'].get("model_name", self.model_key), **kwargs)
     kwargs.update(config)
-    print('LOADED...............................................................')
 
     if "generator" in kwargs:
         # Use custom generator based on function string
@@ -109,7 +103,6 @@ class LocalLLM():
         self.text_streamer(streaming),
         **kwargs
     )
-    print('OUTPUT...............................................................')
     return self.parser.parse_output(output)
 
   def load_model(self, config):

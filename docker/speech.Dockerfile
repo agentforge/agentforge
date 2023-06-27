@@ -50,7 +50,7 @@ CMD tail -f /dev/null
 # RUN pip install "pydantic==1.10.8"
 # RUN pip install sentence_transformers
 # RUN python -m pip install python-dotenv
-WORKDIR /app/agentforge/agentforge/api/tts
+WORKDIR /app/agentforge/agentforge/api
 
 # Expose port 3000
 EXPOSE 3000

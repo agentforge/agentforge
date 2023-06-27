@@ -1,12 +1,12 @@
 from typing import Any, Dict
 from agentforge.interfaces import interface_interactor
-from agentforge.utils import timer_decorator
 
 class Respond:
     def __init__(self):
         self.service = interface_interactor.get_interface("llm")
 
     def execute(self, context: Dict[str, Any]) -> Dict[str, Any]:
+        print(context)
         input = {
             "prompt": context['input']['prompt'],
             "generation_config": context['model_profile']['generation_config'],

@@ -60,9 +60,9 @@ class PlanningController:
         self.context = ("p03.nl", "p03.pddl", "p_example.sol")
         # Initialize problem domain
         self.domain = Domain(self.config.domain, self.context)
-        
+
         # Initialize the planner
-        self.planner = Planner()
+        self.planner = Planner(llm)
 
         self.methods = {
             "llm_ic_pddl_planner"   : llm_ic_pddl_planner,
@@ -80,8 +80,7 @@ class PlanningController:
         if self.config.print_prompts:
             print_all_prompts(self.planner)
         else:
-            method(self.config, self.planner, self.domain)
-
+            method(self.config, self.planner, self.domain, input)
 
 
 ###############################################################################
@@ -210,11 +209,8 @@ class Blocksworld(Domain):
 
 
 class Planner:
-    def __init__(self):
-        self.use_chatgpt = False
-    
-    def load_openai_keys(self,):
-        pass
+    def __init__(self, llm):
+        self.llm = llm
 
     def create_llm_prompt(self, task_nl, domain_nl):
         # Baseline 1 (LLM-as-P): directly ask the LLM for plan
@@ -263,53 +259,64 @@ class Planner:
                  f"The problem PDDL file to this problem is: \n {context_pddl} \n" + \
                  f"Now I have a new planning problem and its description is: \n {task_nl} \n" + \
                  f"Provide me with the problem PDDL file that describes " + \
-                 f"the new planning problem directly without further explanations?"
+                 f"the new planning problem that includes :init directly without further explanations?"
         return prompt
 
-    def query(self, prompt_text):
-        server_flag = 0
-        server_cnt = 0
-        result_text = "ERROR"
-        while server_cnt < 10:
-            try:
-                self.update_key()
-                if self.use_chatgpt: # currently, we will always use chatgpt
-                    response = openai.ChatCompletion.create(
-                        model="gpt-3.5-turbo",
-                        temperature=0.0,
-                        top_p=1,
-                        frequency_penalty=0,
-                        presence_penalty=0,
-                        messages=[
-                            {"role": "system", "content": "You are a helpful assistant."},
-                            {"role": "user", "content": prompt_text},
-                        ],
-                    )
-                    result_text = response['choices'][0]['message']['content']
-                else:
-                    response =  openai.Completion.create(
-                        model="text-davinci-003",
-                        prompt=prompt_text,
-                        temperature=0.0,
-                        max_tokens=1024,
-                        top_p=1,
-                        frequency_penalty=0,
-                        presence_penalty=0
-                    )
-                    result_text = response['choices'][0]['text']
-                server_flag = 1
-                if server_flag:
-                    break
-            except Exception as e:
-                server_cnt += 1
-                print(e)
-        return result_text
+    def extract_outermost_parentheses(self, s):
+        # Indexes of the outermost opening and closing parentheses
+        open_idx = None
+        close_idx = None
+        
+        # Counter for the depth of nested parentheses
+        depth = 0
 
-    def update_key(self):
-        curr_key = self.openai_api_keys[0]
-        openai.api_key = curr_key
-        self.openai_api_keys.remove(curr_key)
-        self.openai_api_keys.append(curr_key)
+        # Loop through each character in the string
+        i = 0
+        while i < len(s):
+            char = s[i]
+            # Increment the depth counter if an opening parenthesis is found
+            if char == '(':
+                depth += 1
+                # If this is the first opening parenthesis, store its index
+                if depth == 1:
+                    open_idx = i
+            # Decrement the depth counter if a closing parenthesis is found
+            elif char == ')':
+                depth -= 1
+                # If the depth is back to 0, store the index of this closing parenthesis
+                if depth == 0:
+                    close_idx = i
+                    break
+
+            i += 1
+
+        # If opening and closing parentheses are found, return the contents within them
+        if open_idx is not None and close_idx is not None:
+            return '(' + s[open_idx + 1: close_idx] + ')'
+        # If not, return an empty string
+        else:
+            return ''
+
+
+    def test_extract_outermost_parentheses(self, s):
+        # Example Usage
+        s = "Here is some text (I want (only this) part) and this is not needed."
+        result = self.extract_outermost_parentheses(s)
+        print(result)  # Output: "I want (only this) part"
+
+
+    def query(self, prompt_text, input):
+        result_text = "()"
+        request = {
+            "prompt": prompt_text,
+            "generation_config": input['generation_config'],
+            "model_config": input['model_config'],
+        }
+        response = self.llm.call(request)
+        result_text = response['choices'][0]['text']
+        result_text = result_text.replace(prompt_text, "")
+        result_text = self.extract_outermost_parentheses(result_text)
+        return result_text    
 
     def parse_result(self, pddl_string):
         # remove extra texts
@@ -332,18 +339,19 @@ class Planner:
         #print(f"[info] remove comments takes {t1-t0} sec")
         return pddl_string
 
-    def plan_to_language(self, plan, task_nl, domain_nl, domain_pddl):
+    def plan_to_language(self, plan, task_nl, domain_nl, domain_pddl, input):
         domain_pddl_ = " ".join(domain_pddl.split())
         task_nl_ = " ".join(task_nl.split())
         prompt = f"A planning problem is described as: \n {task_nl} \n" + \
                  f"The corresponding domain PDDL file is: \n {domain_pddl_} \n" + \
                  f"The optimal PDDL plan is: \n {plan} \n" + \
                  f"Transform the PDDL plan into a sequence of behaviors without further explanation."
-        res = self.query(prompt).strip() + "\n"
+        print(prompt)
+        res = self.query(prompt, input).strip() + "\n"
         return res
 
 
-def llm_ic_pddl_planner(args, planner, domain):
+def llm_ic_pddl_planner(args, planner, domain, input):
     """
     Our method:
         context: (task natural language, task problem PDDL)
@@ -378,7 +386,8 @@ def llm_ic_pddl_planner(args, planner, domain):
     task_suffix        = domain.get_task_suffix(task)
     task_nl, task_pddl = domain.get_task(task) 
     prompt             = planner.create_llm_ic_pddl_prompt(task_nl, domain_pddl, context)
-    raw_result         = planner.query(prompt)
+    print(prompt)
+    raw_result         = planner.query(prompt, input)
     task_pddl_         = planner.parse_result(raw_result)
 
     # B. write the problem file into the problem folder
@@ -390,7 +399,7 @@ def llm_ic_pddl_planner(args, planner, domain):
     ## C. run fastforward to plan
     plan_file_name = f"{PLAN_DIRECTORY}/experiments/run{args.run}/plans/llm_ic_pddl/{task_suffix}"
     sas_file_name  = f"{PLAN_DIRECTORY}/experiments/run{args.run}/plans/llm_ic_pddl/{task_suffix}.sas"
-    os.system(f"python ./downward/fast-downward.py --alias {FAST_DOWNWARD_ALIAS} " + \
+    os.system(f"python /app/downward/fast-downward.py --alias {FAST_DOWNWARD_ALIAS} " + \
               f"--search-time-limit {args.time_limit} --plan-file {plan_file_name} " + \
               f"--sas-file {sas_file_name} " + \
               f"{domain_pddl_file} {task_pddl_file_name}")
@@ -408,7 +417,7 @@ def llm_ic_pddl_planner(args, planner, domain):
 
     # E. translate the plan back to natural language, and write it to result
     if best_plan:
-        plans_nl = planner.plan_to_language(best_plan, task_nl, domain_nl, domain_pddl)
+        plans_nl = planner.plan_to_language(best_plan, task_nl, domain_nl, domain_pddl, input)
         plan_nl_file_name = f"{PLAN_DIRECTORY}/experiments/run{args.run}/results/llm_ic_pddl/{task_suffix}"
         with open(plan_nl_file_name, "w") as f:
             f.write(plans_nl)
@@ -419,7 +428,7 @@ def llm_ic_pddl_planner(args, planner, domain):
         print(f"[info] task {task} takes {end_time - start_time} sec, no solution found")
 
 
-def llm_pddl_planner(args, planner, domain):
+def llm_pddl_planner(args, planner, domain, input):
     """
     Baseline method:
         Same as ours, except that no context is given. In other words, the LLM
@@ -451,7 +460,7 @@ def llm_pddl_planner(args, planner, domain):
     task_suffix        = domain.get_task_suffix(task)
     task_nl, task_pddl = domain.get_task(task) 
     prompt             = planner.create_llm_pddl_prompt(task_nl, domain_nl)
-    raw_result         = planner.query(prompt)
+    raw_result         = planner.query(prompt, input)
     task_pddl_         = planner.parse_result(raw_result)
 
     # B. write the problem file into the problem folder
@@ -463,7 +472,7 @@ def llm_pddl_planner(args, planner, domain):
     # C. run fastforward to plan
     plan_file_name = f"{PLAN_DIRECTORY}/experiments/run{args.run}/plans/llm_pddl/{task_suffix}"
     sas_file_name  = f"{PLAN_DIRECTORY}/experiments/run{args.run}/plans/llm_ic_pddl/{task_suffix}.sas"
-    os.system(f"python ./downward/fast-downward.py --alias {FAST_DOWNWARD_ALIAS} " + \
+    os.system(f"python /app/downward/fast-downward.py --alias {FAST_DOWNWARD_ALIAS} " + \
               f"--search-time-limit {args.time_limit} --plan-file {plan_file_name} " + \
               f"--sas-file {sas_file_name} " + \
               f"{domain_pddl_file} {task_pddl_file_name}")
@@ -484,7 +493,7 @@ def llm_pddl_planner(args, planner, domain):
 
     # E. translate the plan back to natural language, and write it to result
     if best_plan:
-        plans_nl = planner.plan_to_language(best_plan, task_nl, domain_nl, domain_pddl)
+        plans_nl = planner.plan_to_language(best_plan, task_nl, domain_nl, domain_pddl, input)
         plan_nl_file_name = f"{PLAN_DIRECTORY}/experiments/run{args.run}/results/llm_pddl/{task_suffix}"
         with open(plan_nl_file_name, "w") as f:
             f.write(plans_nl)
@@ -495,7 +504,7 @@ def llm_pddl_planner(args, planner, domain):
         print(f"[info] task {task} takes {end_time - start_time} sec, no solution found")
 
 
-def llm_planner(args, planner, domain):
+def llm_planner(args, planner, domain, input):
     """
     Baseline method:
         The LLM will be asked to directly give a plan based on the task description.
@@ -526,7 +535,7 @@ def llm_planner(args, planner, domain):
     task_suffix        = domain.get_task_suffix(task)
     task_nl, task_pddl = domain.get_task(task) 
     prompt             = planner.create_llm_prompt(task_nl, domain_nl)
-    text_plan          = planner.query(prompt)
+    text_plan          = planner.query(prompt, input)
 
     # B. write the problem file into the problem folder
     text_plan_file_name = f"{PLAN_DIRECTORY}/experiments/run{args.run}/results/llm/{task_suffix}"
@@ -536,7 +545,7 @@ def llm_planner(args, planner, domain):
     print(f"[info] task {task} takes {end_time - start_time} sec")
 
 
-def llm_stepbystep_planner(args, planner, domain):
+def llm_stepbystep_planner(args, planner, domain, input):
     """
     Baseline method:
         The LLM will be asked to directly give a plan based on the task description.
@@ -567,7 +576,7 @@ def llm_stepbystep_planner(args, planner, domain):
     task_suffix        = domain.get_task_suffix(task)
     task_nl, task_pddl = domain.get_task(task) 
     prompt             = planner.create_llm_stepbystep_prompt(task_nl, domain_nl)
-    text_plan          = planner.query(prompt)
+    text_plan          = planner.query(prompt, input)
 
     # B. write the problem file into the problem folder
     text_plan_file_name = f"{PLAN_DIRECTORY}/experiments/run{args.run}/results/llm_step/{task_suffix}"
@@ -577,7 +586,7 @@ def llm_stepbystep_planner(args, planner, domain):
     print(f"[info] task {task} takes {end_time - start_time} sec")
 
 
-def llm_ic_planner(args, planner, domain):
+def llm_ic_planner(args, planner, domain, input):
     """
     Baseline method:
         The LLM will be asked to directly give a plan based on the task description.
@@ -608,7 +617,7 @@ def llm_ic_planner(args, planner, domain):
     task_suffix        = domain.get_task_suffix(task)
     task_nl, task_pddl = domain.get_task(task) 
     prompt             = planner.create_llm_ic_prompt(task_nl, domain_nl, context)
-    text_plan          = planner.query(prompt)
+    text_plan          = planner.query(prompt, input)
 
     # B. write the problem file into the problem folder
     text_plan_file_name = f"{PLAN_DIRECTORY}/experiments/run{args.run}/results/llm_ic/{task_suffix}"

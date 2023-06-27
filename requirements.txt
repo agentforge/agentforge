@@ -37,3 +37,4 @@ pygments
 pygments-solarized-style
 fastapi
 uvicorn
+markdown

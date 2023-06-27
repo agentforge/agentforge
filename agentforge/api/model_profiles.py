@@ -24,14 +24,11 @@ async def copy_profile(id: str) -> ModelProfileResponse:
 async def put(id: str, request: dict) -> ModelProfileResponse:
     model_profiles = ModelProfile()
     data = request  # retrieve data from the PUT request body
-    print(id)
-    print(data)
     return ModelProfileResponse(data=model_profiles.set(id, data))
 
 @router.get('/{id}', operation_id="getModelProfile")
 async def get_model_profile(id: str) -> ModelProfileResponse:
     model_profiles = ModelProfile()
-    print(model_profiles)
     return ModelProfileResponse(data=model_profiles.get(id))
 
 @router.delete('/{id}', operation_id="deleteModelProfile")

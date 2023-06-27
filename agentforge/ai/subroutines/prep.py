@@ -1,3 +1,4 @@
+import markdown
 from typing import Any, Dict
 from pygments import highlight
 from pygments.lexers import get_lexer_by_name
@@ -49,10 +50,10 @@ class Prep:
 
     def execute(self, context: Dict[str, Any]) -> Dict[str, Any]:
         del context['memory']
-        if 'response' not in context:
+        if 'response' not in context or context['response'] is None:
             return context
         presentation = context['model_config']['presentation'] if 'model_config' in context and 'presentation' in context['model_config'] else "html"
         if presentation == 'html':
-            context['response'] = self.convert_html(context['response'])
+            context['response'] = markdown.markdown(self.convert_html(context['response']))
         context['choices'] = [{"text": context['response']}] # OAI backwargs compatible
         return context

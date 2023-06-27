@@ -16,7 +16,7 @@ RUN git clone https://github.com/Rudrabha/Wav2Lip.git
 
 #RUN mkdir /app/agentforge/agentforge/wav2lip/temp
 
-WORKDIR /app/agentforge/agentforge/api/wav2lip
+WORKDIR /app/agentforge/agentforge/api
 
 # Expose port 3000
 EXPOSE 3000
