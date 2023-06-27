@@ -4,7 +4,7 @@ from typing import List
 from agentforge.factories import resource_factory
 from agentforge.api.app import init_api
 from agentforge.utils import logger
-from starlette.responses import JSONResponse
+import traceback
 
 app = init_api()
 llm = resource_factory.get_resource("llm")
@@ -19,5 +19,9 @@ class CompletionsResponse(BaseModel):
 @app.post("/v1/completions", operation_id="createLanguageModelCompletion")
 async def output(request: Request) -> CompletionsResponse:
    payload = await request.json()
-   response = llm.generate(**payload)
+   try:
+      response = await llm.generate(**payload)
+   except:
+      response = "An error has occurred. Please try again later."
+      traceback.print_exc()
    return CompletionsResponse(choices=[TextResponse(text=response)])

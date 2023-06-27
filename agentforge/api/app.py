@@ -1,5 +1,4 @@
 from fastapi import FastAPI, Request
-from starlette.middleware.base import BaseHTTPMiddleware
 from fastapi.middleware.cors import CORSMiddleware
 from agentforge.utils import logger
 
@@ -10,6 +9,7 @@ def init_api():
       Documentation for Public Facing API
       """
       app = FastAPI(
+            debug=True,
             title="AgentForge",
             description=description,
             version="0.0.1",

@@ -1,18 +1,25 @@
 # main.py
-
+from fastapi import Request
 from agentforge.api.model_profiles import router as model_profiles_router
 from agentforge.api.agent import router as agent_router
 from agentforge.api.user import router as user_router
 from agentforge.api.app import init_api
 from agentforge.utils import logger
 
-from starlette.middleware.base import BaseHTTPMiddleware, Request
+from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse
 import traceback
 
 from typing import Dict, Deque
 from collections import deque
 from datetime import datetime, timedelta
+
+class LoggingMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request: Request, call_next):
+        logger.info(f"Request: {request.method} {request.url}")
+        response = await call_next(request)
+        logger.info(f"Response: {response.status_code}")
+        return response
 
 class RateLimiterMiddleware(BaseHTTPMiddleware):
     def __init__(self, app, max_requests: int, time_window: int):
@@ -45,6 +52,7 @@ class RateLimiterMiddleware(BaseHTTPMiddleware):
         return response
 
 app = init_api()
+app.add_middleware(LoggingMiddleware)
 app.add_middleware(
     RateLimiterMiddleware,
     max_requests=100,

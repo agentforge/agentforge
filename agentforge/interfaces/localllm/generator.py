@@ -135,6 +135,7 @@ class LocalGenerator:
               'generation_config': generation_config,
               'return_dict_in_generate': True,
               'stopping_criteria': stopping_criteria,
+              'attention_mask': torch.ones_like(input_ids),
           }
 
           logging.info(f"Rendering with {json.dumps(final_kwargs, indent=4, default=convert_to_serializable)}")
@@ -148,7 +149,7 @@ class LocalGenerator:
       execution_time = end_time - start_time
       logging.info(f"Execution time: {execution_time:.6f} seconds")
       s = generation_output.sequences[0]
-      output = tokenizer.decode(s, skip_special_tokens=True)
+      output = tokenizer.decode(s)
       return output
  
   def dolly(self, prompt, model, tokenizer, _, gc_name=None, **kwargs) -> str:
