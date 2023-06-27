@@ -24,5 +24,4 @@ class SimpleDecision:
                 # Handle the custom exception -- acts as an interruption in our decision flow
                 context = self.flows[str(interruption)].run(context)
 
-        print(context)
         return context

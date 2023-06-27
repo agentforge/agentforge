@@ -36,10 +36,4 @@ class Routine():
         for subroutine in self.subroutines:
             print(subroutine)
             context = subroutine.execute(context)
-            # ### Breakout into alternative routine...
-            # print('flow' in context and context['flow'] is not None)
-            # if 'flow' in context and context['flow'] is not None:
-            #     print(f"Flowing into {context['flow']} routine...")
-            #     context = context['flows'][context['flow']].run(context)
-            #     del context['flow']
         return context

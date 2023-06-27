@@ -5,6 +5,7 @@ import os
 import random
 import sys
 import time
+from typing import List
 
 # import openai
 
@@ -38,7 +39,7 @@ class PlanningControllerConfig:
             return value
         
         # initialize the attributes
-        self.domain = get_arg("domain", valid_choices=DOMAINS, default_value="barman")
+        self.domain = get_arg("domain", valid_choices=DOMAINS, default_value="garden")
         self.method = get_arg("method", valid_choices=["llm_ic_pddl_planner",
                                                         "llm_pddl_planner",
                                                         "llm_planner",
@@ -57,9 +58,12 @@ class PlanningController:
         # Create a PlanningControllerConfig object
         self.config = PlanningControllerConfig(input_values)
 
-        self.context = ("p03.nl", "p03.pddl", "p_example.sol")
+        self.context = ("p_example.nl", "p_example.pddl", "p_example.sol")
+        tasks = [("p01.nl", "p01.pddl")]
+        self.config.task = 0
+
         # Initialize problem domain
-        self.domain = Domain(self.config.domain, self.context)
+        self.domain = Domain(self.config.domain, self.context, tasks)
 
         # Initialize the planner
         self.planner = Planner(llm)
@@ -97,11 +101,12 @@ DOMAINS = [
     "storage",
     "termes",
     "tyreworld",
+    "garden",
 ]
 
 
 class Domain:
-    def __init__(self, name: str = "default", context: tuple = ("le.nl", "le.pddl", "le.sol")):
+    def __init__(self, name: str = "default", context: tuple = ("le.nl", "le.pddl", "le.sol"), tasks: List[tuple] = []):
         self.name = name
         # every domain should contain the context as in "in-context learning" (ICL)
         # which are the example problem in natural language.
@@ -110,7 +115,10 @@ class Domain:
         # 2. p_example.pddl (the ground-truth problem pddl for the problem)
         # 3. p_example.sol  (the ground-truth solution in natural language to the problem)
         self.context = context
-        self.tasks = [] # should be list of tuples like (descritpion, ground_truth_pddl)
+        if len(tasks) != 0:
+            self.tasks = tasks # should be list of tuples like (descritpion, ground_truth_pddl)
+        else:
+            self.tasks = []
 
         self.grab_tasks()
 
@@ -124,6 +132,7 @@ class Domain:
                     nls.append(fn_)
         sorted_nls = sorted(nls)
         self.tasks = [(nl, nl.replace("nl", "pddl")) for nl in sorted_nls]
+        print(len(self.tasks))
 
     def __len__(self):
         return len(self.tasks)
@@ -346,7 +355,6 @@ class Planner:
                  f"The corresponding domain PDDL file is: \n {domain_pddl_} \n" + \
                  f"The optimal PDDL plan is: \n {plan} \n" + \
                  f"Transform the PDDL plan into a sequence of behaviors without further explanation."
-        print(prompt)
         res = self.query(prompt, input).strip() + "\n"
         return res
 
@@ -380,13 +388,14 @@ def llm_ic_pddl_planner(args, planner, domain, input):
 
     task = args.task
 
+    print(task)
+
     start_time = time.time()
 
     # A. generate problem pddl file
     task_suffix        = domain.get_task_suffix(task)
     task_nl, task_pddl = domain.get_task(task) 
     prompt             = planner.create_llm_ic_pddl_prompt(task_nl, domain_pddl, context)
-    print(prompt)
     raw_result         = planner.query(prompt, input)
     task_pddl_         = planner.parse_result(raw_result)
 

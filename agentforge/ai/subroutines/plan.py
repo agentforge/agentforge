@@ -17,7 +17,6 @@ class Plan:
             "generation_config": context['model_profile']['generation_config'],
             "model_config": context['model_profile']['model_config'],
         }
-
         response = self.planner.execute(input)
 
         context["plan"] = response
