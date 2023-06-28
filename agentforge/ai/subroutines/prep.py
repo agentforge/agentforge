@@ -4,6 +4,7 @@ from pygments import highlight
 from pygments.lexers import get_lexer_by_name
 from pygments.util import ClassNotFound
 from pygments.formatters import HtmlFormatter
+from pygments.lexers.special import TextLexer
 
 ### Preps output for end-user, stripping PII/IDs and anything else unserializable
 ### Also implements presentation layer
@@ -25,14 +26,9 @@ class Prep:
             code_language = code_language.replace("{", "").strip()
             try:
                 lexer = get_lexer_by_name(code_language, stripall=True)
-                is_valid_lexer = True
             except ClassNotFound:
-                is_valid_lexer = False
+                lexer = TextLexer(stripall=True)
 
-            if not is_valid_lexer:
-                return self.clean_newlines(output)
-
-            lexer = get_lexer_by_name(code_language, stripall=True)
             formatter = HtmlFormatter(style='solarizeddark', oclasses=True)
             highlighted_code = highlight(code, lexer, formatter)
             if remove_code:
@@ -49,7 +45,8 @@ class Prep:
             return self.clean_newlines(input_string)
 
     def execute(self, context: Dict[str, Any]) -> Dict[str, Any]:
-        del context['memory']
+        if 'memory' in context:
+            del context['memory']
         if 'response' not in context or context['response'] is None:
             return context
         presentation = context['model_config']['presentation'] if 'model_config' in context and 'presentation' in context['model_config'] else "html"
