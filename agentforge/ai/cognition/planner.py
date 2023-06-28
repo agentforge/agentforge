@@ -7,6 +7,7 @@ import sys
 import time
 from typing import List
 import uuid
+from agentforge.utils import Parser
 
 # import openai
 
@@ -320,6 +321,7 @@ class Planner:
         return res
 
 def llm_ic_pddl_planner(args, planner, domain, input):
+    parser = Parser()
     context = domain.get_context()
     domain_pddl = domain.get_domain_pddl()
     domain_nl = domain.get_domain_nl()
@@ -342,6 +344,7 @@ def llm_ic_pddl_planner(args, planner, domain, input):
         Initially the watering can is empty, and all plots are unplanted and dry.
         Your goal is to have tomatoes growing in plot1, carrots growing in plot2, and both plots watered.
     """
+    task_nl = parser.format_template(input['prompt_template'], instruction=task_nl)
     print(context)
     prompt = planner.create_llm_ic_pddl_prompt(task_nl, domain_pddl, context)
     raw_result = planner.query(prompt, input)
