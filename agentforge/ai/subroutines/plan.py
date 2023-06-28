@@ -8,7 +8,8 @@ class Plan:
     ### Executes PDDL plans with help from LLM resource
     def __init__(self):
         self.service = interface_interactor.get_interface("llm")
-        self.planner = PlanningController(self.service)
+        self.db = interface_interactor.get_interface("db")
+        self.planner = PlanningController(self.service, self.db)
 
     @async_execution_decorator
     def execute(self, context: Dict[str, Any]) -> Dict[str, Any]:

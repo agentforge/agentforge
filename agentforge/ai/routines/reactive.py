@@ -16,7 +16,7 @@ from agentforge.ai.subroutines.intent import Intent
 class ReactiveRoutine(Routine):
     def __init__(self):
         super().__init__("reactive")
-        self.subroutines = [Recall(), Parse(), Intent(), Prep()] #Respond(), Remember(), Speak(), Lipsync(), Prep()]
+        self.subroutines = [Recall(), Parse(), Intent(), Prep(), Respond(), Remember(), Speak(), Lipsync(), Prep()]
 
 ### FLOWS: These routines have descriptions and thus can be referenced for our guardrails system
 ### i.e. if user query is similar to this desciption we will ask the user if they want to engage in this routine

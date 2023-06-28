@@ -6,14 +6,13 @@ import random
 import sys
 import time
 from typing import List
+import uuid
 
 # import openai
 
 FAST_DOWNWARD_ALIAS = "lama"
 PLAN_DIRECTORY = os.environ.get("PLANNER_DIRECTORY")
-
-def postprocess(x):
-    return x.strip()
+DOMAINS = ["garden"]
 
 def get_cost(x):
     splitted = x.split()
@@ -40,19 +39,13 @@ class PlanningControllerConfig:
         
         # initialize the attributes
         self.domain = get_arg("domain", valid_choices=DOMAINS, default_value="garden")
-        self.method = get_arg("method", valid_choices=["llm_ic_pddl_planner",
-                                                        "llm_pddl_planner",
-                                                        "llm_planner",
-                                                        "llm_stepbystep_planner",
-                                                        "llm_ic_planner"],
-                              default_value="llm_ic_pddl_planner")
         self.time_limit = get_arg("time_limit", default_value=200)
         self.task = get_arg("task", default_value=0)
         self.run = get_arg("run", default_value=0)
         self.print_prompts = get_arg("print_prompts", default_value=False)
 
 class PlanningController:
-    def __init__(self, llm, input_values: dict = {}):
+    def __init__(self, llm, db, input_values: dict = {}):
         # llm is a service that exposes a call method taking a single dictionary of inputs
         
         # Create a PlanningControllerConfig object
@@ -63,152 +56,158 @@ class PlanningController:
         self.config.task = 0
 
         # Initialize problem domain
-        self.domain = Domain(self.config.domain, self.context, tasks)
+        self.domain = Domain(db, self.config.domain)
 
         # Initialize the planner
         self.planner = Planner(llm)
 
-        self.methods = {
-            "llm_ic_pddl_planner"   : llm_ic_pddl_planner,
-            "llm_pddl_planner"      : llm_pddl_planner,
-            "llm_planner"           : llm_planner,
-            "llm_stepbystep_planner": llm_stepbystep_planner,
-            "llm_ic_planner"        : llm_ic_planner,
-        }
-
-    def execute(self, input):
-        # Execute the llm planner
-        method = self.methods[self.config.method]
-        
+    def execute(self, input):        
         # Execute planner with or without prompts
-        if self.config.print_prompts:
-            print_all_prompts(self.planner)
-        else:
-            method(self.config, self.planner, self.domain, input)
+        llm_ic_pddl_planner(self.config, self.planner, self.domain, input)
+
+### Helper class to build domains in the Database
+class DomainBuilder:
+    def __init__(self, db):
+        self.db = db
+
+    def add_task(self, domain_name: str, nl: str, pddl: str):
+        task_key = f"{domain_name}/{str(uuid.uuid1())}"
+        task_data = {"domain": domain_name, "nl": nl, "pddl": pddl}
+        self.db.set(collection="tasks", key=task_key, data=task_data)
+
+    def set_context(self, domain_name: str, nl: str, pddl: str, sol: str):
+        context_data = {"nl": nl, "pddl": pddl, "sol": sol}
+        self.db.set(collection="contexts", key=domain_name, data=context_data)
+
+    def set_domain_pddl(self, domain_name: str, pddl: str):
+        domain_data = self.db.get(collection="domains", key=domain_name) or {}
+        domain_data["pddl"] = pddl
+        self.db.set(collection="domains", key=domain_name, data=domain_data)
+
+    def set_domain_nl(self, domain_name: str, nl: str):
+        domain_data = self.db.get(collection="domains", key=domain_name) or {}
+        domain_data["nl"] = nl
+        self.db.set(collection="domains", key=domain_name, data=domain_data)
+    
+    def upload_documents_from_folder(self, domain_name: str, folder_path: str, context_name: str):
+        try:
+            # Validate folder path
+            if not os.path.isdir(folder_path):
+                print(f"Error: {folder_path} is not a directory")
+                return
+            
+            # Prepare file paths
+            nl_file_path = os.path.join(folder_path, f"{context_name}.nl")
+            pddl_file_path = os.path.join(folder_path, f"{context_name}.pddl")
+            sol_file_path = os.path.join(folder_path, f"{context_name}.sol")
+            domain_pddl_file_path = os.path.join(folder_path, "domain.pddl")
+            domain_nl_file_path = os.path.join(folder_path, "domain.nl")
+            
+            # Read and set context files
+            if os.path.isfile(nl_file_path) and os.path.isfile(pddl_file_path) and os.path.isfile(sol_file_path):
+                with open(nl_file_path, 'r') as nl_file, open(pddl_file_path, 'r') as pddl_file, open(sol_file_path, 'r') as sol_file:
+                    nl = nl_file.read()
+                    pddl = pddl_file.read()
+                    sol = sol_file.read()
+                    self.set_context(domain_name=domain_name, nl=nl, pddl=pddl, sol=sol)
+            else:
+                print(f"Error: One or more context files (nl, pddl, sol) are missing in {folder_path}")
+
+            # Read and set domain files
+            if os.path.isfile(domain_pddl_file_path) and os.path.isfile(domain_nl_file_path):
+                with open(domain_pddl_file_path, 'r') as domain_pddl_file, open(domain_nl_file_path, 'r') as domain_nl_file:
+                    domain_pddl = domain_pddl_file.read()
+                    domain_nl = domain_nl_file.read()
+                    self.set_domain_pddl(domain_name=domain_name, pddl=domain_pddl)
+                    self.set_domain_nl(domain_name=domain_name, nl=domain_nl)
+            else:
+                print(f"Error: One or more domain files (domain.pddl, domain.nl) are missing in {folder_path}")
+        
+        except Exception as e:
+            print(f"An error occurred while uploading documents from folder: {e}")
 
 
-###############################################################################
-#
-# Define different problem domains
-#
-###############################################################################
-
-DOMAINS = [
-    "barman",
-    "blocksworld",
-    "floortile",
-    "grippers",
-    "storage",
-    "termes",
-    "tyreworld",
-    "garden",
-]
-
-
+### Domain class grabs necessary data about this plan from the database
 class Domain:
-    def __init__(self, name: str = "default", context: tuple = ("le.nl", "le.pddl", "le.sol"), tasks: List[tuple] = []):
+    def __init__(self, db, name: str = "default"):
+        self.db = db
         self.name = name
-        # every domain should contain the context as in "in-context learning" (ICL)
-        # which are the example problem in natural language.
-        # For instance, in our case, context is:
-        # 1. p_example.nl  (a language description of the problem)
-        # 2. p_example.pddl (the ground-truth problem pddl for the problem)
-        # 3. p_example.sol  (the ground-truth solution in natural language to the problem)
-        self.context = context
-        if len(tasks) != 0:
-            self.tasks = tasks # should be list of tuples like (descritpion, ground_truth_pddl)
-        else:
-            self.tasks = []
-
-        self.grab_tasks()
-
-    def grab_tasks(self):
-        path = f"{PLAN_DIRECTORY}/domains/{self.name}"
-        nls = []
-        for fn in glob.glob(f"{path}/*.nl"):
-            fn_ = fn.split("/")[-1]
-            if "domain" not in fn_ and "p_example" not in fn_:
-                if os.path.exists(fn.replace("nl", "pddl")):
-                    nls.append(fn_)
-        sorted_nls = sorted(nls)
-        self.tasks = [(nl, nl.replace("nl", "pddl")) for nl in sorted_nls]
-        print(len(self.tasks))
-
-    def __len__(self):
-        return len(self.tasks)
-
-    def get_task_suffix(self, i):
-        nl, pddl = self.tasks[i]
-        return f"{self.name}/{pddl}"
-
-    def get_task_file(self, i):
-        nl, pddl = self.tasks[i]
-        return f"{PLAN_DIRECTORY}/domains/{self.name}/{nl}", f"{PLAN_DIRECTORY}/domains/{self.name}/{pddl}"
-
-    def get_task(self, i):
-        nl_f, pddl_f = self.get_task_file(i)
-        with open(nl_f, 'r') as f:
-            nl = f.read()
-        with open(pddl_f, 'r') as f:
-            pddl = f.read()
-        return postprocess(nl), postprocess(pddl)
 
     def get_context(self):
-        nl_f   = f"{PLAN_DIRECTORY}/domains/{self.name}/{self.context[0]}"
-        pddl_f = f"{PLAN_DIRECTORY}/domains/{self.name}/{self.context[1]}"
-        sol_f  = f"{PLAN_DIRECTORY}/domains/{self.name}/{self.context[2]}"
-        with open(nl_f, 'r') as f:
-            nl   = f.read()
-        with open(pddl_f, 'r') as f:
-            pddl = f.read()
-        with open(sol_f, 'r') as f:
-            sol  = f.read()
-        return postprocess(nl), postprocess(pddl), postprocess(sol)
+        try:
+            context_data = self.db.get(collection="contexts", key=self.name)
+            
+            # Check if context_data is a dictionary
+            if not isinstance(context_data, dict):
+                print(f"Error: Expected a dictionary, but got {type(context_data)}.")
+                return None, None, None
+            
+            # Extract data from context_data
+            nl = context_data.get("nl", "")
+            pddl = context_data.get("pddl", "")
+            sol = context_data.get("sol", "")
+
+            # Post-process the data
+            return (self.postprocess(nl), self.postprocess(pddl), self.postprocess(sol))
+        
+        except Exception as e:
+            print(f"An error occurred while getting context: {e}")
+            return None, None, None
 
     def get_domain_pddl(self):
-        domain_pddl_f = self.get_domain_pddl_file()
-        with open(domain_pddl_f, 'r') as f:
-            domain_pddl = f.read()
-        return postprocess(domain_pddl)
+        try:
+            domain_data = self.db.get(collection="domains", key=self.name)
+            
+            # Check if domain_data is a dictionary
+            if not isinstance(domain_data, dict):
+                print(f"Error: Expected a dictionary, but got {type(domain_data)}.")
+                return None
+            
+            # Extract and post-process data
+            domain_pddl = domain_data.get("pddl", "")
+            return self.postprocess(domain_pddl)
+        
+        except Exception as e:
+            print(f"An error occurred while getting domain PDDL: {e}")
+            return None
 
     def get_domain_pddl_file(self):
-        domain_pddl_f = f"{PLAN_DIRECTORY}/domains/{self.name}/domain.pddl"
-        return domain_pddl_f
+        return f"{self.name}/domain.pddl"
 
     def get_domain_nl(self):
-        domain_nl_f = self.get_domain_nl_file()
         try:
-            with open(domain_nl_f, 'r') as f:
-                domain_nl = f.read()
-        except:
-            domain_nl = "Nothing"
-        return postprocess(domain_nl)
+            domain_data = self.db.get(collection="domains", key=self.name)
+            
+            # Check if domain_data is a dictionary
+            if not isinstance(domain_data, dict):
+                print(f"Error: Expected a dictionary, but got {type(domain_data)}.")
+                return None
+            
+            # Extract and post-process data
+            domain_nl = domain_data.get("nl", "")
+            return self.postprocess(domain_nl)
+        
+        except Exception as e:
+            print(f"An error occurred while getting domain NL: {e}")
+            return None
 
     def get_domain_nl_file(self):
-        domain_nl_f = f"{PLAN_DIRECTORY}/domains/{self.name}/domain.nl"
-        return domain_nl_f
+        return f"{self.name}/domain.nl"
+
+    def postprocess(self, data):
+        # Assuming postprocess is a method for formatting or cleaning data
+        # If postprocess is an external function, this can be replaced with `return postprocess(data)`
+        try:
+            # Put logic for post-processing here
+            # For now, returning data as is
+            return data.strip()
+        except Exception as e:
+            print(f"An error occurred while post-processing: {e}")
+            return None
 
 
-class Barman(Domain):
-    name = "barman" # this should match the directory name
-
-class Floortile(Domain):
-    name = "floortile" # this should match the directory name
-
-class Termes(Domain):
-    name = "termes" # this should match the directory name
-
-class Tyreworld(Domain):
-    name = "tyreworld" # this should match the directory name
-
-class Grippers(Domain):
-    name = "grippers" # this should match the directory name
-
-class Storage(Domain):
-    name = "storage" # this should match the directory name
-
-class Blocksworld(Domain):
-    name = "blocksworld" # this should match the directory name
+class Garden(Domain):
+    name = "garden" # this should match the directory name
 
 ###############################################################################
 #
@@ -220,45 +219,6 @@ class Blocksworld(Domain):
 class Planner:
     def __init__(self, llm):
         self.llm = llm
-
-    def create_llm_prompt(self, task_nl, domain_nl):
-        # Baseline 1 (LLM-as-P): directly ask the LLM for plan
-        prompt = f"{domain_nl} \n" + \
-                 f"Now consider a planning problem. " + \
-                 f"The problem description is: \n {task_nl} \n" + \
-                 f"Can you provide an optimal plan, in the way of a " + \
-                 f"sequence of behaviors, to solve the problem?"
-        return prompt
-
-    def create_llm_stepbystep_prompt(self, task_nl, domain_nl):
-        # Baseline 1 (LLM-as-P): directly ask the LLM for plan
-        prompt = f"{domain_nl} \n" + \
-                 f"Now consider a planning problem. " + \
-                 f"The problem description is: \n {task_nl} \n" + \
-                 f"Can you provide an optimal plan, in the way of a " + \
-                 f"sequence of behaviors, to solve the problem? \n" + \
-                 f"Please think step by step."
-        return prompt
-
-    def create_llm_ic_prompt(self, task_nl, domain_nl, context):
-        # Baseline 2 (LLM-as-P with context): directly ask the LLM for plan
-        context_nl, context_pddl, context_sol = context
-        prompt = f"{domain_nl} \n" + \
-                 f"An example planning problem is: \n {context_nl} \n" + \
-                 f"A plan for the example problem is: \n {context_sol} \n" + \
-                 f"Now I have a new planning problem and its description is: \n {task_nl} \n" + \
-                 f"Can you provide an optimal plan, in the way of a " + \
-                 f"sequence of behaviors, to solve the problem?"
-        return prompt
-
-    def create_llm_pddl_prompt(self, task_nl, domain_nl):
-        # Baseline 3 (LM+P w/o context), no context, create the problem PDDL
-        prompt = f"{domain_nl} \n" + \
-                 f"Now consider a planning problem. " + \
-                 f"The problem description is: \n {task_nl} \n" + \
-                 f"Provide me with the problem PDDL file that describes " + \
-                 f"the planning problem directly without further explanations?"
-        return prompt
 
     def create_llm_ic_pddl_prompt(self, task_nl, domain_pddl, context):
         # our method (LM+P), create the problem PDDL given the context
@@ -306,13 +266,11 @@ class Planner:
         else:
             return ''
 
-
     def test_extract_outermost_parentheses(self, s):
         # Example Usage
         s = "Here is some text (I want (only this) part) and this is not needed."
         result = self.extract_outermost_parentheses(s)
         print(result)  # Output: "I want (only this) part"
-
 
     def query(self, prompt_text, input):
         result_text = "()"
@@ -321,11 +279,14 @@ class Planner:
             "generation_config": input['generation_config'],
             "model_config": input['model_config'],
         }
+        print(request)
         response = self.llm.call(request)
+        print(response)
         result_text = response['choices'][0]['text']
-        result_text = result_text.replace(prompt_text, "")
-        result_text = self.extract_outermost_parentheses(result_text)
-        return result_text    
+        result_text = result_text.replace(request['prompt'], "")
+        raise Exception(result_text)
+        # result_text = self.extract_outermost_parentheses(result_text)
+        return result_text
 
     def parse_result(self, pddl_string):
         # remove extra texts
@@ -358,60 +319,48 @@ class Planner:
         res = self.query(prompt, input).strip() + "\n"
         return res
 
-
 def llm_ic_pddl_planner(args, planner, domain, input):
-    """
-    Our method:
-        context: (task natural language, task problem PDDL)
-        Condition on the context (task description -> task problem PDDL),
-        LLM will be asked to provide the problem PDDL of a new task description.
-        Then, we use a planner to find the near optimal solution, and translate
-        that back to natural language.
-    """
-    context          = domain.get_context()
-    domain_pddl      = domain.get_domain_pddl()
-    domain_pddl_file = domain.get_domain_pddl_file()
-    domain_nl        = domain.get_domain_nl()
-    domain_nl_file   = domain.get_domain_nl_file()
+    context = domain.get_context()
+    domain_pddl = domain.get_domain_pddl()
+    domain_nl = domain.get_domain_nl()
 
-    # create the tmp / result folders
-    problem_folder = f"{PLAN_DIRECTORY}/experiments/run{args.run}/problems/llm_ic_pddl/{domain.name}"
-    plan_folder    = f"{PLAN_DIRECTORY}/experiments/run{args.run}/plans/llm_ic_pddl/{domain.name}"
-    result_folder  = f"{PLAN_DIRECTORY}/experiments/run{args.run}/results/llm_ic_pddl/{domain.name}"
-
-    if not os.path.exists(problem_folder):
-        os.system(f"mkdir -p {problem_folder}")
-    if not os.path.exists(plan_folder):
-        os.system(f"mkdir -p {plan_folder}")
-    if not os.path.exists(result_folder):
-        os.system(f"mkdir -p {result_folder}")
+    # Save domain_pddl to files
+    # TODO: We need to more tightly integrate fast downward to avoid disk use
+    domain_pddl_file_path = f"/tmp/domain_{args.task}.pddl"
+    with open(domain_pddl_file_path, "w") as f:
+        f.write(domain_pddl)
 
     task = args.task
-
-    print(task)
-
     start_time = time.time()
 
     # A. generate problem pddl file
-    task_suffix        = domain.get_task_suffix(task)
-    task_nl, task_pddl = domain.get_task(task) 
-    prompt             = planner.create_llm_ic_pddl_prompt(task_nl, domain_pddl, context)
-    raw_result         = planner.query(prompt, input)
-    task_pddl_         = planner.parse_result(raw_result)
-
-    # B. write the problem file into the problem folder
-    task_pddl_file_name = f"{PLAN_DIRECTORY}/experiments/run{args.run}/problems/llm_ic_pddl/{task_suffix}"
+    task_suffix = "domain.task_suffix"
+    task_nl = input # TODO: We need to pull information from the user and convert it into NL plan
+    task_nl = """
+        You have a garden with 2 plots, a watering can, a packet of tomato seeds,
+        a packet of carrot seeds, and a shovel.
+        Initially the watering can is empty, and all plots are unplanted and dry.
+        Your goal is to have tomatoes growing in plot1, carrots growing in plot2, and both plots watered.
+    """
+    print(context)
+    prompt = planner.create_llm_ic_pddl_prompt(task_nl, domain_pddl, context)
+    raw_result = planner.query(prompt, input)
+    task_pddl_ = planner.parse_result(raw_result)
+    
+    # File names for the fast downward call
+    plan_file_name = f"/tmp/plan_{args.task}"
+    sas_file_name = f"/tmp/sas_{args.task}"
+    task_pddl_file_name = f"/tmp/task_{args.task}.pddl"
+    
+    # Save task_pddl_ to file
     with open(task_pddl_file_name, "w") as f:
         f.write(task_pddl_)
-    time.sleep(1)
 
-    ## C. run fastforward to plan
-    plan_file_name = f"{PLAN_DIRECTORY}/experiments/run{args.run}/plans/llm_ic_pddl/{task_suffix}"
-    sas_file_name  = f"{PLAN_DIRECTORY}/experiments/run{args.run}/plans/llm_ic_pddl/{task_suffix}.sas"
+    # Fast downward call
     os.system(f"python /app/downward/fast-downward.py --alias {FAST_DOWNWARD_ALIAS} " + \
               f"--search-time-limit {args.time_limit} --plan-file {plan_file_name} " + \
               f"--sas-file {sas_file_name} " + \
-              f"{domain_pddl_file} {task_pddl_file_name}")
+              f"{domain_pddl_file_path} {task_pddl_file_name}")
 
     # D. collect the least cost plan
     best_cost = 1e10
@@ -435,241 +384,3 @@ def llm_ic_pddl_planner(args, planner, domain, input):
         print(f"[info] task {task} takes {end_time - start_time} sec, found a plan with cost {best_cost}")
     else:
         print(f"[info] task {task} takes {end_time - start_time} sec, no solution found")
-
-
-def llm_pddl_planner(args, planner, domain, input):
-    """
-    Baseline method:
-        Same as ours, except that no context is given. In other words, the LLM
-        will be asked to directly give a problem PDDL file without any context.
-    """
-    context          = domain.get_context()
-    domain_pddl      = domain.get_domain_pddl()
-    domain_pddl_file = domain.get_domain_pddl_file()
-    domain_nl        = domain.get_domain_nl()
-    domain_nl_file   = domain.get_domain_nl_file()
-
-    # create the tmp / result folders
-    problem_folder = f"{PLAN_DIRECTORY}/experiments/run{args.run}/problems/llm_pddl/{domain.name}"
-    plan_folder    = f"{PLAN_DIRECTORY}/experiments/run{args.run}/plans/llm_pddl/{domain.name}"
-    result_folder  = f"{PLAN_DIRECTORY}/experiments/run{args.run}/results/llm_pddl/{domain.name}"
-
-    if not os.path.exists(problem_folder):
-        os.system(f"mkdir -p {problem_folder}")
-    if not os.path.exists(plan_folder):
-        os.system(f"mkdir -p {plan_folder}")
-    if not os.path.exists(result_folder):
-        os.system(f"mkdir -p {result_folder}")
-
-    task = args.task
-
-    start_time = time.time()
-
-    # A. generate problem pddl file
-    task_suffix        = domain.get_task_suffix(task)
-    task_nl, task_pddl = domain.get_task(task) 
-    prompt             = planner.create_llm_pddl_prompt(task_nl, domain_nl)
-    raw_result         = planner.query(prompt, input)
-    task_pddl_         = planner.parse_result(raw_result)
-
-    # B. write the problem file into the problem folder
-    task_pddl_file_name = f"{PLAN_DIRECTORY}/experiments/run{args.run}/problems/llm_pddl/{task_suffix}"
-    with open(task_pddl_file_name, "w") as f:
-        f.write(task_pddl_)
-    time.sleep(1)
-
-    # C. run fastforward to plan
-    plan_file_name = f"{PLAN_DIRECTORY}/experiments/run{args.run}/plans/llm_pddl/{task_suffix}"
-    sas_file_name  = f"{PLAN_DIRECTORY}/experiments/run{args.run}/plans/llm_ic_pddl/{task_suffix}.sas"
-    os.system(f"python /app/downward/fast-downward.py --alias {FAST_DOWNWARD_ALIAS} " + \
-              f"--search-time-limit {args.time_limit} --plan-file {plan_file_name} " + \
-              f"--sas-file {sas_file_name} " + \
-              f"{domain_pddl_file} {task_pddl_file_name}")
-
-    # D. collect the least cost plan
-    best_cost = 1e10
-    best_plan = None
-    for fn in glob.glob(f"{plan_file_name}.*"):
-        with open(fn, "r") as f:
-            try:
-                plans = f.readlines()
-                cost = get_cost(plans[-1])
-                if cost < best_cost:
-                    best_cost = cost
-                    best_plan = "\n".join([p.strip() for p in plans[:-1]])
-            except:
-                continue
-
-    # E. translate the plan back to natural language, and write it to result
-    if best_plan:
-        plans_nl = planner.plan_to_language(best_plan, task_nl, domain_nl, domain_pddl, input)
-        plan_nl_file_name = f"{PLAN_DIRECTORY}/experiments/run{args.run}/results/llm_pddl/{task_suffix}"
-        with open(plan_nl_file_name, "w") as f:
-            f.write(plans_nl)
-    end_time = time.time()
-    if best_plan:
-        print(f"[info] task {task} takes {end_time - start_time} sec, found a plan with cost {best_cost}")
-    else:
-        print(f"[info] task {task} takes {end_time - start_time} sec, no solution found")
-
-
-def llm_planner(args, planner, domain, input):
-    """
-    Baseline method:
-        The LLM will be asked to directly give a plan based on the task description.
-    """
-    context          = domain.get_context()
-    domain_pddl      = domain.get_domain_pddl()
-    domain_pddl_file = domain.get_domain_pddl_file()
-    domain_nl        = domain.get_domain_nl()
-    domain_nl_file   = domain.get_domain_nl_file()
-
-    # create the tmp / result folders
-    problem_folder = f"{PLAN_DIRECTORY}/experiments/run{args.run}/problems/llm/{domain.name}"
-    plan_folder    = f"{PLAN_DIRECTORY}/experiments/run{args.run}/plans/llm/{domain.name}"
-    result_folder  = f"{PLAN_DIRECTORY}/experiments/run{args.run}/results/llm/{domain.name}"
-
-    if not os.path.exists(problem_folder):
-        os.system(f"mkdir -p {problem_folder}")
-    if not os.path.exists(plan_folder):
-        os.system(f"mkdir -p {plan_folder}")
-    if not os.path.exists(result_folder):
-        os.system(f"mkdir -p {result_folder}")
-
-    task = args.task
-
-    start_time = time.time()
-
-    # A. generate problem pddl file
-    task_suffix        = domain.get_task_suffix(task)
-    task_nl, task_pddl = domain.get_task(task) 
-    prompt             = planner.create_llm_prompt(task_nl, domain_nl)
-    text_plan          = planner.query(prompt, input)
-
-    # B. write the problem file into the problem folder
-    text_plan_file_name = f"{PLAN_DIRECTORY}/experiments/run{args.run}/results/llm/{task_suffix}"
-    with open(text_plan_file_name, "w") as f:
-        f.write(text_plan)
-    end_time = time.time()
-    print(f"[info] task {task} takes {end_time - start_time} sec")
-
-
-def llm_stepbystep_planner(args, planner, domain, input):
-    """
-    Baseline method:
-        The LLM will be asked to directly give a plan based on the task description.
-    """
-    context          = domain.get_context()
-    domain_pddl      = domain.get_domain_pddl()
-    domain_pddl_file = domain.get_domain_pddl_file()
-    domain_nl        = domain.get_domain_nl()
-    domain_nl_file   = domain.get_domain_nl_file()
-
-    # create the tmp / result folders
-    problem_folder = f"{PLAN_DIRECTORY}/experiments/run{args.run}/problems/llm_step/{domain.name}"
-    plan_folder    = f"{PLAN_DIRECTORY}/experiments/run{args.run}/plans/llm_step/{domain.name}"
-    result_folder  = f"{PLAN_DIRECTORY}/experiments/run{args.run}/results/llm_step/{domain.name}"
-
-    if not os.path.exists(problem_folder):
-        os.system(f"mkdir -p {problem_folder}")
-    if not os.path.exists(plan_folder):
-        os.system(f"mkdir -p {plan_folder}")
-    if not os.path.exists(result_folder):
-        os.system(f"mkdir -p {result_folder}")
-
-    task = args.task
-
-    start_time = time.time()
-
-    # A. generate problem pddl file
-    task_suffix        = domain.get_task_suffix(task)
-    task_nl, task_pddl = domain.get_task(task) 
-    prompt             = planner.create_llm_stepbystep_prompt(task_nl, domain_nl)
-    text_plan          = planner.query(prompt, input)
-
-    # B. write the problem file into the problem folder
-    text_plan_file_name = f"{PLAN_DIRECTORY}/experiments/run{args.run}/results/llm_step/{task_suffix}"
-    with open(text_plan_file_name, "w") as f:
-        f.write(text_plan)
-    end_time = time.time()
-    print(f"[info] task {task} takes {end_time - start_time} sec")
-
-
-def llm_ic_planner(args, planner, domain, input):
-    """
-    Baseline method:
-        The LLM will be asked to directly give a plan based on the task description.
-    """
-    context          = domain.get_context()
-    domain_pddl      = domain.get_domain_pddl()
-    domain_pddl_file = domain.get_domain_pddl_file()
-    domain_nl        = domain.get_domain_nl()
-    domain_nl_file   = domain.get_domain_nl_file()
-
-    # create the tmp / result folders
-    problem_folder = f"{PLAN_DIRECTORY}/experiments/run{args.run}/problems/llm_ic/{domain.name}"
-    plan_folder    = f"{PLAN_DIRECTORY}/experiments/run{args.run}/plans/llm_ic/{domain.name}"
-    result_folder  = f"{PLAN_DIRECTORY}/experiments/run{args.run}/results/llm_ic/{domain.name}"
-
-    if not os.path.exists(problem_folder):
-        os.system(f"mkdir -p {problem_folder}")
-    if not os.path.exists(plan_folder):
-        os.system(f"mkdir -p {plan_folder}")
-    if not os.path.exists(result_folder):
-        os.system(f"mkdir -p {result_folder}")
-
-    task = args.task
-
-    start_time = time.time()
-
-    # A. generate problem pddl file
-    task_suffix        = domain.get_task_suffix(task)
-    task_nl, task_pddl = domain.get_task(task) 
-    prompt             = planner.create_llm_ic_prompt(task_nl, domain_nl, context)
-    text_plan          = planner.query(prompt, input)
-
-    # B. write the problem file into the problem folder
-    text_plan_file_name = f"{PLAN_DIRECTORY}/experiments/run{args.run}/results/llm_ic/{task_suffix}"
-    with open(text_plan_file_name, "w") as f:
-        f.write(text_plan)
-    end_time = time.time()
-    print(f"[info] task {task} takes {end_time - start_time} sec")
-
-
-def print_all_prompts(planner):
-    for domain_name in DOMAINS:
-        domain = eval(domain_name.capitalize())()
-        context = domain.get_context()
-        domain_pddl = domain.get_domain_pddl()
-        domain_pddl_file = domain.get_domain_pddl_file()
-        domain_nl = domain.get_domain_nl()
-        
-        for folder_name in [
-            f"{PLAN_DIRECTORY}/prompts/llm/{domain.name}",
-            f"{PLAN_DIRECTORY}/prompts/llm_step/{domain.name}",
-            f"{PLAN_DIRECTORY}/prompts/llm_ic/{domain.name}",
-            f"{PLAN_DIRECTORY}/prompts/llm_pddl/{domain.name}",
-            f"{PLAN_DIRECTORY}/prompts/llm_ic_pddl/{domain.name}"]:
-            if not os.path.exists(folder_name):
-                os.system(f"mkdir -p {folder_name}")
-
-        for task in range(len(domain)):
-            task_nl_file, task_pddl_file = domain.get_task_file(task) 
-            task_nl, task_pddl = domain.get_task(task) 
-            task_suffix = domain.get_task_suffix(task)
-
-            llm_prompt = planner.create_llm_prompt(task_nl, domain_nl)
-            llm_stepbystep_prompt = planner.create_llm_stepbystep_prompt(task_nl, domain_nl)
-            llm_ic_prompt = planner.create_llm_ic_prompt(task_nl, domain_nl, context)
-            llm_pddl_prompt = planner.create_llm_pddl_prompt(task_nl, domain_nl)
-            llm_ic_pddl_prompt = planner.create_llm_ic_pddl_prompt(task_nl, domain_pddl, context)
-            with open(f"{PLAN_DIRECTORY}/prompts/llm/{task_suffix}.prompt", "w") as f:
-                f.write(llm_prompt)
-            with open(f"{PLAN_DIRECTORY}/prompts/llm_step/{task_suffix}.prompt", "w") as f:
-                f.write(llm_stepbystep_prompt)
-            with open(f"{PLAN_DIRECTORY}/prompts/llm_ic/{task_suffix}.prompt", "w") as f:
-                f.write(llm_ic_prompt)
-            with open(f"{PLAN_DIRECTORY}/prompts/llm_pddl/{task_suffix}.prompt", "w") as f:
-                f.write(llm_pddl_prompt)
-            with open(f"{PLAN_DIRECTORY}/prompts/llm_ic_pddl/{task_suffix}.prompt", "w") as f:
-                f.write(llm_ic_pddl_prompt)

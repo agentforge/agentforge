@@ -45,7 +45,8 @@ class Prep:
             return self.clean_newlines(input_string)
 
     def execute(self, context: Dict[str, Any]) -> Dict[str, Any]:
-        del context['memory']
+        if 'memory' in context:
+            del context['memory']
         if 'response' not in context or context['response'] is None:
             return context
         presentation = context['model_config']['presentation'] if 'model_config' in context and 'presentation' in context['model_config'] else "html"

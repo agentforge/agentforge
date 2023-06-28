@@ -3,13 +3,15 @@
   (:requirements :strips :typing)
 
   (:types
-    plant seed plot container tool gardener fertilizer - object
+    plant seed plot container tool gardener
+    plot container - location 
+    fertilizer - object
   )
 
   (:predicates
     (plot-dug ?p - plot)
     (plot-fertilized ?p - plot)
-    (plant-in ?plant - plant ?location - (either plot container))
+    (plant-in ?plant - plant ?location - location)
     (plant-watered ?plant - plant)
     (plant-matured ?plant - plant)
     (plant-alive ?plant - plant)
@@ -22,11 +24,6 @@
     :parameters (?p - plot ?t - tool ?g - gardener)
     :precondition (and (tool-available ?t))
     :effect (and (plot-dug ?p) (not (tool-available ?t))))
-
-  (:action plant-seeds
-    :parameters (?s - seed ?p - plot ?g - gardener)
-    :precondition (and (plot-dug ?p) (seed-available ?s))
-    :effect (plant-in (plant-from-seed ?s) ?p))
 
   (:action water-plant
     :parameters (?plant - plant ?t - tool ?g - gardener)
