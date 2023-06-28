@@ -94,18 +94,25 @@ class LocalGenerator:
     else:
       config = model.generation_config
     gen_config = kwargs["generation_config"]
+    model_config = kwargs["model_config"]
 
-    # Config drive overrides
-    if "eos_token" in gen_config:
-      gen_config["eos_token_id"] = tokenizer.encode(gen_config["eos_token"])[0]
+    print(model_config["eos_token_id"])
+    # Config drive overrides -- ID over string
+    if "eos_token_id" in model_config:
+      print("eos_token_id set...")
+      gen_config["eos_token_id"] = model_config["eos_token_id"]
+    elif "eos_token" in model_config:
+      gen_config["eos_token_id"] = tokenizer.encode(model_config["eos_token"])[0]
     else:
       gen_config["eos_token_id"] = config.eos_token_id
-    if "bos_token" in gen_config:
-      gen_config["bos_token_id"] = tokenizer.encode(gen_config["bos_token"])[0]
+
+    if "bos_token" in model_config:
+      gen_config["bos_token_id"] = tokenizer.encode(model_config["bos_token"])[0]
     else:
       gen_config["bos_token_id"] = config.bos_token_id
-    if "pad_token" in gen_config:
-      gen_config["pad_token_id"] = tokenizer.encode(gen_config["pad_token"])[0]
+    
+    if "pad_token" in model_config:
+      gen_config["pad_token_id"] = tokenizer.encode(model_config["pad_token"])[0]
     else:
       gen_config["pad_token_id"] = config.pad_token_id
 
@@ -135,7 +142,7 @@ class LocalGenerator:
               'generation_config': generation_config,
               'return_dict_in_generate': True,
               'stopping_criteria': stopping_criteria,
-              'attention_mask': torch.ones_like(input_ids),
+              # 'attention_mask': torch.ones_like(input_ids),
           }
 
           logging.info(f"Rendering with {json.dumps(final_kwargs, indent=4, default=convert_to_serializable)}")

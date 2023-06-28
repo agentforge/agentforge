@@ -110,23 +110,35 @@ class LocalLoader:
         model_klass = import_transformer_model_class(self.config["model_class"])
         tokenizer_klass = import_transformer_model_class(self.config["tokenizer_class"])
 
+        kwargs = {}
+        if 'token' in self.config and self.config['token']:
+            kwargs['use_auth_token'] = self.config['token']
+
         logger.info(f"Loading model... {model_name}")
 
-        config = AutoConfig.from_pretrained(model_name, trust_remote_code=True)
-        if 'attn_impl' in self.config and self.config['attn_impl'] == 'triton':
-            config.attn_config['attn_impl'] = 'triton'
+        try:
+            config = AutoConfig.from_pretrained(
+                model_name,
+                trust_remote_code=True,
+                **kwargs,
+            )
+            if 'attn_impl' in self.config and self.config['attn_impl'] == 'triton':
+                config.attn_config['attn_impl'] = 'triton'
+            kwargs['config'] = config
+
+        except EnvironmentError as e:
+            pass # If this is a private model this can fail
 
         self.model = model_klass.from_pretrained(
             model_name,
-            config=config,
             load_in_8bit=bool(load_in_8bit),
             load_in_4bit=bool(load_in_4bit),
             torch_dtype=computed_torch,
             device_map=self.device_map,
             revision=revision,
-            trust_remote_code=True
+            trust_remote_code=True,
+            **kwargs
         )
-
 
         if "peft_model" in self.config and self.config["peft_model"] != "":
             logger.info(f"Loading PEFT... {self.config['peft_model']}")
@@ -139,7 +151,6 @@ class LocalLoader:
                     self.model, self.config["peft_model"],
                     torch_dtype=torch_dtype,
                 )
-
         logger.info(f"Loading AutoTokenizer... {tokenizer_klass}")
         self.tokenizer = tokenizer_klass.from_pretrained(
             self.config["tokenizer_name"],
