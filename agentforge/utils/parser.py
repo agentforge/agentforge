@@ -19,7 +19,9 @@ class Parser:
               value = kwargs[key]  # Get the value from kwargs
               prompt_template = prompt_template.replace(f"<{key}>", value)
           else:
-              print(f"Warning: Key '{key}' not found in kwargs")
+              # If we didn't provide this key we want to get rid of the placeholder
+              prompt_template = prompt_template.replace(f"<{key}>", "")
+
       
       # Return the formatted prompt template
       return prompt_template
