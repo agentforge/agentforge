@@ -25,18 +25,19 @@ const InputElement: React.FC<InputElementProps> = ({
   const { modelProfileConfigs, setModelProfileConfig } = useModelProfileConfig();
 
   const setVal = (val: string) => {
+    console.log("setting ", val)
     if (type === 'int') {
       setModelProfileConfig(id, parseInt(val));
     } else if (type == 'float') {
-      setModelProfileConfig(id, parseFloat(val));
+      setModelProfileConfig(id, val);
     } else { 
       setModelProfileConfig(id, val);
     }
   }
 
-  if (!modelProfileConfigs[id]) { 
-    modelProfileConfigs[id] = defaultVal;
-  }
+  // if (!modelProfileConfigs[id]) { 
+  //   modelProfileConfigs[id] = defaultVal;
+  // }
 
   // Initialize the values in the LanguageModelConfig
   React.useEffect(() => {
@@ -45,14 +46,17 @@ const InputElement: React.FC<InputElementProps> = ({
     }
   }, []);
 
-  // Handle value change and convert to the necessary format
-  const handleValueChange: React.ChangeEventHandler<HTMLInputElement> = (event) => {
-    setVal(event.currentTarget.value);
+  const handleValueChange: React.ChangeEventHandler = (event) => {
+    console.log(event.target)
+    const inputValue = (event.target as HTMLInputElement).value;
+    console.log(inputValue)
+    setVal(inputValue);
   };
+
 
   // Set input type for the form
   var inputType = 'text';
-  if (type === 'int' || type === 'float') { 
+  if (type === 'int') { 
     inputType = 'number';
   }
   return (
@@ -68,6 +72,7 @@ const InputElement: React.FC<InputElementProps> = ({
       <input
           className="bg-blackA5 shadow-blackA9 inline-flex h-[35px] w-full appearance-none items-center justify-center rounded-[4px] px-[10px] text-[15px] leading-none text-white shadow-[0_0_0_1px] outline-none focus:shadow-[0_0_0_2px_black]"
           type={inputType}
+          step="any"
           id={id}
           value={modelProfileConfigs[id]}
           onChange={(event) => handleValueChange(event)}

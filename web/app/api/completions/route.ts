@@ -11,6 +11,7 @@ export async function POST(request: Request) {
   requestHeaders.set('API-Key', process.env.DATA_API_KEY);  
 
   const requestBody = await request.json();
+  requestBody["user_id"] = "test_user";
   const res = await fetch(`${api_url}/v1/completions`, {
     method: 'POST',
     headers: requestHeaders,

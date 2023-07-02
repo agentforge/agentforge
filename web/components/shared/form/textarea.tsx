@@ -21,10 +21,6 @@ const TextareaElement: React.FC<TextareaElementProps> = ({
 }) => {
   const { modelProfileConfigs, setModelProfileConfig } = useModelProfileConfig();
 
-  if (!modelProfileConfigs[id]) { 
-    modelProfileConfigs[id] = defaultVal;
-  }
-
   const setVal = (val: string) => {
       setModelProfileConfig(id, val);
   }
