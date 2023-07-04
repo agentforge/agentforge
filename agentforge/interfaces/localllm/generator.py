@@ -96,7 +96,6 @@ class LocalGenerator:
     gen_config = kwargs["generation_config"]
     model_config = kwargs["model_config"]
 
-    print(model_config["eos_token_id"])
     # Config drive overrides -- ID over string
     if "eos_token_id" in model_config:
       print("eos_token_id set...")
