@@ -8,7 +8,8 @@ import time
 from typing import List
 import uuid
 from agentforge.utils import Parser
-
+from agentforge.ai.cognition.opql import PredicateMemory
+from agentforge.ai.cognition.query_engine import QueryEngine
 # import openai
 
 FAST_DOWNWARD_ALIAS = "lama"
@@ -47,6 +48,8 @@ class PlanningControllerConfig:
 
 class PlanningController:
     def __init__(self, llm, db, input_values: dict = {}):
+        # for testing
+        self.done= False
         # llm is a service that exposes a call method taking a single dictionary of inputs
         
         # Create a PlanningControllerConfig object
@@ -62,9 +65,35 @@ class PlanningController:
         # Initialize the planner
         self.planner = Planner(llm)
 
+        self.predicate_memory = PredicateMemory()
+
+    ### This function maps the contraints of a planning domain, goes through a list of possible goal-states, and
+    ### identifies necessary initialization state.
+
+    ### Queries generally come from the following forms:
+    ### Define your subjective objects in the planning domain.
+    ### How is the world-state currently initialized?
+    ### What are your goals for this plan?
+    def generate_queries(self):
+        if self.done:
+            return []
+        else:
+            self.done = True
+            return ["Ask the user the following question very concisely: Are you sure you want to plan a garden?", "Do you wanna grow sativa or indica?"]
+
     def execute(self, input):        
-        # Execute planner with or without prompts
-        llm_ic_pddl_planner(self.config, self.planner, self.domain, input)
+        ## If there are no existing queries to be processed, we check the state
+        ## of the domain for this plan, if there are no queries to be parsed and all state is satisfied
+        ## then we kickoff the planner
+        query_engine = QueryEngine(input['user_id'], input['session_id'])
+        queries = self.generate_queries()
+        prepped_queries = query_engine.get_queries()
+        if len(queries) == 0 and len(prepped_queries) == 0:
+            return llm_ic_pddl_planner(self.config, self.planner, self.domain, input) # TODO: Refactor to use our input
+
+        # Else queye up the queries for us here
+        for query in queries:
+            query_engine.push_query(query=query)
 
 ### Helper class to build domains in the Database
 class DomainBuilder:
@@ -280,13 +309,11 @@ class Planner:
             "generation_config": input['generation_config'],
             "model_config": input['model_config'],
         }
-        print(request)
         response = self.llm.call(request)
-        print(response)
         result_text = response['choices'][0]['text']
         result_text = result_text.replace(request['prompt'], "")
-        raise Exception(result_text)
-        # result_text = self.extract_outermost_parentheses(result_text)
+        result_text = self.extract_outermost_parentheses(result_text)
+        print(result_text)
         return result_text
 
     def parse_result(self, pddl_string):
@@ -340,16 +367,18 @@ def llm_ic_pddl_planner(args, planner, domain, input):
     task_nl = input # TODO: We need to pull information from the user and convert it into NL plan
     task_nl = """
         You have a garden with 2 plots, a watering can, a packet of tomato seeds,
-        a packet of carrot seeds, and a shovel.
+        a packet of carrot seeds, fertilizer, and a shovel.
+
         Initially the watering can is empty, and all plots are unplanted and dry.
-        Your goal is to have tomatoes growing in plot1, carrots growing in plot2, and both plots watered.
+
+        Your goal is to have tomatoes growing in plot1 and carrots growing in plot2.
+        Use only the syntax in the PDDL domain above.
     """
-    task_nl = parser.format_template(input['prompt_template'], instruction=task_nl)
-    print(context)
+    task_nl = parser.format_template(input['prompt']['prompt_template'], instruction=task_nl)
     prompt = planner.create_llm_ic_pddl_prompt(task_nl, domain_pddl, context)
     raw_result = planner.query(prompt, input)
     task_pddl_ = planner.parse_result(raw_result)
-    
+
     # File names for the fast downward call
     plan_file_name = f"/tmp/plan_{args.task}"
     sas_file_name = f"/tmp/sas_{args.task}"
@@ -359,11 +388,13 @@ def llm_ic_pddl_planner(args, planner, domain, input):
     with open(task_pddl_file_name, "w") as f:
         f.write(task_pddl_)
 
+    print("Running fast ")
     # Fast downward call
-    os.system(f"python /app/downward/fast-downward.py --alias {FAST_DOWNWARD_ALIAS} " + \
+    func_call = f"python /app/downward/fast-downward.py --alias {FAST_DOWNWARD_ALIAS} " + \
               f"--search-time-limit {args.time_limit} --plan-file {plan_file_name} " + \
               f"--sas-file {sas_file_name} " + \
-              f"{domain_pddl_file_path} {task_pddl_file_name}")
+              f"{domain_pddl_file_path} {task_pddl_file_name}"
+    os.system(func_call)
 
     # D. collect the least cost plan
     best_cost = 1e10

@@ -14,7 +14,9 @@ class Plan:
     @async_execution_decorator
     def execute(self, context: Dict[str, Any]) -> Dict[str, Any]:
         input = {
-            "prompt": context['input']['prompt'],
+            "user_id": context["input"]["user_id"],
+            "session_id": context["input"]["id"],
+            "prompt": context['input'],
             "generation_config": context['model_profile']['generation_config'],
             "model_config": context['model_profile']['model_config'],
         }
@@ -22,7 +24,6 @@ class Plan:
 
         context["plan"] = response
         return context
-
 
 class EnsurePlan:
     ### Sycnronous subroutine ensures that we want to execute Planning...

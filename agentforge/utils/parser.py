@@ -8,10 +8,10 @@ class Parser:
   def parse_prompt(self, text):
     return text.strip()
 
-  def format_template(prompt_template, **kwargs):
+  def format_template(self, prompt_template, **kwargs):
       # Find all placeholders in the prompt_template
       placeholders = re.findall(r'<(.*?)>', prompt_template)
-      
+
       # For each placeholder, replace it with the corresponding value from kwargs
       for placeholder in placeholders:
           key = placeholder  # The key is the content within < >
@@ -21,7 +21,6 @@ class Parser:
           else:
               # If we didn't provide this key we want to get rid of the placeholder
               prompt_template = prompt_template.replace(f"<{key}>", "")
-
       
       # Return the formatted prompt template
       return prompt_template

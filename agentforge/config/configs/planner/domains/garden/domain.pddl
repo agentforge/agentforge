@@ -1,57 +1,74 @@
-(define (domain backyard-garden)
+(define (domain garden)
 
   (:requirements :strips :typing)
 
   (:types
-    plant seed plot container tool gardener
-    plot container - location 
+    plant seed plot container tool
+    plot container - location
     fertilizer - object
+    can_be_watered - plant seed plot
   )
 
   (:predicates
     (plot-dug ?p - plot)
     (plot-fertilized ?p - plot)
-    (plant-in ?plant - plant ?location - location)
-    (plant-watered ?plant - plant)
-    (plant-matured ?plant - plant)
-    (plant-alive ?plant - plant)
+    (plant-in-plot ?plant - plant ?p - plot)
+    (seed-in-plot ?seed - seed ?p - plot)
+    (watered-plant ?plant - plant)
+    (watered-seed ?seed - seed)
+    (watered-plot ?p - plot)
+    (watered ?c - can_be_watered)
+    (matured ?plant - plant)
+    (alive ?plant - plant)
+    (growing ?p - plot ?plant - plant)
     (tool-available ?t - tool)
     (seed-available ?s - seed)
+    (fertilizer-available ?f - fertilizer)
     (container-available ?c - container)
+    (empty ?c - container)
+    (dry ?p - plot)
+    (unplanted ?p - plot)
+    (has-seed-type ?s - seed ?plant - plant)
+    (plant-in-container ?plant - plant ?c - container)
   )
 
   (:action dig-plot
-    :parameters (?p - plot ?t - tool ?g - gardener)
-    :precondition (and (tool-available ?t))
-    :effect (and (plot-dug ?p) (not (tool-available ?t))))
+    :parameters (?p - plot ?t - tool)
+    :precondition (and (tool-available ?t) (unplanted ?p) (dry ?p))
+    :effect (plot-dug ?p))
 
-  (:action water-plant
-    :parameters (?plant - plant ?t - tool ?g - gardener)
-    :precondition (and (plant-in ?plant ?p) (tool-available ?t))
-    :effect (and (plant-watered ?plant) (not (tool-available ?t))))
+  (:action water-plot
+    :parameters (?t - tool ?c - container ?p - plot)
+    :precondition (and (plot-dug ?p) (tool-available ?t) (container-available ?c) (not (empty ?c)))
+    :effect (and (watered ?p) (watered-plot ?p) (empty ?c)))
 
   (:action apply-fertilizer
-    :parameters (?p - plot ?f - fertilizer ?g - gardener)
-    :precondition (plot-dug ?p)
+    :parameters (?p - plot ?f - fertilizer)
+    :precondition (and (plot-dug ?p) (fertilizer-available ?f))
     :effect (plot-fertilized ?p))
 
+  (:action plant-seeds
+    :parameters (?s - seed ?p - plot ?plant - plant)
+    :precondition (and (seed-available ?s) (plot-dug ?p) (plot-fertilized ?p) (has-seed-type ?s ?plant))
+    :effect (and (seed-in-plot ?s ?p) (growing ?p ?plant)))
+
+  (:action fill-watering-can
+    :parameters (?c - container)
+    :precondition (and (container-available ?c) (empty ?c))
+    :effect (not (empty ?c)))
+
   (:action harvest
-    :parameters (?plant - plant ?p - plot ?g - gardener)
-    :precondition (and (plant-in ?plant ?p) (plant-matured ?plant))
-    :effect (not (plant-in ?plant ?p)))
+    :parameters (?plant - plant ?p - plot)
+    :precondition (and (plant-in-plot ?plant ?p) (matured ?plant))
+    :effect (not (plant-in-plot ?plant ?p)))
 
   (:action move-to-pot
-    :parameters (?plant - plant ?c - container ?g - gardener)
-    :precondition (and (plant-in ?plant ?p) (container-available ?c))
-    :effect (and (not (plant-in ?plant ?p)) (plant-in ?plant ?c)))
+    :parameters (?plant - plant ?c - container)
+    :precondition (and (plant-in-plot ?plant ?p) (container-available ?c))
+    :effect (and (not (plant-in-plot ?plant ?p)) (plant-in-container ?plant ?c)))
 
   (:action move-to-plot
-    :parameters (?plant - plant ?p - plot ?g - gardener)
-    :precondition (and (plant-in ?plant ?c) (plot-dug ?p))
-    :effect (and (not (plant-in ?plant ?c)) (plant-in ?plant ?p)))
-
-  (:action prune-plant
-    :parameters (?plant - plant ?t - tool ?g - gardener)
-    :precondition (and (plant-in ?plant ?location) (tool-available ?t))
-    :effect (not (tool-available ?t)))
+    :parameters (?plant - plant ?p - plot)
+    :precondition (and (plant-in-container ?plant ?c) (plot-dug ?p))
+    :effect (and (not (plant-in-container ?plant ?c)) (plant-in-plot ?plant ?p) (growing ?p ?plant)))
 )

@@ -5,6 +5,7 @@
       watering-can - container
       tomato-seeds - seed
       carrot-seeds - seed
+      fertilizer - object
       shovel - tool
   )
   (:init 
