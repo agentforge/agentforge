@@ -48,6 +48,8 @@ class PlanningControllerConfig:
 
 class PlanningController:
     def __init__(self, llm, db, input_values: dict = {}):
+        # for testing
+        self.done= False
         # llm is a service that exposes a call method taking a single dictionary of inputs
         
         # Create a PlanningControllerConfig object
@@ -73,40 +75,25 @@ class PlanningController:
     ### How is the world-state currently initialized?
     ### What are your goals for this plan?
     def generate_queries(self):
-        return ["Are you sure you want to plan a garden?"]
+        if self.done:
+            return []
+        else:
+            self.done = True
+            return ["Ask the user the following question very concisely: Are you sure you want to plan a garden?", "Do you wanna grow sativa or indica?"]
 
     def execute(self, input):        
-        # Initialize the query engine for this user and session and run it
-        query_engine = QueryEngine(input["user_id"], input["session_id"])
-        
-        # First we need to check if there are existing responded-to queries that need
-        # to be processed. If so we process them here into OPQL triplets
-        queries = query_engine.get_queries()
-        # if query exists and is a response, pop
-        for query in queries:
-            if query is not None and query["response"]:
-                # feed in to the OQAL
-                self.predicate_memory.learn(query["response"]) # TODO: I doubt the user formats the response correctly, we should rely on the LLM here
-            elif query is not None:
-                # We may still need to grab user state let's make sure there are no
-                # additional queriess
-                return query
-
         ## If there are no existing queries to be processed, we check the state
         ## of the domain for this plan, if there are no queries to be parsed and all state is satisfied
         ## then we kickoff the planner
+        query_engine = QueryEngine(input['user_id'], input['session_id'])
         queries = self.generate_queries()
-        if len(queries) == 0:
+        prepped_queries = query_engine.get_queries()
+        if len(queries) == 0 and len(prepped_queries) == 0:
             return llm_ic_pddl_planner(self.config, self.planner, self.domain, input) # TODO: Refactor to use our input
 
         # Else queye up the queries for us here
-        # queries = ["Are you sure you want to plan a garden?"]
-
         for query in queries:
-            query_engine.set_query(query)
-
-        # Return the first query to be returned to the user
-        return queries[0]
+            query_engine.push_query(query=query)
 
 ### Helper class to build domains in the Database
 class DomainBuilder:

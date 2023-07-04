@@ -36,15 +36,15 @@ class QueryEngine:
             if queue_obj and 'queue' in queue_obj and queue_obj['queue']:
                 return queue_obj['queue']
             else:
-                return None
+                return []
         except Exception as e:
             logging.error(f"Error fetching query: {e}")
-            return None
+            return []
     
-    def update_query(self, user_id, session_id, **kwargs):
+    def update_query(self, **kwargs):
         try:
             # Get the existing queue object
-            queue_obj = self.db.get("queries", f"{user_id}-{session_id}")
+            queue_obj = self.db.get("queries", f"{self.user_id}-{self.session_id}")
 
             # If queue_obj exists and is not empty, update the top-most query
             if queue_obj and 'queue' in queue_obj and queue_obj['queue']:
@@ -52,14 +52,14 @@ class QueryEngine:
                 queue_obj['queue'][0].update(kwargs)
 
                 # Save the updated queue object back to the database
-                self.db.set("queries", f"{user_id}-{session_id}", queue_obj)
+                self.db.set("queries", f"{self.user_id}-{self.session_id}", queue_obj)
             else:
-                logging.error(f"No query to update for user_id {user_id} and session_id {session_id}")
+                logging.error(f"No query to update for user_id {self.user_id} and session_id {self.session_id}")
         except Exception as e:
             logging.error(f"Error updating query: {e}")
 
 
-    def set_query(self, **kwargs):
+    def push_query(self, **kwargs):
         try:
             # Get the existing queue object or create a new one if it doesn't exist
             queue_obj = self.db.get("queries", f"{self.user_id}-{self.session_id}") or {'queue': []}
@@ -113,7 +113,7 @@ class QueryEngine:
 # session_id = "session1"
 
 # # Add a query
-# qe.set_query(user_id, session_id, question="What's your name?")
+# qe.push_query(user_id, session_id, question="What's your name?")
 
 # # Get the top query without removing it
 # top_query = qe.get_query(user_id, session_id)

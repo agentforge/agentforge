@@ -42,7 +42,7 @@ class Prep:
                 return self.convert_html(output)
             return self.clean_newlines(output)
         else:
-            return self.clean_newlines(inprut_string)
+            return self.clean_newlines(input_string)
 
     def execute(self, context: Dict[str, Any]) -> Dict[str, Any]:
         if 'memory' in context:

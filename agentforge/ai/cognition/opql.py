@@ -12,8 +12,9 @@ class PredicateMemory:
         self.entity_linker = EntityLinker()
         self.opql_memory = OPQLMemory()
 
-    def learn(self, text):
-        obj, relation, subject = self.entity_linker.link_relations(text)
+    def learn(self, query):
+        print("Learning...", query['query'], query['response'])
+        obj, relation, subject = self.entity_linker.link_relations(query['query'])
         print(f"Object: {obj}\nRelation: {relation}\nSubject: {subject}")
         if obj and relation and subject:
             self.opql_memory.set(obj, relation, subject)
