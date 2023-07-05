@@ -12,7 +12,6 @@ export async function PUT(
 ) {
     const id = params.id; // user_id
     const request = await requestPromise.json();
-    console.log(request);
     const res = await fetch(`${api_url}/v1/model-profiles/${id}`, {
       method: 'PUT',
       headers: {
