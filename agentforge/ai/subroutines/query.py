@@ -60,12 +60,15 @@ class Query:
                   "model_config": context['model_profile']['model_config'],
               }
 
-              # response = self.service.call(input)
+              response = self.service.call(input)
 
-              # if response is not None and "choices" in response:
-              #     context["response"] = response["choices"][0]["text"]
+              if response is not None and "choices" in response:
+                  context["response"] = response["choices"][0]["text"]
+                  context["response"] = context["response"].replace(query['query'], "")
 
-              context["response"] = f"This is a test response to {query['query']}"
+              print(query['query'])
+              print(context["response"])
+              # context["response"] = f"This is a test response to {query['query']}"
 
               # Update this query and store it in the KVStore
               query = query_engine.update_query(query=context["response"], sent=True)

@@ -57,7 +57,7 @@ class LocalGenerator:
 
     # simple lock to prevent async calls from stepping on each other
     self.lock = threading.Lock() # for async calls
-  
+
   def set_models(self, model, tokenizer, streamer):
     self.model = model
     self.tokenizer = tokenizer
@@ -96,7 +96,6 @@ class LocalGenerator:
     gen_config = kwargs["generation_config"]
     model_config = kwargs["model_config"]
 
-    print(model_config["eos_token_id"])
     # Config drive overrides -- ID over string
     if "eos_token_id" in model_config:
       print("eos_token_id set...")
@@ -142,7 +141,7 @@ class LocalGenerator:
               'generation_config': generation_config,
               'return_dict_in_generate': True,
               'stopping_criteria': stopping_criteria,
-              # 'attention_mask': torch.ones_like(input_ids),
+              'attention_mask': torch.ones_like(input_ids),
           }
 
           logging.info(f"Rendering with {json.dumps(final_kwargs, indent=4, default=convert_to_serializable)}")
@@ -195,6 +194,6 @@ class LocalGenerator:
     end = "### End"  # the output seems to contain lots of ### End of ...
     if end in response:
       response = response[:response.index(end)].strip()
-    if "A: " in response: # GPT loves to add A: with random nonsense
+    if "A: " in response: # GPTJ loves to add A: with random nonsense
       response = response[:response.index("A: ")].strip() 
     return response

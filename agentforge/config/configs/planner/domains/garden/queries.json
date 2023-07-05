@@ -1,0 +1,41 @@
+{
+  "queries": [
+    {
+      "q": "What kind of plants do you want to grow?",
+      "r": "(growing [MASK])",
+      "type": "goal"
+    },
+    {
+      "q": "Do you have a plot available to you?",
+      "type": "object",
+      "r": [
+        {
+          "val": "plotX - plot",
+          "type": "object"
+        },
+        {
+          "val": "(dry plotX)",
+          "type": "init"
+        },
+        {
+          "val": "(unplanted plotX)",
+          "type": "init"
+        }
+      ]
+    },
+    {
+      "q": "Do you have containers for growing plants?",
+      "type": "object",
+      "r": [
+        {
+          "val": "containerX - container",
+          "type": "object"
+        },
+        {
+          "val": "(container-available containerX)",
+          "type": "init"
+        }
+      ]
+    }
+  ]
+}
