@@ -3,10 +3,10 @@ import * as React from 'react';
 import * as ScrollArea from '@radix-ui/react-scroll-area';
 import * as ToggleGroup from '@radix-ui/react-toggle-group';
 import { AvatarIcon, MixIcon, MixerHorizontalIcon, InputIcon } from '@radix-ui/react-icons';
-import AvatarConfig from '@/components/forge/config/avatarconfig';
-import ModelConfig from '@/components/forge/config/modelconfig';
-import GenerationConfigForm from './genconfig';
-import PromptConfig from './promptconfig';
+import { AvatarConfig } from '@/components/forge/config/avatarconfig';
+import { ModelConfig } from '@/components/forge/config/modelconfig';
+import { GenerationConfigForm, GENERATION_FIELDS } from './genconfig';
+import { PromptConfig, PROMPT_FIELDS } from './promptconfig';
 import Button from '@/components/shared/button';
 import { useModelProfileConfig } from '@/components/shared/context/modelprofileconfig';
 import { PlayIcon } from '@radix-ui/react-icons';
@@ -41,7 +41,13 @@ const ModelConfigForm: React.FC<ModelConfigFormProps> = ({ form, id }) =>  {
       if (updatedForm[config] !== undefined) {
         Object.keys(updatedForm[config]).forEach((key) => {
           if (modelProfileConfigs[key] !== undefined && modelProfileConfigs[key] !== null) {
-            updatedForm[config][key] = modelProfileConfigs[key];
+            var val = modelProfileConfigs[key];
+            if (config == 'generation_config') { 
+              if (GENERATION_FIELDS[key]?.type == "float") { 
+                val = parseFloat(val);
+              }
+            }
+            updatedForm[config][key] = val;
           }
         });
       }

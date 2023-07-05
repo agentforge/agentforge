@@ -157,7 +157,7 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ id }) =>  {
   return (
     <ChatWidgetStateProvider>
       <div className="chat-widget">
-        <ul className="no-bullets chat-history" ref={chatContainerRef} style={{ maxHeight: '500px', overflowY: 'scroll', overflowX: 'hidden' }}>
+        <ul className="no-bullets chat-history" ref={chatContainerRef} style={{ minWidth: '720px', maxHeight: '500px', overflowY: 'scroll', overflowX: 'hidden' }}>
           {messages.map((message) => (
             <li key={message.id} className={message.author_type}>
               <div>
