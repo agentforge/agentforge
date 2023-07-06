@@ -3,6 +3,8 @@ from agentforge.interfaces import interface_interactor
 from agentforge.utils import timer_decorator
 from agentforge.ai.cognition.planner import PlanningController
 from agentforge.utils import async_execution_decorator
+from agentforge.ai.cognition.query_engine import QueryEngine
+from agentforge.ai.cognition.symbolic import PredicateMemory
 
 class Plan:
     ### Executes PDDL plans with help from LLM resource
@@ -10,6 +12,7 @@ class Plan:
         self.service = interface_interactor.get_interface("llm")
         self.db = interface_interactor.get_interface("db")
         self.planner = PlanningController(self.service, self.db)
+        self.predicate_memory = PredicateMemory(self.db)
 
     @async_execution_decorator
     def execute(self, context: Dict[str, Any]) -> Dict[str, Any]:
@@ -20,25 +23,34 @@ class Plan:
             "generation_config": context['model_profile']['generation_config'],
             "model_config": context['model_profile']['model_config'],
         }
-        response = self.planner.execute(input)
 
-        context["plan"] = response
-        return context
+        query_engine = QueryEngine(context["input"]['user_id'], context["input"]['id'])
+        key = f"{context['input']['user_id']}-{context['input']['id']}-plan-{self.planner.config.domain}"
 
-class EnsurePlan:
-    ### Sycnronous subroutine ensures that we want to execute Planning...
-    def __init__(self):
-        self.service = interface_interactor.get_interface("llm")
-        # self.sentiment = interface_interactor.get_interface("sentiment")
+        # # if query exists and is a response, pop
+        sent = query_engine.get_sent_queries()
+        if len(sent) > 0:
+            query = sent[0]
+            # feed in to the OQAL
+            # raise Exception(context["input"]["original_prompt"])
+            query["response"] = context["input"]["original_prompt"]
+            print("I'm learning...")
+            self.predicate_memory.learn(query) # TODO: I doubt the user formats the response correctly, we should rely on the LLM here
+            self.predicate_memory.satisfy_attention(query, key)
+            query_engine.pop_query()
 
-    def execute(self, context: Dict[str, Any]) -> Dict[str, Any]:
-        input = {
-            "prompt": "Ask the user if they are sure they want to initiate a plan.",
-            "generation_config": context['model_profile']['generation_config'],
-            "model_config": context['model_profile']['model_config'],
-        }
+        # If the predicate memory attention is satisfied kick off the plan
+        if self.predicate_memory.attention_satisfied(key):
+            print("attention satisfied...")
+            response = self.planner.execute(input)
+            context["response"] = response
 
-        response = self.service.call(input)
-        print(response)
-        context["response"] = response["choices"][0]["text"]
+        # If the predicate memory attention does not exist, feed plan queries into the current attention
+        if not self.predicate_memory.attention_exists(key):
+            print("attention not exists...")
+            queries = self.planner.domain.get_queries()
+            query_engine.create_queries(queries)
+            self.predicate_memory.create_attention(queries, key)
+            context["queries"] = queries
+
         return context

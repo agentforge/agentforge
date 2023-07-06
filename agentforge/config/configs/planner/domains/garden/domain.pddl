@@ -6,7 +6,6 @@
     plant seed plot container tool
     plot container - location
     fertilizer - object
-    can_be_watered - plant seed plot
   )
 
   (:predicates
@@ -17,7 +16,6 @@
     (watered-plant ?plant - plant)
     (watered-seed ?seed - seed)
     (watered-plot ?p - plot)
-    (watered ?c - can_be_watered)
     (matured ?plant - plant)
     (alive ?plant - plant)
     (growing ?p - plot ?plant - plant)
@@ -63,12 +61,12 @@
     :effect (not (plant-in-plot ?plant ?p)))
 
   (:action move-to-pot
-    :parameters (?plant - plant ?c - container)
+    :parameters (?plant - plant ?c - container ?p - plot)
     :precondition (and (plant-in-plot ?plant ?p) (container-available ?c))
     :effect (and (not (plant-in-plot ?plant ?p)) (plant-in-container ?plant ?c)))
 
   (:action move-to-plot
-    :parameters (?plant - plant ?p - plot)
+    :parameters (?plant - plant ?c - container ?p - plot)
     :precondition (and (plant-in-container ?plant ?c) (plot-dug ?p))
     :effect (and (not (plant-in-container ?plant ?c)) (plant-in-plot ?plant ?p) (growing ?p ?plant)))
 )

@@ -13,97 +13,61 @@ class QueryEngine:
         self.session_id = session_id
         self.db = interface_interactor.get_interface("db")
 
-    def get_query(self, **kwargs) -> Optional[Dict]:
-        try:
-            # Get the queue object from the database
-            queue_obj = self.db.get("queries", f"{self.user_id}-{self.session_id}")
+    def create_queries(self, queries: List[Dict]):
+        key = f"{self.user_id}-{self.session_id}"
+        # Check if the document already exists
+        existing_doc = self.db.get("queries", key)
+        if existing_doc:
+            raise ValueError(f"A document with key {key} already exists")
+        else:
+            # Create a new document with user_id and session_id at the root level
+            queue_obj = {'user_id': self.user_id, 'session_id': self.session_id, 'queue': queries}
+            self.db.create("queries", key, queue_obj)
 
-            # If queue_obj exists and is not empty, return the first query
-            if queue_obj and 'queue' in queue_obj and queue_obj['queue']:
-                return queue_obj['queue'][0]
-            else:
-                return None
-        except Exception as e:
-            logging.error(f"Error fetching query: {e}")
-            return None
+    def get_query(self) -> Optional[Dict]:
+        key = f"{self.user_id}-{self.session_id}"
+        queue_obj = self.db.get("queries", key)
+        return queue_obj['queue'][0] if queue_obj and 'queue' in queue_obj and queue_obj['queue'] else None
 
-    def get_queries(self, **kwargs) -> Optional[Dict]:
-        try:
-            # Get the queue object from the database
-            queue_obj = self.db.get("queries", f"{self.user_id}-{self.session_id}")
+    def get_queries(self) -> Optional[Dict]:
+        key = f"{self.user_id}-{self.session_id}"
+        queue_obj = self.db.get("queries", key)
+        return queue_obj['queue'] if queue_obj and 'queue' in queue_obj else []
 
-            # If queue_obj exists and is not empty, return the first query
-            if queue_obj and 'queue' in queue_obj and queue_obj['queue']:
-                return queue_obj['queue']
-            else:
-                return []
-        except Exception as e:
-            logging.error(f"Error fetching query: {e}")
-            return []
-    
-    def update_query(self, **kwargs):
-        try:
-            # Get the existing queue object
-            queue_obj = self.db.get("queries", f"{self.user_id}-{self.session_id}")
-
-            # If queue_obj exists and is not empty, update the top-most query
-            if queue_obj and 'queue' in queue_obj and queue_obj['queue']:
-                # Update the top-most query with kwargs
-                queue_obj['queue'][0].update(kwargs)
-
-                # Save the updated queue object back to the database
-                self.db.set("queries", f"{self.user_id}-{self.session_id}", queue_obj)
-            else:
-                logging.error(f"No query to update for user_id {self.user_id} and session_id {self.session_id}")
-        except Exception as e:
-            logging.error(f"Error updating query: {e}")
-
+    def get_sent_queries(self) -> Optional[List[Dict]]:
+        key = f"{self.user_id}-{self.session_id}"
+        queue_obj = self.db.get("queries", key)
+        return [query for query in queue_obj['queue'] if 'sent' in query and query['sent']] if queue_obj and 'queue' in queue_obj else []
 
     def push_query(self, **kwargs):
-        try:
-            # Get the existing queue object or create a new one if it doesn't exist
-            queue_obj = self.db.get("queries", f"{self.user_id}-{self.session_id}") or {'queue': []}
+        key = f"{self.user_id}-{self.session_id}"
+        queue_obj = self.db.get("queries", key) or {'user_id': self.user_id, 'session_id': self.session_id, 'queue': []}
+        # Push the new query to the queue without user_id and session_id
+        queue_obj['queue'].append(kwargs)
+        self.db.set("queries", key, queue_obj)
 
-            # Push the new query to the queue
-            queue_obj['queue'].append({"user_id": self.user_id, "session_id": self.session_id, **kwargs})
-
-            # Save the updated queue object back to the database
-            self.db.set("queries", f"{self.user_id}-{self.session_id}", queue_obj)
-        except Exception as e:
-            logging.error(f"Error saving query: {e}")
+    def update_query(self, **kwargs):
+        key = f"{self.user_id}-{self.session_id}"
+        queue_obj = self.db.get("queries", key)
+        if queue_obj and 'queue' in queue_obj and queue_obj['queue']:
+            queue_obj['queue'][0].update(kwargs)
+            self.db.set("queries", key, queue_obj)
 
     def pop_query(self) -> Optional[Dict]:
-        try:
-            # Get the queue object from the database
-            queue_obj = self.db.get("queries", f"{self.user_id}-{self.session_id}")
-
-            # If queue_obj exists and is not empty, pop the first query
-            if queue_obj and 'queue' in queue_obj and queue_obj['queue']:
-                query = queue_obj['queue'].pop(0)
-
-                # Save the updated queue object back to the database
-                self.db.set("queries", f"{self.user_id}-{self.session_id}", queue_obj)
-
-                return query
-            else:
-                return None
-        except Exception as e:
-            logging.error(f"Error popping query: {e}")
-            return None
-
+        key = f"{self.user_id}-{self.session_id}"
+        queue_obj = self.db.get("queries", key)
+        if queue_obj and 'queue' in queue_obj and queue_obj['queue']:
+            query = queue_obj['queue'].pop(0)
+            self.db.set("queries", key, queue_obj)
+            return query
+        return None
+    
     def parse_response(self, response_text):
-        try:
-            # Get the queue object from the database
-            queue_obj = self.db.get("queries", f"{self.user_id}-{self.session_id}")
-
-            # If queue_obj exists and is not empty, update the first query
-            if queue_obj and 'queue' in queue_obj and queue_obj['queue']:
-                queue_obj['queue'][0]['response'] = response_text
-
-                # Save the updated queue object back to the database
-                self.db.set("queries", f"{self.user_id}-{self.session_id}", queue_obj)
-        except Exception as e:
-            logging.error(f"Error parsing response: {e}")
+        key = f"{self.user_id}-{self.session_id}"
+        queue_obj = self.db.get("queries", key)
+        if queue_obj and 'queue' in queue_obj and queue_obj['queue']:
+            queue_obj['queue'][0]['response'] = response_text
+            self.db.set("queries", key, queue_obj)
 
 # Example Usage
 

@@ -8,8 +8,6 @@ import time
 from typing import List
 import uuid
 from agentforge.utils import Parser
-from agentforge.ai.cognition.opql import PredicateMemory
-from agentforge.ai.cognition.query_engine import QueryEngine
 # import openai
 
 FAST_DOWNWARD_ALIAS = "lama"
@@ -65,8 +63,6 @@ class PlanningController:
         # Initialize the planner
         self.planner = Planner(llm)
 
-        self.predicate_memory = PredicateMemory()
-
     ### This function maps the contraints of a planning domain, goes through a list of possible goal-states, and
     ### identifies necessary initialization state.
 
@@ -74,22 +70,25 @@ class PlanningController:
     ### Define your subjective objects in the planning domain.
     ### How is the world-state currently initialized?
     ### What are your goals for this plan?
-    def generate_queries(self):
-        if self.done:
-            return []
-        else:
-            self.done = True
-            return ["Ask the user the following question very concisely: Are you sure you want to plan a garden?", "Do you wanna grow sativa or indica?"]
-
+  
     def execute(self, input):        
         ## If there are no existing queries to be processed, we check the state
         ## of the domain for this plan, if there are no queries to be parsed and all state is satisfied
         ## then we kickoff the planner
-        query_engine = QueryEngine(input['user_id'], input['session_id'])
-        queries = self.generate_queries()
-        prepped_queries = query_engine.get_queries()
-        if len(queries) == 0 and len(prepped_queries) == 0:
-            return llm_ic_pddl_planner(self.config, self.planner, self.domain, input) # TODO: Refactor to use our input
+        
+        # prepped_queries = query_engine.get_queries()
+        # for query in prepped_queries:
+        #     if "satisfied" in query and query["satisfied"]:
+        #         next
+        #     else:
+
+        # else:
+        #     self.done = True
+        #     queries = self.domain.get_queries()
+
+        # if len(queries) == 0 and len(prepped_queries) == 0:
+        #     print("STEP: Running plan ")
+        return llm_ic_pddl_planner(self.config, self.planner, self.domain, input) # TODO: Refactor to use our input
 
         # Else queye up the queries for us here
         for query in queries:
@@ -103,7 +102,8 @@ class DomainBuilder:
     def add_task(self, domain_name: str, nl: str, pddl: str):
         task_key = f"{domain_name}/{str(uuid.uuid1())}"
         task_data = {"domain": domain_name, "nl": nl, "pddl": pddl}
-        self.db.set(collection="tasks", key=task_key, data=task_data)
+        self.db.sself.planner.domainata = {"nl": nl, "pddl": pddl, "sol": sol}
+        self.db.set(collection="contexts", key=domain_name, data=context_data)
 
     def set_context(self, domain_name: str, nl: str, pddl: str, sol: str):
         context_data = {"nl": nl, "pddl": pddl, "sol": sol}
@@ -119,6 +119,11 @@ class DomainBuilder:
         domain_data["nl"] = nl
         self.db.set(collection="domains", key=domain_name, data=domain_data)
     
+    def set_queries(self, domain_name: str, queries: dict):
+        domain_data = self.db.get(collection="domains", key=domain_name) or {}
+        domain_data["queries"] = queries
+        self.db.set(collection="domains", key=domain_name, data=domain_data)
+
     def upload_documents_from_folder(self, domain_name: str, folder_path: str, context_name: str):
         try:
             # Validate folder path
@@ -132,7 +137,8 @@ class DomainBuilder:
             sol_file_path = os.path.join(folder_path, f"{context_name}.sol")
             domain_pddl_file_path = os.path.join(folder_path, "domain.pddl")
             domain_nl_file_path = os.path.join(folder_path, "domain.nl")
-            
+            query_file_path = os.path.join(folder_path, "queries.json")
+
             # Read and set context files
             if os.path.isfile(nl_file_path) and os.path.isfile(pddl_file_path) and os.path.isfile(sol_file_path):
                 with open(nl_file_path, 'r') as nl_file, open(pddl_file_path, 'r') as pddl_file, open(sol_file_path, 'r') as sol_file:
@@ -142,6 +148,13 @@ class DomainBuilder:
                     self.set_context(domain_name=domain_name, nl=nl, pddl=pddl, sol=sol)
             else:
                 print(f"Error: One or more context files (nl, pddl, sol) are missing in {folder_path}")
+
+            if os.path.isfile(query_file_path):
+                with open(query_file_path, 'r') as query_file:
+                    query = json.loads(query_file.read())
+                    self.set_queries(domain_name=domain_name, queries=query["queries"])
+            else:
+                print(f"Error: Query file (queries.json) is missing in {folder_path}")
 
             # Read and set domain files
             if os.path.isfile(domain_pddl_file_path) and os.path.isfile(domain_nl_file_path):
@@ -183,6 +196,24 @@ class Domain:
         except Exception as e:
             print(f"An error occurred while getting context: {e}")
             return None, None, None
+
+    def get_queries(self):
+        # try:
+        domain_data = self.db.get(collection="domains", key=self.name)
+        
+        # Check if domain_data is a dictionary
+        if not isinstance(domain_data, dict):
+            print(f"Error: Expected a dictionary, but got {type(domain_data)}.")
+            return None
+        
+        # Extract and post-process data
+        print(domain_data)
+        domain_queries = domain_data.get("queries", [])
+        return domain_queries
+        
+        # except Exception as e:
+        #     print(f"An error occurred while getting domain queries: {e}")
+        #     return None
 
     def get_domain_pddl(self):
         try:
