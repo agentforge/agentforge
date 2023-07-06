@@ -6,16 +6,42 @@ from typing import List
 
 ### Wrapper for OPQLMemory, allows the agent to learn and query from our symbolic memory
 class PredicateMemory:
-    def __init__(self, db) -> None:
+    def __init__(self, llm, db) -> None:
         self.entity_linker = EntityLinker()
         self.opql_memory = OPQLMemory()
         self.db = db
+        self.llm = llm
         # TODO: Move to env
         self.ATTENTION_TTL_DAYS = 7 # The TTL for attention documents is set to 7 days
 
-    def learn(self, query):
+    ### Given a query and response use a few-shot CoT LLM reponse to pull information out
+    def classify(self, query, response, prompt, context):
+        input = {
+            "prompt": prompt.replace("{response}", response).replace("{query}", query),
+            "generation_config": context['model_profile']['generation_config'], # TODO: We need to use a dedicated model
+            "model_config": context['model_profile']['model_config'],
+        }
+        response = self.llm.call(input)
+        if response is not None and "choices" in response:
+            response = response["choices"][0]["text"]
+            print(response)
+            response = response.replace(input['prompt'], "")
+            return response.split(",")
+        return []
+
+    def learn(self, query, context):
+        subjects = self.classify(query['query'], query['response'], query['prompt'], context)
+        for subject in subjects:
+            self.create_predicate("User",query["relation"], subject) # TODO: Need to pull user name
+
+    # Unguided entity learner using old-school NLP techniques
+    # Problematic!
+    def entity_learn(self, query):
         print("Learning...", query)
         obj, relation, subject = self.entity_linker.link_relations(query['query'])
+        self.create_predicate(obj, relation, subject)
+
+    def create_predicate(self, obj, relation, subject):
         print(f"Object: {obj}\nRelation: {relation}\nSubject: {subject}")
         if obj and relation and subject:
             self.opql_memory.set(obj, relation, subject)
@@ -60,7 +86,8 @@ class PredicateMemory:
                 return
             # Marking the query as satisfied
             for idx, q in enumerate(attention_doc["queries"]):
-                if q == query:
+                print(f"{q} == {query}")
+                if q["query"] == query["query"]:
                     print("That's satisfaction baby")
                     attention_doc["satisfied"][idx] = True
                     break
@@ -109,7 +136,7 @@ class EntityLinker:
     
     def link_relations(self, text):
         entities = self.link_entities(text)
-        
+        print(entities)
         # replace first two entities in the text with special tokens
         if len(entities) >= 2:
             modified_text = text.replace(entities[0][0], "[ENT] [R1]", 1)

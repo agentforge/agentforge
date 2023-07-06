@@ -6,6 +6,10 @@ class Respond:
         self.service = interface_interactor.get_interface("llm")
 
     def execute(self, context: Dict[str, Any]) -> Dict[str, Any]:
+        ### Another subroutine gotchu dawg, bail
+        if "response" in context:
+            return context
+
         input = {
             "prompt": context['input']['prompt'],
             "generation_config": context['model_profile']['generation_config'],
