@@ -8,8 +8,6 @@ import time
 from typing import List
 import uuid
 from agentforge.utils import Parser
-from agentforge.ai.cognition.opql import PredicateMemory
-from agentforge.ai.cognition.query_engine import QueryEngine
 # import openai
 
 FAST_DOWNWARD_ALIAS = "lama"
@@ -65,8 +63,6 @@ class PlanningController:
         # Initialize the planner
         self.planner = Planner(llm)
 
-        self.predicate_memory = PredicateMemory()
-
     ### This function maps the contraints of a planning domain, goes through a list of possible goal-states, and
     ### identifies necessary initialization state.
 
@@ -79,9 +75,8 @@ class PlanningController:
         ## If there are no existing queries to be processed, we check the state
         ## of the domain for this plan, if there are no queries to be parsed and all state is satisfied
         ## then we kickoff the planner
-        query_engine = QueryEngine(input['user_id'], input['session_id'])
-        prepped_queries = query_engine.get_queries()
         
+        # prepped_queries = query_engine.get_queries()
         # for query in prepped_queries:
         #     if "satisfied" in query and query["satisfied"]:
         #         next
@@ -91,9 +86,9 @@ class PlanningController:
         #     self.done = True
         #     queries = self.domain.get_queries()
 
-        if len(queries) == 0 and len(prepped_queries) == 0:
-            print("STEP: Running plan ")
-            # return llm_ic_pddl_planner(self.config, self.planner, self.domain, input) # TODO: Refactor to use our input
+        # if len(queries) == 0 and len(prepped_queries) == 0:
+        #     print("STEP: Running plan ")
+        return llm_ic_pddl_planner(self.config, self.planner, self.domain, input) # TODO: Refactor to use our input
 
         # Else queye up the queries for us here
         for query in queries:
@@ -107,7 +102,8 @@ class DomainBuilder:
     def add_task(self, domain_name: str, nl: str, pddl: str):
         task_key = f"{domain_name}/{str(uuid.uuid1())}"
         task_data = {"domain": domain_name, "nl": nl, "pddl": pddl}
-        self.db.set(collection="tasks", key=task_key, data=task_data)
+        self.db.sself.planner.domainata = {"nl": nl, "pddl": pddl, "sol": sol}
+        self.db.set(collection="contexts", key=domain_name, data=context_data)
 
     def set_context(self, domain_name: str, nl: str, pddl: str, sol: str):
         context_data = {"nl": nl, "pddl": pddl, "sol": sol}
@@ -202,21 +198,22 @@ class Domain:
             return None, None, None
 
     def get_queries(self):
-        try:
-            domain_data = self.db.get(collection="domains", key=self.name)
-            
-            # Check if domain_data is a dictionary
-            if not isinstance(domain_data, dict):
-                print(f"Error: Expected a dictionary, but got {type(domain_data)}.")
-                return None
-            
-            # Extract and post-process data
-            domain_queries = domain_data.get("queries", "")
-            return self.postprocess(domain_queries)
+        # try:
+        domain_data = self.db.get(collection="domains", key=self.name)
         
-        except Exception as e:
-            print(f"An error occurred while getting domain queries: {e}")
+        # Check if domain_data is a dictionary
+        if not isinstance(domain_data, dict):
+            print(f"Error: Expected a dictionary, but got {type(domain_data)}.")
             return None
+        
+        # Extract and post-process data
+        print(domain_data)
+        domain_queries = domain_data.get("queries", [])
+        return domain_queries
+        
+        # except Exception as e:
+        #     print(f"An error occurred while getting domain queries: {e}")
+        #     return None
 
     def get_domain_pddl(self):
         try:

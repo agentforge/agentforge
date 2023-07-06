@@ -9,7 +9,7 @@ from agentforge.ai.subroutines.remember import Remember
 from agentforge.ai.subroutines.recall import Recall
 from agentforge.ai.routines.routine import Routine
 from agentforge.ai.subroutines.prep import Prep
-from agentforge.ai.subroutines.plan import Plan, EnsurePlan
+from agentforge.ai.subroutines.plan import Plan
 from agentforge.ai.subroutines.intent import Intent
 from agentforge.ai.subroutines.query import Query, Learn
 
@@ -17,8 +17,8 @@ from agentforge.ai.subroutines.query import Query, Learn
 class ReactiveRoutine(Routine):
     def __init__(self):
         super().__init__("reactive")
-        self.subroutines = [Recall(), Parse(), Intent(), Prep()] #, Respond(), Remember(), Speak(), Lipsync(), Prep()]
-
+        self.subroutines = [Recall(), Parse(), Intent(), Prep()]#, Respond(), Remember(), Speak(), Lipsync(), Prep()]
+    
 ### FLOWS: These routines have descriptions and thus can be referenced for our guardrails system
 ### i.e. if user query is similar to this desciption we will ask the user if they want to engage in this routine
 ### for instance when we are generating user intent

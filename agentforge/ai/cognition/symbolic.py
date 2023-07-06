@@ -1,19 +1,20 @@
 import torch
 import numpy as np
+from datetime import datetime, timedelta
 from transformers import pipeline, BertTokenizer, BertModel
+from typing import List
 
-
-### The OPQL memory is a key-value memory. Keys are computed from embeddings of the topic
-## entity, e.g. On the Origin of Species, looked up from the entity embedding table, and relation embeddings from the pretrained relation
-## encoder. Values are embeddings of target entities. The memory is constructed from any entity-linked text corpus, e.g. Wikipedia.
-
+### Wrapper for OPQLMemory, allows the agent to learn and query from our symbolic memory
 class PredicateMemory:
-    def __init__(self) -> None:
+    def __init__(self, db) -> None:
         self.entity_linker = EntityLinker()
         self.opql_memory = OPQLMemory()
+        self.db = db
+        # TODO: Move to env
+        self.ATTENTION_TTL_DAYS = 7 # The TTL for attention documents is set to 7 days
 
     def learn(self, query):
-        print("Learning...", query['query'], query['response'])
+        print("Learning...", query)
         obj, relation, subject = self.entity_linker.link_relations(query['query'])
         print(f"Object: {obj}\nRelation: {relation}\nSubject: {subject}")
         if obj and relation and subject:
@@ -33,6 +34,69 @@ class PredicateMemory:
         for key, value, score in most_similar:
             print("Key:", key, "Value:", value, "Score:", score)
 
+    ### When you need to acquire some information, let's apply some attention to the situation
+    ### so we can remember what we have learned and what we still need to learn
+    def create_attention(self, queries: List[str], key: str) -> None:
+        # Creating an attention document with queries and timestamp
+        if queries is not None and len(queries) > 0:
+            attention_doc = {
+                "queries": queries,
+                "satisfied": [False] * len(queries),
+                "timestamp": datetime.utcnow().isoformat()
+            }
+            self.db.create("attention", key, attention_doc)
+        else:
+            raise ValueError(f"Attempted to create attention with queries {queries}")
+
+    def satisfy_attention(self, query: str, key: str) -> None:
+        # Fetching the attention document
+        attention_doc = self.db.get("attention", key)
+        if attention_doc:
+            # Checking the TTL
+            timestamp = datetime.fromisoformat(attention_doc["timestamp"])
+            if datetime.utcnow() - timestamp > timedelta(days=self.ATTENTION_TTL_DAYS):
+                # Deleting expired attention document
+                self.db.delete("attention", key)
+                return
+            # Marking the query as satisfied
+            for idx, q in enumerate(attention_doc["queries"]):
+                if q == query:
+                    print("That's satisfaction baby")
+                    attention_doc["satisfied"][idx] = True
+                    break
+            # Updating the attention document
+            self.db.set("attention", key, attention_doc)
+
+    def attention_satisfied(self, key: str) -> bool:
+        # Fetching the attention document
+        attention_doc = self.db.get("attention", key)
+        if attention_doc:
+            # Checking the TTL
+            timestamp = datetime.fromisoformat(attention_doc["timestamp"])
+            if datetime.utcnow() - timestamp > timedelta(days=self.ATTENTION_TTL_DAYS):
+                # Deleting expired attention document
+                self.db.delete("attention", key)
+                return False
+            # Checking if all queries are satisfied
+            return all(attention_doc["satisfied"])
+        return False
+    
+    def attention_exists(self, key: str) -> bool:
+        # Fetching the attention document
+        attention_doc = self.db.get("attention", key)
+        if attention_doc:
+            # Checking the TTL
+            timestamp = datetime.fromisoformat(attention_doc["timestamp"])
+            if datetime.utcnow() - timestamp > timedelta(days=self.ATTENTION_TTL_DAYS):
+                # Deleting expired attention document
+                self.db.delete("attention", key)
+                return False
+            # Return true
+            return True
+        return False
+
+### Uses Named Entity Recognition to map entities to subject and objects
+### TODO: Needs some work to evaluate results and improve them
 class EntityLinker:
     def __init__(self):
         self.nlp = pipeline("ner", model="dbmdz/bert-large-cased-finetuned-conll03-english", aggregation_strategy="simple")
@@ -54,6 +118,10 @@ class EntityLinker:
             return entities[0][0], modified_text, entities[1][0]
         else:
             return None, None, None
+
+### The OPQL memory is a key-value memory. Keys are computed from embeddings of the topic
+## entity, e.g. On the Origin of Species, looked up from the entity embedding table, and relation embeddings from the pretrained relation
+## encoder. Values are embeddings of target entities. The memory is constructed from any entity-linked text corpus, e.g. Wikipedia.
 
 class OPQLMemory:
     def __init__(self):
