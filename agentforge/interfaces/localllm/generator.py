@@ -86,6 +86,11 @@ class LocalGenerator:
       score = score.cpu().numpy()
       logging.info(f"| {tok:5d} | {tokenizer.decode([tok]):8s} | {score:.3f} | {np.exp(score):.2%} |")
 
+  def valid_token(self, token_str, gen_config):
+    if token_str in gen_config and gen_config[token_str] != None and gen_config[token_str] != "":
+      return True
+    return False
+
   # Generates a response given a prompt
   def generate(self, prompt, model, tokenizer, streamer, **kwargs):
     # Set model arguments from generation config.
@@ -100,27 +105,30 @@ class LocalGenerator:
     if "eos_token_id" in model_config:
       print("eos_token_id set...")
       gen_config["eos_token_id"] = model_config["eos_token_id"]
-    elif "eos_token" in model_config:
+    elif self.valid_token("eos_token", model_config):
       gen_config["eos_token_id"] = tokenizer.encode(model_config["eos_token"])[0]
     else:
       gen_config["eos_token_id"] = config.eos_token_id
 
-    if "bos_token" in model_config:
+    if self.valid_token("bos_token", model_config):
       gen_config["bos_token_id"] = tokenizer.encode(model_config["bos_token"])[0]
     else:
       gen_config["bos_token_id"] = config.bos_token_id
     
-    if "pad_token" in model_config:
+    if self.valid_token("pad_token", model_config):
       gen_config["pad_token_id"] = tokenizer.encode(model_config["pad_token"])[0]
     else:
       gen_config["pad_token_id"] = config.pad_token_id
 
     gen_config = {k: v for k, v in gen_config.items() if v is not None and v != ""}
 
-    stops = [tokenizer.encode(i.strip()) for i in gen_config["stopping_criteria"].split(",")]
-    stop = StopOnTokens(stops)
-    stopping_criteria = StoppingCriteriaList([stop])
-    gen_config["stopping_criteria"] = stopping_criteria
+    if "stopping_criteria" in gen_config:
+      stops = [tokenizer.encode(i.strip()) for i in gen_config["stopping_criteria"].split(",")]
+      stop = StopOnTokens(stops)
+      stopping_criteria = StoppingCriteriaList([stop])
+      gen_config["stopping_criteria"] = stopping_criteria
+    else:
+      stopping_criteria = None
     
     with torch.autocast("cuda"):
       inputs = tokenizer(prompt, return_tensors="pt")
@@ -140,11 +148,13 @@ class LocalGenerator:
               'input_ids': input_ids,
               'generation_config': generation_config,
               'return_dict_in_generate': True,
-              'stopping_criteria': stopping_criteria,
-              # 'attention_mask': torch.ones_like(input_ids),
+              'attention_mask': torch.ones_like(input_ids),
           }
 
-          logging.info(f"Rendering with {json.dumps(final_kwargs, indent=4, default=convert_to_serializable)}")
+          if stopping_criteria != None:
+            final_kwargs['stopping_criteria'] = stopping_criteria
+
+          logging.info(f"Rendering with {json.dumps(generation_config, indent=4, default=convert_to_serializable)}")
           if streamer != None:
             final_kwargs['streamer'] = streamer
           with self.lock:
@@ -156,44 +166,6 @@ class LocalGenerator:
       logging.info(f"Execution time: {execution_time:.6f} seconds")
       s = generation_output.sequences[0]
       output = tokenizer.decode(s)
+      logging.info(f"Output: {output}")
       return output
  
-  def dolly(self, prompt, model, tokenizer, _, gc_name=None, **kwargs) -> str:
-    kwargs = self.prep_generation_config(gc_name)
-    generation_config = GenerationConfig(
-        **kwargs,
-    )
-
-    kwargs["output_attentions"] = False
-    kwargs["output_hidden_states"] = False
-    kwargs["use_cache"] = True # config.use_cache
-
-    end_key_token_id = tokenizer.encode("### End")[0]
-    pad_token_id = tokenizer.pad_token_id
-    eos_token_id = end_key_token_id
-
-    input = tokenizer(prompt, return_tensors="pt").input_ids.to("cuda")
-
-    if self.multi_gpu:
-      gen = model.module.generate
-    else:
-      gen = model.generate
-
-    outputs = gen(
-        input,
-        pad_token_id=pad_token_id,
-        eos_token_id=eos_token_id,
-        max_new_tokens=self.max_new_tokens,
-        generation_config=generation_config,
-    )
-
-    response = tokenizer.decode(outputs[0], skip_special_tokens=True)
-    fixed_prompt = prompt.replace("### Instruction:", "").replace("### Response:", "")
-    response = response.replace(fixed_prompt, "")
-    response = response.strip()
-    end = "### End"  # the output seems to contain lots of ### End of ...
-    if end in response:
-      response = response[:response.index(end)].strip()
-    if "A: " in response: # GPT loves to add A: with random nonsense
-      response = response[:response.index("A: ")].strip() 
-    return response
