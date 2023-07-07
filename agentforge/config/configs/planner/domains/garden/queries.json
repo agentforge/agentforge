@@ -1,18 +1,21 @@
 {
   "queries": [
     {
+      "id": "plant",
       "query": "What kind of plants do you want to grow?",
+      "relation": "[ENT] [R1] wants to grow [ENT] [R2]",
       "type": "string",
       "effect": [
         {
-          "val":"(growing [MASK])",
+          "val":"(growing [R2])",
           "type": "goal"
         }
       ]
-      
     },
     {
+      "id": "plot",
       "query": "Do you have a plot available to you?",
+      "relation": "[ENT] [R1] has a [ENT] [R2]",
       "type": "boolean",
       "effect": [
         {
@@ -30,7 +33,9 @@
       ]
     },
     {
+      "id": "container",
       "query": "Do you have containers for growing plants?",
+      "relation": "[REL] [ENT1] has a [REL] [ENT2]",
       "type": "boolean",
       "effect": [
         {

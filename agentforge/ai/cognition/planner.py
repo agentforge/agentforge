@@ -119,8 +119,25 @@ class DomainBuilder:
         domain_data["nl"] = nl
         self.db.set(collection="domains", key=domain_name, data=domain_data)
     
-    def set_queries(self, domain_name: str, queries: dict):
+    def set_queries(self, domain_name: str, queries: list, folder_path: str):
+        # Fetch existing domain data from the database
         domain_data = self.db.get(collection="domains", key=domain_name) or {}
+
+        # Iterate through each query in the list
+        for query in queries:
+            # Extract the id value from the query
+            id = query.get("id")
+            file_path = os.path.join(folder_path, f"{id}.prompt")
+            if os.path.exists(file_path):
+                # Read the file and extract the text
+                with open(file_path, 'r') as file:
+                    prompt_text = file.read()
+
+                # Assign the text to the 'prompt' key in the query
+                query["prompt"] = prompt_text
+            else:
+                print(f"File not found: {file_path}")
+
         domain_data["queries"] = queries
         self.db.set(collection="domains", key=domain_name, data=domain_data)
 
@@ -152,7 +169,7 @@ class DomainBuilder:
             if os.path.isfile(query_file_path):
                 with open(query_file_path, 'r') as query_file:
                     query = json.loads(query_file.read())
-                    self.set_queries(domain_name=domain_name, queries=query["queries"])
+                    self.set_queries(domain_name=domain_name, queries=query["queries"], folder_path=folder_path)
             else:
                 print(f"Error: Query file (queries.json) is missing in {folder_path}")
 
