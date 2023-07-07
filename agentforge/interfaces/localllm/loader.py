@@ -6,6 +6,9 @@ import importlib
 
 def import_transformer_model_class(class_name):
     # Try to import the model class dynamically and return the model
+    if class_name == "XgenTokenizer":
+        transformers_module = importlib.import_module("agentforge.interfaces.localllm.lib.xgentokenizer")
+        return getattr(transformers_module, class_name)
     try:
         transformers_module = importlib.import_module("transformers")
         return getattr(transformers_module, class_name)
