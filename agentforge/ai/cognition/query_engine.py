@@ -18,7 +18,7 @@ class QueryEngine:
         # Check if the document already exists
         existing_doc = self.db.get("queries", key)
         if existing_doc:
-            raise ValueError(f"A document with key {key} already exists")
+            self.db.set("queries", key, {'queue': queries})
         else:
             # Create a new document with user_id and session_id at the root level
             queue_obj = {'user_id': self.user_id, 'session_id': self.session_id, 'queue': queries}

@@ -8,6 +8,7 @@ import time
 from typing import List
 import uuid
 from agentforge.utils import Parser
+from agentforge.interfaces import interface_interactor
 # import openai
 
 FAST_DOWNWARD_ALIAS = "lama"
@@ -45,9 +46,11 @@ class PlanningControllerConfig:
         self.print_prompts = get_arg("print_prompts", default_value=False)
 
 class PlanningController:
-    def __init__(self, llm, db, input_values: dict = {}):
+    def __init__(self, input_values: dict = {}):
         # for testing
         self.done= False
+        self.llm = interface_interactor.get_interface("llm")
+        self.db = interface_interactor.get_interface("db")
         # llm is a service that exposes a call method taking a single dictionary of inputs
         
         # Create a PlanningControllerConfig object
@@ -58,10 +61,10 @@ class PlanningController:
         self.config.task = 0
 
         # Initialize problem domain
-        self.domain = Domain(db, self.config.domain)
+        self.domain = Domain(self.db, self.config.domain)
 
         # Initialize the planner
-        self.planner = Planner(llm)
+        self.planner = Planner(self.llm)
 
     ### This function maps the contraints of a planning domain, goes through a list of possible goal-states, and
     ### identifies necessary initialization state.
@@ -71,28 +74,47 @@ class PlanningController:
     ### How is the world-state currently initialized?
     ### What are your goals for this plan?
   
-    def execute(self, input):        
-        ## If there are no existing queries to be processed, we check the state
-        ## of the domain for this plan, if there are no queries to be parsed and all state is satisfied
-        ## then we kickoff the planner
-        
-        # prepped_queries = query_engine.get_queries()
-        # for query in prepped_queries:
-        #     if "satisfied" in query and query["satisfied"]:
-        #         next
-        #     else:
+    def execute(self, input, attention):
 
-        # else:
-        #     self.done = True
-        #     queries = self.domain.get_queries()
+        # Grab a standard plan template
+        plan_template = """
+            (define (problem garden-enhanced-problem)
+                (:domain garden)
+                (:objects 
+                    {objects}
+                )
+                (:init 
+                    {init}
+                )
+                (:goal
+                (and
+                    {goals}
+                )))
+        """      
 
-        # if len(queries) == 0 and len(prepped_queries) == 0:
-        #     print("STEP: Running plan ")
-        return llm_ic_pddl_planner(self.config, self.planner, self.domain, input) # TODO: Refactor to use our input
-
-        # Else queye up the queries for us here
+        ### Attention has been satisfied and we need to construct a plan for this domain
+        ### using the PredicateMemory Attention. When we are done and have a relevant plan
+        ### we can abandon out current attention focus.
+        init = []
+        goals = []
+        objects = []
+        queries = attention['queries']
         for query in queries:
-            query_engine.push_query(query=query)
+            for effect in query["effect"]:
+                for result in query["results"]: # for each result we gathered for goals
+                    if effect["type"] == "goal":
+                        goals.append(effect["val"].replace("{val}", result))
+                    elif effect["type"] == "object":
+                        objects.append(effect["val"].replace("{val}", result))
+                    elif effect["type"] == "init":
+                        init.append(effect["val"].replace("{val}", result))
+
+        plan_template = plan_template.replace("{objects}", "\n".join(objects))
+        plan_template = plan_template.replace("{init}", "\n".join(init))
+        plan_template = plan_template.replace("{goals}", "\n".join(goals))
+
+        ### Once the problem plan has been generated let's run the planning algorithms
+        return llm_ic_pddl_planner(self.config, self.planner, self.domain, input, plan_template) # TODO: Refactor to use our input
 
 ### Helper class to build domains in the Database
 class DomainBuilder:
@@ -224,7 +246,6 @@ class Domain:
             return None
         
         # Extract and post-process data
-        print(domain_data)
         domain_queries = domain_data.get("queries", [])
         return domain_queries
         
@@ -348,7 +369,6 @@ class Planner:
         # Example Usage
         s = "Here is some text (I want (only this) part) and this is not needed."
         result = self.extract_outermost_parentheses(s)
-        print(result)  # Output: "I want (only this) part"
 
     def query(self, prompt_text, input):
         result_text = "()"
@@ -361,7 +381,6 @@ class Planner:
         result_text = response['choices'][0]['text']
         result_text = result_text.replace(request['prompt'], "")
         result_text = self.extract_outermost_parentheses(result_text)
-        print(result_text)
         return result_text
 
     def parse_result(self, pddl_string):
@@ -395,7 +414,7 @@ class Planner:
         res = self.query(prompt, input).strip() + "\n"
         return res
 
-def llm_ic_pddl_planner(args, planner, domain, input):
+def llm_ic_pddl_planner(args, planner, domain, input, task_pddl_):
     parser = Parser()
     context = domain.get_context()
     domain_pddl = domain.get_domain_pddl()
@@ -412,20 +431,14 @@ def llm_ic_pddl_planner(args, planner, domain, input):
 
     # A. generate problem pddl file
     task_suffix = "domain.task_suffix"
-    task_nl = input # TODO: We need to pull information from the user and convert it into NL plan
+    # task_nl = input # TODO: We need to pull information from the user and convert it into NL plan
     task_nl = """
-        You have a garden with 2 plots, a watering can, a packet of tomato seeds,
-        a packet of carrot seeds, fertilizer, and a shovel.
-
-        Initially the watering can is empty, and all plots are unplanted and dry.
-
-        Your goal is to have tomatoes growing in plot1 and carrots growing in plot2.
-        Use only the syntax in the PDDL domain above.
+        Your goal is to help the user plan a garden given the PDDL problem and domain.
     """
-    task_nl = parser.format_template(input['prompt']['prompt_template'], instruction=task_nl)
-    prompt = planner.create_llm_ic_pddl_prompt(task_nl, domain_pddl, context)
-    raw_result = planner.query(prompt, input)
-    task_pddl_ = planner.parse_result(raw_result)
+    # task_nl = parser.format_template(input['prompt']['prompt_template'], instruction=task_nl)
+    # prompt = planner.create_llm_ic_pddl_prompt(task_nl, domain_pddl, context)
+    # raw_result = planner.query(prompt, input)
+    # task_pddl_ = planner.parse_result(raw_result)
 
     # File names for the fast downward call
     plan_file_name = f"/tmp/plan_{args.task}"
@@ -442,7 +455,8 @@ def llm_ic_pddl_planner(args, planner, domain, input):
               f"--search-time-limit {args.time_limit} --plan-file {plan_file_name} " + \
               f"--sas-file {sas_file_name} " + \
               f"{domain_pddl_file_path} {task_pddl_file_name}"
-    os.system(func_call)
+    print(func_call)
+    # os.system(func_call)
 
     # D. collect the least cost plan
     best_cost = 1e10
@@ -464,5 +478,7 @@ def llm_ic_pddl_planner(args, planner, domain, input):
     end_time = time.time()
     if best_plan:
         print(f"[info] task {task} takes {end_time - start_time} sec, found a plan with cost {best_cost}")
+        return plans_nl
     else:
         print(f"[info] task {task} takes {end_time - start_time} sec, no solution found")
+        return "No plan found."

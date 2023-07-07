@@ -8,10 +8,8 @@ from agentforge.ai.cognition.symbolic import PredicateMemory
 class Plan:
     ### Executes PDDL plans with help from LLM resource
     def __init__(self):
-        self.service = interface_interactor.get_interface("llm")
-        self.db = interface_interactor.get_interface("db")
-        self.planner = PlanningController(self.service, self.db)
-        self.predicate_memory = PredicateMemory(self.service, self.db)
+        self.planner = PlanningController()
+        self.predicate_memory = PredicateMemory()
 
     def execute(self, context: Dict[str, Any]) -> Dict[str, Any]:
         input = {
@@ -33,14 +31,15 @@ class Plan:
             # raise Exception(context["input"]["original_prompt"])
             query["response"] = context["input"]["original_prompt"]
             print("I'm learning...")
-            self.predicate_memory.learn(query, context) # TODO: I doubt the user formats the response correctly, we should rely on the LLM here
-            self.predicate_memory.satisfy_attention(query, key)
-            query_engine.pop_query()
+            learned, results = self.predicate_memory.learn(query, context) # TODO: I doubt the user formats the response correctly, we should rely on the LLM here
+            if learned:
+                self.predicate_memory.satisfy_attention(key, query, results)
+                query_engine.pop_query()
 
         # If the predicate memory attention is satisfied kick off the plan
         if self.predicate_memory.attention_satisfied(key):
             print("attention satisfied...")
-            response = self.planner.execute(input)
+            response = self.planner.execute(input, self.predicate_memory.get_attention(key))
             context["response"] = response
             return context
 
@@ -57,7 +56,7 @@ class Plan:
         # Iterate through unsent queries and send the latest
         for query in queries:
           if query is not None:
-              print("asking ", query)
+              print("asking a query", query['query'])
               query_engine.update_query(sent=True)
               context["response"] = query['query']
               # Return new context to the user w/ response

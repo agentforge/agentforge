@@ -1,10 +1,10 @@
 (define (domain garden)
 
-  (:requirements :strips :typing)
+  (:requirements :strips :typing :negative-preconditions)
 
   (:types
     plant seed plot container tool
-    plot container - location
+    plot container water-container - location
     fertilizer - object
   )
 
@@ -18,10 +18,11 @@
     (watered-plot ?p - plot)
     (matured ?plant - plant)
     (alive ?plant - plant)
-    (growing ?p - plot ?plant - plant)
-    (tool-available ?t - tool)
+    (growing ?plant - plant)
+    (digging-tool-available ?t - tool)
     (seed-available ?s - seed)
     (fertilizer-available ?f - fertilizer)
+    (water-container-available ?c - water-container)
     (container-available ?c - container)
     (empty ?c - container)
     (dry ?p - plot)
@@ -30,29 +31,44 @@
     (plant-in-container ?plant - plant ?c - container)
   )
 
+  (:action get-fertilizer
+    :parameters (?f - fertilizer)
+    :precondition (not (fertilizer-available ?f))
+    :effect (fertilizer-available ?f))
+
+  (:action get-digging-tool
+    :parameters (?t - tool)
+    :precondition (not (digging-tool-available ?t))
+    :effect (digging-tool-available ?t))
+
   (:action dig-plot
     :parameters (?p - plot ?t - tool)
-    :precondition (and (tool-available ?t) (unplanted ?p) (dry ?p))
+    :precondition (and (digging-tool-available ?t) (unplanted ?p) (dry ?p))
     :effect (plot-dug ?p))
 
   (:action water-plot
     :parameters (?t - tool ?c - container ?p - plot)
-    :precondition (and (plot-dug ?p) (tool-available ?t) (container-available ?c) (not (empty ?c)))
-    :effect (and (watered ?p) (watered-plot ?p) (empty ?c)))
+    :precondition (and (plot-dug ?p) (water-container-available ?c))
+    :effect (and (watered-plot ?p) (empty ?c)))
 
   (:action apply-fertilizer
     :parameters (?p - plot ?f - fertilizer)
     :precondition (and (plot-dug ?p) (fertilizer-available ?f))
     :effect (plot-fertilized ?p))
 
+  (:action get-seeds
+    :parameters (?s - seed ?p - plot ?plant - plant)
+    :precondition (and (not (seed-available ?s)) (has-seed-type ?s ?plant))
+    :effect (seed-available ?s))
+
   (:action plant-seeds
     :parameters (?s - seed ?p - plot ?plant - plant)
     :precondition (and (seed-available ?s) (plot-dug ?p) (plot-fertilized ?p) (has-seed-type ?s ?plant))
-    :effect (and (seed-in-plot ?s ?p) (growing ?p ?plant)))
+    :effect (and (seed-in-plot ?s ?p) (growing ?plant)))
 
   (:action fill-watering-can
     :parameters (?c - container)
-    :precondition (and (container-available ?c) (empty ?c))
+    :precondition (and (water-container-available ?c) (empty ?c))
     :effect (not (empty ?c)))
 
   (:action harvest
@@ -66,7 +82,7 @@
     :effect (and (not (plant-in-plot ?plant ?p)) (plant-in-container ?plant ?c)))
 
   (:action move-to-plot
-    :parameters (?plant - plant ?c - container ?p - plot)
-    :precondition (and (plant-in-container ?plant ?c) (plot-dug ?p))
-    :effect (and (not (plant-in-container ?plant ?c)) (plant-in-plot ?plant ?p) (growing ?p ?plant)))
+    :parameters (?plant - plant ?p - plot)
+    :precondition (plot-dug ?p)
+    :effect (and (plant-in-plot ?plant ?p) (growing ?plant)))
 )

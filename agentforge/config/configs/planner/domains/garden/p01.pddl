@@ -1,5 +1,5 @@
 (define (problem garden-enhanced-problem)
- (:domain gardening)
+ (:domain garden)
  (:objects 
       plotA plotB plotC - plot
       cucumber-seeds pepper-seeds sunflower-seeds - seeds

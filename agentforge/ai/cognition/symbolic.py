@@ -3,14 +3,33 @@ import numpy as np
 from datetime import datetime, timedelta
 from transformers import pipeline, BertTokenizer, BertModel
 from typing import List
+from agentforge.interfaces import interface_interactor
+from functools import wraps
+
+def check_ttl(func):
+    @wraps(func)
+    def wrapper(self, key, *args, **kwargs):
+        # Fetching the attention document
+        attention_doc = self.db.get("attention", key)
+        if attention_doc:
+            # Checking the TTL
+            timestamp = datetime.fromisoformat(attention_doc["timestamp"])
+            if datetime.utcnow() - timestamp > timedelta(days=self.ATTENTION_TTL_DAYS):
+                # Deleting expired attention document
+                self.db.delete("attention", key)
+                return None
+            return func(self, attention_doc, key, *args, **kwargs)
+        return None
+    return wrapper
 
 ### Wrapper for OPQLMemory, allows the agent to learn and query from our symbolic memory
 class PredicateMemory:
-    def __init__(self, llm, db) -> None:
+    def __init__(self) -> None:
         self.entity_linker = EntityLinker()
         self.opql_memory = OPQLMemory()
-        self.db = db
-        self.llm = llm
+        self.bs_filter = OPQLMemory() # Our bullshit filter stores negations, i.e. the earth is not flat.
+        self.llm = interface_interactor.get_interface("llm")
+        self.db = interface_interactor.get_interface("db")
         # TODO: Move to env
         self.ATTENTION_TTL_DAYS = 7 # The TTL for attention documents is set to 7 days
 
@@ -24,18 +43,39 @@ class PredicateMemory:
         response = self.llm.call(input)
         if response is not None and "choices" in response:
             response = response["choices"][0]["text"]
-            print(response)
             response = response.replace(input['prompt'], "")
+            for tok in ["eos_token", "bos_token"]:
+                if tok in input["model_config"]:
+                    response = response.replace(input["model_config"][tok],"")
             return response.split(",")
         return []
 
+    # Given a query (w/response) and context we learn an object, predicate, subject triplet
+    # Returns: True/False + results if information was successfully learned or not
     def learn(self, query, context):
-        subjects = self.classify(query['query'], query['response'], query['prompt'], context)
-        for subject in subjects:
-            self.create_predicate("User",query["relation"], subject) # TODO: Need to pull user name
+        results = self.classify(query['query'], query['response'], query['prompt'], context)
+        if len(results) == 0:
+            print("Error with classification. See logs.")
+            return False, []
+        # For string types the results fo classification are a List[str] corresponding to the subject
+        if query['type'] == "string":
+            for subject in results:
+                self.create_predicate("User", query["relation"], subject) # TODO: Need to pull user name
+            return True, results
+        # For Boolean the results are True, False, or None. Subject is capture in query context.
+        elif query['type'] == "boolean":
+            if results[0].lower() in  ["true", "yes", "1"]:
+                self.create_predicate("User", query["relation"], query["subject"]) # TODO: Need to pull user name
+                return True, results
+            elif results[0].lower() in  ["false", "no", "0"]:
+                self.create_negation("User", query["relation"], query["subject"]) # TODO: Need to pull user name
+                return True, results
+            else:
+                return False, []
+        return False, []
 
     # Unguided entity learner using old-school NLP techniques
-    # Problematic!
+    # Problematic! -- We need to use few-shot CoT LLMs for greater depth of reasoning.
     def entity_learn(self, query):
         print("Learning...", query)
         obj, relation, subject = self.entity_linker.link_relations(query['query'])
@@ -45,6 +85,14 @@ class PredicateMemory:
         print(f"Object: {obj}\nRelation: {relation}\nSubject: {subject}")
         if obj and relation and subject:
             self.opql_memory.set(obj, relation, subject)
+            return {"success": True}
+        else:
+            return {"success": False, "message": f"Text is not a valid Object<{obj}>/Relation<{relation}>/Subject<{subject}>, please try again."}
+
+    def create_negation(self, obj, relation, subject):
+        print(f"Object: {obj}\nRelation: {relation}\nSubject: {subject}")
+        if obj and relation and subject:
+            self.bs_filter.set(obj, relation, subject)
             return {"success": True}
         else:
             return {"success": False, "message": f"Text is not a valid Object<{obj}>/Relation<{relation}>/Subject<{subject}>, please try again."}
@@ -74,53 +122,34 @@ class PredicateMemory:
         else:
             raise ValueError(f"Attempted to create attention with queries {queries}")
 
-    def satisfy_attention(self, query: str, key: str) -> None:
+    @check_ttl
+    def satisfy_attention(self, attention_doc, key: str, query: str, results: List[str]) -> None:
         # Fetching the attention document
         attention_doc = self.db.get("attention", key)
-        if attention_doc:
-            # Checking the TTL
-            timestamp = datetime.fromisoformat(attention_doc["timestamp"])
-            if datetime.utcnow() - timestamp > timedelta(days=self.ATTENTION_TTL_DAYS):
-                # Deleting expired attention document
-                self.db.delete("attention", key)
-                return
-            # Marking the query as satisfied
-            for idx, q in enumerate(attention_doc["queries"]):
-                print(f"{q} == {query}")
-                if q["query"] == query["query"]:
-                    print("That's satisfaction baby")
-                    attention_doc["satisfied"][idx] = True
-                    break
-            # Updating the attention document
-            self.db.set("attention", key, attention_doc)
+        # Marking the query as satisfied
+        for idx, q in enumerate(attention_doc["queries"]):
+            if q["query"] == query["query"]:
+                print("That's satisfaction baby")
+                attention_doc["satisfied"][idx] = True
+                attention_doc["queries"][idx]["results"] = results
+                break
+        # Updating the attention document
+        self.db.set("attention", key, attention_doc)
 
-    def attention_satisfied(self, key: str) -> bool:
+    @check_ttl
+    def attention_satisfied(self, attention_doc, key: str) -> bool:
+        # Checking if all queries are satisfied
+        return all(attention_doc["satisfied"])
+
+    @check_ttl  
+    def get_attention(self, attention_doc, key: str) -> bool:
         # Fetching the attention document
-        attention_doc = self.db.get("attention", key)
-        if attention_doc:
-            # Checking the TTL
-            timestamp = datetime.fromisoformat(attention_doc["timestamp"])
-            if datetime.utcnow() - timestamp > timedelta(days=self.ATTENTION_TTL_DAYS):
-                # Deleting expired attention document
-                self.db.delete("attention", key)
-                return False
-            # Checking if all queries are satisfied
-            return all(attention_doc["satisfied"])
-        return False
-    
-    def attention_exists(self, key: str) -> bool:
+        return attention_doc
+
+    @check_ttl
+    def attention_exists(self, _, key: str) -> bool:
         # Fetching the attention document
-        attention_doc = self.db.get("attention", key)
-        if attention_doc:
-            # Checking the TTL
-            timestamp = datetime.fromisoformat(attention_doc["timestamp"])
-            if datetime.utcnow() - timestamp > timedelta(days=self.ATTENTION_TTL_DAYS):
-                # Deleting expired attention document
-                self.db.delete("attention", key)
-                return False
-            # Return true
-            return True
-        return False
+        return True
 
 ### Uses Named Entity Recognition to map entities to subject and objects
 ### TODO: Needs some work to evaluate results and improve them
@@ -136,7 +165,6 @@ class EntityLinker:
     
     def link_relations(self, text):
         entities = self.link_entities(text)
-        print(entities)
         # replace first two entities in the text with special tokens
         if len(entities) >= 2:
             modified_text = text.replace(entities[0][0], "[ENT] [R1]", 1)

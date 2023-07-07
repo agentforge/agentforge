@@ -1,35 +1,43 @@
-### Instruction: Classify the text into a single or a list of plants.
-### Input: "What kind of plants do you want to grow? I want to grow peaches."
+### Instruction: Classify the text into a yes or no boolean, or None if the question is not answered.  
+### Input: "Do you have a plot available to you?. Sure I have a space in the garden."  
 ### Thought Process:
-1. The instruction asks to classify the text.
-2. The text is about growing plants.
-3. "Peaches" is mentioned as the plant someone wants to grow.
-### Response: peaches
+1. Identify question: "Do you have a plot available to you?".
+2. Identify response: "Sure I have a space in the garden.".
+3. Response indicates affirmation.
+4. Classify as True.
+5. Output is True; aligns with instructions.
+### Response: True
 
-### Instruction: Classify the text into a single or a list of plants.
-### Input: "What kind of plants do you want to grow? Actually let's not"
+### Instruction: Classify the text into a single or a list of plants.  
+### Input: "Do you have a plot available to you?. What is a plot?"  
 ### Thought Process:
-1. The instruction asks to classify the text.
-2. The text is about growing plants.
-3. No specific plant is mentioned.
+1. Identify question: "Do you have a plot available to you?".
+2. Identify response: "What is a plot?".
+3. Response does not provide information about plants.
+4. Classify as None.
+5. Output is None; aligns with instructions.
+### Response: None  
+
+### Instruction: Classify the text into a single or a list of plants.  
+### Input: "Do you have a plot available to you?. No I live in an apartment."  
+### Thought Process:
+1. Identify question: "Do you have a plot available to you?".
+2. Identify response: "No I live in an apartment.".
+3. Response indicates unavailability of a plot.
+4. Classify as False.
+5. Output is False; aligns with instructions.
+### Response: False  
+
+### Instruction: Classify the text into a yes or no boolean, or None if the question is not answered.  
+### Input: "Did you go to the market? I went to the park."  
+### Thought Process for Additional Example:
+1. Identify question: "Did you go to the market?".
+2. Identify response: "I went to the park.".
+3. Response does not answer the question.
+4. Classify as None.
+5. Output is None; aligns with instructions.
 ### Response: None
 
-### Instruction: Classify the text into a single or a list of plants.
-### Input: "What kind of plants do you want to grow? Let's grow beets and okra."
-### Thought Process:
-1. The instruction asks to classify the text.
-2. The text is about growing plants.
-3. "Beets" and "okra" are mentioned as plants someone wants to grow.
-### Response: beets, okra
-
-### Instruction: Classify the text into a single or a list of plants.
-### Input: "What kind of plants do you want to grow? Hold on."
-### Thought Process:
-1. The instruction asks to classify the text.
-2. The text is about growing plants.
-3. No specific plant is mentioned.
-### Response: None
-
-### Instruction: Classify the following into a single or a list of plants. If no plants are specified, return "None".
+### Instruction: Classify the text into a yes or no boolean, or None if the question is not answered.  
 ### Input: {query} {response}
 ### Thought Process:

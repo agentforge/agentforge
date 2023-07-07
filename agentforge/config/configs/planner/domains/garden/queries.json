@@ -7,8 +7,20 @@
       "type": "string",
       "effect": [
         {
-          "val":"(growing [R2])",
+          "val":"(growing {val})",
           "type": "goal"
+        },
+        {
+          "val": "{val} - plant",
+          "type": "object"
+        },
+        {
+          "val": "{val}-seed - seed",
+          "type": "object"
+        },
+        {
+          "val": "(has-seed-type {val}-seed {val})",
+          "type": "init"
         }
       ]
     },
@@ -16,6 +28,7 @@
       "id": "plot",
       "query": "Do you have a plot available to you?",
       "relation": "[ENT] [R1] has a [ENT] [R2]",
+      "subject": "plot",
       "type": "boolean",
       "effect": [
         {
@@ -36,6 +49,7 @@
       "id": "container",
       "query": "Do you have containers for growing plants?",
       "relation": "[REL] [ENT1] has a [REL] [ENT2]",
+      "subject": "container",
       "type": "boolean",
       "effect": [
         {
