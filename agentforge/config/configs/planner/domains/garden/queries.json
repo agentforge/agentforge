@@ -19,7 +19,15 @@
           "type": "object"
         },
         {
+          "val": "{val}-seedling - seedling",
+          "type": "object"
+        },
+        {
           "val": "(has-seed-type {val}-seed {val})",
+          "type": "init"
+        },
+        {
+          "val": "(has-seedling-type {val}-seedling {val})",
           "type": "init"
         }
       ]

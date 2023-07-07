@@ -4,12 +4,14 @@ from agentforge.utils import timer_decorator
 from agentforge.ai.cognition.planner import PlanningController
 from agentforge.ai.cognition.query_engine import QueryEngine
 from agentforge.ai.cognition.symbolic import PredicateMemory
+from agentforge.ai.cognition.flow import FlowManagement
 
 class Plan:
     ### Executes PDDL plans with help from LLM resource
     def __init__(self):
         self.planner = PlanningController()
         self.predicate_memory = PredicateMemory()
+        self.flow_management = FlowManagement()
 
     def execute(self, context: Dict[str, Any]) -> Dict[str, Any]:
         input = {
@@ -21,7 +23,9 @@ class Plan:
         }
 
         query_engine = QueryEngine(context["input"]['user_id'], context["input"]['id'])
-        key = f"{context['input']['user_id']}-{context['input']['id']}-plan-{self.planner.config.domain}"
+        user_id = context['input']['user_id']
+        session_id = context['input']['id']
+        key = f"{user_id}-{session_id}-plan-{self.planner.config.domain}"
 
         # # if query exists and is a response, pop
         sent = query_engine.get_sent_queries()
@@ -32,6 +36,7 @@ class Plan:
             query["response"] = context["input"]["original_prompt"]
             print("I'm learning...")
             learned, results = self.predicate_memory.learn(query, context) # TODO: I doubt the user formats the response correctly, we should rely on the LLM here
+            print(learned, results)
             if learned:
                 self.predicate_memory.satisfy_attention(key, query, results)
                 query_engine.pop_query()
@@ -40,6 +45,7 @@ class Plan:
         if self.predicate_memory.attention_satisfied(key):
             print("attention satisfied...")
             response = self.planner.execute(input, self.predicate_memory.get_attention(key))
+            self.flow_management.update_flow(user_id, session_id, "plan", False)
             context["response"] = response
             return context
 

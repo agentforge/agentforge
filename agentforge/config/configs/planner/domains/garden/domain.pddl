@@ -3,9 +3,9 @@
   (:requirements :strips :typing :negative-preconditions)
 
   (:types
-    plant seed plot container tool
-    plot container water-container - location
-    fertilizer - object
+    plant seed seedling plot container tool fertilizer
+    plot container - location
+    water-container - tool
   )
 
   (:predicates
@@ -21,6 +21,7 @@
     (growing ?plant - plant)
     (digging-tool-available ?t - tool)
     (seed-available ?s - seed)
+    (seedling-available ?seedling - seed)
     (fertilizer-available ?f - fertilizer)
     (water-container-available ?c - water-container)
     (container-available ?c - container)
@@ -28,17 +29,16 @@
     (dry ?p - plot)
     (unplanted ?p - plot)
     (has-seed-type ?s - seed ?plant - plant)
+    (has-seedling-type ?s - seedling ?plant - plant)
     (plant-in-container ?plant - plant ?c - container)
   )
 
   (:action get-fertilizer
     :parameters (?f - fertilizer)
-    :precondition (not (fertilizer-available ?f))
     :effect (fertilizer-available ?f))
 
   (:action get-digging-tool
     :parameters (?t - tool)
-    :precondition (not (digging-tool-available ?t))
     :effect (digging-tool-available ?t))
 
   (:action dig-plot
@@ -58,12 +58,22 @@
 
   (:action get-seeds
     :parameters (?s - seed ?p - plot ?plant - plant)
-    :precondition (and (not (seed-available ?s)) (has-seed-type ?s ?plant))
+    :precondition (and (has-seed-type ?s ?plant))
     :effect (seed-available ?s))
+
+  (:action get-seedling
+    :parameters (?seedling - seedling ?p - plot ?plant - plant)
+    :precondition (and (has-seedling-type ?seedling ?plant))
+    :effect (seedling-available ?s))
 
   (:action plant-seeds
     :parameters (?s - seed ?p - plot ?plant - plant)
-    :precondition (and (seed-available ?s) (plot-dug ?p) (plot-fertilized ?p) (has-seed-type ?s ?plant))
+    :precondition (and (seed-available ?s) (plot-dug ?p) (has-seed-type ?s ?plant))
+    :effect (and (seed-in-plot ?s ?p) (growing ?plant)))
+
+  (:action plant-seedling
+    :parameters (?s - seedling ?p - plot ?plant - plant)
+    :precondition (and (seedling-available ?s) (plot-dug ?p) (plot-fertilized ?p) (has-seedling-type ?s ?plant))
     :effect (and (seed-in-plot ?s ?p) (growing ?plant)))
 
   (:action fill-watering-can
@@ -82,7 +92,7 @@
     :effect (and (not (plant-in-plot ?plant ?p)) (plant-in-container ?plant ?c)))
 
   (:action move-to-plot
-    :parameters (?plant - plant ?p - plot)
+    :parameters (?seedling - seedling ?p - plot)
     :precondition (plot-dug ?p)
-    :effect (and (plant-in-plot ?plant ?p) (growing ?plant)))
+    :effect (and (plant-in-plot ?plant ?p) (growing ?seedling)))
 )

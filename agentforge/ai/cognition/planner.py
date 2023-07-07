@@ -370,7 +370,8 @@ class Planner:
         s = "Here is some text (I want (only this) part) and this is not needed."
         result = self.extract_outermost_parentheses(s)
 
-    def query(self, prompt_text, input):
+    def query(self, prompt_text, input, extract_parens=True):
+        print(prompt_text)
         result_text = "()"
         request = {
             "prompt": prompt_text,
@@ -380,7 +381,8 @@ class Planner:
         response = self.llm.call(request)
         result_text = response['choices'][0]['text']
         result_text = result_text.replace(request['prompt'], "")
-        result_text = self.extract_outermost_parentheses(result_text)
+        if extract_parens:
+            result_text = self.extract_outermost_parentheses(result_text)
         return result_text
 
     def parse_result(self, pddl_string):
@@ -404,14 +406,17 @@ class Planner:
         #print(f"[info] remove comments takes {t1-t0} sec")
         return pddl_string
 
-    def plan_to_language(self, plan, task_nl, domain_nl, domain_pddl, input):
+    def plan_to_language(self, plan, task_nl, domain_nl, domain_pddl, input_):
         domain_pddl_ = " ".join(domain_pddl.split())
         task_nl_ = " ".join(task_nl.split())
-        prompt = f"A planning problem is described as: \n {task_nl} \n" + \
-                 f"The corresponding domain PDDL file is: \n {domain_pddl_} \n" + \
-                 f"The optimal PDDL plan is: \n {plan} \n" + \
-                 f"Transform the PDDL plan into a sequence of behaviors without further explanation."
-        res = self.query(prompt, input).strip() + "\n"
+        prompt = """
+                ### Instruction: Your goal is to help the user plan a garden given the PDDL problem and domain. Format the following into a natural language plan. Here is the plan to translate:"""
+        prompt += f"{plan} ### Response:"
+        # prompt = f"A planning problem is described as: \n {task_nl} \n" + \
+        #          f"The corresponding domain PDDL file is: \n {domain_pddl_} \n" + \
+        #          f"The optimal PDDL plan is: \n {plan} \n" + \
+        #          f"Transform the PDDL plan into a sequence of behaviors without further explanation."
+        res = self.query(prompt, input_, extract_parens=False).strip() + "\n"
         return res
 
 def llm_ic_pddl_planner(args, planner, domain, input, task_pddl_):
@@ -456,7 +461,7 @@ def llm_ic_pddl_planner(args, planner, domain, input, task_pddl_):
               f"--sas-file {sas_file_name} " + \
               f"{domain_pddl_file_path} {task_pddl_file_name}"
     print(func_call)
-    # os.system(func_call)
+    os.system(func_call)
 
     # D. collect the least cost plan
     best_cost = 1e10
@@ -472,7 +477,7 @@ def llm_ic_pddl_planner(args, planner, domain, input, task_pddl_):
     # E. translate the plan back to natural language, and write it to result
     if best_plan:
         plans_nl = planner.plan_to_language(best_plan, task_nl, domain_nl, domain_pddl, input)
-        plan_nl_file_name = f"{PLAN_DIRECTORY}/experiments/run{args.run}/results/llm_ic_pddl/{task_suffix}"
+        plan_nl_file_name = f"/tmp/plan_nl_{args.task}"
         with open(plan_nl_file_name, "w") as f:
             f.write(plans_nl)
     end_time = time.time()
