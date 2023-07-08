@@ -30,6 +30,20 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ id }) =>  {
     }
   }, [isLoading]);
 
+  //Streaming
+  React.useEffect(() => {
+    const eventSource = new EventSource('/api/stream');
+
+    eventSource.onmessage = (event) => {
+      console.log(event.data);  
+      // setData((oldData) => [...oldData, event.data]);
+    };
+
+    return () => {
+        eventSource.close();
+    };
+}, []);
+
   const handleTextAreaChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     setTextAreaValue(event.target.value);
   };
