@@ -103,7 +103,7 @@ class LocalLLM():
         self.text_streamer(streaming),
         **kwargs
     )
-    return self.parser.parse_output(output)
+    return output
 
   def load_model(self, config):
     # Check key and load logic according to key

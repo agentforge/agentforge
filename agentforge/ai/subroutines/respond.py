@@ -1,9 +1,11 @@
 from typing import Any, Dict
 from agentforge.interfaces import interface_interactor
+from agentforge.utils import Parser
 
 class Respond:
     def __init__(self):
         self.service = interface_interactor.get_interface("llm")
+        self.parser = Parser()
 
     def execute(self, context: Dict[str, Any]) -> Dict[str, Any]:
         ### Another subroutine gotchu dawg, bail
@@ -19,4 +21,11 @@ class Respond:
 
         if response is not None and "choices" in response:
             context["response"] = response["choices"][0]["text"]
+
+            ### We want to parse the output here -- this output goes to end user
+            context["response"] = context["response"].replace(context['input']['prompt'], "")
+            context["response"] = self.parser.parse_llm_response(context["response"])
+        
+            print(context["response"])
+
         return context
