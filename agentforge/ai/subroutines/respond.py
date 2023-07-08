@@ -25,7 +25,9 @@ class Respond:
             ### We want to parse the output here -- this output goes to end user
             context["response"] = context["response"].replace(context['input']['prompt'], "")
             context["response"] = self.parser.parse_llm_response(context["response"])
-        
+            for tok in ['eos_token', 'bos_token']:
+                if tok in context['model_profile']['model_config']:
+                    context["response"] = context["response"].replace(context['model_profile']['model_config'][tok], "")
             print(context["response"])
 
         return context

@@ -34,12 +34,20 @@ class DeepLakeVectorStore(VectorStoreProtocol):
 
     def search(self, query: str, n: int = 4, **kwargs) -> Any:
         # Perform your search here and return the result
-        docs = self.deeplake.similarity_search(query, n, **kwargs)
+        try:
+            docs = self.deeplake.similarity_search(query, n, **kwargs)
+        except ValueError as e:
+            # Vectorstore is empty
+            docs = []
         return docs
     
-    def search_with_score(self, query: str, n: int = 4, **kwargs) -> Any:
+    def search_with_score(self, query: str, k: int = 4, distance_metric: str = "cos", **kwargs) -> Any:
         # Perform your search here and return the result
-        docs = self.deeplake.similarity_search(query, n, **kwargs)
+        try:
+            docs = self.deeplake.similarity_search_with_score(query=query, k=k, distance_metric=distance_metric)
+        except ValueError as e:
+            # Vectorstore is empty
+            docs = []
         return docs
 
     def add_texts(self, texts: List[str], metadata: List[Any]) -> None:

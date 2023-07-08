@@ -8,6 +8,7 @@ import time
 from typing import List
 import uuid
 from agentforge.utils import Parser
+from agentforge.interfaces import interface_interactor
 # import openai
 
 FAST_DOWNWARD_ALIAS = "lama"
@@ -45,9 +46,11 @@ class PlanningControllerConfig:
         self.print_prompts = get_arg("print_prompts", default_value=False)
 
 class PlanningController:
-    def __init__(self, llm, db, input_values: dict = {}):
+    def __init__(self, input_values: dict = {}):
         # for testing
         self.done= False
+        self.llm = interface_interactor.get_interface("llm")
+        self.db = interface_interactor.get_interface("db")
         # llm is a service that exposes a call method taking a single dictionary of inputs
         
         # Create a PlanningControllerConfig object
@@ -58,10 +61,10 @@ class PlanningController:
         self.config.task = 0
 
         # Initialize problem domain
-        self.domain = Domain(db, self.config.domain)
+        self.domain = Domain(self.db, self.config.domain)
 
         # Initialize the planner
-        self.planner = Planner(llm)
+        self.planner = Planner(self.llm)
 
     ### This function maps the contraints of a planning domain, goes through a list of possible goal-states, and
     ### identifies necessary initialization state.
@@ -71,28 +74,47 @@ class PlanningController:
     ### How is the world-state currently initialized?
     ### What are your goals for this plan?
   
-    def execute(self, input):        
-        ## If there are no existing queries to be processed, we check the state
-        ## of the domain for this plan, if there are no queries to be parsed and all state is satisfied
-        ## then we kickoff the planner
-        
-        # prepped_queries = query_engine.get_queries()
-        # for query in prepped_queries:
-        #     if "satisfied" in query and query["satisfied"]:
-        #         next
-        #     else:
+    def execute(self, input, attention):
 
-        # else:
-        #     self.done = True
-        #     queries = self.domain.get_queries()
+        # Grab a standard plan template
+        plan_template = """
+            (define (problem garden-enhanced-problem)
+                (:domain garden)
+                (:objects 
+                    {objects}
+                )
+                (:init 
+                    {init}
+                )
+                (:goal
+                (and
+                    {goals}
+                )))
+        """      
 
-        # if len(queries) == 0 and len(prepped_queries) == 0:
-        #     print("STEP: Running plan ")
-        return llm_ic_pddl_planner(self.config, self.planner, self.domain, input) # TODO: Refactor to use our input
-
-        # Else queye up the queries for us here
+        ### Attention has been satisfied and we need to construct a plan for this domain
+        ### using the PredicateMemory Attention. When we are done and have a relevant plan
+        ### we can abandon out current attention focus.
+        init = []
+        goals = []
+        objects = []
+        queries = attention['queries']
         for query in queries:
-            query_engine.push_query(query=query)
+            for effect in query["effect"]:
+                for result in query["results"]: # for each result we gathered for goals
+                    if effect["type"] == "goal":
+                        goals.append(effect["val"].replace("{val}", result))
+                    elif effect["type"] == "object":
+                        objects.append(effect["val"].replace("{val}", result))
+                    elif effect["type"] == "init":
+                        init.append(effect["val"].replace("{val}", result))
+
+        plan_template = plan_template.replace("{objects}", "\n".join(objects))
+        plan_template = plan_template.replace("{init}", "\n".join(init))
+        plan_template = plan_template.replace("{goals}", "\n".join(goals))
+
+        ### Once the problem plan has been generated let's run the planning algorithms
+        return llm_ic_pddl_planner(self.config, self.planner, self.domain, input, plan_template) # TODO: Refactor to use our input
 
 ### Helper class to build domains in the Database
 class DomainBuilder:
@@ -142,49 +164,49 @@ class DomainBuilder:
         self.db.set(collection="domains", key=domain_name, data=domain_data)
 
     def upload_documents_from_folder(self, domain_name: str, folder_path: str, context_name: str):
-        try:
-            # Validate folder path
-            if not os.path.isdir(folder_path):
-                print(f"Error: {folder_path} is not a directory")
-                return
-            
-            # Prepare file paths
-            nl_file_path = os.path.join(folder_path, f"{context_name}.nl")
-            pddl_file_path = os.path.join(folder_path, f"{context_name}.pddl")
-            sol_file_path = os.path.join(folder_path, f"{context_name}.sol")
-            domain_pddl_file_path = os.path.join(folder_path, "domain.pddl")
-            domain_nl_file_path = os.path.join(folder_path, "domain.nl")
-            query_file_path = os.path.join(folder_path, "queries.json")
-
-            # Read and set context files
-            if os.path.isfile(nl_file_path) and os.path.isfile(pddl_file_path) and os.path.isfile(sol_file_path):
-                with open(nl_file_path, 'r') as nl_file, open(pddl_file_path, 'r') as pddl_file, open(sol_file_path, 'r') as sol_file:
-                    nl = nl_file.read()
-                    pddl = pddl_file.read()
-                    sol = sol_file.read()
-                    self.set_context(domain_name=domain_name, nl=nl, pddl=pddl, sol=sol)
-            else:
-                print(f"Error: One or more context files (nl, pddl, sol) are missing in {folder_path}")
-
-            if os.path.isfile(query_file_path):
-                with open(query_file_path, 'r') as query_file:
-                    query = json.loads(query_file.read())
-                    self.set_queries(domain_name=domain_name, queries=query["queries"], folder_path=folder_path)
-            else:
-                print(f"Error: Query file (queries.json) is missing in {folder_path}")
-
-            # Read and set domain files
-            if os.path.isfile(domain_pddl_file_path) and os.path.isfile(domain_nl_file_path):
-                with open(domain_pddl_file_path, 'r') as domain_pddl_file, open(domain_nl_file_path, 'r') as domain_nl_file:
-                    domain_pddl = domain_pddl_file.read()
-                    domain_nl = domain_nl_file.read()
-                    self.set_domain_pddl(domain_name=domain_name, pddl=domain_pddl)
-                    self.set_domain_nl(domain_name=domain_name, nl=domain_nl)
-            else:
-                print(f"Error: One or more domain files (domain.pddl, domain.nl) are missing in {folder_path}")
+        # try:
+        # Validate folder path
+        if not os.path.isdir(folder_path):
+            print(f"Error: {folder_path} is not a directory")
+            return
         
-        except Exception as e:
-            print(f"An error occurred while uploading documents from folder: {e}")
+        # Prepare file paths
+        nl_file_path = os.path.join(folder_path, f"{context_name}.nl")
+        pddl_file_path = os.path.join(folder_path, f"{context_name}.pddl")
+        sol_file_path = os.path.join(folder_path, f"{context_name}.sol")
+        domain_pddl_file_path = os.path.join(folder_path, "domain.pddl")
+        domain_nl_file_path = os.path.join(folder_path, "domain.nl")
+        query_file_path = os.path.join(folder_path, "queries.json")
+
+        # Read and set context files
+        if os.path.isfile(nl_file_path) and os.path.isfile(pddl_file_path) and os.path.isfile(sol_file_path):
+            with open(nl_file_path, 'r') as nl_file, open(pddl_file_path, 'r') as pddl_file, open(sol_file_path, 'r') as sol_file:
+                nl = nl_file.read()
+                pddl = pddl_file.read()
+                sol = sol_file.read()
+                self.set_context(domain_name=domain_name, nl=nl, pddl=pddl, sol=sol)
+        else:
+            print(f"Error: One or more context files (nl, pddl, sol) are missing in {folder_path}")
+
+        if os.path.isfile(query_file_path):
+            with open(query_file_path, 'r') as query_file:
+                query = json.loads(query_file.read())
+                self.set_queries(domain_name=domain_name, queries=query["queries"], folder_path=folder_path)
+        else:
+            print(f"Error: Query file (queries.json) is missing in {folder_path}")
+
+        # Read and set domain files
+        if os.path.isfile(domain_pddl_file_path) and os.path.isfile(domain_nl_file_path):
+            with open(domain_pddl_file_path, 'r') as domain_pddl_file, open(domain_nl_file_path, 'r') as domain_nl_file:
+                domain_pddl = domain_pddl_file.read()
+                domain_nl = domain_nl_file.read()
+                self.set_domain_pddl(domain_name=domain_name, pddl=domain_pddl)
+                self.set_domain_nl(domain_name=domain_name, nl=domain_nl)
+        else:
+            print(f"Error: One or more domain files (domain.pddl, domain.nl) are missing in {folder_path}")
+    
+        # except Exception as e:
+        #     print(f"An error occurred while uploading documents from folder: {e}")
 
 
 ### Domain class grabs necessary data about this plan from the database
@@ -224,7 +246,6 @@ class Domain:
             return None
         
         # Extract and post-process data
-        print(domain_data)
         domain_queries = domain_data.get("queries", [])
         return domain_queries
         
@@ -348,20 +369,22 @@ class Planner:
         # Example Usage
         s = "Here is some text (I want (only this) part) and this is not needed."
         result = self.extract_outermost_parentheses(s)
-        print(result)  # Output: "I want (only this) part"
 
-    def query(self, prompt_text, input):
+    def query(self, prompt_text, input_config, extract_parens=True):
         result_text = "()"
-        request = {
+        input_ = {
             "prompt": prompt_text,
-            "generation_config": input['generation_config'],
-            "model_config": input['model_config'],
+            "generation_config": input_config['generation_config'],
+            "model_config": input_config['model_config'],
         }
-        response = self.llm.call(request)
+        response = self.llm.call(input_)
         result_text = response['choices'][0]['text']
-        result_text = result_text.replace(request['prompt'], "")
-        result_text = self.extract_outermost_parentheses(result_text)
-        print(result_text)
+        result_text = result_text.replace(input_['prompt'], "")
+        if extract_parens:
+            result_text = self.extract_outermost_parentheses(result_text)
+        for tok in ['eos_token', 'bos_token']:
+            if tok in input_['model_config']:
+                result_text = result_text.replace(input_['model_config'][tok], "")
         return result_text
 
     def parse_result(self, pddl_string):
@@ -385,17 +408,20 @@ class Planner:
         #print(f"[info] remove comments takes {t1-t0} sec")
         return pddl_string
 
-    def plan_to_language(self, plan, task_nl, domain_nl, domain_pddl, input):
+    def plan_to_language(self, plan, task_nl, domain_nl, domain_pddl, input_):
         domain_pddl_ = " ".join(domain_pddl.split())
         task_nl_ = " ".join(task_nl.split())
-        prompt = f"A planning problem is described as: \n {task_nl} \n" + \
-                 f"The corresponding domain PDDL file is: \n {domain_pddl_} \n" + \
-                 f"The optimal PDDL plan is: \n {plan} \n" + \
-                 f"Transform the PDDL plan into a sequence of behaviors without further explanation."
-        res = self.query(prompt, input).strip() + "\n"
+        prompt = """
+                ### Instruction: Your goal is to help the user plan a garden given the PDDL problem and domain. Format the following into a natural language plan. Here is the plan to translate:"""
+        prompt += f"{plan} ### Response:"
+        # prompt = f"A planning problem is described as: \n {task_nl} \n" + \
+        #          f"The corresponding domain PDDL file is: \n {domain_pddl_} \n" + \
+        #          f"The optimal PDDL plan is: \n {plan} \n" + \
+        #          f"Transform the PDDL plan into a sequence of behaviors without further explanation."
+        res = self.query(prompt, input_, extract_parens=False).strip() + "\n"
         return res
 
-def llm_ic_pddl_planner(args, planner, domain, input):
+def llm_ic_pddl_planner(args, planner, domain, input, task_pddl_):
     parser = Parser()
     context = domain.get_context()
     domain_pddl = domain.get_domain_pddl()
@@ -412,20 +438,14 @@ def llm_ic_pddl_planner(args, planner, domain, input):
 
     # A. generate problem pddl file
     task_suffix = "domain.task_suffix"
-    task_nl = input # TODO: We need to pull information from the user and convert it into NL plan
+    # task_nl = input # TODO: We need to pull information from the user and convert it into NL plan
     task_nl = """
-        You have a garden with 2 plots, a watering can, a packet of tomato seeds,
-        a packet of carrot seeds, fertilizer, and a shovel.
-
-        Initially the watering can is empty, and all plots are unplanted and dry.
-
-        Your goal is to have tomatoes growing in plot1 and carrots growing in plot2.
-        Use only the syntax in the PDDL domain above.
+        Your goal is to help the user plan a garden given the PDDL problem and domain.
     """
-    task_nl = parser.format_template(input['prompt']['prompt_template'], instruction=task_nl)
-    prompt = planner.create_llm_ic_pddl_prompt(task_nl, domain_pddl, context)
-    raw_result = planner.query(prompt, input)
-    task_pddl_ = planner.parse_result(raw_result)
+    # task_nl = parser.format_template(input['prompt']['prompt_template'], instruction=task_nl)
+    # prompt = planner.create_llm_ic_pddl_prompt(task_nl, domain_pddl, context)
+    # raw_result = planner.query(prompt, input)
+    # task_pddl_ = planner.parse_result(raw_result)
 
     # File names for the fast downward call
     plan_file_name = f"/tmp/plan_{args.task}"
@@ -442,6 +462,7 @@ def llm_ic_pddl_planner(args, planner, domain, input):
               f"--search-time-limit {args.time_limit} --plan-file {plan_file_name} " + \
               f"--sas-file {sas_file_name} " + \
               f"{domain_pddl_file_path} {task_pddl_file_name}"
+    print(func_call)
     os.system(func_call)
 
     # D. collect the least cost plan
@@ -458,11 +479,13 @@ def llm_ic_pddl_planner(args, planner, domain, input):
     # E. translate the plan back to natural language, and write it to result
     if best_plan:
         plans_nl = planner.plan_to_language(best_plan, task_nl, domain_nl, domain_pddl, input)
-        plan_nl_file_name = f"{PLAN_DIRECTORY}/experiments/run{args.run}/results/llm_ic_pddl/{task_suffix}"
+        plan_nl_file_name = f"/tmp/plan_nl_{args.task}"
         with open(plan_nl_file_name, "w") as f:
             f.write(plans_nl)
     end_time = time.time()
     if best_plan:
         print(f"[info] task {task} takes {end_time - start_time} sec, found a plan with cost {best_cost}")
+        return plans_nl
     else:
         print(f"[info] task {task} takes {end_time - start_time} sec, no solution found")
+        return "No plan found."

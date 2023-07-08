@@ -36,7 +36,7 @@ class Parser:
   # Keyed to alpaca-7b, needs to be updated for other models
   # TODO: make this more robust
   def parse_llm_response(self, text, skip_tokens=[]):
-      prefixes = ["My response would be:", "My response is:"]
+      prefixes = ["My response would be:", "My response is:", "### Response:"]
       postfixes = ['### Thought',
         '# End',
         '# end',
@@ -51,7 +51,6 @@ class Parser:
         "### End",
         "### Instruction",
         "# Instruction",
-        "### Response",
         "# Python Responses",
         "# Output:",
         "#if __name__ == '__main__':",
@@ -61,7 +60,10 @@ class Parser:
         "# End of story",
         "# Ask a question",
         "#include",
-        "// output"
+        "// output",
+        "Note:",
+        "</s>",
+        "<|endoftext|>"
       ]
       for i in postfixes + skip_tokens:
           text = text.split(i)
@@ -72,6 +74,6 @@ class Parser:
             text = text[1]
           else:
             text = text[0]
-      if "\n" not in skip_tokens:
-        text = text.replace("\n", "<br>") # use br for new line
+      # if "\n" not in skip_tokens:
+      #   text = text.replace("\n", "<br>") # use br for new line
       return text.strip()

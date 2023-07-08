@@ -53,9 +53,7 @@ class Query:
          # hack fix for mongo race condition? argh
          queries = context["queries"]
       # if query exists and is a response, pop
-      print("queries", queries)
       for query in queries:
-          print("query", query)
           if query is not None:
               # # Create a query via LLM response
               # input = {

@@ -9,7 +9,7 @@ fuzzywuzzy
 fuzzysearch
 python-Levenshtein
 diffusers[torch]
-langchain
+langchain==0.0.189
 packaging==21.3
 torchmetrics<0.8
 numpy==1.23.5
@@ -26,7 +26,7 @@ flask-swagger-ui
 Werkzeug
 python-dotenv
 flask-sse
-deeplake
+deeplake==3.6.0
 tiktoken
 sentence_transformers
 bcrypt

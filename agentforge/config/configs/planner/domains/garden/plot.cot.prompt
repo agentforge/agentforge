@@ -1,4 +1,4 @@
-### Instruction: Classify the text into a yes or no boolean, or None if the question is not answered.  
+### Instruction: Classify the text into a yes or no boolean, or None if the question is not answered. Only respond with "True" "False" or "None"
 ### Input: "Do you have a plot available to you?. Sure I have a space in the garden."  
 ### Thought Process:
 1. Identify question: "Do you have a plot available to you?".
@@ -8,7 +8,7 @@
 5. Output is True; aligns with instructions.
 ### Response: True
 
-### Instruction: Classify the text into a single or a list of plants.  
+### Instruction: Classify the text into a yes or no boolean, or None if the question is not answered. Only respond with "True" "False" or "None"
 ### Input: "Do you have a plot available to you?. What is a plot?"  
 ### Thought Process:
 1. Identify question: "Do you have a plot available to you?".
@@ -18,7 +18,7 @@
 5. Output is None; aligns with instructions.
 ### Response: None  
 
-### Instruction: Classify the text into a single or a list of plants.  
+### Instruction: Classify the text into a yes or no boolean, or None if the question is not answered. Only respond with "True" "False" or "None"
 ### Input: "Do you have a plot available to you?. No I live in an apartment."  
 ### Thought Process:
 1. Identify question: "Do you have a plot available to you?".
@@ -28,16 +28,16 @@
 5. Output is False; aligns with instructions.
 ### Response: False  
 
-### Instruction: Classify the text into a yes or no boolean, or None if the question is not answered.  
-### Input: "Did you go to the market? I went to the park."  
+### Instruction: Classify the text into a yes or no boolean, or None if the question is not answered. Only respond with "True" "False" or "None"
+### Input: "Do you have a plot available to you?. Tell me more."  
 ### Thought Process for Additional Example:
-1. Identify question: "Did you go to the market?".
-2. Identify response: "I went to the park.".
+1. Identify question: "Do you have a plot available to you?".
+2. Identify response: "Tell me more.".
 3. Response does not answer the question.
 4. Classify as None.
 5. Output is None; aligns with instructions.
 ### Response: None
 
-### Instruction: Classify the text into a yes or no boolean, or None if the question is not answered.  
+### Instruction: Classify the text into a yes or no boolean, or None if the question is not answered. Only respond with "True" "False" or "None"
 ### Input: {query} {response}
 ### Thought Process:
