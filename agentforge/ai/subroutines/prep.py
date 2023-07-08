@@ -51,6 +51,7 @@ class Prep:
             return context
         presentation = context['model_config']['presentation'] if 'model_config' in context and 'presentation' in context['model_config'] else "html"
         if presentation == 'html':
-            context['response'] = markdown.markdown(self.convert_html(context['response']))
+            context['response'] = self.convert_html(context['response'])
+            context['response'] = markdown.markdown(context['response'])
         context['choices'] = [{"text": context['response']}] # OAI backwargs compatible
         return context

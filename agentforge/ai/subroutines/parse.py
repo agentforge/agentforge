@@ -21,6 +21,7 @@ class Parse:
             instruction=instruction,
             biography=biography,
             memory=memory,
+            human="Human"
         )
 
         context['input']['prompt'] = formatted_template

@@ -164,49 +164,49 @@ class DomainBuilder:
         self.db.set(collection="domains", key=domain_name, data=domain_data)
 
     def upload_documents_from_folder(self, domain_name: str, folder_path: str, context_name: str):
-        try:
-            # Validate folder path
-            if not os.path.isdir(folder_path):
-                print(f"Error: {folder_path} is not a directory")
-                return
-            
-            # Prepare file paths
-            nl_file_path = os.path.join(folder_path, f"{context_name}.nl")
-            pddl_file_path = os.path.join(folder_path, f"{context_name}.pddl")
-            sol_file_path = os.path.join(folder_path, f"{context_name}.sol")
-            domain_pddl_file_path = os.path.join(folder_path, "domain.pddl")
-            domain_nl_file_path = os.path.join(folder_path, "domain.nl")
-            query_file_path = os.path.join(folder_path, "queries.json")
-
-            # Read and set context files
-            if os.path.isfile(nl_file_path) and os.path.isfile(pddl_file_path) and os.path.isfile(sol_file_path):
-                with open(nl_file_path, 'r') as nl_file, open(pddl_file_path, 'r') as pddl_file, open(sol_file_path, 'r') as sol_file:
-                    nl = nl_file.read()
-                    pddl = pddl_file.read()
-                    sol = sol_file.read()
-                    self.set_context(domain_name=domain_name, nl=nl, pddl=pddl, sol=sol)
-            else:
-                print(f"Error: One or more context files (nl, pddl, sol) are missing in {folder_path}")
-
-            if os.path.isfile(query_file_path):
-                with open(query_file_path, 'r') as query_file:
-                    query = json.loads(query_file.read())
-                    self.set_queries(domain_name=domain_name, queries=query["queries"], folder_path=folder_path)
-            else:
-                print(f"Error: Query file (queries.json) is missing in {folder_path}")
-
-            # Read and set domain files
-            if os.path.isfile(domain_pddl_file_path) and os.path.isfile(domain_nl_file_path):
-                with open(domain_pddl_file_path, 'r') as domain_pddl_file, open(domain_nl_file_path, 'r') as domain_nl_file:
-                    domain_pddl = domain_pddl_file.read()
-                    domain_nl = domain_nl_file.read()
-                    self.set_domain_pddl(domain_name=domain_name, pddl=domain_pddl)
-                    self.set_domain_nl(domain_name=domain_name, nl=domain_nl)
-            else:
-                print(f"Error: One or more domain files (domain.pddl, domain.nl) are missing in {folder_path}")
+        # try:
+        # Validate folder path
+        if not os.path.isdir(folder_path):
+            print(f"Error: {folder_path} is not a directory")
+            return
         
-        except Exception as e:
-            print(f"An error occurred while uploading documents from folder: {e}")
+        # Prepare file paths
+        nl_file_path = os.path.join(folder_path, f"{context_name}.nl")
+        pddl_file_path = os.path.join(folder_path, f"{context_name}.pddl")
+        sol_file_path = os.path.join(folder_path, f"{context_name}.sol")
+        domain_pddl_file_path = os.path.join(folder_path, "domain.pddl")
+        domain_nl_file_path = os.path.join(folder_path, "domain.nl")
+        query_file_path = os.path.join(folder_path, "queries.json")
+
+        # Read and set context files
+        if os.path.isfile(nl_file_path) and os.path.isfile(pddl_file_path) and os.path.isfile(sol_file_path):
+            with open(nl_file_path, 'r') as nl_file, open(pddl_file_path, 'r') as pddl_file, open(sol_file_path, 'r') as sol_file:
+                nl = nl_file.read()
+                pddl = pddl_file.read()
+                sol = sol_file.read()
+                self.set_context(domain_name=domain_name, nl=nl, pddl=pddl, sol=sol)
+        else:
+            print(f"Error: One or more context files (nl, pddl, sol) are missing in {folder_path}")
+
+        if os.path.isfile(query_file_path):
+            with open(query_file_path, 'r') as query_file:
+                query = json.loads(query_file.read())
+                self.set_queries(domain_name=domain_name, queries=query["queries"], folder_path=folder_path)
+        else:
+            print(f"Error: Query file (queries.json) is missing in {folder_path}")
+
+        # Read and set domain files
+        if os.path.isfile(domain_pddl_file_path) and os.path.isfile(domain_nl_file_path):
+            with open(domain_pddl_file_path, 'r') as domain_pddl_file, open(domain_nl_file_path, 'r') as domain_nl_file:
+                domain_pddl = domain_pddl_file.read()
+                domain_nl = domain_nl_file.read()
+                self.set_domain_pddl(domain_name=domain_name, pddl=domain_pddl)
+                self.set_domain_nl(domain_name=domain_name, nl=domain_nl)
+        else:
+            print(f"Error: One or more domain files (domain.pddl, domain.nl) are missing in {folder_path}")
+    
+        # except Exception as e:
+        #     print(f"An error occurred while uploading documents from folder: {e}")
 
 
 ### Domain class grabs necessary data about this plan from the database
@@ -370,19 +370,21 @@ class Planner:
         s = "Here is some text (I want (only this) part) and this is not needed."
         result = self.extract_outermost_parentheses(s)
 
-    def query(self, prompt_text, input, extract_parens=True):
-        print(prompt_text)
+    def query(self, prompt_text, input_config, extract_parens=True):
         result_text = "()"
-        request = {
+        input_ = {
             "prompt": prompt_text,
-            "generation_config": input['generation_config'],
-            "model_config": input['model_config'],
+            "generation_config": input_config['generation_config'],
+            "model_config": input_config['model_config'],
         }
-        response = self.llm.call(request)
+        response = self.llm.call(input_)
         result_text = response['choices'][0]['text']
-        result_text = result_text.replace(request['prompt'], "")
+        result_text = result_text.replace(input_['prompt'], "")
         if extract_parens:
             result_text = self.extract_outermost_parentheses(result_text)
+        for tok in ['eos_token', 'bos_token']:
+            if tok in input_['model_config']:
+                result_text = result_text.replace(input_['model_config'][tok], "")
         return result_text
 
     def parse_result(self, pddl_string):

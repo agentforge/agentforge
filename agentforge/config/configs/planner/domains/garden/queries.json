@@ -29,6 +29,14 @@
         {
           "val": "(has-seedling-type {val}-seedling {val})",
           "type": "init"
+        },
+        {
+          "val": "fertilizer - fertilizer",
+          "type": "object"
+        },
+        {
+          "val": "shovel - tool",
+          "type": "object"
         }
       ]
     },

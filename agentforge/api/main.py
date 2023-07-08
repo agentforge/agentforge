@@ -1,3 +1,8 @@
+# Hack for deeplake issue
+# TODO: Mitigate and get Pymilvus working
+import deeplake
+deeplake.__version__ = '3.6.2'
+
 # main.py
 from fastapi import Request
 from agentforge.api.model_profiles import router as model_profiles_router
@@ -50,6 +55,15 @@ class RateLimiterMiddleware(BaseHTTPMiddleware):
 
         response = await call_next(request)
         return response
+
+### TODO: limit to dev/test environment
+from agentforge.interfaces import interface_interactor
+from agentforge.ai.cognition.planner import DomainBuilder
+
+db = interface_interactor.get_interface("db")
+d = DomainBuilder(db)
+d.upload_documents_from_folder('garden', '/app/agentforge/agentforge/config/configs/planner/domains/garden', 'p_example')
+print("latest planning docs uploaded...")
 
 app = init_api()
 app.add_middleware(LoggingMiddleware)

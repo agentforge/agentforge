@@ -13,7 +13,8 @@ class Recall:
         )
         working = context['memory'].session_history(
             context['model_profile']['metadata']['user_id'],
-            context['model_profile']['avatar_config']['name'],            
+            context['model_profile']['avatar_config']['name'],
+            context['input']['id'],            
         )
         context['recall'] = memories + " \n " + working
         return context
