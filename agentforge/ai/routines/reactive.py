@@ -1,6 +1,7 @@
 # TODO: Implement default decision --> decisions are markov chains w/ subroutines as nodes
 ### i.e. the simplest example: generate text response -> generate wav file -> generate mp4 -> return
-from typing import Dict, Any, List, Protocol, Optional
+import threading
+from typing import Dict, Any, List, Protocol, Optional, Callable
 from agentforge.ai.subroutines.respond import Respond
 from agentforge.ai.subroutines.parse import Parse
 from agentforge.ai.subroutines.speak import Speak
@@ -12,12 +13,24 @@ from agentforge.ai.subroutines.prep import Prep
 from agentforge.ai.subroutines.plan import Plan
 from agentforge.ai.subroutines.intent import Intent
 from agentforge.ai.subroutines.query import Query, Learn
+from agentforge.ai.decisions.statemachine import Node
 
-### Simplest reactive routine for a decision timestep/run
 class ReactiveRoutine(Routine):
     def __init__(self):
         super().__init__("reactive")
-        self.subroutines = [Recall(), Parse(), Intent(), Respond(), Remember(), Speak(), Lipsync(), Prep()]
+        speak = Node(Speak().execute, [])
+        respond = Node(Respond().execute, [])
+        remember = Node(Remember().execute, [speak, respond])
+        self.subroutines = [
+            Node(Recall().execute, []),
+            Node(Parse().execute, []),
+            Node(Intent().execute, []),
+            respond,
+            speak,
+            remember,
+            Node(Lipsync().execute, [remember]),
+            Node(Prep().execute, [remember]),
+        ]
     
 ### FLOWS: These routines have descriptions and thus can be referenced for our guardrails system
 ### i.e. if user query is similar to this desciption we will ask the user if they want to engage in this routine

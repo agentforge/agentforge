@@ -4,7 +4,7 @@ from pydantic import BaseModel
 from agentforge.utils import measure_time, comprehensive_error_handler
 from agentforge.factories import resource_factory
 from dotenv import load_dotenv
-from .app import init_api
+from agentforge.api.app import init_api
 load_dotenv('../../../.env')
 
 app = init_api()
@@ -15,9 +15,7 @@ class TtsResponse(BaseModel):
 
 # Given the following text request generate a wav file and return to the client
 @app.post("/v1/tts", operation_id="createAudioResponse")
-@comprehensive_error_handler
-@measure_time
-async def text_to_speech(request: Request) -> TtsResponse:
+def text_to_speech(request: Request) -> TtsResponse:
   # Get the text and filename from the request
   prompt = request.json["prompt"]
   avatar = request.json["avatar"]

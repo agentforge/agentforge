@@ -6,6 +6,7 @@ from base64 import b64encode
 from agentforge.ai import decision_interactor
 from agentforge.interfaces.model_profile import ModelProfile
 from agentforge.api.auth import get_api_key
+import asyncio
 
 # Setup Agent
 decision = decision_interactor.create_decision()
