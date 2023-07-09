@@ -30,19 +30,6 @@ def stream(channel: str):
     return StreamingResponse(event_generator(), media_type="text/event-stream")
     # return EventSourceResponse(event_generator())
 
-# def redis_pubsub_channel(redis_client, channel_name="mychannel"):
-#     pubsub = redis_client.pubsub()
-#     pubsub.subscribe(channel_name)
-    
-#     for message in pubsub.listen():
-#         if message['type'] == 'message':
-#             data = message['data']
-#             yield f"data: {data}\n\n"
-
-# @router.get("/stream", operation_id="createStream", dependencies=[Depends(get_api_key)])
-# async def stream():
-#     return StreamingResponse(redis_pubsub_channel(), media_type="text/event-stream")
-
 @router.get("/", operation_id="helloWorld", dependencies=[Depends(get_api_key)])
 def hello() -> AgentResponse:
     return AgentResponse(data={"response": "Hello world"})

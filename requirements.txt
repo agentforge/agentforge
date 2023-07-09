@@ -38,3 +38,5 @@ pygments-solarized-style
 fastapi
 uvicorn
 markdown
+aioredis
+asyncio 

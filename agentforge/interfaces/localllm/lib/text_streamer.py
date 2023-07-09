@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import redis
 from queue import Queue
 from typing import TYPE_CHECKING, Optional
 from agentforge.config import RedisConfig
@@ -77,12 +78,8 @@ class TextStreamer(BaseStreamer):
         self.token_cache = []
         self.print_len = 0
         self.next_tokens_are_prompt = True
-        self.redis_config = RedisConfig.from_env()'
-        '
-        self.redis_server = self.create_redis_connections()
 
-    # Default redis_store for streaming
-    def create_redis_connection(self) -> None:
+        self.redis_config = RedisConfig.from_env()
         # Check if the environment variables are provided
         if self.redis_config.host is None:
             raise ValueError("Environment variable REDIS_HOST is not set")
@@ -98,10 +95,8 @@ class TextStreamer(BaseStreamer):
             raise ValueError("Environment variable REDIS_DB should be an integer")
 
         # Create the Redis connection
-        redis_store = redis.StrictRedis(host=self.redis_config.host, port=self.redis_config.port, db=self.redis_config.db)
+        self.redis_server = redis.StrictRedis(host=self.redis_config.host, port=self.redis_config.port, db=self.redis_config.db)
         
-        return redis_store
-
     def put(self, value):
         """
         Recives tokens, decodes them, and prints them to stdout as soon as they form entire words.
@@ -145,10 +140,12 @@ class TextStreamer(BaseStreamer):
 
         self.next_tokens_are_prompt = True
         self.on_finalized_text(printable_text, stream_end=True)
-        redis_server.close()
+        self.redis_server.close()
 
     def on_finalized_text(self, text: str, stream_end: bool = False):
         """Prints the new text to stdout. If the stream is ending, also prints a newline."""
         print(text, flush=True, end="" if not stream_end else None)
         # publish the message to the channel
         self.redis_server.publish('channel', text)
+        if stream_end:
+            self.redis_server.publish('channel', '<|endoftext|>')
