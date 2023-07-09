@@ -29,7 +29,6 @@ def stream(channel: str):
             else:
                 asyncio.sleep(1)
     return StreamingResponse(event_generator(), media_type="text/event-stream")
-    # return EventSourceResponse(event_generator())
 
 @router.get("/", operation_id="helloWorld", dependencies=[Depends(get_api_key)])
 def hello() -> AgentResponse:
@@ -52,7 +51,7 @@ async def agent(request: Request) -> AgentResponse:
     decision = decision_interactor.get_decision()
 
     # print("[DEBUG][api][agent][agent] decision: ", decision)
-    
+
     output = decision.run({"input": data, "model_profile": model_profile})
 
     # print("[DEBUG][api][agent][agent] decision: ", output)
