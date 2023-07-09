@@ -1,6 +1,6 @@
 // pages/api/avatars.ts
 import { NextResponse } from 'next/server';
-import { api_url } from '@/components/shared/api';
+import api_url from '@/components/shared/api';
 
 export async function PUT(
   requestPromise: Request,

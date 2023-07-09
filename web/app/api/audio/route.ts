@@ -37,7 +37,7 @@ if (config.password) {
 const redis = new Redis(options);
 const clients = new Map();
 
-redis.subscribe('channel', (err, count) => {
+redis.subscribe('audio', (err, count) => {
   if (err) {
     console.error('Failed to subscribe', err);
     return;

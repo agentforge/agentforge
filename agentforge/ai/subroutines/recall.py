@@ -6,6 +6,8 @@ class Recall:
         pass
     
     def execute(self, context: Dict[str, Any]) -> Dict[str, Any]:
+        if 'memory' not in context:
+            return context
         memories = context['memory'].recall(
             context['model_profile']['metadata']['user_id'],
             context['model_profile']['avatar_config']['name'],

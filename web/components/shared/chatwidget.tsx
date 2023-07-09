@@ -20,8 +20,12 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ id }) =>  {
   const chatContainerRef = React.useRef<HTMLUListElement>(null);
   const [isLoading, setIsLoading] = React.useState(false);
   const responseSpeechRef = React.useRef<string>('');
+  const currentMessageIndex = React.useRef<number | null>(null);
+
   const currentAvatar = React.useRef<AvatarData>();
   const { playVideo } = useVideo();
+  var streamingSetup = false;
+  var audioStreamingSetup = false;
 
   // When loading state changes scroll to the bottom of the chat container
   React.useEffect(() => {
@@ -30,19 +34,131 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ id }) =>  {
     }
   }, [isLoading]);
 
-  //Streaming
-  React.useEffect(() => {
-    const eventSource = new EventSource('/api/stream');
+  //Streaming event listener
+  const addStreamingMessage = () => {
+    let eventSource: EventSource;
 
-    eventSource.onmessage = (event) => {
-      console.log(event.data);  
-      // setData((oldData) => [...oldData, event.data]);
+    // Set up the stream
+    if (!streamingSetup) { 
+      streamingSetup = true;
+
+      eventSource = new EventSource('/api/stream/');
+
+      // Handle incoming chunks
+      eventSource.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+    
+        if (currentMessageIndex.current === null) {
+          currentMessageIndex.current = -1;    // Prevent race condition
+          setMessages((prevMessages) => {
+            currentMessageIndex.current = prevMessages.length; // Store the index of the new message
+            const newMessage = {
+              id: uuidv4(),
+              author_type: 'default',
+              author: "Almanac",
+              text: data.message,
+              error: false,
+            };
+            return [...prevMessages, newMessage];
+          });
+        } else {
+          // Update the current message
+          setMessages((prevMessages) => {
+            // Update the current message
+            if (currentMessageIndex.current) {
+              if (data.message == "<|endoftext|>") {
+                // Message complete
+                currentMessageIndex.current = null;
+              } else { 
+                const updatedMessage = {...prevMessages[currentMessageIndex.current]};
+                updatedMessage.text += data.message;
+  
+                // Create a new array with the updated message
+                const updatedMessages = prevMessages.map((message, index) => 
+                  index === currentMessageIndex.current ? updatedMessage : message
+                );
+                return updatedMessages;
+              }
+      
+            }
+            return prevMessages;
+          });
+        }
+      }
     };
-
+  
+    // Clean up the stream when done
     return () => {
-        eventSource.close();
+      console.log("DONE?");
+      eventSource.close();
+      currentMessageIndex.current = null; // Reset the current message index
     };
-}, []);
+  };
+    let audioQueue:any = [];
+    let audioPlaying = false;
+    
+    const addAudioStreamingMessage = () => {
+      let audioEventSource: EventSource;
+    
+      // Set up the stream
+      if (!audioStreamingSetup) { 
+        audioStreamingSetup = true;
+    
+        audioEventSource = new EventSource('/api/audio/');
+    
+        audioEventSource.onmessage = (event) => {
+          const data = JSON.parse(event.data);
+          console.log(data)
+          if (data.message) {
+            const buffer = Buffer.from(data.message, 'base64');
+            const decodedAudioData = Buffer.from(data.message, 'base64');
+            console.log(decodedAudioData)
+            // Create a Blob from the Uint8Array with the correct MIME type
+            const blob = new Blob([decodedAudioData], { type: 'audio/wav' });
+      
+            // Create an object URL for the Blob
+            const objectURL = URL.createObjectURL(blob);
+      
+            // Create an Audio element and add it to the queue
+            const audioElement = new Audio();
+            console.log(audioElement);
+            audioElement.src = objectURL;
+            audioQueue.push(audioElement);
+      
+            // If there is no audio currently playing, start playing
+            if (!audioPlaying) {
+              playNextAudio();
+            }
+          }
+        }
+      };
+  
+      // Function to play the next audio in the queue
+      const playNextAudio = () => {
+        if (audioQueue.length > 0) {
+          const audioElement = audioQueue.shift();
+          audioPlaying = true;
+          audioElement.onended = () => {
+            audioPlaying = false;
+            playNextAudio();  // Play the next audio when the current one ends
+          };
+          audioElement.play();
+        }
+      };
+  
+    // Clean up the stream when done
+    return () => {
+      audioEventSource.close();
+    };
+  };
+
+  React.useEffect(() => {
+    addStreamingMessage();
+  }, []); // Empty dependency array ensures this runs only once
+
+  React.useEffect(() => {
+    addAudioStreamingMessage();
+  }, []); // Empty dependency array ensures this runs only once
 
   const handleTextAreaChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     setTextAreaValue(event.target.value);
@@ -97,10 +213,11 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ id }) =>  {
       id: id,
       prompt: textAreaValue,
     };
-
     // Add the Human message //TODO: Get the name of the human from the user
     addMessage(mergedObject.prompt, 'Human', 'human', false);
-
+    if (currentMessageIndex.current) { 
+      currentMessageIndex.current += 1;
+    }
     // Scroll to the top of the chat container after human message is added
     const res = await fetch('/api/completions', {
       method: 'POST',
@@ -110,32 +227,33 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ id }) =>  {
       body: JSON.stringify(mergedObject),
     });
     const data = await res.json();
+    setIsLoading(false);
 
-    if (data.error_type) { 
-      // TODO: Replace with a proper modal
-      alert(data.error_message);
-      setIsLoading(false);
-      return;
-    }
-    // TODO More robust error handling
-    const completion = data.data?.choices?.[0].text
-    if (data.video) {
-      const buffer = Buffer.from(data.video, 'base64'); // Assume that data.video contains the base64 encoded MP4 data
-      const decodedVideoData = Buffer.from(data.video, 'base64');
+    // if (data.error_type) { 
+    //   // TODO: Replace with a proper modal
+    //   alert(data.error_message);
+    //   return;
+    // }
+    // // TODO More robust error handling
+    // const completion = data.data?.choices?.[0].text
+    // if (data.video) {
+    //   const buffer = Buffer.from(data.video, 'base64'); // Assume that data.video contains the base64 encoded MP4 data
+    //   const decodedVideoData = Buffer.from(data.video, 'base64');
 
-      // Create a Blob from the Uint8Array with the correct MIME type
-      const blob = new Blob([decodedVideoData], { type: 'video/mp4' });
+    //   // Create a Blob from the Uint8Array with the correct MIME type
+    //   const blob = new Blob([decodedVideoData], { type: 'video/mp4' });
 
-      // Create an object URL for the Blob
-      const objectURL = URL.createObjectURL(blob);
+    //   // Create an object URL for the Blob
+    //   const objectURL = URL.createObjectURL(blob);
       
-      playVideo(objectURL);
+    //   playVideo(objectURL);
 
-    }
-    else if (data.audio) {
-      const buffer = Buffer.from(data.audio, 'base64');
-      const decodedAudioData = Buffer.from(data.audio, 'base64');
+    // }
 
+    if (data.data.audio) {
+      const buffer = Buffer.from(data.data.audio, 'base64');
+      const decodedAudioData = Buffer.from(data.data.audio, 'base64');
+      console.log(decodedAudioData)
       // Create a Blob from the Uint8Array with the correct MIME type
       const blob = new Blob([decodedAudioData], { type: 'audio/wav' });
 
@@ -144,16 +262,17 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ id }) =>  {
 
       // Create an Audio element and play the audio
       const audioElement = new Audio();
+      console.log(audioElement);
       audioElement.src = objectURL;
       audioElement.play();
 
     }
-    if (completion) { 
-      addMessage(completion, "Sam", 'default', false);
-    }
+    // if (completion) { 
+    //   addMessage(completion, "Almanac", 'default', false);
+    // }
 
     // Handle the result, update the state, etc.
-    setIsLoading(false);
+    // setIsLoading(false);
   }
 
   // Handles completion API call after user enters a prompt and clicks the send button
