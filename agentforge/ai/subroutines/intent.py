@@ -35,7 +35,7 @@ class Intent:
         if not document: # Nothing came up
             return None
         # Threshold for similarity
-        threshold = 0.24
+        threshold = 0.6
 
         if similarity >= threshold and 'flow_name' in document.metadata:
             flow_name = document.metadata['flow_name']

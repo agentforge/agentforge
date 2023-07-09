@@ -6,6 +6,7 @@ from typing import List
 from agentforge.interfaces import interface_interactor
 from functools import wraps
 from agentforge.utils import Parser
+from copy import deepcopy
 
 def check_ttl(func):
     @wraps(func)
@@ -46,7 +47,9 @@ class PredicateMemory:
             "prompt": prompt.replace("{response}", response).replace("{query}", query),
             "generation_config": context['model_profile']['generation_config'], # TODO: We need to use a dedicated model
             "model_config": context['model_profile']['model_config'],
+            "streaming": False,
         }
+        # Disable streaming of classification output -- deepcopy so we don't effect the model_config
         print("[PROMPT]")
         print(input_['prompt'])
         print("[PROMPT]")

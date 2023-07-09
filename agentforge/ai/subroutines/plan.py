@@ -5,6 +5,7 @@ from agentforge.ai.cognition.planner import PlanningController
 from agentforge.ai.cognition.query_engine import QueryEngine
 from agentforge.ai.cognition.symbolic import PredicateMemory
 from agentforge.ai.cognition.flow import FlowManagement
+from agentforge.utils.stream import stream_string
 
 class Plan:
     ### Executes PDDL plans with help from LLM resource
@@ -46,11 +47,9 @@ class Plan:
             print("attention satisfied...")
             response = self.planner.execute(input_, self.predicate_memory.get_attention(key))
             self.flow_management.update_flow(user_id, session_id, "plan", False)
+            print("[PLAN][update_flow]", user_id, session_id, "plan", False)
             ### If streaming we want to simulate the streaming experience, a grand simulacra
-            if input_["model_config"]["streaming"]:
-                stream_string('channel', response) # TODO: Make channel user specific
-            else:
-                context["response"] = response
+            context["response"] = response
             return context
 
         # If the predicate memory attention does not exist, feed plan queries into the current attention
@@ -65,14 +64,13 @@ class Plan:
         print("checking queries")
         # Iterate through unsent queries and send the latest
         for query in queries:
-          if query is not None:
-              print("asking a query", query['query'])
-              query_engine.update_query(sent=True)
-            if input_["model_config"]["streaming"]:
+            if query is not None:
+                print("asking a query", query['query'])
+                query_engine.update_query(sent=True)
+                print(input_["model_config"]["streaming"])
                 stream_string('channel', query['query']) # TODO: Make channel user specific
-            else:
                 context["response"] = query['query']
-              # Return new context to the user w/ response
-              return context
+                # Return new context to the user w/ response
+                return context
 
         return context

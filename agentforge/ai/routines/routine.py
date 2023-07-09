@@ -13,7 +13,7 @@ class Routine():
         self.subroutines = []
 
         self.name = name if name is not None else ""
-        self.keywords = description
+        self.phrases = description
 
         self.vectorstore = interface_interactor.get_interface("vectorstore")
         if description != "" and name != "":
@@ -27,7 +27,7 @@ class Routine():
             results = self.vectorstore.search(self.name, 1, filter={"flow": True})
             if not results:
                 # If it does not exist, add it to the vectorstore with metadata "flow: true"
-                self.vectorstore.add_texts([self.keywords], metadata=[{"flow": True, "flow_name": self.name}])
+                self.vectorstore.add_texts(self.phrases, metadata=[{"flow": True, "flow_name": self.name} for i in self.phrases])
         except Exception as e:
             print(f"Error registering flow, flows: List in vectorstore: {str(e)}")
   
