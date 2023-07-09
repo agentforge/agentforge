@@ -25,7 +25,6 @@ def redis_pubsub_channel(redis_client, channel_name="mychannel"):
             data = message['data']
             yield f"data: {data}\n\n"
 
-
 @router.get("/stream", operation_id="createStream", dependencies=[Depends(get_api_key)])
 async def stream():
     return StreamingResponse(redis_pubsub_channel(), media_type="text/event-stream")

@@ -14,7 +14,7 @@ class Plan:
         self.flow_management = FlowManagement()
 
     def execute(self, context: Dict[str, Any]) -> Dict[str, Any]:
-        input = {
+        input_ = {
             "user_id": context["input"]["user_id"],
             "session_id": context["input"]["id"],
             "prompt": context['input'],
@@ -44,9 +44,13 @@ class Plan:
         # If the predicate memory attention is satisfied kick off the plan
         if self.predicate_memory.attention_satisfied(key):
             print("attention satisfied...")
-            response = self.planner.execute(input, self.predicate_memory.get_attention(key))
+            response = self.planner.execute(input_, self.predicate_memory.get_attention(key))
             self.flow_management.update_flow(user_id, session_id, "plan", False)
-            context["response"] = response
+            ### If streaming we want to simulate the streaming experience, a grand simulacra
+            if input_["model_config"]["streaming"]:
+                stream_string('channel', response) # TODO: Make channel user specific
+            else:
+                context["response"] = response
             return context
 
         # If the predicate memory attention does not exist, feed plan queries into the current attention
@@ -64,7 +68,10 @@ class Plan:
           if query is not None:
               print("asking a query", query['query'])
               query_engine.update_query(sent=True)
-              context["response"] = query['query']
+            if input_["model_config"]["streaming"]:
+                stream_string('channel', query['query']) # TODO: Make channel user specific
+            else:
+                context["response"] = query['query']
               # Return new context to the user w/ response
               return context
 

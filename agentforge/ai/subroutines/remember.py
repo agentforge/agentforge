@@ -6,9 +6,8 @@ class Remember:
     def __init__(self):
         pass
     
+    @async_execution_decorator
     def execute(self, context: Dict[str, Any]) -> Dict[str, Any]:
-        print('memory' not in context)
-        print('response' not in context)
         if 'memory' not in context or 'response' not in context:
             return context # No memory setup -- return context
         # raise Exception(context)
@@ -18,5 +17,4 @@ class Remember:
             context['input']['original_prompt'],
             context['response']
         )
-        print("memoized")
         return context
