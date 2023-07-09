@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Request, Depends
-from starlette.responses import StreamingResponse
+from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from agentforge.interfaces import interface_interactor
 from base64 import b64encode
@@ -14,20 +14,21 @@ class AgentResponse(BaseModel):
   data: dict
 
 router = APIRouter()
-redis_store = interface_interactor.create_redis_connection()
+# redis_store = interface_interactor.create_redis_connection()
 
-def redis_pubsub_channel(redis_client, channel_name="mychannel"):
-    pubsub = redis_client.pubsub()
-    pubsub.subscribe(channel_name)
-    
-    for message in pubsub.listen():
-        if message['type'] == 'message':
-            data = message['data']
-            yield f"data: {data}\n\n"
-
-@router.get("/stream", operation_id="createStream", dependencies=[Depends(get_api_key)])
-async def stream():
-    return StreamingResponse(redis_pubsub_channel(), media_type="text/event-stream")
+@router.get("/stream/{channel}")
+def stream(channel: str):
+    pubsub = app.state.redis.pubsub()
+    pubsub.subscribe(channel)
+    async def event_generator():
+        while True:
+            message = pubsub.get_message(ignore_subscribe_messages=True)
+            if message:
+                yield {"data": message["data"].decode("utf-8")}
+            else:
+                asyncio.sleep(1)
+    return StreamingResponse(event_generator(), media_type="text/event-stream")
+    # return EventSourceResponse(event_generator())
 
 @router.get("/", operation_id="helloWorld", dependencies=[Depends(get_api_key)])
 def hello() -> AgentResponse:

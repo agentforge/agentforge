@@ -10,6 +10,7 @@ from agentforge.api.agent import router as agent_router
 from agentforge.api.user import router as user_router
 from agentforge.api.app import init_api
 from agentforge.utils import logger
+from agentforge.interfaces import interface_interactor
 
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse
@@ -75,6 +76,16 @@ app.add_middleware(
 app.include_router(model_profiles_router, prefix="/v1/model-profiles", tags=["model_profiles"])
 app.include_router(user_router, prefix="/v1/user", tags=["users"])
 app.include_router(agent_router, prefix="", tags=["agent_forge"])
+
+@app.on_event("startup")
+def startup_event():
+    print("startup")
+    app.state.redis = interface_interactor.create_redis_connection()
+
+@app.on_event("shutdown")
+def shutdown_event():
+    app.state.redis.close()
+    app.state.redis.wait_closed()
 
 @app.exception_handler(Exception)
 async def custom_exception_handler(request: Request, exc: Exception):
