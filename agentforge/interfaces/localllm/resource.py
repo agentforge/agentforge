@@ -12,7 +12,7 @@ from .generator import LocalGenerator
 from .loader import LocalLoader
 from accelerate import Accelerator
 from agentforge.utils import Parser
-from .lib.text_streamer import TextStreamer
+from agentforge.interfaces.localllm.lib.text_streamer import TextStreamer
 from dotenv import load_dotenv
 
 ### Manages Base LLM functions ###
