@@ -15,7 +15,7 @@ class Memory:
         self.working_memory.remember(user, agent, prompt, response)
 
         ### Deep memory deprecated for now -- using preloaded vectorstore DB
-        self.deep_memory.remember(user, agent, prompt, response)
+        # self.deep_memory.remember(user, agent, prompt, response)
 
     # Recall relevant memories from this agent based on this prompt
     def recall(self, user: str, agent: str, prompt: str):

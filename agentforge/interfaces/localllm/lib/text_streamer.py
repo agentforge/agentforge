@@ -78,6 +78,7 @@ class TextStreamer(BaseStreamer):
         self.token_cache = []
         self.print_len = 0
         self.next_tokens_are_prompt = True
+
         self.redis_config = RedisConfig.from_env()
         # Check if the environment variables are provided
         if self.redis_config.host is None:
@@ -148,4 +149,3 @@ class TextStreamer(BaseStreamer):
         self.redis_server.publish('channel', text)
         if stream_end:
             self.redis_server.publish('channel', '<|endoftext|>')
-
