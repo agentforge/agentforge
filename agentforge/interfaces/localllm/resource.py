@@ -79,6 +79,7 @@ class LocalLLM():
     # setup the generator
     config = kwargs['generation_config']
     streaming = True if "streaming" in kwargs['model_config'] and kwargs['model_config']["streaming"] else False
+    print(streaming)
     self.setup(kwargs)
     print('load')
     self.load(model_key=kwargs['model_config'].get("model_name", self.model_key), **kwargs)

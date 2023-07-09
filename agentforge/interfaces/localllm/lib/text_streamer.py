@@ -115,7 +115,7 @@ class TextStreamer(BaseStreamer):
 
         # After the symbol for a new line, we flush the cache.
         if text.endswith("\n"):
-            printable_text = text[self.print_len :]
+            printable_text = text[self.print_len :] + "<br>"
             self.token_cache = []
             self.print_len = 0
         # Otherwise, prints until the last space char (simple heuristic to avoid printing incomplete words,
