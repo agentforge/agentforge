@@ -1,4 +1,5 @@
-import Landing from './landing';
+// import Landing from './landing';
+import Landing_demo from './landing_demo';
 
 export const metadata = {
   title: "AgentForge - Building agents for the future",
@@ -32,8 +33,10 @@ export default async function Home() {
 
   return (
     <>
-      <main className="flex min-h-screen w-full flex-col items-center justify-center py-32">
-            <Landing />
+      {/*<main className="flex min-h-screen w-full flex-col items-center justify-center py-32">*/}
+      <main className="grid grid-cols-1 w-full">
+            {/*<Landing />*/}
+            <Landing_demo />
       </main>
     </>
   );

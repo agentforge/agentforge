@@ -1,10 +1,11 @@
 import "../styles/globals.css";
-import "../styles/style.scss";
+// import "../styles/style.scss";
+import "../styles/style_demo.scss";
 import { Analytics } from "@vercel/analytics/react";
 import cx from "classnames";
 import { sfPro, inter } from "../fonts";
-import Nav from "@/components/layout/nav";
-import Footer from "@/components/layout/footer";
+import Nav_demo from "@/components/layout/nav_demo";
+import Footer_demo from "@/components/layout/footer_demo";
 import { Suspense } from "react";
 
 export const metadata = {
@@ -20,16 +21,20 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={cx(sfPro.variable, inter.variable)}>
-        <div className="fixed h-screen w-full bg-gradient-to-br from-white via-white to-indigo-100" />
+        <div className="fixed h-screen w-full bg-black" />
         <Suspense fallback="...">
           {/* @ts-expect-error Server Component */}
-          <Nav />
+          {/*<Nav />*/}
+          <div className="flex justify-center">
+            <Nav_demo />
+          </div>
         </Suspense>
         {/* <main className="flex min-h-screen w-full flex-col items-center justify-center py-32"> */}
           {children}
         {/* </main> */}
         <Analytics />
-        <Footer />
+        {/* <Footer /> */}
+        <Footer_demo />
       </body>
     </html>
   );
