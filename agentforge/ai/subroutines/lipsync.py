@@ -14,4 +14,3 @@ class Lipsync:
             if lipsync_response is not None:
                 context["video"] = {"lipsync_response": lipsync_response["filename"], "type":"video/mp4" }
         return context
-    
