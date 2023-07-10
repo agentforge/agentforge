@@ -6,7 +6,7 @@ import { useModelProfileConfig } from '@/components/shared/context/modelprofilec
 import { useAvatarProvider } from '@/components/shared/context/avatarcontextprovider';
 
 const VideoComponent: React.FC = () => {
-  const { playVideo } = useVideo();
+  const { playVideo, onVideoEnd } = useVideo();
   const { modelProfileConfigs } = useModelProfileConfig();
   const { getAvatarData } = useAvatarProvider();
   const { videoRef, setIdleVideoSource } = useVideo();
@@ -26,9 +26,19 @@ const VideoComponent: React.FC = () => {
     }
   };
   
+  const myCallback = () => { 
+    console.log("ENDED?")
+    if (videoRef.current) { 
+      console.log(videoRef.current.src)
+    }
+    if (onVideoEnd) { 
+      onVideoEnd()
+    }
+  }
+    
   return (
     <div className="video-container">
-      <video ref={videoRef} autoPlay muted className="video"></video>
+      <video ref={videoRef} autoPlay muted onEnded={() => myCallback()} className="video"></video>
     </div>
   );
 };

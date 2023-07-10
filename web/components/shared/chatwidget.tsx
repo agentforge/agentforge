@@ -23,10 +23,11 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ id }) =>  {
   const currentMessageIndex = React.useRef<number | null>(null);
 
   const currentAvatar = React.useRef<AvatarData>();
-  const { playVideo } = useVideo();
+  const { playVideo, setOnVideoEnd, videoPlaying, stopPlaying } = useVideo();
   var streamingSetup = false;
   var audioStreamingSetup = false;
-
+  var videoStreamingSetup = false;
+  
   // When loading state changes scroll to the bottom of the chat container
   React.useEffect(() => {
     if (chatContainerRef.current) {
@@ -108,20 +109,17 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ id }) =>  {
     
         audioEventSource.onmessage = (event) => {
           const data = JSON.parse(event.data);
-          console.log(data)
           if (data.message) {
             const buffer = Buffer.from(data.message, 'base64');
             const decodedAudioData = Buffer.from(data.message, 'base64');
-            console.log(decodedAudioData)
             // Create a Blob from the Uint8Array with the correct MIME type
             const blob = new Blob([decodedAudioData], { type: 'audio/wav' });
-      
+
             // Create an object URL for the Blob
             const objectURL = URL.createObjectURL(blob);
       
             // Create an Audio element and add it to the queue
             const audioElement = new Audio();
-            console.log(audioElement);
             audioElement.src = objectURL;
             audioQueue.push(audioElement);
       
@@ -150,7 +148,73 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ id }) =>  {
     return () => {
       audioEventSource.close();
     };
+    };
+  
+    let videoQueue:any = [];
+
+    const addVideoStreamingMessage = () => {
+      let videoEventSource: EventSource;
+    
+      // Set up the stream
+      if (!videoStreamingSetup) { 
+        videoStreamingSetup = true;
+    
+        videoEventSource = new EventSource('/api/video/');
+    
+        videoEventSource.onmessage = (event) => {
+          const data = JSON.parse(event.data);
+          if (data.message) {
+            if (data.message == '<|endofvideo|>') {
+              // playCurrentIdleVideo();
+              console.log(data.message);
+            } else { 
+              const buffer = Buffer.from(data.message, 'base64'); // Assume that data.video contains the base64 encoded MP4 data
+              const decodedVideoData = Buffer.from(data.message, 'base64');
+  
+              // Create a Blob from the Uint8Array with the correct MIME type
+              const blob = new Blob([decodedVideoData], { type: 'video/mp4' });
+  
+              // Create an object URL for the Blob
+              const objectURL = URL.createObjectURL(blob);
+
+              console.log("prepping next video...")
+              console.log(videoPlaying.current);
+              videoQueue.push(objectURL);
+            }
+
+            // If there is no audio currently playing, start playing
+            if (!videoPlaying.current) {
+              playNextVideo();
+            }
+          }
+        }
+      };
+  
+      // Function to play the next audio in the queue
+      const playNextVideo = () => {
+        console.log(videoQueue.length);
+        if (videoQueue.length > 0) {
+          console.log("playing next video");
+          const videoUrl = videoQueue.shift();
+          setOnVideoEnd(() => {
+            return () => {
+              console.log('Video has ended');
+              playNextVideo();  // Play the next audio when the current one ends
+              // You can add more code here to be executed when the video ends
+            };
+          });
+          playVideo(videoUrl);
+        } else { 
+          stopPlaying();
+        }
+      };
+  
+    // Clean up the stream when done
+    return () => {
+      videoEventSource.close();
+    };
   };
+
 
   React.useEffect(() => {
     addStreamingMessage();
@@ -159,6 +223,11 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({ id }) =>  {
   React.useEffect(() => {
     addAudioStreamingMessage();
   }, []); // Empty dependency array ensures this runs only once
+
+  React.useEffect(() => {
+    addVideoStreamingMessage();
+  }, []); // Empty dependency array ensures this runs only once
+
 
   const handleTextAreaChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     setTextAreaValue(event.target.value);
