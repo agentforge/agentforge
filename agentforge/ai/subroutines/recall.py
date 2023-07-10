@@ -6,17 +6,17 @@ class Recall:
         pass
     
     def execute(self, context: Dict[str, Any]) -> Dict[str, Any]:
-        if 'memory' not in context:
-            return context
-        memories = context['memory'].recall(
-            context['model_profile']['metadata']['user_id'],
-            context['model_profile']['avatar_config']['name'],
-            context['input']['prompt']
-        )
-        working = context['memory'].session_history(
-            context['model_profile']['metadata']['user_id'],
-            context['model_profile']['avatar_config']['name'],            
-        )
-        print(working)
-        context['recall'] = memories + " \n " + working
+        if 'memory' in context:
+            memories = context['memory'].recall(
+                context['model_profile']['metadata']['user_id'],
+                context['model_profile']['avatar_config']['name'],
+                context['input']['prompt']
+            )
+        if 'memory' in context:
+            working = context['memory'].session_history(
+                context['model_profile']['metadata']['user_id'],
+                context['model_profile']['avatar_config']['name'],
+                context['input']['id'],            
+            )
+            context['recall'] = memories + " \n " + working
         return context

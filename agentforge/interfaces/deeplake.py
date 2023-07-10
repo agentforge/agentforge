@@ -32,9 +32,22 @@ class DeepLakeVectorStore(VectorStoreProtocol):
         except Exception as e:
             print(f"Error while deleting directory '{self.deeplake_path}': {e}")
 
-    def search(self, query: str, n: int = 4, filter: Optional[Dict] = {}) -> Any:
+    def search(self, query: str, n: int = 4, **kwargs) -> Any:
         # Perform your search here and return the result
-        docs = self.deeplake.similarity_search(query, n, filter=filter)
+        try:
+            docs = self.deeplake.similarity_search(query, n, **kwargs)
+        except ValueError as e:
+            # Vectorstore is empty
+            docs = []
+        return docs
+    
+    def search_with_score(self, query: str, k: int = 4, distance_metric: str = "cos", **kwargs) -> Any:
+        # Perform your search here and return the result
+        try:
+            docs = self.deeplake.similarity_search_with_score(query=query, k=k, distance_metric=distance_metric)
+        except ValueError as e:
+            # Vectorstore is empty
+            docs = []
         return docs
 
     def add_texts(self, texts: List[str], metadata: List[Any]) -> None:

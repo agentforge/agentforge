@@ -1,13 +1,20 @@
-# main.py
+# Hack for deeplake issue
+# TODO: Mitigate and get Pymilvus working
+import deeplake
+deeplake.__version__ = '3.6.2'
 
+# main.py
+from fastapi import Request
 from agentforge.api.model_profiles import router as model_profiles_router
 from agentforge.api.agent import router as agent_router
 from agentforge.api.user import router as user_router
 from agentforge.api.app import init_api
 from agentforge.utils import logger
+from agentforge.interfaces import interface_interactor
 
-from starlette.middleware.base import BaseHTTPMiddleware, Request
+from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse
+import traceback
 
 from typing import Dict, Deque
 from collections import deque
@@ -50,6 +57,15 @@ class RateLimiterMiddleware(BaseHTTPMiddleware):
         response = await call_next(request)
         return response
 
+### TODO: limit to dev/test environment
+from agentforge.interfaces import interface_interactor
+from agentforge.ai.cognition.planner import DomainBuilder
+
+db = interface_interactor.get_interface("db")
+d = DomainBuilder(db)
+d.upload_documents_from_folder('garden', '/app/agentforge/agentforge/config/configs/planner/domains/garden', 'p_example')
+print("latest planning docs uploaded...")
+
 app = init_api()
 app.add_middleware(LoggingMiddleware)
 app.add_middleware(
@@ -61,7 +77,17 @@ app.include_router(model_profiles_router, prefix="/v1/model-profiles", tags=["mo
 app.include_router(user_router, prefix="/v1/user", tags=["users"])
 app.include_router(agent_router, prefix="", tags=["agent_forge"])
 
+@app.on_event("startup")
+def startup_event():
+    print("startup")
+    app.state.redis = interface_interactor.create_redis_connection()
+
+@app.on_event("shutdown")
+def shutdown_event():
+    app.state.redis.close()
+    app.state.redis.wait_closed()
+
 @app.exception_handler(Exception)
 async def custom_exception_handler(request: Request, exc: Exception):
-    logger.error(f"An error occurred: {exc}", exc_info=True)
-    return JSONResponse(status_code=500, content={"detail": "Internal Server Error"})
+    logger.info(f"An error occurred: {exc}", exc_info=True)
+    return JSONResponse(status_code=500, content={"err": exc, "detail": f"{traceback.format_exc()}"})

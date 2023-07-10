@@ -1,0 +1,43 @@
+### Instruction: Classify the text into a yes or no boolean, or None if the question is not answered.  
+### Input: "Do you have a container available to you?. Sure I have a plant pot in the garden."  
+### Thought Process:
+1. Identify question: "Do you have a container available to you?".
+2. Identify response: "Sure I have a plant pot in the garden.".
+3. Response indicates affirmation.
+4. Classify as True.
+5. Output is True; aligns with instructions.
+### Response: True
+
+### Instruction: Classify the text into a single or a list of plants.  
+### Input: "Do you have a container available to you?. What is a container?"  
+### Thought Process:
+1. Identify question: "Do you have a container available to you?".
+2. Identify response: "What is a container?".
+3. Response does not provide information about plants.
+4. Classify as None.
+5. Output is None; aligns with instructions.
+### Response: None  
+
+### Instruction: Classify the text into a single or a list of plants.  
+### Input: "Do you have a container available to you?. No"  
+### Thought Process:
+1. Identify question: "Do you have a container available to you?".
+2. Identify response: "No".
+3. Response indicates unavailability of a container.
+4. Classify as False.
+5. Output is False; aligns with instructions.
+### Response: False  
+
+### Instruction: Classify the text into a yes or no boolean, or None if the question is not answered.  
+### Input: "Did you go to the market? I went to the park."  
+### Thought Process for Additional Example:
+1. Identify question: "Did you go to the market?".
+2. Identify response: "I went to the park.".
+3. Response does not answer the question.
+4. Classify as None.
+5. Output is None; aligns with instructions.
+### Response: None
+
+### Instruction: Classify the text into a yes or no boolean, or None if the question is not answered.  
+### Input: {query} {response}
+### Thought Process:

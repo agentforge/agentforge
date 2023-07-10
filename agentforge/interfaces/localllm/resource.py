@@ -12,7 +12,7 @@ from .generator import LocalGenerator
 from .loader import LocalLoader
 from accelerate import Accelerator
 from agentforge.utils import Parser
-from .lib.text_streamer import TextStreamer
+from agentforge.interfaces.localllm.lib.text_streamer import TextStreamer
 from dotenv import load_dotenv
 
 ### Manages Base LLM functions ###
@@ -35,11 +35,11 @@ class LocalLLM():
     logging.info(f"LLM CUDA enabled: {torch.cuda.is_available()}")
 
     if self.model_key:
-        self.setup(self.config)
-        self.load_model(self.model_key)
+        self.setup(self.config, init=True)
+        self.load_model(self.config)
 
-  def setup(self, config: dict):
-    if config['model_config']['model_name'] != self.model_key:
+  def setup(self, config: dict, init: bool = False):
+    if config['model_config']['model_name'] != self.model_key or init:
       self.parser = Parser()
       self.loader = LocalLoader(config['model_config'])
       self.generator = LocalGenerator(config)
@@ -54,6 +54,7 @@ class LocalLLM():
 
   # Loads the model and transfomer given the model name
   def load(self, model_key=None, **kwargs) -> None:
+    print(model_key)
     if model_key == None:
       # If we aren't overriding use the default model
       model_key = self.model_key
@@ -61,9 +62,12 @@ class LocalLLM():
       # If we are already using this model, don't reload
       return
     # Load the model
+    print(model_key)
     self.switch_model(model_key, kwargs)
+    print('generator')
 
     self.generator.set_models(self.model, self.tokenizer, self.text_streamer(False))
+    print('done')
 
   # Setup and return the text streamer
   def text_streamer(self, streaming):
@@ -71,11 +75,13 @@ class LocalLLM():
       return None
     return TextStreamer(self.tokenizer, skip_prompt=True)
 
-  def generate(self, prompt="", **kwargs):
+  async def generate(self, prompt="", **kwargs):
     # setup the generator
     config = kwargs['generation_config']
     streaming = True if "streaming" in kwargs['model_config'] and kwargs['model_config']["streaming"] else False
+    print(streaming)
     self.setup(kwargs)
+    print('load')
     self.load(model_key=kwargs['model_config'].get("model_name", self.model_key), **kwargs)
     kwargs.update(config)
 
@@ -98,7 +104,7 @@ class LocalLLM():
         self.text_streamer(streaming),
         **kwargs
     )
-    return self.parser.parse_output(output)
+    return output
 
   def load_model(self, config):
     # Check key and load logic according to key

@@ -6,7 +6,10 @@ class VectorStoreProtocol(Protocol):
     def __init__(self, config: Any, reset: bool = False) -> None:
         pass
     
-    def search(self, n: int, query: str, filter: dict) -> Any:
+    def search(self, query: str, n: int, filter: dict) -> Any:
+        pass
+
+    def search_with_score(self, query: str, n: int, filter: dict) -> Any:
         pass
 
     def add_texts(self, texts: List[str], metadata: List[Any]) -> None:

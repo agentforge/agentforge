@@ -1,4 +1,5 @@
 ### Parses output and input text
+import re
 
 class Parser:
   def __init__(self):
@@ -6,6 +7,23 @@ class Parser:
 
   def parse_prompt(self, text):
     return text.strip()
+
+  def format_template(self, prompt_template, **kwargs):
+      # Find all placeholders in the prompt_template
+      placeholders = re.findall(r'<(.*?)>', prompt_template)
+
+      # For each placeholder, replace it with the corresponding value from kwargs
+      for placeholder in placeholders:
+          key = placeholder  # The key is the content within < >
+          if key in kwargs:
+              value = kwargs[key]  # Get the value from kwargs
+              prompt_template = prompt_template.replace(f"<{key}>", value)
+          else:
+              # If we didn't provide this key we want to get rid of the placeholder
+              prompt_template = prompt_template.replace(f"<{key}>", "")
+      
+      # Return the formatted prompt template
+      return prompt_template
 
   # Returns and AgentResponse object that 
   def parse_output(self, output):
@@ -18,7 +36,7 @@ class Parser:
   # Keyed to alpaca-7b, needs to be updated for other models
   # TODO: make this more robust
   def parse_llm_response(self, text, skip_tokens=[]):
-      prefixes = ["My response would be:", "My response is:"]
+      prefixes = ["My response would be:", "My response is:", "### Response:"]
       postfixes = ['### Thought',
         '# End',
         '# end',
@@ -33,7 +51,6 @@ class Parser:
         "### End",
         "### Instruction",
         "# Instruction",
-        "### Response",
         "# Python Responses",
         "# Output:",
         "#if __name__ == '__main__':",
@@ -43,7 +60,10 @@ class Parser:
         "# End of story",
         "# Ask a question",
         "#include",
-        "// output"
+        "// output",
+        "Note:",
+        "</s>",
+        "<|endoftext|>"
       ]
       for i in postfixes + skip_tokens:
           text = text.split(i)
@@ -54,6 +74,6 @@ class Parser:
             text = text[1]
           else:
             text = text[0]
-      if "\n" not in skip_tokens:
-        text = text.replace("\n", "<br>") # use br for new line
+      # if "\n" not in skip_tokens:
+      #   text = text.replace("\n", "<br>") # use br for new line
       return text.strip()

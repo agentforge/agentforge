@@ -1,8 +1,10 @@
-from fastapi import Request, Depends
+from fastapi import Request, Depends, status, HTTPException
 from pydantic import BaseModel
 from typing import List
 from agentforge.factories import resource_factory
-from .app import init_api
+from agentforge.api.app import init_api
+from agentforge.utils import logger
+import traceback
 
 app = init_api()
 llm = resource_factory.get_resource("llm")
@@ -15,8 +17,11 @@ class CompletionsResponse(BaseModel):
 
 # Given the following text request generate a wav file and return to the client
 @app.post("/v1/completions", operation_id="createLanguageModelCompletion")
-def output(request: Request) -> CompletionsResponse:
-  config = request.json
-  response = llm.generate(**config)
-  return CompletionsResponse(text=TextResponse(choices=response))
-
+async def output(request: Request) -> CompletionsResponse:
+   payload = await request.json()
+   try:
+      response = await llm.generate(**payload)
+   except:
+      response = "An error has occurred. Please try again later."
+      traceback.print_exc()
+   return CompletionsResponse(choices=[TextResponse(text=response)])
