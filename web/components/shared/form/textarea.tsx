@@ -1,3 +1,4 @@
+'use client';
 // TextareaElement.tsx
 import React from 'react';
 import * as Select from '@radix-ui/react-select';
@@ -38,14 +39,14 @@ const TextareaElement: React.FC<TextareaElementProps> = ({
 
   return (
     <>
-    <Label.Root className="flex w-1/6 text-[15px] font-medium leading-[35px] text-white" htmlFor="firstName">
+    <Label.Root className="flex w-1/6 text-[15px] font-medium leading-[35px] text-white" htmlFor="textarea">
       {label}
     </Label.Root>
-    <div className="flex w-4/6">
+    <div className="flex w-4/6 mt-6">
       <textarea
         id={ id }
-        defaultValue={ defaultVal }
-        className="form-control"
+        defaultValue={ modelProfileConfigs[id] }
+        className="form-control bg-blackA5 shadow-blackA9 inline-flex w-full appearance-none items-center justify-center rounded-[4px] px-[10px] text-[15px] leading-none text-white shadow-[0_0_0_1px] outline-none focus:shadow-[0_0_0_2px_black]"
         rows={4}
         style={{ width: '100%' }}
         onChange={handleValueChange}

@@ -24,8 +24,8 @@ const SliderElement = forwardRef<HTMLDivElement, SliderElementProps>(
     }
   }, []);
 
+
     const handleValueChange = (value: number[]) => {
-      console.log("setting slider value")
       setModelProfileConfig(sliderId, value[0]);
     };
 
