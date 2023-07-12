@@ -3,6 +3,17 @@ import * as React from 'react';
 import SelectElement from '@/components/shared/form/select';
 import * as Label from '@radix-ui/react-label';
 import { ConfigForm, ConfigFields } from '../../shared/form/configform';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { CaretDownIcon } from '@radix-ui/react-icons';
+
+
 
 //TODO GET FROM API
 const models = [
@@ -44,18 +55,34 @@ export interface ModelConfigProps {
   form: {[key: string]: string | number | boolean | undefined};
 }
 
-export const ModelConfig: React.FC<ModelConfigProps> = ({ form }) =>  {
+export const ModelConfig: React.FC<ModelConfigProps> = ({ form }) => {
   return (
-      <>
+    <>
       <div className='flex flex-row w-full'>
-      <div className='flex w-3/4'>
-        <h1>Model Config</h1>
+        <div className='flex w-3/4'>
+          <h1>Model Config</h1>
+        </div>
       </div>
-    </div>
-    <p className="text-gray-600">Configure the model, tokenizer, and peft if needed. Be sure to set appropriate EOS tokens for expected behavior.</p>
-    <ConfigForm fields={MODEL_FIELDS} form={form} />
+      <p className="text-gray-600">Configure the model, tokenizer, and peft if needed. Be sure to set appropriate EOS tokens for expected behavior.</p>
+
+      <div className="mt-4 mb-4">
+        <DropdownMenu>
+          <DropdownMenuTrigger style={{ width: '33%' }} className="border-white border rounded-lg flex items-center justify-between px-4 py-2">
+              Model Preset
+            <CaretDownIcon className="ml-2 w-4 h-4" />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+            <DropdownMenuItem>Fields 1</DropdownMenuItem>
+            <DropdownMenuItem>Fields 2</DropdownMenuItem>
+            <DropdownMenuItem>Fields 3</DropdownMenuItem>
+            <DropdownMenuItem>Fields 4</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+
+      <ConfigForm fields={MODEL_FIELDS} form={form} />
     </>
-  )
-}
+  );
+};
 
 export default ModelConfig;
