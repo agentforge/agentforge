@@ -13,7 +13,7 @@ class Respond:
             return context
 
         input = {
-            "prompt": context['input']['prompt'],
+            "prompt": context['input']['formatted'],
             "generation_config": context['model_profile']['generation_config'],
             "model_config": context['model_profile']['model_config'],
         }
@@ -23,7 +23,7 @@ class Respond:
             context["response"] = response["choices"][0]["text"]
 
             ### We want to parse the output here -- this output goes to end user
-            context["response"] = context["response"].replace(context['input']['prompt'], "")
+            context["response"] = context["response"].replace(context['input']['formatted'], "")
             context["response"] = self.parser.parse_llm_response(context["response"])
             for tok in ['eos_token', 'bos_token']:
                 if tok in context['model_profile']['model_config']:

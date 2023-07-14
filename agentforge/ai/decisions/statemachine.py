@@ -24,6 +24,10 @@ class Node:
         self.finished.set()  # Signal that this node has finished
         return context
 
+    def reset(self):
+        self.finished.clear()  # Reset the finished event
+
+
 class StateMachine:
     def __init__(self, nodes: List[Node], flows: Dict[str, Routine]):
         self.nodes = nodes
@@ -34,4 +38,9 @@ class StateMachine:
             threading.Thread(target=node.run, args=(context, self.flows)).start()
         for node in self.nodes:
             node.finished.wait()  # Wait until the node has finished
+        self.reset()  # Reset the nodes when all have finished
         return context
+
+    def reset(self):
+        for node in self.nodes:
+            node.reset()  # Reset each node

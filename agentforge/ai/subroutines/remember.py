@@ -14,7 +14,7 @@ class Remember:
         context['memory'].remember(
             context['model_profile']['metadata']['user_id'],
             context['model_profile']['avatar_config']['name'],
-            context['input']['original_prompt'],
+            context['input']['prompt'],
             context['response']
         )
         return context
