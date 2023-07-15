@@ -68,9 +68,9 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode.update({"exp": expire})
     new_token = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
-    # Save the new token in the database
+    # Save the new token in the database #TODO: Ideally we don't save these in DB and use shared SECRET_KEY/ALGORITHM to determine validity
     if user_id:
-        db.set("tokens", user_id, {"token": new_token})
+        db.set("tokens", user_id, {"token": new_token, "expiry": expire})
 
     return new_token
 

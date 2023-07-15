@@ -18,13 +18,16 @@ class MongoDBKVStore(DB):
 
     def connection(self, config: DbConfig) -> None:
         try:
-            username = quote_plus(config.username)
-            password = quote_plus(config.password)
-            host = config.host
-            port = config.port
-            self.client = MongoClient(f"mongodb://{username}:{password}@{host}:{port}")
-            self.db = self.client[config.db_name]
-            logging.info('Connection established.')
+            if config.mongo_uri is not None:
+                self.client = MongoClient(f"{config.mongo_uri}")
+            else:
+                username = quote_plus(config.username)
+                password = quote_plus(config.password)
+                host = config.host
+                port = config.port
+                self.client = MongoClient(f"mongodb://{username}:{password}@{host}:{port}")
+                self.db = self.client[config.db_name]
+                logging.info('Connection established.')
         except errors.ConnectionFailure as e:
             logging.error(f'Connection failed: {str(e)}')
             raise
