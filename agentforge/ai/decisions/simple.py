@@ -3,6 +3,7 @@ from agentforge.ai.routines.reactive import ReactiveRoutine, PlanningRoutine
 from agentforge.ai.cognition.memory import Memory
 from agentforge.exceptions import BreakRoutineException
 from agentforge.ai.decisions.statemachine import StateMachine
+import threading
 
 class SimpleDecision:
     def __init__(self):
@@ -13,7 +14,12 @@ class SimpleDecision:
     def run(self, context: Dict[str, Any]) -> Dict[str, Any]:
         # Use the context, config, and user_id to decide on a routine
         context['memory'] = Memory()
-        context = StateMachine(self.routine.subroutines, self.flows).run(context)
+        threading.Thread(target=StateMachine(self.routine.subroutines, self.flows).run, args=(context,)).start()
+
+        # Return True immediately after starting the StateMachine
+        return True
+        #context['memory'] = Memory()
+        #context = StateMachine(self.routine.subroutines, self.flows).run(context)
 
         # Our decision loop is responsible for handling top level subroutines so
         # we can keep on eye on interruptions and other state changes

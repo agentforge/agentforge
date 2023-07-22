@@ -27,26 +27,36 @@ class Parse:
     def verify_token_exists(self, context: Dict[str, Any]) -> bool:
         if "apiToken" not in context["input"]:
             raise Exception({"error": "apiToken is not found in API input"})
-        print(context["input"]["apiToken"])
-        token_record = self.db.get("tokens", {"token": context["input"]["apiToken"]})
-        if token_record is not None and "token" in token_record:
+        token_record = self.db.get("tokens", context["input"]["apiToken"])
+        print(token_record)
+        if token_record is not None:
             return token_record
         return None
+    
+    def get_instruction(self, context):
+        if 'prompt' in context['input']:
+            return context['input']['prompt']
+        elif 'messages' in context['input']:
+            return context['input']['messages'][-1]['content']
+        else:
+            raise Exception(f"No valid prompt {context['input']}")
 
     def execute(self, context: Dict[str, Any]) -> Dict[str, Any]:
         ## First check API key for legitimacy
         valid_token = self.verify_token_exists(context)
         if valid_token is None:
-            raise Exception("Invalid Token")
+            raise Exception(f"Invalid Token {context['input']['apiToken']}")
         # TODO: Bail on this response properly
 
         context = self.get_model_id(context)
 
+        context["input"]["user_id"] = valid_token["user_id"]
         ### Pull necessary data for prompt template
         prompt_template = context['model_profile']['prompt_config']['prompt_template']
         name = context['model_profile']['avatar_config']['name']
         biography = context['model_profile']['avatar_config']['biography']
-        instruction = context['input']['prompt']
+        instruction = self.get_instruction(context)
+        context['input']['prompt'] = instruction
         memory = context['recall'] if 'recall' in context else ""
 
         formatted_template = self.parser.format_template(prompt_template,

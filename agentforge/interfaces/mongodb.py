@@ -26,8 +26,8 @@ class MongoDBKVStore(DB):
                 host = config.host
                 port = config.port
                 self.client = MongoClient(f"mongodb://{username}:{password}@{host}:{port}")
-                self.db = self.client[config.db_name]
-                logging.info('Connection established.')
+            self.db = self.client[config.db_name]
+            logging.info('Connection established.')
         except errors.ConnectionFailure as e:
             logging.error(f'Connection failed: {str(e)}')
             raise

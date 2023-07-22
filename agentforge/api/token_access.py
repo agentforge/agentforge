@@ -70,7 +70,7 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
 
     # Save the new token in the database #TODO: Ideally we don't save these in DB and use shared SECRET_KEY/ALGORITHM to determine validity
     if user_id:
-        db.set("tokens", user_id, {"token": new_token, "expiry": expire})
+        db.set("tokens", new_token, {"user_id": user_id, "expiry": expire})
 
     return new_token
 
