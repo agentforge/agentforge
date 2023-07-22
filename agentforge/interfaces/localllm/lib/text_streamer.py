@@ -116,7 +116,7 @@ class TextStreamer(BaseStreamer):
 
         # After the symbol for a new line, we flush the cache.
         if text.endswith("\n"):
-            printable_text = text[self.print_len :] + "<br>"
+            printable_text = text[self.print_len :] + "\n"
             self.token_cache = []
             self.print_len = 0
         # Otherwise, prints until the last space char (simple heuristic to avoid printing incomplete words,
@@ -146,6 +146,8 @@ class TextStreamer(BaseStreamer):
         """Prints the new text to stdout. If the stream is ending, also prints a newline."""
         print(text, flush=True, end="" if not stream_end else None)
         # publish the message to the channel
+        print(self.redis_server)
+        print(text)
         self.redis_server.publish('channel', text)
         if stream_end:
             self.redis_server.publish('channel', '<|endoftext|>')
