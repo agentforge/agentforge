@@ -146,8 +146,6 @@ class TextStreamer(BaseStreamer):
         """Prints the new text to stdout. If the stream is ending, also prints a newline."""
         print(text, flush=True, end="" if not stream_end else None)
         # publish the message to the channel
-        print(self.redis_server)
-        print(text)
         self.redis_server.publish('channel', text)
         if stream_end:
             self.redis_server.publish('channel', '<|endoftext|>')
