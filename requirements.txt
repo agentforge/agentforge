@@ -39,4 +39,5 @@ fastapi
 uvicorn
 markdown
 aioredis
-asyncio 
+asyncio
+passlib

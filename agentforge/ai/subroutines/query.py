@@ -26,8 +26,8 @@ class Learn:
       for query in queries:
           if query is not None and "sent" in query and query["sent"]:
               # feed in to the OQAL
-              # raise Exception(context["input"]["original_prompt"])
-              query["response"] = context["input"]["original_prompt"]
+              # raise Exception(context["input"]["prompt"])
+              query["response"] = context["input"]["prompt"]
               print("I'm learning...")
               self.predicate_memory.learn(query) # TODO: I doubt the user formats the response correctly, we should rely on the LLM here
               query_engine.pop_query()

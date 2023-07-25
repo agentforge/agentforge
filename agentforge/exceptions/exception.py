@@ -39,3 +39,13 @@ class BreakRoutineException(Exception):
     def __init__(self, message="We are done here."):
         self.message = message
         super().__init__(self.message)
+
+class APIException(Exception):
+    """Exception raised for API Errors.
+
+    Attributes:
+        message -- explanation of the error
+    """
+    def __init__(self, message="We are done here."):
+        self.message = message
+        super().__init__(self.message)

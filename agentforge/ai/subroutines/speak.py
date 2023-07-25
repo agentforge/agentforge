@@ -53,7 +53,7 @@ class Speak:
         self.sequence_number = 0
         ### Synchronous example 
         if context['model_profile']['model_config']['speech'] and 'response' in context:
-            wav_response = self.service.call({'response': context['response'], 'avatar_config': context['model_profile']['avatar_config']})
+            wav_response = self.tts.call({'response': context['response'], 'avatar_config': context['model_profile']['avatar_config']})
             if wav_response is not None:
                 context['audio'] = {"audio_response": wav_response["filename"], "type": "audio/wav"}
         # Async example

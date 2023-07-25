@@ -7,7 +7,8 @@ from agentforge.ai import decision_interactor
 from agentforge.interfaces.model_profile import ModelProfile
 from agentforge.api.auth import get_api_key
 import asyncio
-
+from aioredis import Redis
+import traceback
 # Setup Agent
 decision = decision_interactor.create_decision()
 
@@ -17,18 +18,26 @@ class AgentResponse(BaseModel):
 router = APIRouter()
 # redis_store = interface_interactor.create_redis_connection()
 
-@router.get("/stream/{channel}")
-def stream(channel: str):
-    pubsub = app.state.redis.pubsub()
-    pubsub.subscribe(channel)
-    async def event_generator():
+async def event_generator():
+    redis = Redis.from_url('redis://redis:6379/0')
+    async with redis.client() as client:
+        pubsub = client.pubsub()
+        await pubsub.subscribe('channel')
         while True:
-            message = pubsub.get_message(ignore_subscribe_messages=True)
-            if message:
-                yield {"data": message["data"].decode("utf-8")}
+            message = await pubsub.get_message()
+            if message and message['type'] == 'message':
+                try:
+                    val = message['data'].decode('utf-8')
+                except Exception as e:
+                    print(e)
+                    traceback.print_exc()
+                    val = "ERR"
+                if val.strip() in ['</s>', '<|endoftext|>']:
+                    return
+                yield str(val)
             else:
-                asyncio.sleep(1)
-    return StreamingResponse(event_generator(), media_type="text/event-stream")
+                await asyncio.sleep(1)
+
 
 @router.get("/", operation_id="helloWorld", dependencies=[Depends(get_api_key)])
 def hello() -> AgentResponse:
@@ -36,7 +45,7 @@ def hello() -> AgentResponse:
 
 @router.post('/v1/completions', operation_id="createChatCompletion") #, dependencies=[Depends(get_api_key)])
 async def agent(request: Request) -> AgentResponse:
-    ## Parse Data --  from web accept JSON, from client we need to pull ModelConfig
+    ## Parse Data --  from web acceptuseChat JSON, from client we need to pull ModelConfig
     ## and add add the prompt and user_id to the data
     data = await request.json()
 
@@ -44,43 +53,75 @@ async def agent(request: Request) -> AgentResponse:
     if 'id' not in data:
         return {"error": "No model profile specified."}
 
+    # TODO: To make this faster we should ideally cache these models, gonna be a lot of reads and few writes here
     model_profiles = ModelProfile()
-    model_profile = model_profiles.get(data['id'])
-    
-    ## Get Decision from Decision Factory and run it
-    decision = decision_interactor.get_decision()
+    print("data", data)
+    if 'modelId' in data:
+        model_profile = model_profiles.get(data['modelId'])
+    else:
+        model_profile = model_profiles.get(data['id'])
 
-    # print("[DEBUG][api][agent][agent] decision: ", decision)
+    print("model_profile", model_profile)
+    print(model_profile['model_config']['streaming'])
+    if model_profile['model_config']['streaming']:
+        ## Get Decision from Decision Factory and run it
+        decision = decision_interactor.get_decision()
+        # print("[DEBUG][api][agent][agent] decision: ", decision)
+        output = decision.run({"input": data, "model_profile": model_profile})
+        print("return")
+        return StreamingResponse(event_generator(), media_type="text/event-stream")
 
-    output = decision.run({"input": data, "model_profile": model_profile})
+    else:
+        ## Get Decision from Decision Factory and run it
+        decision = decision_interactor.get_decision()
 
-    # print("[DEBUG][api][agent][agent] decision: ", output)
+        # print("[DEBUG][api][agent][agent] decision: ", decision)
 
-    ### Parse video if needed
-    if 'video' in output:
-        filename = output['video']["lipsync_response"]
+        output = decision.run({"input": data, "model_profile": model_profile})
 
-        with open(filename, 'rb') as fh:
-            return AgentResponse(
-                data = {
-                    'choices': [{"text": output["response"]}],
-                    'video': b64encode(fh.read()).decode()
-                }
-            )
+        # print("[DEBUG][api][agent][agent] decision: ", output)
 
-    ### Parse audio if needed
-    if 'audio' in output:
-        filename = output['audio']["audio_response"]
+        ### Parse video if needed
+        if 'video' in output:
+            filename = output['video']["lipsync_response"]
 
-        with open(filename, 'rb') as fh:
-            return AgentResponse(
-                data = {
-                    'choices': [{"text": output["response"]}],
-                    'audio': b64encode(fh.read()).decode()
-                }
-            )
+            with open(filename, 'rb') as fh:
+                return AgentResponse(
+                    data = {
+                        'choices': [{"text": output["response"]}],
+                        'video': b64encode(fh.read()).decode()
+                    }
+                )
 
-    # print("[DEBUG][api][agent][agent] output: ", output)
+        ### Parse audio if needed
+        if 'audio' in output:
+            filename = output['audio']["audio_response"]
 
-    ## Return Decision output
-    return AgentResponse(data=output)
+            with open(filename, 'rb') as fh:
+                return AgentResponse(
+                    data = {
+                        'choices': [{"text": output["response"]}],
+                        'audio': b64encode(fh.read()).decode()
+                    }
+                )
+
+        # print("[DEBUG][api][agent][agent] output: ", output)
+
+        ## Return Decision output
+        return AgentResponse(data=output)
+
+### Streaming for old Forge
+@router.get("/stream/{channel}")
+def stream(channel: str):
+    pubsub = app.state.redis.pubsub()
+    pubsub.subscribe(channel)
+    async def event_generator():
+        for i in range(100):
+            yield  {"data": i}
+        # while True:
+        #     message = pubsub.get_message(ignore_subscribe_messages=True)
+        #     if message:
+        #         yield {"data": message["data"].decode("utf-8")}
+        #     else:
+        #         asyncio.sleep(1)
+    return StreamingResponse(event_generator(), media_type="text/event-stream")

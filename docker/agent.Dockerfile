@@ -15,6 +15,8 @@ RUN git clone https://github.com/aibasel/downward.git && \
 RUN pip install bcrypt pymongo
 RUN pip install inflect
 RUN pip install twilio
+RUN pip3 install python-jose
+
 
 WORKDIR /app/agentforge/agentforge/api
 

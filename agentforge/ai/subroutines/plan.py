@@ -33,8 +33,8 @@ class Plan:
         if len(sent) > 0:
             query = sent[0]
             # feed in to the OQAL
-            # raise Exception(context["input"]["original_prompt"])
-            query["response"] = context["input"]["original_prompt"]
+            # raise Exception(context["input"]["prompt"])
+            query["response"] = context["input"]["prompt"]
             print("I'm learning...")
             learned, results = self.predicate_memory.learn(query, context) # TODO: I doubt the user formats the response correctly, we should rely on the LLM here
             print(learned, results)
