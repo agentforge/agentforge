@@ -1,5 +1,5 @@
 # Use the official Node.js v14 image as the base image
-FROM node:14
+FROM node:20-slim
 
 # Set the working directory in the container
 WORKDIR /app
@@ -19,6 +19,7 @@ WORKDIR /app/agentforge/web/
 ENV NODE_VERSION 16.8.0
 ENV NVM_DIR /usr/local/nvm
 RUN mkdir -p $NVM_DIR
+RUN apt update && apt install -y curl
 
 # Install the app's dependencies
 
