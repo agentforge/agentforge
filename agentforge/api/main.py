@@ -7,6 +7,7 @@ deeplake.__version__ = '3.6.2'
 from fastapi import Request
 from agentforge.api.model_profiles import router as model_profiles_router
 from agentforge.api.agent import router as agent_router
+from agentforge.api.token_access import router as token_router
 from agentforge.api.user import router as user_router
 from agentforge.api.app import init_api
 from agentforge.utils import logger
@@ -75,6 +76,7 @@ app.add_middleware(
 )
 app.include_router(model_profiles_router, prefix="/v1/model-profiles", tags=["model_profiles"])
 app.include_router(user_router, prefix="/v1/user", tags=["users"])
+app.include_router(token_router, prefix="/v1/access", tags=["tokens"])
 app.include_router(agent_router, prefix="", tags=["agent_forge"])
 
 @app.on_event("startup")

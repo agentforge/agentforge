@@ -15,7 +15,7 @@ class ModelProfile():
 
     def get(self, id: str) -> Optional[Any]:
         # Construct the key for this user and model-config
-        cursor = self.db.get_many("model_profiles", {"_id": id})        
+        cursor = self.db.get_many("model_profiles", {"_id": id})
         vals = list(cursor.limit(1))
         return {} if len(vals) == 0 else vals[0]
 

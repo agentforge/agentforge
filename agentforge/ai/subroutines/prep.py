@@ -49,9 +49,9 @@ class Prep:
             del context['memory']
         if 'response' not in context or context['response'] is None:
             return context
-        presentation = context['model_config']['presentation'] if 'model_config' in context and 'presentation' in context['model_config'] else "html"
-        if presentation == 'html':
-            context['response'] = self.convert_html(context['response'])
-            context['response'] = markdown.markdown(context['response'])
+        # presentation = context['model_config']['presentation'] if 'model_config' in context and 'presentation' in context['model_config'] else "html"
+        # if presentation == 'html':
+        #     context['response'] = self.convert_html(context['response'])
+        #     context['response'] = markdown.markdown(context['response'])
         context['choices'] = [{"text": context['response']}] # OAI backwargs compatible
         return context
