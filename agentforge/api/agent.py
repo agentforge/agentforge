@@ -18,27 +18,6 @@ class AgentResponse(BaseModel):
 router = APIRouter()
 # redis_store = interface_interactor.create_redis_connection()
 
-async def event_generator():
-    redis = Redis.from_url('redis://redis:6379/0')
-    async with redis.client() as client:
-        pubsub = client.pubsub()
-        await pubsub.subscribe('channel')
-        while True:
-            message = await pubsub.get_message()
-            if message and message['type'] == 'message':
-                try:
-                    val = message['data'].decode('utf-8')
-                except Exception as e:
-                    print(e)
-                    traceback.print_exc()
-                    val = "ERR"
-                if val.strip() in ['</s>', '<|endoftext|>']:
-                    return
-                yield str(val)
-            else:
-                await asyncio.sleep(1)
-
-
 @router.get("/", operation_id="helloWorld", dependencies=[Depends(get_api_key)])
 def hello() -> AgentResponse:
     return AgentResponse(data={"response": "Hello world"})
@@ -69,6 +48,27 @@ async def agent(request: Request) -> AgentResponse:
         # print("[DEBUG][api][agent][agent] decision: ", decision)
         output = decision.run({"input": data, "model_profile": model_profile})
         print("return")
+
+        async def event_generator():
+            redis = Redis.from_url('redis://redis:6379/0')
+            async with redis.client() as client:
+                pubsub = client.pubsub()
+                await pubsub.subscribe('channel')
+                while True:
+                    message = await pubsub.get_message()
+                    if message and message['type'] == 'message':
+                        try:
+                            val = message['data'].decode('utf-8')
+                        except Exception as e:
+                            print(e)
+                            traceback.print_exc()
+                            val = "ERR"
+                        if val.strip() in ['</s>', '<|endoftext|>']:
+                            return
+                        yield str(val)
+                    else:
+                        await asyncio.sleep(1)
+
         return StreamingResponse(event_generator(), media_type="text/event-stream")
 
     else:
@@ -113,15 +113,51 @@ async def agent(request: Request) -> AgentResponse:
 ### Streaming for old Forge
 @router.get("/stream/{channel}")
 def stream(channel: str):
-    pubsub = app.state.redis.pubsub()
-    pubsub.subscribe(channel)
+    print("streaming")
+    # pubsub = app.state.redis.pubsub()
+    # pubsub.subscribe(channel)
     async def event_generator():
-        for i in range(100):
-            yield  {"data": i}
-        # while True:
-        #     message = pubsub.get_message(ignore_subscribe_messages=True)
-        #     if message:
-        #         yield {"data": message["data"].decode("utf-8")}
-        #     else:
-        #         asyncio.sleep(1)
-    return StreamingResponse(event_generator(), media_type="text/event-stream")
+        redis = Redis.from_url('redis://redis:6379/0')
+        async with redis.client() as client:
+            pubsub = client.pubsub()
+            await pubsub.subscribe('video')
+            while True:
+                message = await pubsub.get_message()
+                if message and message['type'] == 'message':
+                    print(message)
+                    try:
+                        val = message['data'].decode('utf-8')
+                    except Exception as e:
+                        print(e)
+                        traceback.print_exc()
+                        val = "ERR"
+                    if val.strip() in ['</s>', '<|endoftext|>']:
+                        return
+                    yield f"data: {str(val)}\n\n"
+                else:
+                    yield f"data: {str('data')}\n\n"
+                    await asyncio.sleep(1)
+    
+    # async def event_generator():
+    #     for i in range(10):
+    #         print(i)
+    #         yield f"data: {str(i)}\n\n"  # format the event data correctly
+    #         await asyncio.sleep(1)  # Give control back to the event loop
+    # while True:
+    #     message = pubsub.get_message(ignore_subscribe_messages=True)
+    #     if message:
+    #         yield {"data": message["data"].decode("utf-8")}
+    #     else:
+    #         asyncio.sleep(1)
+    headers = {
+        "Access-Control-Allow-Origin": "*",
+        "Content-Type": "text/event-stream; charset=utf-8",
+        "Connection": "keep-alive",
+        "Cache-Control": "no-cache, no-transform",
+        "X-Accel-Buffering": "no",
+        "Content-Encoding": "none",
+    }
+    
+    response = StreamingResponse(event_generator(), media_type="text/event-stream")
+    response.init_headers(headers)
+    return response
