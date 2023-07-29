@@ -2,7 +2,7 @@ import redis
 import time
 from agentforge.interfaces import interface_interactor
 
-def stream_string(channel_name, input_string, delay=0.15):
+def stream_string(channel_name, input_string, delay=0.2):
     redis_store = interface_interactor.create_redis_connection()
 
     # Tokenize the string into words

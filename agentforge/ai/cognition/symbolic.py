@@ -47,7 +47,7 @@ class PredicateMemory:
             "prompt": prompt.replace("{response}", response).replace("{query}", query),
             "generation_config": context['model_profile']['generation_config'], # TODO: We need to use a dedicated model
             "model_config": context['model_profile']['model_config'],
-            "streaming": False,
+            "streaming_override": False, # sets streaming to False
         }
         # Disable streaming of classification output -- deepcopy so we don't effect the model_config
         print("[PROMPT]")

@@ -18,14 +18,15 @@ from agentforge.ai.decisions.statemachine import Node
 class ReactiveRoutine(Routine):
     def __init__(self):
         super().__init__("reactive")
-        parse = Node(Parse().execute, [])
+        recall = Node(Recall().execute, [])
+        parse = Node(Parse().execute, [recall])
         intent = Node(Intent().execute, [parse])
         speak = Node(Speak().execute, [parse, intent])
         respond = Node(Respond().execute, [parse, intent])
         remember = Node(Remember().execute, [speak, respond])
         self.subroutines = [
             parse,
-            Node(Recall().execute, [parse]),
+            recall,
             intent,
             respond,
             speak,
@@ -94,4 +95,5 @@ class PlanningRoutine(Routine):
         super().__init__("plan", plan_prompts)
         self.subroutines = [
             Node(Plan().execute, []),
+            Node(Speak().execute, [])
         ]

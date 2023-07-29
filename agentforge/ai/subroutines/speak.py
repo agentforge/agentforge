@@ -11,8 +11,6 @@ class Speak:
         self.w2l = interface_interactor.get_interface("w2l")
         self.redis_store = interface_interactor.create_redis_connection()
         self.pubsub = self.redis_store.pubsub()
-        self.pubsub.subscribe('channel')
-        self.buffer = ""
 
     async def event_generator(self, context: Dict[str, Any], av_type: str):
         while True:
@@ -30,10 +28,10 @@ class Speak:
     def parse_av_stream(self, text: str, context: Dict[str, Any], av_type: str='audio'):
         if text != '<|endoftext|>':
             self.buffer += text
-        if re.search(r'[.!?]\s*$', self.buffer) or text == '<|endoftext|>':
-            print(self.buffer)
+        if re.search(r'[.!?]\s*$', self.buffer) or text == '<|endoftext|>' and self.buffer != '':
+            print("buffer", self.buffer)
             wav_response = self.tts.call({'response': self.buffer, 'avatar_config': context['model_profile']['avatar_config']})
-            
+
             if os.path.isfile(wav_response['filename']):
                 if av_type == 'video':
                     lip_sync_file = self.w2l.call({'avatar_config': context['model_profile']['avatar_config'], 'audio_response': wav_response['filename']})
@@ -46,12 +44,14 @@ class Speak:
                         self.redis_store.publish('audio', encoded_string)
                 self.sequence_number += 1
             self.buffer = ""
-        
+
         return True if text == '<|endoftext|>' else False
 
     def execute(self, context: Dict[str, Any]) -> Dict[str, Any]:
+        self.pubsub.subscribe('channel') # TODO: Make user specific for multi-user
+        self.buffer = ""
         self.sequence_number = 0
-        ### Synchronous example 
+        ### Synchronous example
         if context['model_profile']['model_config']['speech'] and 'response' in context:
             wav_response = self.tts.call({'response': context['response'], 'avatar_config': context['model_profile']['avatar_config']})
             if wav_response is not None:
@@ -63,5 +63,5 @@ class Speak:
 
         elif context['model_profile']['model_config']['speech'] and context['model_profile']['model_config']['streaming']:
             asyncio.run(self.event_generator(context, 'audio'))
-
+        self.pubsub.unsubscribe('channel') # TODO: Make user specific for multi-user
         return context

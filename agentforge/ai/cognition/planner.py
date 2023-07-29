@@ -370,12 +370,13 @@ class Planner:
         s = "Here is some text (I want (only this) part) and this is not needed."
         result = self.extract_outermost_parentheses(s)
 
-    def query(self, prompt_text, input_config, extract_parens=True):
+    def query(self, prompt_text, input_config, extract_parens=True, streaming_override=False):
         result_text = "()"
         input_ = {
             "prompt": prompt_text,
             "generation_config": input_config['generation_config'],
             "model_config": input_config['model_config'],
+            "streaming_override": streaming_override,
         }
         response = self.llm.call(input_)
         result_text = response['choices'][0]['text']
@@ -418,7 +419,7 @@ class Planner:
         #          f"The corresponding domain PDDL file is: \n {domain_pddl_} \n" + \
         #          f"The optimal PDDL plan is: \n {plan} \n" + \
         #          f"Transform the PDDL plan into a sequence of behaviors without further explanation."
-        res = self.query(prompt, input_, extract_parens=False).strip() + "\n"
+        res = self.query(prompt, input_, extract_parens=False, streaming_override=True).strip() + "\n"
         return res
 
 def llm_ic_pddl_planner(args, planner, domain, input, task_pddl_):
