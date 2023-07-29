@@ -1,6 +1,4 @@
 from typing import Any, Dict
-from agentforge.interfaces import interface_interactor
-from agentforge.utils import timer_decorator
 from agentforge.ai.cognition.planner import PlanningController
 from agentforge.ai.cognition.query_engine import QueryEngine
 from agentforge.ai.cognition.symbolic import PredicateMemory
@@ -67,8 +65,8 @@ class Plan:
             if query is not None:
                 print("asking a query", query['query'])
                 query_engine.update_query(sent=True)
-                print(input_["model_config"]["streaming"])
                 stream_string('channel', query['query']) # TODO: Make channel user specific
+                print("sending ", query['query'])
                 context["response"] = query['query']
                 # Return new context to the user w/ response
                 return context
