@@ -28,25 +28,31 @@ class lipsyncResponse(BaseModel):
   filename: str
 
 @app.post("/v1/lipsync", operation_id="createVideoResponse")
-@comprehensive_error_handler
-@measure_time
 async def lipsync(request: Request) -> lipsyncResponse:
   # Get the wav file from the request
-  wav_file = request.json["audio_response"]
-  avatar = request.json["avatar_config"]
+  try:
+    data = await request.json()
 
-  # Interpret the wav file
-  opts = {
-    "avatar": "default", # TODO: pull this from avatar, add to frontend
-    "face": "/app/cache/default.mp4", # TODO: pull this from avatar, add to frontend
-    "audio": wav_file,
-    "outfile": "/app/cache/lipsync.mp4"
-  }
+    wav_file = data["audio_response"]
+    # avatar = data["avatar_config"]
 
-  response = w2l.run(opts)
+    # Interpret the wav file
+    opts = {
+      "avatar": "default", # TODO: pull this from avatar, add to frontend
+      "face": "/app/cache/default.mp4", # TODO: pull this from avatar, add to frontend
+      "audio": wav_file,
+      "outfile": "/app/cache/lipsync.mp4"
+    }
+    print(wav_file)
+    response = w2l.run(opts)
 
-  # Return the text in the response
-  return lipsyncResponse(filename=response)
-
+    # Return the text in the response
+    return lipsyncResponse(filename=response['filename'])
+  except Exception as e:
+    print(e)
+    print("Error in lipsync")
+    import traceback
+    traceback.print_exc()
+    return lipsyncResponse(filename="error")
 if __name__ == '__main__':
   app.run()
