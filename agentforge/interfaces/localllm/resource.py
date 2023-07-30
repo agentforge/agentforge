@@ -54,7 +54,6 @@ class LocalLLM():
 
   # Loads the model and transfomer given the model name
   def load(self, model_key=None, **kwargs) -> None:
-    print(model_key)
     if model_key == None:
       # If we aren't overriding use the default model
       model_key = self.model_key
@@ -62,12 +61,8 @@ class LocalLLM():
       # If we are already using this model, don't reload
       return
     # Load the model
-    print(model_key)
     self.switch_model(model_key, kwargs)
-    print('generator')
-
     self.generator.set_models(self.model, self.tokenizer, self.text_streamer(False))
-    print('done')
 
   # Setup and return the text streamer
   def text_streamer(self, streaming):
@@ -78,13 +73,12 @@ class LocalLLM():
   async def generate(self, prompt="", **kwargs):
     # setup the generator
     config = kwargs['generation_config']
-    streaming = True if "streaming" in kwargs['model_config'] and kwargs['model_config']["streaming"] else False
-    print(streaming)
+    stream_override = kwargs["streaming_override"] if "streaming_override" in kwargs else True
+    default_stream = True if kwargs['model_config'] and kwargs['model_config']["streaming"] else False
+    streaming = stream_override and default_stream
     self.setup(kwargs)
-    print('load')
     self.load(model_key=kwargs['model_config'].get("model_name", self.model_key), **kwargs)
     kwargs.update(config)
-
     if "generator" in kwargs:
         # Use custom generator based on function string
         function_name = kwargs["generator"]
