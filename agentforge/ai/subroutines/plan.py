@@ -34,25 +34,28 @@ class Plan:
             # raise Exception(context["input"]["prompt"])
             query["response"] = context["input"]["prompt"]
             print("I'm learning...")
+            stream_string('channel', "One moment while I make a note.", end_token=" ") # TODO: Make channel user specific, make text plan specific
             learned, results = self.predicate_memory.learn(query, context) # TODO: I doubt the user formats the response correctly, we should rely on the LLM here
             print(learned, results)
             if learned:
+                stream_string('channel', "Okay I've jotted that down.", end_token=" ") # TODO: Make channel user specific, make text plan specific
                 self.predicate_memory.satisfy_attention(key, query, results)
                 query_engine.pop_query()
 
         # If the predicate memory attention is satisfied kick off the plan
         if self.predicate_memory.attention_satisfied(key):
             print("attention satisfied...")
+            stream_string('channel', "I have all the info I need, let me finalize the plan.", end_token=" ") # TODO: Make channel user specific, make text plan specific
             response = self.planner.execute(input_, self.predicate_memory.get_attention(key))
             self.flow_management.update_flow(user_id, session_id, "plan", False)
             print("[PLAN][update_flow]", user_id, session_id, "plan", False)
-            ### If streaming we want to simulate the streaming experience, a grand simulacra
             context["response"] = response
             return context
 
         # If the predicate memory attention does not exist, feed plan queries into the current attention
         if not self.predicate_memory.attention_exists(key):
             print("attention not exists...")
+            stream_string('channel', "Okay let's formulate a plan.", end_token=" ") # TODO: Make channel user specific, make text plan specific
             queries = self.planner.domain.get_queries()
             query_engine.create_queries(queries)
             self.predicate_memory.create_attention(queries, key)
