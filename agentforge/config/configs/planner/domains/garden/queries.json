@@ -1,0 +1,74 @@
+{
+  "queries": [
+    {
+      "id": "plant",
+      "query": "What kind of plants do you want to grow?",
+      "relation": "[ENT] [R1] wants to grow [ENT] [R2]",
+      "type": "string",
+      "effect": [
+        {
+          "val":"(growing {val})",
+          "type": "goal"
+        },
+        {
+          "val": "{val} - plant",
+          "type": "object"
+        },
+        {
+          "val": "{val}-seed - seed",
+          "type": "object"
+        },
+        {
+          "val": "(has-seed-type {val}-seed {val})",
+          "type": "init"
+        },
+        {
+          "val": "fertilizer - fertilizer",
+          "type": "object"
+        },
+        {
+          "val": "shovel - tool",
+          "type": "object"
+        }
+      ]
+    },
+    {
+      "id": "plot",
+      "query": "Do you have an outdoor plot available to you?",
+      "relation": "[ENT] [R1] has a [ENT] [R2]",
+      "subject": "plot",
+      "type": "boolean",
+      "effect": [
+        {
+          "val": "plot - plot",
+          "type": "object"
+        },
+        {
+          "val": "(dry plot)",
+          "type": "init"
+        },
+        {
+          "val": "(unplanted plot)",
+          "type": "init"
+        }
+      ]
+    },
+    {
+      "id": "container",
+      "query": "Do you have containers for growing plants?",
+      "relation": "[REL] [ENT1] has a [REL] [ENT2]",
+      "subject": "container",
+      "type": "boolean",
+      "effect": [
+        {
+          "val": "container - container",
+          "type": "object"
+        },
+        {
+          "val": "(container-available container)",
+          "type": "init"
+        }
+      ]
+    }
+  ]
+}

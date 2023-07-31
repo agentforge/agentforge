@@ -3,7 +3,8 @@ from functools import wraps
 from requests import Session, Response
 from requests.exceptions import RequestException
 from http import HTTPStatus
-import logging, os, requests
+import logging, os, requests, traceback
+from agentforge.utils import logger
 
 # Generic APIClientProtocol metaclass 
 class APIClientProtocol(Protocol):
@@ -26,13 +27,14 @@ def handle_response(func: Callable[..., Response]) -> Callable[..., Response]:
             response = func(*args, **kwargs)
             response.raise_for_status()
         except RequestException as e:
-            logging.error(f'Request failed: {str(e)}')
+            logger.error(f'Request failed: {str(e)}')
+            # logger.error(traceback.format_exc())
             raise
         else:
             if response.status_code in {HTTPStatus.OK, HTTPStatus.CREATED, HTTPStatus.NO_CONTENT}:
-                logging.info(f'Successfully received response.')
+                logger.info(f'Successfully received response.')
             else:
-                logging.warning(f'Unexpected status code: {response.status_code}.')
+                logger.warning(f'Unexpected status code: {response.status_code}.')
         return response
     return wrapper
 
@@ -45,7 +47,7 @@ class APIClient(APIClientProtocol):
         if not self.base_url:
             self.base_url = ""
 
-        logging.info('APIClient initialized.')
+        logger.info('APIClient initialized.')
 
     @handle_response
     def get(self, endpoint: str, params: Optional[dict] = None) -> Response:

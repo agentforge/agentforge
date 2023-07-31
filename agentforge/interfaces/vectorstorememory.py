@@ -11,8 +11,10 @@ class VectorStoreMemory:
     self.app = app
 
   # Does a similarity search to recall memories associated with this prompt
-  def recall(self, user, agent, prompt):
-    docs = self.vectorstore.search(prompt, n=4, filter={"user": user, "agent": agent})
+  def recall(self, prompt, filter={}):
+    print(f"searching for {prompt}")
+    filter["memory"] = True
+    docs = self.vectorstore.search(prompt, n=4, filter=filter)
     result = ""
     for doc in docs:
         content = doc.page_content.replace('\n', ' ')
@@ -42,7 +44,7 @@ class VectorStoreMemory:
       return
     interaction = f"""{user}: {prompt}\n{agent}: {response}"""
     if self.vectorstore is not None:
-        metadata = {"user": user, "agent": agent}
+        metadata = {"user": user, "agent": agent, "memory": True}
         self.ingest(interaction, metadata)
 
   def ingest(self, interaction, metadata, **kwargs):
@@ -53,4 +55,4 @@ class VectorStoreMemory:
           metadata["last_accessed_at"] = current_time
       if "created_at" not in metadata:
           metadata["created_at"] = current_time
-      return self.vectorstore.add_texts([interaction], [metadata])
+      return self.vectorstore.add_texts([interaction], [metadata], collection="memories")

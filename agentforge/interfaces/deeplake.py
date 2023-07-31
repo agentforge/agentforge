@@ -12,13 +12,12 @@ from langchain.embeddings import HuggingFaceEmbeddings
 from agentforge.adapters import VectorStoreProtocol
 
 class DeepLakeVectorStore(VectorStoreProtocol):
-    def __init__(self, model_name: str, deeplake_path: str) -> None:
+    def __init__(self, model_name: str, deeplake_path: str, reset: bool) -> None:
         # Initialize your vector store here
         self.embdeddings = HuggingFaceEmbeddings(model_name=model_name)
         self.deeplake_path = deeplake_path
-
-        ### TODO: Remove deletion of directory when runnnig in production
-        self.delete()
+        if reset:
+            self.delete()
 
         # Use deeplake for long-term vector memory storage
         self.deeplake = DeepLake(dataset_path=deeplake_path, embedding_function=self.embdeddings)
@@ -33,9 +32,22 @@ class DeepLakeVectorStore(VectorStoreProtocol):
         except Exception as e:
             print(f"Error while deleting directory '{self.deeplake_path}': {e}")
 
-    def search(self, query: str, n: int = 4, filter: Optional[Dict] = {}) -> Any:
+    def search(self, query: str, n: int = 4, **kwargs) -> Any:
         # Perform your search here and return the result
-        docs = self.deeplake.similarity_search(query, n, filter=filter)
+        try:
+            docs = self.deeplake.similarity_search(query, n, **kwargs)
+        except ValueError as e:
+            # Vectorstore is empty
+            docs = []
+        return docs
+    
+    def search_with_score(self, query: str, k: int = 4, distance_metric: str = "cos", **kwargs) -> Any:
+        # Perform your search here and return the result
+        try:
+            docs = self.deeplake.similarity_search_with_score(query=query, k=k, distance_metric=distance_metric)
+        except ValueError as e:
+            # Vectorstore is empty
+            docs = []
         return docs
 
     def add_texts(self, texts: List[str], metadata: List[Any]) -> None:

@@ -4,6 +4,12 @@ interface VideoProviderContextValue {
   videoRef: React.RefObject<HTMLVideoElement>;
   playVideo: (videoSrc: string) => void;
   setIdleVideoSource: (videoSrc: string) => void;
+  playCurrentIdleVideo: () => void;
+  stopPlaying: () => void;
+  setOnVideoEnd: (callback: () => void) => void;
+  onVideoEnd: (() => void) | null;
+  videoPlaying: React.RefObject<boolean>;
+  idleVideoSource: string;
 }
 
 const VideoProviderContext = createContext<VideoProviderContextValue | undefined>(undefined);
@@ -24,11 +30,43 @@ interface VideoProviderProps {
 export const VideoProvider: React.FC<VideoProviderProps> = ({ children, defaultIdleVideoSource }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [idleVideoSource, setIdleVideoSource] = useState(defaultIdleVideoSource);
+  const [onVideoEnd, setOnVideoEnd] = useState<(() => void) | null>(null);
+  var videoPlaying = useRef(false);
+
+  const stopPlaying = () => { 
+    videoPlaying.current = false;
+  }
 
   const playVideo = (videoSrc: string) => {
     if (videoRef.current) {
       videoRef.current.src = videoSrc;
-      videoRef.current.play();
+      videoRef.current.autoplay = false; // Disable autoplay
+      videoPlaying.current = true; 
+      videoRef.current.play().catch(error => {
+        console.log('Error occurred while playing video:', error);
+      });
+    }
+  };
+
+  const setIdleVideoSourceVideo = (videoSrc: string) => {
+    if (videoRef.current) {
+      videoRef.current.src = videoSrc;
+      videoRef.current.play().catch(error => {
+        console.log('Error occurred while playing video:', error);
+      });
+      videoPlaying.current = false; 
+    }
+  };
+
+  const playCurrentIdleVideo = () => {
+    if (videoRef.current) {
+      videoRef.current.src = idleVideoSource;
+      videoRef.current.loop = true; 
+      videoRef.current.muted = true; 
+      videoRef.current.play().catch(error => {
+        console.log('Error occurred while playing video:', error);
+      });
+      videoPlaying.current = false; 
     }
   };
 
@@ -40,35 +78,20 @@ export const VideoProvider: React.FC<VideoProviderProps> = ({ children, defaultI
             videoRef.current.play();
         }
     };
-    
-    const handleEnded = () => {
-        if (videoRef.current) {
-            videoRef.current.src = idleVideoSource;
-            // Remove the play() call here, because we want to wait for canplaythrough
-        }
-    };
 
     if (videoElement) {
-        // Listen for the canplaythrough event to know when we can safely play the video
         videoElement.addEventListener('canplaythrough', handleCanPlayThrough);
-
-        // Listen for the ended event to know when to change the source
-        videoElement.addEventListener('ended', handleEnded);
     }
 
-    // Clean up the event listeners when the component unmounts
     return () => {
         if (videoElement) {
             videoElement.removeEventListener('canplaythrough', handleCanPlayThrough);
-            videoElement.removeEventListener('ended', handleEnded);
         }
     };
 }, [idleVideoSource]);
 
-  // // Initialize first video
   useEffect(() => {
-    console.log(defaultIdleVideoSource);
-    setIdleVideoSource(defaultIdleVideoSource);
+    setIdleVideoSourceVideo(defaultIdleVideoSource);
     if (videoRef.current) {
       videoRef.current.muted = false;
     }
@@ -81,6 +104,12 @@ export const VideoProvider: React.FC<VideoProviderProps> = ({ children, defaultI
         videoRef,
         playVideo,
         setIdleVideoSource,
+        playCurrentIdleVideo, // Add this line
+        setOnVideoEnd,
+        stopPlaying,
+        onVideoEnd,
+        videoPlaying,
+        idleVideoSource,
       }}
     >
       {children}

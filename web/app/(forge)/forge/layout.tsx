@@ -4,6 +4,7 @@ import cx from "classnames";
 import { sfPro, inter } from "../../fonts";
 import "../../styles/globals.css";
 import "../../styles/style.scss";
+import "../../styles/solarizeddark.css";
 import Sidebar from "./sidebar";
 import { ModelProfileConfigProvider } from '@/components/shared/context/modelprofileconfig';
 import { ChatWidgetStateProvider } from '@/components/shared/context/chatwidgetstatecontext';

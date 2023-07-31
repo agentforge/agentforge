@@ -14,12 +14,12 @@ const Reflection: React.FC = () => {
 
   const addReflection = useCallback(async (text: string, type: string) => {
     if (!text) {
-      console.log('ERROR: Must set text.');
+      console.error('ERROR: Must set text.');
       return;
     }
 
     if (!type) {
-      console.log('ERROR: Must set type.');
+      console.error('ERROR: Must set type.');
       return;
     }
 

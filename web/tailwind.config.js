@@ -25,6 +25,37 @@ module.exports = {
         "slide-up-fade": "slide-up-fade 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
         "slide-down-fade": "slide-down-fade 0.3s cubic-bezier(0.16, 1, 0.3, 1)",
       },
+      typography: theme => ({
+        default: {
+          css: {
+            pre: {
+              maxWidth: '325px',
+              color: theme("colors.slate.1000"),
+              backgroundColor: theme("colors.slate.300")
+            },
+            "pre code::before": {
+              "padding-left": "unset"
+            },
+            "pre code::after": {
+              "padding-right": "unset"
+            },
+            code: {
+              backgroundColor: theme("colors.slate.300"),
+              color: "#DD1144",
+              fontWeight: "400",
+              "border-radius": "0.25rem"
+            },
+            "code::before": {
+              content: '""',
+              "padding-left": "0.25rem"
+            },
+            "code::after": {
+              content: '""',
+              "padding-right": "0.25rem"
+            }
+          }
+        }
+      }),
       keyframes: {
         // Fade up and down
         "fade-up": {

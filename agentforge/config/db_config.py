@@ -9,6 +9,7 @@ class DbConfig():
                  username: Optional[str] = None,
                  password: Optional[str] = None,
                  auth_source: Optional[str] = "admin",
+                 mongo_uri: Optional[str] = None,
                  ) -> None:
         self.db_name = db_name
         self.host = host
@@ -16,6 +17,7 @@ class DbConfig():
         self.username = username
         self.password = password
         self.auth_source = auth_source
+        self.mongo_uri = mongo_uri
 
 
     @staticmethod
@@ -27,4 +29,5 @@ class DbConfig():
             username=os.getenv('DB_USER'),
             password=os.getenv('DB_PASS'),
             auth_source=os.getenv('DB_AUTH_SOURCE', 'admin'),
+            mongo_uri=os.getenv('MONGODB_URI', None),
         )

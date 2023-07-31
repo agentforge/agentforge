@@ -7,7 +7,7 @@ from agentforge.utils import logger
 class APIService:
     def __init__(self):
         # Check if we are in a test environment
-        self.test_env = True if os.getenv("ENV") == "test" else False
+        self.test_env = True if os.getenv("AGENTFORGE_ENV").lower() == "test" else False
         self.client = APIClient()
 
     def _heartbeat(self):
@@ -38,18 +38,14 @@ class APIService:
 
         if not self.url:
             raise Exception(f"Service URL {self.service.upper()}_URL not set in .env")
-        try:
-            response = self.client.post(self.url, form_data)
-            response.raise_for_status()
-            data = response.json()
-            if 'error_type' in data:
-                # if there is an error type we need to log the stacktrace
-                # and raise the message for the end user
-                logger.error(data)
-                error = f"{data['error_message']}"
-                raise Exception(error)
-            else:
-                return response.json()
-        except requests.exceptions.RequestException as err:
-            print(f"Error calling {self.service}. Error: {err}")
-            return None
+        response = self.client.post(self.url, form_data)
+        response.raise_for_status()
+        data = response.json()
+        if 'error_type' in data:
+            # if there is an error type we need to log the stacktrace
+            # and raise the message for the end user
+            logger.error(data)
+            error = f"{data['error_message']}"
+            raise Exception(error)
+        else:
+            return response.json()

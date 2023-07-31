@@ -29,3 +29,23 @@ class SubroutineException(Exception):
     def __init__(self, message="There was an error in the subroutine"):
         self.message = message
         super().__init__(self.message)
+
+class BreakRoutineException(Exception):
+    """Exception raised for breaking out of a routine.
+
+    Attributes:
+        message -- explanation of the error
+    """
+    def __init__(self, message="We are done here."):
+        self.message = message
+        super().__init__(self.message)
+
+class APIException(Exception):
+    """Exception raised for API Errors.
+
+    Attributes:
+        message -- explanation of the error
+    """
+    def __init__(self, message="We are done here."):
+        self.message = message
+        super().__init__(self.message)

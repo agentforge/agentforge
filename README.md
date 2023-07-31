@@ -101,11 +101,13 @@ Run all the services via docker-compose in the docker folder:
 
 To run the flask server(s) from inside a container:
 
-```CONFIG_DIR="/app/agentforge/agentforge/config/configs/" flask run --host=0.0.0.0 --port=3000```
+```PYTHONPATH="/app/agentforge/" flask run --host=0.0.0.0 --port=3000```
 
-Wav2Lip (requires additional env vars):
-
-```LC_ALL=C.UTF-8 LANG=C.UTF-8 CONFIG_DIR="/app/agentforge/agentforge/config/configs/" flask run --host=0.0.0.0 --port=3000```
+FastAPI servers(s) from inside a container: 
+```
+cd /app/agentforge/agentforge/api
+uvicorn main:app --reload --host=0.0.0.0 --port=3000
+```
 
 ## SSL
 

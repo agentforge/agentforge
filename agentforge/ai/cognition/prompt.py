@@ -1,6 +1,5 @@
 ### Prompt Manager and Prompt Engineering
 
-
 ### TODO: This is going to be replaced by a more robust Prompt Engineering system
 ### at the edge in the parser and at the core in the agent
 

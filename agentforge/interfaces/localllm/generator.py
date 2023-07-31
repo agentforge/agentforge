@@ -1,7 +1,8 @@
 import torch
 import time, threading, json, logging
-from transformers import GenerationConfig, StoppingCriteria, StoppingCriteriaList
+from transformers import GenerationConfig, StoppingCriteriaList, StoppingCriteria
 import numpy as np
+from typing import Optional, TypedDict, NamedTuple, List, Dict, Callable
 from agentforge.config import Config
 
 def convert_to_serializable(obj):
@@ -15,16 +16,29 @@ def convert_to_serializable(obj):
       Add a new Exception to convert_to_serializable() in agentforge/language_model/logger.py"""
     raise TypeError(key_err)
 
+
 class StopOnTokens(StoppingCriteria):
-  def __init__(self, stop_token_ids):
-    self.stop_token_ids = stop_token_ids
-  def __call__(self, input_ids: torch.LongTensor, scores: torch.FloatTensor, **kwargs) -> bool:
-    idx = len(self.stop_token_ids)
-    for stop_id in self.stop_token_ids:
-      if input_ids[0][-idx] != stop_id:
+    def __init__(self, stop_token_ids: List[List[int]]):
+        self.stop_token_ids = stop_token_ids
+
+    def __call__(self, input_ids: torch.LongTensor, scores: torch.FloatTensor, **kwargs) -> bool:
+        # Iterate through each list in stop_token_ids
+        for stop_ids_list in self.stop_token_ids:
+            # Determine the length of the current list
+            n = len(stop_ids_list)
+            # Check if the last n tokens of input_ids[0] match the current list
+            match = True
+            idx = 0
+            for i in input_ids[0][-n:]:
+                # Compare individual elements
+                if i != stop_ids_list[idx]:
+                    match = False
+                    break
+                idx += 1
+            if match:
+                return True
+        # If none of the lists in stop_token_ids match the tokens in input_ids[0], return False
         return False
-      idx -= 1
-    return True
 
 # Drives text generation for multiple models.
 class LocalGenerator:
@@ -72,39 +86,58 @@ class LocalGenerator:
       score = score.cpu().numpy()
       logging.info(f"| {tok:5d} | {tokenizer.decode([tok]):8s} | {score:.3f} | {np.exp(score):.2%} |")
 
+  def valid_token(self, token_str, gen_config):
+    if token_str in gen_config and gen_config[token_str] != None and gen_config[token_str] != "":
+      return True
+    return False
+
   # Generates a response given a prompt
   def generate(self, prompt, model, tokenizer, streamer, **kwargs):
-
     # Set model arguments from generation config.
     if self.multi_gpu:
       config = model.module.generation_config
     else:
       config = model.generation_config
-
     gen_config = kwargs["generation_config"]
+    model_config = kwargs["model_config"]
 
-    if 'stopping_criteria' in gen_config:
-      stop_val = tokenizer.encode(gen_config['stopping_criteria'])
-      stop = StopOnTokens(stop_val)
-      stopping_criteria=StoppingCriteriaList([stop])
+    # Config drive overrides -- ID over string
+    if "eos_token_id" in model_config:
+      print("eos_token_id set...")
+      gen_config["eos_token_id"] = model_config["eos_token_id"]
+    elif self.valid_token("eos_token", model_config):
+      gen_config["eos_token_id"] = tokenizer.encode(model_config["eos_token"])[0]
+    else:
+      gen_config["eos_token_id"] = config.eos_token_id
 
-    # # Generate from eos if no input is specified.
-    # if input_length == 0:
-    #     input_ids = input_ids.new_ones((batch_size, 1)).long()
-    #     if eos_token_id is not None:
-    #         input_ids = input_ids * eos_token_id[0]
-    #     input_length = 1
+    if self.valid_token("bos_token", model_config):
+      gen_config["bos_token_id"] = tokenizer.encode(model_config["bos_token"])[0]
+    else:
+      gen_config["bos_token_id"] = config.bos_token_id
+    
+    if self.valid_token("pad_token", model_config):
+      gen_config["pad_token_id"] = tokenizer.encode(model_config["pad_token"])[0]
+    else:
+      gen_config["pad_token_id"] = config.pad_token_id
 
     gen_config = {k: v for k, v in gen_config.items() if v is not None and v != ""}
 
-    logging.info(prompt)
+    if "stopping_criteria" in gen_config:
+      stops = [tokenizer.encode(i.strip()) for i in gen_config["stopping_criteria"].split(",")]
+      stop = StopOnTokens(stops)
+      stopping_criteria = StoppingCriteriaList([stop])
+      gen_config["stopping_criteria"] = stopping_criteria
+    else:
+      stopping_criteria = None
+    
     with torch.autocast("cuda"):
       inputs = tokenizer(prompt, return_tensors="pt")
-      input_ids = inputs.input_ids.cuda()
+      input_ids = inputs["input_ids"].cuda()
       generation_config = GenerationConfig(
           **gen_config,
       )
       start_time = time.time()
+
       with torch.no_grad():
           # If we are using multi-gpu, we need to use the model.module.generate method.
           if self.multi_gpu:
@@ -115,76 +148,24 @@ class LocalGenerator:
               'input_ids': input_ids,
               'generation_config': generation_config,
               'return_dict_in_generate': True,
-              'output_scores': True,
-              'attention_mask': inputs.attention_mask,
-              'stopping_criteria': stopping_criteria,
+              'attention_mask': torch.ones_like(input_ids),
           }
-          if "eos_token_id" in gen_config:
-            final_kwargs['eos_token_id'] = gen_config["eos_token_id"]
-          else:
-            final_kwargs['eos_token_id'] = tokenizer.eos_token_id
-          if "bos_token_id" in gen_config:
-            final_kwargs['bos_token_id'] = gen_config["bos_token_id"]
-          else:
-            final_kwargs['bos_token_id'] = tokenizer.bos_token_id
-          if "pad_token_id" in gen_config:
-            final_kwargs['pad_token_id'] = gen_config["pad_token_id"]
-          else:
-            final_kwargs['pad_token_id'] = tokenizer.eos_token_id
-  
-          logging.info(f"Rendering with {json.dumps(final_kwargs, indent=4, default=convert_to_serializable)}")
+
+          if stopping_criteria != None:
+            final_kwargs['stopping_criteria'] = stopping_criteria
+
+          logging.info(f"Rendering with {json.dumps(generation_config, indent=4, default=convert_to_serializable)}")
           if streamer != None:
             final_kwargs['streamer'] = streamer
           with self.lock:
             generation_output = gen(**final_kwargs)
-            # self.get_probabilities(model, tokenizer, inputs, generation_output)
+            if 'return_probabilities' in gen_config and gen_config['return_probabilities']:
+              self.get_probabilities(model, tokenizer, inputs, generation_output)
       end_time = time.time()
       execution_time = end_time - start_time
       logging.info(f"Execution time: {execution_time:.6f} seconds")
       s = generation_output.sequences[0]
-      output = tokenizer.decode(s, skip_special_tokens=True)
+      output = tokenizer.decode(s)
+      logging.info(f"Output: {output}")
       return output
  
-  def dolly(self, prompt, model, tokenizer, _, gc_name=None, **kwargs) -> str:
-    kwargs = self.prep_generation_config(gc_name)
-    generation_config = GenerationConfig(
-        **kwargs,
-    )
-
-    kwargs["output_attentions"] = False
-    kwargs["output_attentions"] = False
-    kwargs["output_hidden_states"] = False
-    kwargs["use_cache"] = True # config.use_cache
-
-    kwargs["output_hidden_states"] = False
-    kwargs["use_cache"] = True # config.use_cache
-
-    end_key_token_id = tokenizer.encode("### End")[0]
-    pad_token_id = tokenizer.pad_token_id
-    eos_token_id = end_key_token_id
-
-    input = tokenizer(prompt, return_tensors="pt").input_ids.to("cuda")
-
-    if self.multi_gpu:
-      gen = model.module.generate
-    else:
-      gen = model.generate
-
-    outputs = gen(
-        input,
-        pad_token_id=pad_token_id,
-        eos_token_id=eos_token_id,
-        max_new_tokens=self.max_new_tokens,
-        generation_config=generation_config,
-    )
-
-    response = tokenizer.decode(outputs[0], skip_special_tokens=True)
-    fixed_prompt = prompt.replace("### Instruction:", "").replace("### Response:", "")
-    response = response.replace(fixed_prompt, "")
-    response = response.strip()
-    end = "### End"  # the output seems to contain lots of ### End of ...
-    if end in response:
-      response = response[:response.index(end)].strip()
-    if "A: " in response: # GPT loves to add A: with random nonsense
-      response = response[:response.index("A: ")].strip() 
-    return response
