@@ -27,5 +27,6 @@ class Memory:
         self.working_memory.setup_memory(user, agent, user, session_id) # TODO: Differentiate between user name and ID
         return self.working_memory.recall(user, agent, n)
 
-    def ingest(self, texts: List[str], metadata: List[Dict], **kwargs):
-        self.deep_memory.ingest(texts, metadata, **kwargs)
+    # Add text data to the vectorstore
+    def add_texts(self, texts: List[str], metadata: List[Dict], **kwargs):
+        self.deep_memory.add_texts(texts, metadata, **kwargs)

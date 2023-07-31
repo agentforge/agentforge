@@ -14,5 +14,5 @@ class MemoryProtocol(Protocol):
     def session_history(self, user: str, agent: str, n: int = 5):
         pass
 
-    def ingest(self, texts: List[str], metadata: List[Dict], **kwargs):
+    def add_texts(self, texts: List[str], metadata: List[Dict], **kwargs):
         pass
