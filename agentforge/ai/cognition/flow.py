@@ -25,10 +25,12 @@ class FlowManagement:
         key = f"{user_id}:{session_id}:{flow_name}"
         return self.db.get(self.collection, key)
 
-    def update_flow(self, user_id: str, session_id: str, flow_name: str, is_active: Optional[bool] = None) -> None:
+    def update_flow(self, user_id: str, session_id: str, flow_name: str, is_active = None) -> None:
         flow = self.get_flow(user_id, session_id, flow_name)
+        print("[FLOW] get_flow:", user_id, session_id, flow_name)
         if flow:
             flow['updated_at'] = datetime.utcnow().isoformat()
+            print("FLOW] updaing flow:", is_active)
             if is_active is not None:
                 flow['is_active'] = is_active
             key = f"{user_id}:{session_id}:{flow_name}"
@@ -44,6 +46,7 @@ class FlowManagement:
             'session_id': session_id,
             'is_active': True
         }
+        print(filter_criteria)
         active_flows = self.db.get_many(self.collection, filter_criteria)
         for flow in active_flows:
             return flow["flow_name"]

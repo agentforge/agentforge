@@ -55,4 +55,4 @@ class VectorStoreMemory:
           metadata["last_accessed_at"] = current_time
       if "created_at" not in metadata:
           metadata["created_at"] = current_time
-      return self.vectorstore.add_texts([interaction], [metadata])
+      return self.vectorstore.add_texts([interaction], [metadata], collection="memories")

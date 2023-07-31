@@ -1,32 +1,67 @@
 from typing import Any, List
-from pymilvus import Collection
-from pymilvus import connections
-from agentforge.adapters import MilvusStoreProtocol
+from langchain.vectorstores import Milvus
+from agentforge.adapters import VectorStoreProtocol
+from langchain.embeddings import HuggingFaceEmbeddings
 
-class MilvusVectorStore(MilvusStoreProtocol):
-   def __init__(self) -> connections:
-      connections.connect(
-         alias="default", 
-         host='localhost', 
-         port='19530'
+class MilvusVectorStore(VectorStoreProtocol):
+   def __init__(self, model_name: str, collection: str, reset: bool):
+      encode_kwargs = {'normalize_embeddings': True}
+      self.embdeddings = HuggingFaceEmbeddings(model_name=model_name, encode_kwargs=encode_kwargs)
+      self.reset = reset
+      self.collection = collection
+      self.init_store_connection(collection, force=True)
+
+   def init_store_connection(self, collection: str, force: bool = False):
+      if self.collection != collection or force:
+         connection_args = {
+            "host": "milvus",
+            "port": "19530",
+         }
+         self.milvus_store = Milvus(
+            embedding_function = self.embdeddings, 
+            collection_name = collection,
+            connection_args = connection_args,
+            drop_old = self.reset,
          )
-      return connections
-   
-   def collection(self, collection_name: str) -> None:
-      #new_key = str(uuid.uuid64())
-      collection_param = {
-              "collection_name": collection_name,
-              "dimension": 8,
-              "index_file_size": 2048,
-              "metric_type": MetricType.L2
-              }
-      connections.create_collection(collection_param)
-   
-   def search(self, n: int, query: str, collection_name: str) -> Any:
-      status, results = connections.search(collection_name, n, [query])
-      return results 
-   
+         # Default search params when one is not provided.
+         self.milvus_store.default_search_params = {
+            "IVF_FLAT": {"metric_type": "IP", "params": {"nprobe": 10}},
+            "IVF_SQ8": {"metric_type": "IP", "params": {"nprobe": 10}},
+            "IVF_PQ": {"metric_type": "IP", "params": {"nprobe": 10}},
+            "HNSW": {"metric_type": "IP", "params": {"ef": 10}},
+            "RHNSW_FLAT": {"metric_type": "IP", "params": {"ef": 10}},
+            "RHNSW_SQ": {"metric_type": "IP", "params": {"ef": 10}},
+            "RHNSW_PQ": {"metric_type": "IP", "params": {"ef": 10}},
+            "IVF_HNSW": {"metric_type": "IP", "params": {"nprobe": 10, "ef": 10}},
+            "ANNOY": {"metric_type": "IP", "params": {"search_k": 10}},
+            "AUTOINDEX": {"metric_type": "IP", "params": {}},
+         }
+         self.milvus_store.index_params = {
+            "metric_type": "IP",
+            "index_type": "HNSW",
+            "params": {"M": 8, "efConstruction": 64},
+         }
 
-   def add_texts(self, texts: List[str], metadata: List[Any], collection_name: str) -> None:
-      collection = Collection(collection_name)
-      collection.insert(texts)
+   def search(self, query: str, n: int = 4, collection: str = "main", **kwargs) -> Any:
+      # Perform your search here and return the result
+      self.init_store_connection(collection)
+      try:
+         docs = self.milvus_store.similarity_search(query, n, **kwargs)
+      except ValueError as e:
+         # Vectorstore is empty
+         docs = []
+      return docs
+   
+   def search_with_score(self, query: str, k: int = 4, collection: str = "main", **kwargs) -> Any:
+      # Perform your search here and return the result
+      self.init_store_connection(collection)
+      try:
+         docs = self.milvus_store.similarity_search_with_score(query=query, k=k)
+      except ValueError as e:
+         # Vectorstore is empty
+         docs = []
+      return docs
+
+   def add_texts(self, texts: List[str], metadata: List[Any], collection: str = "main") -> None:
+      self.init_store_connection(collection)
+      return self.milvus_store.add_texts(texts, metadata)

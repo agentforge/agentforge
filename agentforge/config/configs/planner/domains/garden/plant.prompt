@@ -33,3 +33,4 @@
 ### Instruction: Classify the following into a single or a list of plants. If no plants are specified, return "None".
 ### Input: {query} {response}
 ### Thought Process:
+1. The instruction asks to classify the text.
