@@ -33,5 +33,11 @@ ENV TORCH_CUDA_ARCH_LIST="6.0 6.1 7.0+PTX"
 # Install falcontune with CUDA support
 RUN python setup_cuda.py install
 
+# Copy agentforge deps
+COPY . /app/agentforge/
+
+# Extra deps
+RUN pip install scipy
+
 # Command to keep container running
 CMD ["tail", "-f", "/dev/null"]
