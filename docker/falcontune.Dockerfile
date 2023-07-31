@@ -27,6 +27,12 @@ RUN pip install -r requirements.txt
 # Install falcontune
 RUN python setup.py install
 
+# Copy agentforge deps
+COPY . /app/agentforge/
+
+# Extra deps
+RUN pip install scipy
+
 # Set environment variable for Torch CUDA architecture
 ENV TORCH_CUDA_ARCH_LIST="6.0 6.1 7.0+PTX"
 
