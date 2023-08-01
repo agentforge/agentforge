@@ -8,10 +8,12 @@ class MilvusVectorStore(VectorStoreProtocol):
       encode_kwargs = {'normalize_embeddings': True}
       self.embdeddings = HuggingFaceEmbeddings(model_name=model_name, encode_kwargs=encode_kwargs)
       self.reset = reset
-      self.collection = collection
+      self.collection = None
       self.init_store_connection(collection, force=True)
 
    def init_store_connection(self, collection: str, force: bool = False):
+      print("[MilvusVectorStore] ", self.collection != collection)
+      print("[MilvusVectorStore][collection] ", collection)
       if self.collection != collection or force:
          connection_args = {
             "host": "milvus",
@@ -21,7 +23,7 @@ class MilvusVectorStore(VectorStoreProtocol):
             embedding_function = self.embdeddings, 
             collection_name = collection,
             connection_args = connection_args,
-            drop_old = self.reset,
+            # drop_old = self.reset,
          )
          # Default search params when one is not provided.
          self.milvus_store.default_search_params = {
@@ -41,27 +43,30 @@ class MilvusVectorStore(VectorStoreProtocol):
             "index_type": "HNSW",
             "params": {"M": 8, "efConstruction": 64},
          }
+         self.collection = collection
 
-   def search(self, query: str, n: int = 4, collection: str = "main", **kwargs) -> Any:
+   def search(self, query: str, n: int = 4, **kwargs) -> Any:
       # Perform your search here and return the result
-      self.init_store_connection(collection)
+      self.init_store_connection(kwargs["collection"])
       try:
-         docs = self.milvus_store.similarity_search(query, n, **kwargs)
+         docs = self.milvus_store.similarity_search(query, n)
       except ValueError as e:
          # Vectorstore is empty
+         print(e)
          docs = []
       return docs
    
-   def search_with_score(self, query: str, k: int = 4, collection: str = "main", **kwargs) -> Any:
+   def search_with_score(self, query: str, k: int = 4, **kwargs) -> Any:
       # Perform your search here and return the result
-      self.init_store_connection(collection)
+      self.init_store_connection(kwargs["collection"])
       try:
          docs = self.milvus_store.similarity_search_with_score(query=query, k=k)
       except ValueError as e:
+         print(e)
          # Vectorstore is empty
          docs = []
       return docs
 
-   def add_texts(self, texts: List[str], metadata: List[Any], collection: str = "main") -> None:
-      self.init_store_connection(collection)
+   def add_texts(self, texts: List[str], metadata: List[Any], **kwargs) -> None:
+      self.init_store_connection(kwargs["collection"])
       return self.milvus_store.add_texts(texts, metadata)
