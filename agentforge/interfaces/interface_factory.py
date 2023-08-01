@@ -67,18 +67,26 @@ class InterfaceFactory:
         reset = os.getenv("VECTORSTORE_REFRESH").lower() in ["true", "y", "1", 1]
         dev = os.getenv("AGENTFORGE_ENV").lower() in ["test", "dev"]
 
-        # Instantiate the correct VectorStore based on VECTORSTORE_TYPE
+        # Instantiate the deeplake VectorStore running locally on the AgentForge
         if vectorstore_type == "deeplake":
             deeplake_path = os.getenv("DEEPLAKE_PATH")
-            model_name = os.getenv("DEEPLAKE_MODEL_NAME")
+            model_name = os.getenv("VECTOR_EMBEDDINGS_MODEL_NAME")
             DeepLakeVectorStore = getattr(importlib.import_module('agentforge.interfaces.deeplake'), 'DeepLakeVectorStore')
             VectorStoreMemory = getattr(importlib.import_module('agentforge.interfaces.vectorstorememory'), 'VectorStoreMemory')
             self.__interfaces["vectorstore"] = DeepLakeVectorStore(model_name, deeplake_path, reset=(reset and dev))
             self.__interfaces["vectorstore_memory"] = VectorStoreMemory(self.__interfaces["vectorstore"])
+        # Requires Remote Milvus Server
+        elif vectorstore_type == "milvus":
+            milvus_collection = os.getenv("MILVUS_COLLECTION")
+            model_name = os.getenv("VECTOR_EMBEDDINGS_MODEL_NAME")
+            MilvusVectorStore = getattr(importlib.import_module('agentforge.interfaces.milvusstore'), 'MilvusVectorStore')
+            VectorStoreMemory = getattr(importlib.import_module('agentforge.interfaces.vectorstorememory'), 'VectorStoreMemory')
+            self.__interfaces["vectorstore"] = MilvusVectorStore(model_name, milvus_collection, reset=(reset and dev))
+            self.__interfaces["vectorstore_memory"] = VectorStoreMemory(self.__interfaces["vectorstore"])
+        # Simple in-memory vector store -- not persistent
         elif vectorstore_type == "in_memory":
             InMemoryVectorStore = getattr(importlib.import_module('agentforge.interfaces.inmemoryvectorstore'), 'InMemoryVectorStore')
-            self.__interfaces["vectorstore"] = InMemoryVectorStore()
-            
+            self.__interfaces["vectorstore"] = InMemoryVectorStore()    
             VectorStoreMemory = getattr(importlib.import_module('agentforge.interfaces.vectorstorememory'), 'VectorStoreMemory')
             self.__interfaces["vectorstore_memory"] = VectorStoreMemory(self.__interfaces["vectorstore"])
         else:

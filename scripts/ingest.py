@@ -27,6 +27,7 @@ load_dotenv()
 
 # Get the directory path from the .env file
 directory_path = os.environ.get("COLLECTOR_DIRECTORY")
+milvus_collection = os.environ.get("MILVUS_COLLECTION")
 
 # Read JSON files from directory
 json_contents = read_json_files_from_directory(directory_path)
@@ -40,4 +41,4 @@ vector_store = interface_interactor.get_interface("vectorstore")
 for content in json_contents:
     texts = [content['pageContent']]
     metadata = {key: value for key, value in content.items() if key != 'pageContent'}
-    vector_store.add_texts(texts, [metadata])
+    vector_store.add_texts(texts, [metadata], collection=milvus_collection)

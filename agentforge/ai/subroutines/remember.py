@@ -8,13 +8,15 @@ class Remember:
     
     @async_execution_decorator
     def execute(self, context: Dict[str, Any]) -> Dict[str, Any]:
-        if 'memory' not in context or 'response' not in context:
+        prompt = context['input']['prompt'] if 'prompt' in context['input'] else context['input']['messages'][-1]['content']
+        if 'memory' not in context:
+            print("No memory")
             return context # No memory setup -- return context
         # raise Exception(context)
         context['memory'].remember(
             context['model_profile']['metadata']['user_id'],
             context['model_profile']['avatar_config']['name'],
-            context['input']['prompt'],
-            context['response']
+            prompt,
+            context["response"]
         )
         return context

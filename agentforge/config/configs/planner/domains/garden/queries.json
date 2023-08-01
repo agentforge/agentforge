@@ -34,21 +34,21 @@
     },
     {
       "id": "plot",
-      "query": "Do you have a plot available to you?",
+      "query": "Do you have an outdoor plot available to you?",
       "relation": "[ENT] [R1] has a [ENT] [R2]",
       "subject": "plot",
       "type": "boolean",
       "effect": [
         {
-          "val": "plotX - plot",
+          "val": "plot - plot",
           "type": "object"
         },
         {
-          "val": "(dry plotX)",
+          "val": "(dry plot)",
           "type": "init"
         },
         {
-          "val": "(unplanted plotX)",
+          "val": "(unplanted plot)",
           "type": "init"
         }
       ]
@@ -61,11 +61,11 @@
       "type": "boolean",
       "effect": [
         {
-          "val": "containerX - container",
+          "val": "container - container",
           "type": "object"
         },
         {
-          "val": "(container-available containerX)",
+          "val": "(container-available container)",
           "type": "init"
         }
       ]

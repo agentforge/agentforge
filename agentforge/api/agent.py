@@ -34,20 +34,16 @@ async def agent(request: Request) -> AgentResponse:
 
     # TODO: To make this faster we should ideally cache these models, gonna be a lot of reads and few writes here
     model_profiles = ModelProfile()
-    print("data", data)
     if 'modelId' in data:
         model_profile = model_profiles.get(data['modelId'])
     else:
         model_profile = model_profiles.get(data['id'])
 
-    print("model_profile", model_profile)
-    print(model_profile['model_config']['streaming'])
     if model_profile['model_config']['streaming']:
         ## Get Decision from Decision Factory and run it
         decision = decision_interactor.get_decision()
         # print("[DEBUG][api][agent][agent] decision: ", decision)
         output = decision.run({"input": data, "model_profile": model_profile})
-        print("return")
 
         async def event_generator():
             redis = Redis.from_url('redis://redis:6379/0')
@@ -113,9 +109,6 @@ async def agent(request: Request) -> AgentResponse:
 ### Streaming for old Forge
 @router.get("/stream/{channel}")
 def stream(channel: str):
-    print("streaming")
-    # pubsub = app.state.redis.pubsub()
-    # pubsub.subscribe(channel)
     async def event_generator():
         redis = Redis.from_url('redis://redis:6379/0')
         async with redis.client() as client:
@@ -124,7 +117,6 @@ def stream(channel: str):
             while True:
                 message = await pubsub.get_message()
                 if message and message['type'] == 'message':
-                    print(message)
                     try:
                         val = message['data'].decode('utf-8')
                     except Exception as e:
@@ -137,18 +129,6 @@ def stream(channel: str):
                 else:
                     yield f"data: {str('data')}\n\n"
                     await asyncio.sleep(1)
-    
-    # async def event_generator():
-    #     for i in range(10):
-    #         print(i)
-    #         yield f"data: {str(i)}\n\n"  # format the event data correctly
-    #         await asyncio.sleep(1)  # Give control back to the event loop
-    # while True:
-    #     message = pubsub.get_message(ignore_subscribe_messages=True)
-    #     if message:
-    #         yield {"data": message["data"].decode("utf-8")}
-    #     else:
-    #         asyncio.sleep(1)
     headers = {
         "Access-Control-Allow-Origin": "*",
         "Content-Type": "text/event-stream; charset=utf-8",

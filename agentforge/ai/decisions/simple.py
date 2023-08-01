@@ -8,7 +8,6 @@ import threading
 class SimpleDecision:
     def __init__(self):
         self.routine = ReactiveRoutine()
-        self.memory = Memory()
         self.flows = {'plan': PlanningRoutine()}
 
     def run(self, context: Dict[str, Any]) -> Dict[str, Any]:

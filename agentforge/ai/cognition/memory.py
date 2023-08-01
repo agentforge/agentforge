@@ -1,9 +1,12 @@
+import os
 from typing import List, Dict
 from agentforge.interfaces import interface_interactor
 
 ### Memory accesses underlying long-term and working memory
 ### This abstract class allows us to access a singular memory instance
 ### and generalize those memories to multiple memory stores
+
+MILVUS_COLLECTION = os.environ.get("MILVUS_COLLECTION") #general knowledge store for this client
 
 class Memory:
     def __init__(self) -> None:
@@ -19,7 +22,7 @@ class Memory:
 
     # Recall relevant memories from this agent based on this prompt
     def recall(self, user: str, agent: str, prompt: str):
-        return self.deep_memory.recall(prompt, filter={"memory": True})
+        return self.deep_memory.recall(prompt, collection=MILVUS_COLLECTION)
         # return self.deep_memory.recall(prompt, filter={"user": user, "agent": agent, "memory": True})
 
     # Retrieves the latest N interaction between user and agent
@@ -27,5 +30,6 @@ class Memory:
         self.working_memory.setup_memory(user, agent, user, session_id) # TODO: Differentiate between user name and ID
         return self.working_memory.recall(user, agent, n)
 
-    def ingest(self, texts: List[str], metadata: List[Dict], **kwargs):
-        self.deep_memory.ingest(texts, metadata, **kwargs)
+    # Add text data to the vectorstore
+    def add_texts(self, texts: List[str], metadata: List[Dict], **kwargs):
+        self.deep_memory.add_texts(texts, metadata, **kwargs)

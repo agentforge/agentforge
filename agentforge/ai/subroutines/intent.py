@@ -13,7 +13,13 @@ class Intent:
     
     def search(self, user_query: str) -> Tuple[str, float]:
         # Search the vectorstore for the top result based on the user query
-        results = self.vectorstore.search_with_score(user_query, 1, filter={'flow': True}, distance_metric="cos")
+        print(user_query)
+        results = self.vectorstore.search_with_score(
+            user_query,
+            n=4,
+            collection="flows"
+        )
+        print(results)
         if len(results) > 0:
             return results[0]
         return None, 0.0
@@ -26,8 +32,8 @@ class Intent:
     def execute_identification(self, user_input: str, user_id: str, session_id: str) -> str:
         # Let's first check to see if any Flows are already in progress
         flow = self.flow_management.active_flow(user_id, session_id)
-        if flow is not None:
-            print("Flow exists...")
+        if flow is not None: # we are currently in an active flow
+            print(f"[FLOW] Flow {flow} exists...")
             return flow
 
         document, similarity = self.search(user_input)
@@ -45,19 +51,19 @@ class Intent:
             if flow is None:
                 self.flow_management.register_flow(user_id, session_id, flow_name)
             elif not flow['is_active']:
-                self.flow_management.update_flow(user_id, session_id, flow_name, is_active=True)
+                ### Before reactivating the flow automatically we need to implement multi-planning
+                # self.flow_management.update_flow(user_id, session_id, flow_name, is_active=True)
+                pass
             return flow_name
         else:
             return None
 
-        raise Exception(context)
     def execute(self, context: Dict[str, Any]) -> Dict[str, Any]:
-        print(context)
-        orig_prompt = context['input']['prompt']
+        orig_prompt = context['input']['prompt'] if 'prompt' in context['input'] else context['input']['messages'][-1]['content']
         user_id = context['input']['user_id']
-        agent_id = context['input']['id']
+        agent_id = context['input']['modelId']
         id = self.execute_identification(orig_prompt, user_id, agent_id)
-        if id is None:
+        if id is None:  
             return context
         else:
             raise BreakRoutineException(id)
