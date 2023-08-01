@@ -1,11 +1,10 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-
+import uuid
 from pydantic import BaseModel
 
 from agentforge.utils import measure_time, comprehensive_error_handler
 from agentforge.factories import resource_factory
-
 
 app = FastAPI()
 
@@ -41,7 +40,7 @@ async def lipsync(request: Request) -> lipsyncResponse:
       "avatar": "default", # TODO: pull this from avatar, add to frontend
       "face": "/app/cache/default.mp4", # TODO: pull this from avatar, add to frontend
       "audio": wav_file,
-      "outfile": "/app/cache/lipsync.mp4"
+      "outfile": f"/app/cache/lipsync-{uuid.uuid4()}.mp4"
     }
     print(wav_file)
     response = w2l.run(opts)
