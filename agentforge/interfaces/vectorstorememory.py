@@ -14,7 +14,7 @@ class VectorStoreMemory:
   def recall(self, prompt, filter={}, **kwargs):
     print(f"searching for {prompt}")
     filter["memory"] = True
-    docs = self.vectorstore.search(prompt, n=4, filter=filter, **kwargs)
+    docs = self.vectorstore.search(prompt, n=2, filter=filter, **kwargs)
     result = ""
     for doc in docs:
         content = doc.page_content.replace('\n', ' ')

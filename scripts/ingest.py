@@ -4,7 +4,8 @@ import shutil
 from typing import Any, Dict
 from dotenv import load_dotenv
 from agentforge.interfaces.interface_factory import InterfaceFactory
-
+import re
+import unicodedata
 
 def read_json_files_from_directory(directory: str) -> Dict[str, Any]:
     json_files = [file for file in os.listdir(directory) if file.endswith('.json')]

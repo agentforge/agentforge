@@ -67,6 +67,14 @@ class Parse:
             human="Human"
         )
 
+        ### VALIDATE FORMATTED TEMPLATE
+        # formatted_template cannot be greater than the context window size of the model (and is preferably less)
+        # we need to tokenize the formatted template and check the length
+        # if the length is greater than the context window size, we need to truncate the formatted template
+        # To do so we will summarize our most recent memories and truncate the formatted template to fit
+        # TODO: Implement this, pull this logic out into it's own function so we can reformat the template
+        # i.e. session history back-off, summarization of memories, etc.
+
         context['input']['formatted'] = formatted_template
         context['input']['prompt_template'] = prompt_template
 

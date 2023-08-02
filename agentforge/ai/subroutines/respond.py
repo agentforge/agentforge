@@ -18,6 +18,7 @@ class Respond:
             "generation_config": context['model_profile']['generation_config'],
             "model_config": context['model_profile']['model_config'],
         }
+        print("[RESPOND][PROMPT] ", context['input']['formatted'])
         response = self.service.call(input)
 
         if response is not None and "choices" in response:

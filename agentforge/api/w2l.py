@@ -40,7 +40,7 @@ async def lipsync(request: Request) -> lipsyncResponse:
       "avatar": "default", # TODO: pull this from avatar, add to frontend
       "face": "/app/cache/default.mp4", # TODO: pull this from avatar, add to frontend
       "audio": wav_file,
-      "outfile": f"/app/cache/lipsync-{uuid.uuid4()}.mp4"
+      "outfile": f"/app/cache/lipsyncs/lipsync-{uuid.uuid4()}.mp4"
     }
     print(wav_file)
     response = w2l.run(opts)
