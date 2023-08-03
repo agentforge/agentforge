@@ -1,6 +1,7 @@
 import torch, logging, importlib
 from agentforge.utils import dynamic_import
 from transformers import AutoModelForCausalLM, AutoTokenizer, AutoConfig, GPTNeoXTokenizerFast
+from ctransformers import AutoModelForCausalLM as cAutoModelForCausalLM
 from agentforge.utils import logger
 import importlib
 
@@ -9,6 +10,8 @@ def import_transformer_model_class(class_name):
     if class_name == "XgenTokenizer":
         transformers_module = importlib.import_module("agentforge.interfaces.localllm.lib.xgentokenizer")
         return getattr(transformers_module, class_name)
+    elif class_name == "cAutoModelForCausalLM":
+        return cAutoModelForCausalLM    
     try:
         transformers_module = importlib.import_module("transformers")
         return getattr(transformers_module, class_name)
@@ -27,11 +30,10 @@ class LocalLoader:
     def load(self, config, device="cuda"):
         self.config = config
         if "llama" in config and bool(config["llama"]):
-            self.llama(device)
+            self.huggingface(device) # hf now supports llama -> TODO: convert to llama.cpp
         else:
             self.huggingface(device)
         return self.model, self.tokenizer
-
 
     # LOADING PEFT LORA
     def load_adapter(self, orig_model, lora_apply_dir=None, lora_config=None, ddp=None):
@@ -56,46 +58,8 @@ class LocalLoader:
 
         return model
 
-
-    def llama(self, device="cuda"):
-        # from transformers import LlamaTokenizer, LlamaForCausalLM
-        LlamaForCausalLM = getattr(importlib.import_module('transformers'), 'LlamaForCausalLM')
-        LlamaTokenizer = getattr(importlib.import_module('transformers'), 'LlamaTokenizer')
-        logger.info("Loading llama...")
-        # self.tokenizer = LlamaTokenizer.from_pretrained(self.config["model_name"], decode_with_prefix_space=True, clean_up_tokenization_spaces=True)
-        self.tokenizer = LlamaTokenizer.from_pretrained(self.config["model_name"], decode_with_prefix_space=True, clean_up_tokenization_spaces=True)
-        self.tokenizer.pad_token_id = 0
-        self.tokenizer.padding_side = "left"
-        load_in_8bit = self.config.get("load_in_8bit", False)
-        load_in_4bit = self.config.get("load_in_4bit", False)
-        half = self.config.get("half", False)
-
-        self.model = LlamaForCausalLM.from_pretrained(
-            self.config["model_name"],
-            load_in_8bit=bool(load_in_8bit),
-            load_in_4bit=bool(load_in_4bit),
-            torch_dtype=torch.float16,
-            device_map=self.device_map,
-        )
-        if "peft_model" in self.config and self.config["peft_model"] != "":
-            module = dynamic_import('peft', ['PeftModel'])
-            self.model = module["PeftModel"].from_pretrained(
-                self.model, self.config["peft_model"],
-                torch_dtype=torch.float16,
-                # device_map=device_map
-            )
-
-        #LLM Models need GPU
-        device = torch.device(device)
-        if torch.cuda.device_count() > 1 and self.multi_gpu:
-            logger.info(f"Using {torch.cuda.device_count()} GPUs")
-            self.model = torch.nn.DataParallel(self.model)
-        
-        if not self.multi_gpu and half and not load_in_4bit and not load_in_8bit:
-            self.model.half()
-
     def huggingface(self, device="cuda", mpt=False):
-        logger.info("Loading huggingface...")
+        logger.info("Loading HF model...")
         if self.config["model_name"] == None:
             raise ValueError("model_name must be defined")
 
@@ -116,6 +80,10 @@ class LocalLoader:
         kwargs = {}
         if 'token' in self.config and self.config['token']:
             kwargs['use_auth_token'] = self.config['token']
+
+        if self.config["model_class"] == 'cAutoModelForCausalLM': # TODO: add a ctansformers bool to forge
+            kwargs['gpu_layers'] = 50
+            kwargs['stream'] = True # TODO: Set based on config
 
         logger.info(f"Loading model... {model_name}")
 
