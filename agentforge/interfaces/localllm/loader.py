@@ -81,10 +81,6 @@ class LocalLoader:
         if 'token' in self.config and self.config['token']:
             kwargs['use_auth_token'] = self.config['token']
 
-        if self.config["model_class"] == 'cAutoModelForCausalLM': # TODO: add a ctansformers bool to forge
-            kwargs['gpu_layers'] = 50
-            kwargs['stream'] = True # TODO: Set based on config
-
         logger.info(f"Loading model... {model_name}")
 
         try:
@@ -100,16 +96,20 @@ class LocalLoader:
         except EnvironmentError as e:
             pass # If this is a private model this can fail
 
-        self.model = model_klass.from_pretrained(
-            model_name,
-            load_in_8bit=bool(load_in_8bit),
-            load_in_4bit=bool(load_in_4bit),
-            torch_dtype=computed_torch,
-            device_map=self.device_map,
-            revision=revision,
-            trust_remote_code=True,
-            **kwargs
-        )
+
+        if self.config["model_class"] == 'cAutoModelForCausalLM': # TODO: add a ctansformers bool to forge
+            self.model = model_klass.from_pretrained(model_name,gpu_layers=50, stream=True)
+        else:
+            self.model = model_klass.from_pretrained(
+                model_name,
+                load_in_8bit=bool(load_in_8bit),
+                load_in_4bit=bool(load_in_4bit),
+                torch_dtype=computed_torch,
+                device_map=self.device_map,
+                revision=revision,
+                trust_remote_code=True,
+                **kwargs
+            )
 
         if "peft_model" in self.config and self.config["peft_model"] != "":
             logger.info(f"Loading PEFT... {self.config['peft_model']}")
