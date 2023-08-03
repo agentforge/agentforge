@@ -98,6 +98,8 @@ class PredicateMemory:
         # For string types the results fo classification are a List[str] corresponding to the subject
         if query['type'] == "string":
             for subject in results:
+                subject = subject.replace(" ", "-").strip() # If any spaces are involved they will break PDDL
+                print("[SYMBOLIC] ", subject)
                 self.create_predicate("User", query["relation"], subject) # TODO: Need to pull user name
             return True, results
         # For Boolean the results are True, False, or None. Subject is capture in query context.

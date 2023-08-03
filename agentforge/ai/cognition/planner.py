@@ -41,7 +41,7 @@ class PlanningControllerConfig:
         # initialize the attributes
         self.domain = get_arg("domain", valid_choices=DOMAINS, default_value="garden")
         self.time_limit = get_arg("time_limit", default_value=200)
-        self.task = get_arg("task", default_value=0)
+        self.task = get_arg("task_id", default_value=uuid.uuid4())
         self.run = get_arg("run", default_value=0)
         self.print_prompts = get_arg("print_prompts", default_value=False)
 
@@ -58,7 +58,6 @@ class PlanningController:
 
         self.context = ("p_example.nl", "p_example.pddl", "p_example.sol")
         tasks = [("p01.nl", "p01.pddl")]
-        self.config.task = 0
 
         # Initialize problem domain
         self.domain = Domain(self.db, self.config.domain)
@@ -81,38 +80,44 @@ class PlanningController:
             (define (problem garden-enhanced-problem)
                 (:domain garden)
                 (:objects 
-                    {objects}
+                    {object}
                 )
                 (:init 
                     {init}
                 )
                 (:goal
                 (and
-                    {goals}
+                    {goal}
                 )))
         """      
 
         ### Attention has been satisfied and we need to construct a plan for this domain
         ### using the PredicateMemory Attention. When we are done and have a relevant plan
         ### we can abandon out current attention focus.
-        init = []
-        goals = []
-        objects = []
+        pddl_context = {
+            "init": [],
+            "goal": [],
+            "object": [],
+        }
         queries = attention['queries']
         for query in queries:
             for effect in query["effect"]:
-                for result in query["results"]: # for each result we gathered for goals
-                    if effect["type"] == "goal":
-                        goals.append(effect["val"].replace("{val}", result))
-                    elif effect["type"] == "object":
-                        objects.append(effect["val"].replace("{val}", result))
-                    elif effect["type"] == "init":
-                        init.append(effect["val"].replace("{val}", result))
+                for result in query["results"]: # for each result we gathered for goals, innits, objects
+                    if effect["type"] in ["goal", "object", "init"]:
+                        val = effect["val"].replace("{val}", result)
+                        if val not in pddl_context[effect["type"]]:
+                            pddl_context[effect["type"]].append(val)
+                    # if effect["type"] == "goal":
+                    #     goals.append()
+                    # elif effect["type"] == "object":
+                    #     objects.append(effect["val"].replace("{val}", result))
+                    # elif effect["type"] == "init":
+                    #     init.append(effect["val"].replace("{val}", result))
 
-        plan_template = plan_template.replace("{objects}", "\n".join(objects))
-        plan_template = plan_template.replace("{init}", "\n".join(init))
-        plan_template = plan_template.replace("{goals}", "\n".join(goals))
-
+        plan_template = plan_template.replace("{object}", "\n".join(pddl_context["object"]))
+        plan_template = plan_template.replace("{init}", "\n".join(pddl_context["init"]))
+        plan_template = plan_template.replace("{goal}", "\n".join(pddl_context["goal"]))
+        print(plan_template)
         ### Once the problem plan has been generated let's run the planning algorithms
         return llm_ic_pddl_planner(self.config, self.planner, self.domain, input, plan_template) # TODO: Refactor to use our input
 
@@ -121,11 +126,11 @@ class DomainBuilder:
     def __init__(self, db):
         self.db = db
 
-    def add_task(self, domain_name: str, nl: str, pddl: str):
-        task_key = f"{domain_name}/{str(uuid.uuid1())}"
-        task_data = {"domain": domain_name, "nl": nl, "pddl": pddl}
-        self.db.sself.planner.domainata = {"nl": nl, "pddl": pddl, "sol": sol}
-        self.db.set(collection="contexts", key=domain_name, data=context_data)
+    # def add_task(self, domain_name: str, nl: str, pddl: str):
+    #     task_key = f"{domain_name}/{str(uuid.uuid1())}"
+    #     task_data = {"domain": domain_name, "nl": nl, "pddl": pddl}
+    #     self.db.sself.planner.domainata = {"nl": nl, "pddl": pddl, "sol": sol}
+    #     self.db.set(collection="contexts", key=domain_name, data=context_data)
 
     def set_context(self, domain_name: str, nl: str, pddl: str, sol: str):
         context_data = {"nl": nl, "pddl": pddl, "sol": sol}
@@ -413,12 +418,13 @@ class Planner:
         domain_pddl_ = " ".join(domain_pddl.split())
         task_nl_ = " ".join(task_nl.split())
         prompt = """
-                ### Instruction: Your goal is to help the user plan a garden given the PDDL problem and domain. Format the following into a natural language plan. Here is the plan to translate:"""
+                ### Instruction: Your goal is to help the user plan a garden. Transform the PDDL plan into a sequence of behaviors without further explanation. Format the following into a natural language plan. Here is the plan to translate:"""
         prompt += f"{plan} ### Response:"
         # prompt = f"A planning problem is described as: \n {task_nl} \n" + \
         #          f"The corresponding domain PDDL file is: \n {domain_pddl_} \n" + \
         #          f"The optimal PDDL plan is: \n {plan} \n" + \
         #          f"Transform the PDDL plan into a sequence of behaviors without further explanation."
+        print("plan_to_language", prompt)
         res = self.query(prompt, input_, extract_parens=False, streaming_override=True).strip() + "\n"
         return res
 

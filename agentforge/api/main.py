@@ -1,5 +1,4 @@
 # Hack for deeplake issue
-# TODO: Mitigate and get Pymilvus working
 import deeplake
 deeplake.__version__ = '3.6.2'
 
@@ -65,7 +64,6 @@ from agentforge.ai.cognition.planner import DomainBuilder
 db = interface_interactor.get_interface("db")
 d = DomainBuilder(db)
 d.upload_documents_from_folder('garden', '/app/agentforge/agentforge/config/configs/planner/domains/garden', 'p_example')
-print("latest planning docs uploaded...")
 
 app = init_api()
 app.add_middleware(LoggingMiddleware)
@@ -81,13 +79,12 @@ app.include_router(agent_router, prefix="", tags=["agent_forge"])
 
 @app.on_event("startup")
 def startup_event():
-    print("startup")
+    print("[AGENTFORGE] Starting up...")
     app.state.redis = interface_interactor.create_redis_connection()
 
 @app.on_event("shutdown")
 def shutdown_event():
     app.state.redis.close()
-    app.state.redis.wait_closed()
 
 @app.exception_handler(Exception)
 async def custom_exception_handler(request: Request, exc: Exception):
