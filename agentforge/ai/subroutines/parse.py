@@ -13,10 +13,10 @@ class Parse:
 
     def get_model_id(self, context: Dict[str, Any]) -> Dict[str, Any]:
         # if the dictioary is empty we need to load the model_profile
-        if "modelId" not in context["input"]:
-            raise Exception({"error": "modelId is not found in API input"})
+        if "model_id" not in context["input"]:
+            raise Exception({"error": "model_id is not found in API input"})
 
-        id = context["input"]["modelId"]
+        id = context["input"]["model_id"]
         m_profile = self.model_profile.get(id)
         if m_profile is None:
             raise Exception({"error": "Incorrect Model Profile ID"})
@@ -35,8 +35,6 @@ class Parse:
     def execute(self, context: Dict[str, Any]) -> Dict[str, Any]:
 
         context = self.get_model_id(context)
-
-        context["input"]["user_id"] = valid_token["user_id"]
         
         ### Pull necessary data for prompt template
         prompt_template = context['model_profile']['prompt_config']['prompt_template']

@@ -54,7 +54,7 @@ class Intent:
     def execute(self, context: Dict[str, Any]) -> Dict[str, Any]:
         orig_prompt = context['input']['prompt'] if 'prompt' in context['input'] else context['input']['messages'][-1]['content']
         user_id = context['input']['user_id']
-        agent_id = context['input']['modelId']
+        agent_id = context['input']['model_id']
         id = self.execute_identification(orig_prompt, user_id, agent_id)
         if id is None:  
             return context

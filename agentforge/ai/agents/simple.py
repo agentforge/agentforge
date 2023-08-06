@@ -13,7 +13,7 @@ class SimpleAgent:
     def run(self, context: Dict[str, Any]) -> Dict[str, Any]:
         # Use the context, config, and user_id to decide on a routine
         context['memory'] = Memory()
-        state_machine = StateMachine(self.routine, self.additional_routines)
+        state_machine = StateMachine(self.routine.subroutines, self.additional_routines)
         threading.Thread(target=state_machine.run, args=(context,)).start()
         # Return True immediately after starting the StateMachine
         return True

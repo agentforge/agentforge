@@ -22,9 +22,9 @@ class Plan:
             "model_config": context['model_profile']['model_config'],
         }
 
-        query_engine = QueryEngine(context["input"]['user_id'], context["input"]['modelId'])
+        query_engine = QueryEngine(context["input"]['user_id'], context["input"]['model_id'])
         user_id = context['input']['user_id']
-        session_id = context['input']['modelId']
+        session_id = context['input']['model_id']
         key = f"{user_id}-{session_id}-plan-{self.planner.config.domain}"
 
         ## TODO:
@@ -59,8 +59,8 @@ class Plan:
             context["response"] = finalize_reponse
             response = self.planner.execute(input_, self.symbolic_memory.get_attention(key))
             
-            self.task_management.update_task(user_id, context["input"]["modelId"], "plan", is_active=False)
-            print("[PLAN][update_task]", user_id, context["input"]["modelId"], "plan", False)
+            self.task_management.update_task(user_id, context["input"]["model_id"], "plan", is_active=False)
+            print("[PLAN][update_task]", user_id, context["input"]["model_id"], "plan", False)
             context["response"] = response
             return context
 

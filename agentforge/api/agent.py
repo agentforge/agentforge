@@ -9,6 +9,8 @@ from agentforge.api.auth import get_api_key, verify_token_exists
 import asyncio
 from aioredis import Redis
 import traceback
+from agentforge.utils import logger
+
 # Setup Agent
 agent = agent_interactor.create_agent()
 
@@ -29,11 +31,12 @@ async def agent(request: Request) -> AgentResponse:
     data = await request.json()
 
     ## First check API key for legitimacy
-    valid_token = verify_token_exists(context)
+    valid_token = verify_token_exists(data)
     if valid_token is None:
-        raise Exception(f"Invalid Token {context['input']['apiToken']}")
-    # TODO: Bail on this response properly
+        return {"error": "Invalid Token."}
 
+    # TODO: Bail on this response properly
+    data['user_id'] = valid_token['user_id']
 
     ## TODO: Verify auth, rate limiter, etc -- should be handled by validation layer
     if 'id' not in data:
@@ -41,8 +44,9 @@ async def agent(request: Request) -> AgentResponse:
 
     # TODO: To make this faster we should ideally cache these models, gonna be a lot of reads and few writes here
     model_profiles = ModelProfile()
-    if 'modelId' in data:
-        model_profile = model_profiles.get(data['modelId'])
+    logger.info(data)
+    if 'model_id' in data:
+        model_profile = model_profiles.get(data['model_id'])
     else:
         model_profile = model_profiles.get(data['id'])
 

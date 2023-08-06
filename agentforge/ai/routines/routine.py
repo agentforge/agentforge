@@ -18,11 +18,11 @@ class Routine():
 
         self.vectorstore = interface_interactor.get_interface("vectorstore")
         if description != "" and name != "":
-            self.register_in_vectorstore()
-    
-    # Register this routine in a vectorstore so we can do similarity lookups
+            self.register_task_class()
+
+    # Register this routine as a task ckass in a vectorstore so we can do similarity lookups
     # based on the attributes that describe it
-    def register_in_vectorstore(self) -> None:
+    def register_task_class(self) -> None:
         try:
             # Check if the task exists in the vectorstore with metadata "task: true"
             results = self.vectorstore.search(self.name, 1, filter={"task": True}, collection="tasks")

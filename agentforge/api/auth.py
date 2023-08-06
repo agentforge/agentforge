@@ -54,10 +54,10 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 router = APIRouter()
 db = interface_interactor.get_interface("db")
 
-def verify_token_exists(self, context: Dict[str, Any]) -> bool:
-    if "apiToken" not in context["input"]:
+def verify_token_exists(data: Dict[str, Any]) -> bool:
+    if "apiToken" not in data:
         raise Exception({"error": "apiToken is not found in API input"})
-    token_record = self.db.get("tokens", context["input"]["apiToken"])
+    token_record = db.get("tokens", data["apiToken"])
     if token_record is not None:
         return token_record
     return None

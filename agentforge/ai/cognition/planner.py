@@ -107,12 +107,6 @@ class PlanningController:
                         val = effect["val"].replace("{val}", result)
                         if val not in pddl_context[effect["type"]]:
                             pddl_context[effect["type"]].append(val)
-                    # if effect["type"] == "goal":
-                    #     goals.append()
-                    # elif effect["type"] == "object":
-                    #     objects.append(effect["val"].replace("{val}", result))
-                    # elif effect["type"] == "init":
-                    #     init.append(effect["val"].replace("{val}", result))
 
         plan_template = plan_template.replace("{object}", "\n".join(pddl_context["object"]))
         plan_template = plan_template.replace("{init}", "\n".join(pddl_context["init"]))
