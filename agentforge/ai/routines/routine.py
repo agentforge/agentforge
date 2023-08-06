@@ -3,6 +3,7 @@ from agentforge.ai import Subroutine
 from typing import Dict, Any, Protocol, List, Optional
 from agentforge.exceptions import SubroutineException
 from agentforge.interfaces import interface_interactor
+import traceback
 
 ### Describes a routine, i.e. going to the grocery store or reacting to user input
 ### A routine is a collection of subroutines with a specific order
@@ -24,12 +25,17 @@ class Routine():
     def register_in_vectorstore(self) -> None:
         try:
             # Check if the flow exists in the vectorstore with metadata "flow: true"
-            results = self.vectorstore.search(self.name, 1, filter={"flow": True})
+            results = self.vectorstore.search(self.name, 1, filter={"flow": True}, collection="flows")
             if not results:
                 # If it does not exist, add it to the vectorstore with metadata "flow: true"
-                self.vectorstore.add_texts(self.phrases, metadata=[{"flow": True, "flow_name": self.name} for i in self.phrases])
+                self.vectorstore.add_texts(
+                    self.phrases,
+                    [{"flow": True, "flow_name": self.name} for i in self.phrases],
+                    collection="flows"
+                )
         except Exception as e:
             print(f"Error registering flow, flows: List in vectorstore: {str(e)}")
+            traceback.print_exc()
   
     # Run routine, each iteration of cognitive stack check to see if we need to divert the flow
     def run(self, context: Optional[Dict[str, Any]]) -> Dict[str, Any]:

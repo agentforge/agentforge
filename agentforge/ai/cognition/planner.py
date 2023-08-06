@@ -126,11 +126,11 @@ class DomainBuilder:
     def __init__(self, db):
         self.db = db
 
-    def add_task(self, domain_name: str, nl: str, pddl: str):
-        task_key = f"{domain_name}/{str(uuid.uuid1())}"
-        task_data = {"domain": domain_name, "nl": nl, "pddl": pddl}
-        self.db.sself.planner.domainata = {"nl": nl, "pddl": pddl, "sol": sol}
-        self.db.set(collection="contexts", key=domain_name, data=context_data)
+    # def add_task(self, domain_name: str, nl: str, pddl: str):
+    #     task_key = f"{domain_name}/{str(uuid.uuid1())}"
+    #     task_data = {"domain": domain_name, "nl": nl, "pddl": pddl}
+    #     self.db.sself.planner.domainata = {"nl": nl, "pddl": pddl, "sol": sol}
+    #     self.db.set(collection="contexts", key=domain_name, data=context_data)
 
     def set_context(self, domain_name: str, nl: str, pddl: str, sol: str):
         context_data = {"nl": nl, "pddl": pddl, "sol": sol}

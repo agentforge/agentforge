@@ -39,7 +39,7 @@ class FlowManagement:
     def delete_flow(self, user_id: str, session_id: str, flow_name: str) -> None:
         key = f"{user_id}:{session_id}:{flow_name}"
         self.db.delete(self.collection, key)
-        
+
     def active_flow(self, user_id: str, session_id: str) -> bool:
         filter_criteria = {
             'user_id': user_id,

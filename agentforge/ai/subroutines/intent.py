@@ -13,7 +13,13 @@ class Intent:
     
     def search(self, user_query: str) -> Tuple[str, float]:
         # Search the vectorstore for the top result based on the user query
-        results = self.vectorstore.search_with_score(user_query, 1, filter={'flow': True}, distance_metric="cos")
+        print(user_query)
+        results = self.vectorstore.search_with_score(
+            user_query,
+            n=4,
+            collection="flows"
+        )
+        print(results)
         if len(results) > 0:
             return results[0]
         return None, 0.0
