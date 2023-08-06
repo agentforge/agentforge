@@ -6,7 +6,11 @@ WORKDIR /app/
 RUN apt-get install -y python3-dev cmake g++ git make python3
 
 # Install Fast Downward -- Classical Planning
-RUN git clone https://github.com/aibasel/downward.git && \
+RUN apt-get update && apt install g++-10 && apt-get install build-essential gdb && \
+    update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-9 40 && \
+    update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-10 60 && \
+    update-alternatives --config g++ && \
+    git clone https://github.com/aibasel/downward.git && \
     cd downward && mkdir -p builds/main && \
     cd builds/main && \
     cmake ../../src DCMAKE_BUILD_TYPE=RELEASE && \
