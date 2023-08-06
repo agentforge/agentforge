@@ -1,5 +1,4 @@
 from .cognition.memory import Memory
-from .worldmodel.user import User
 from .subroutines.respond import Respond
 from .subroutines.emote import Emote
 from .subroutines.lipsync import Lipsync
@@ -8,16 +7,16 @@ from .subroutines.parse import Parse
 from .subroutines.remember import Remember
 from .subroutines.recall import Recall
 from .subroutines.speak import Speak
-from .decisions.decision import Decision
-from .decisions.simple import SimpleDecision
+from .agents.agent import Agent
+from .agents.simple import SimpleAgent
 
-from agentforge.ai.decisions.decision_factory import DecisionFactory
+from agentforge.ai.agents.agent_factory import AgentFactory
 
-decision_interactor = DecisionFactory()
+agent_interactor = AgentFactory()
 
-decision_interactor.create_decision()
+agent_interactor.create_agent()
 
-__all__ = ["Prompt", "Avatar", "Agent", "ShortTermMemory", "LongTermMemory",
-           "startup", "Subroutine", "Respond", "Decision",
+__all__ = ["Memory", "ShortTermMemory", "LongTermMemory",
+           "startup", "Subroutine", "Respond", "Agent",
            "Emote", "Lipsync", "Remember", "Parse", "Recall",
-           "SimpleDecision", "Speak", "decision_interactor"]
+           "SimpleAgent", "Speak", "agent_interactor"]

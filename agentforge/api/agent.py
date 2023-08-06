@@ -3,14 +3,14 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from agentforge.interfaces import interface_interactor
 from base64 import b64encode
-from agentforge.ai import decision_interactor
+from agentforge.ai import agent_interactor
 from agentforge.interfaces.model_profile import ModelProfile
 from agentforge.api.auth import get_api_key
 import asyncio
 from aioredis import Redis
 import traceback
 # Setup Agent
-decision = decision_interactor.create_decision()
+agent = agent_interactor.create_agent()
 
 class AgentResponse(BaseModel):
   data: dict
@@ -40,10 +40,10 @@ async def agent(request: Request) -> AgentResponse:
         model_profile = model_profiles.get(data['id'])
 
     if model_profile['model_config']['streaming']:
-        ## Get Decision from Decision Factory and run it
-        decision = decision_interactor.get_decision()
-        # print("[DEBUG][api][agent][agent] decision: ", decision)
-        output = decision.run({"input": data, "model_profile": model_profile})
+        ## Get agent from agent Factory and run it
+        agent = agent_interactor.get_agent()
+        # print("[DEBUG][api][agent][agent] agent: ", agent)
+        output = agent.run({"input": data, "model_profile": model_profile})
 
         async def event_generator():
             redis = Redis.from_url('redis://redis:6379/0')
@@ -68,14 +68,14 @@ async def agent(request: Request) -> AgentResponse:
         return StreamingResponse(event_generator(), media_type="text/event-stream")
 
     else:
-        ## Get Decision from Decision Factory and run it
-        decision = decision_interactor.get_decision()
+        ## Get agent from agent Factory and run it
+        agent = agent_interactor.get_agent()
 
-        # print("[DEBUG][api][agent][agent] decision: ", decision)
+        # print("[DEBUG][api][agent][agent] agent: ", agent)
 
-        output = decision.run({"input": data, "model_profile": model_profile})
+        output = agent.run({"input": data, "model_profile": model_profile})
 
-        # print("[DEBUG][api][agent][agent] decision: ", output)
+        # print("[DEBUG][api][agent][agent] agent: ", output)
 
         ### Parse video if needed
         if 'video' in output:
@@ -103,7 +103,7 @@ async def agent(request: Request) -> AgentResponse:
 
         # print("[DEBUG][api][agent][agent] output: ", output)
 
-        ## Return Decision output
+        ## Return agent output
         return AgentResponse(data=output)
 
 ### Streaming for old Forge

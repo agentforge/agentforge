@@ -1,4 +1,3 @@
-# TODO: Implement default decision --> decisions are markov chains w/ subroutines as nodes
 ### i.e. the simplest example: generate text response -> generate wav file -> generate mp4 -> return
 import threading
 from typing import Dict, Any, List, Protocol, Optional, Callable
@@ -13,7 +12,7 @@ from agentforge.ai.subroutines.prep import Prep
 from agentforge.ai.subroutines.plan import Plan
 from agentforge.ai.subroutines.intent import Intent
 from agentforge.ai.subroutines.query import Query, Learn
-from agentforge.ai.decisions.statemachine import Node
+from agentforge.ai.agents.statemachine import Node
 
 class ReactiveRoutine(Routine):
     def __init__(self):

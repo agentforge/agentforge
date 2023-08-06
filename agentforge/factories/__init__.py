@@ -4,7 +4,7 @@
 ### same way and that the factories are not instantiated multiple times.
 
 # from agentforge.interfaces.interface_factory import InterfaceFactory
-# from agentforge.ai.decisions.decision_factory import DecisionFactory
+# from agentforge.ai.agents.agent_factory import AgentFactory
 from agentforge.factories.resource_factory import ResourceFactory
 import os, importlib
 
