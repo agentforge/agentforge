@@ -2,59 +2,52 @@ from typing import Any, Dict
 from typing import Any, List, Tuple
 from agentforge.interfaces import interface_interactor
 from agentforge.exceptions import BreakRoutineException
-from agentforge.ai.cognition.flow import FlowManagement
+from agentforge.ai.cognition.tasks import TaskManagement
 
 ### Identify user intent
 class Intent:
     def __init__(self):
-        self.flows = []
-        self.flow_management = FlowManagement()
+        self.tasks = []
+        self.task_management = TaskManagement()
         self.vectorstore = interface_interactor.get_interface("vectorstore")
     
     def search(self, user_query: str) -> Tuple[str, float]:
         # Search the vectorstore for the top result based on the user query
-        print(user_query)
         results = self.vectorstore.search_with_score(
             user_query,
             n=4,
-            collection="flows"
+            collection="tasks"
         )
-        print(results)
         if len(results) > 0:
             return results[0]
         return None, 0.0
 
-    # TODO: We need a more robust method
-    ### This basically acts as a controller -- if the user wants to initiate
-    ### a certain action or routine
-    ### This is better off as a fine-tuned LLM (i.e. HuggingGPT) but a embeddings vectorstore w/ a list of likely candidates
-    ### for initiating a new flow into a routine is good enough for now
+    ### Identify user intent based on the user input
+    ### and add a task to the task management system if necessary
     def execute_identification(self, user_input: str, user_id: str, session_id: str) -> str:
-        # Let's first check to see if any Flows are already in progress
-        flow = self.flow_management.active_flow(user_id, session_id)
-        if flow is not None: # we are currently in an active flow
-            print(f"[FLOW] Flow {flow} exists...")
-            return flow
+        # Let's first check to see if any tasks are already in progress
+        task = self.task_management.active_task(user_id, session_id)
+        if task is not None: # we are currently in an active task
+            return task
 
         document, similarity = self.search(user_input)
-        print(document, similarity)
         if not document: # Nothing came up
             return None
         # Threshold for similarity
         threshold = 0.6
 
-        if similarity >= threshold and 'flow_name' in document.metadata:
-            flow_name = document.metadata['flow_name']
-            ### Let's check to see if a flow already exists and is no longer active
-            flow = self.flow_management.get_flow(user_id, session_id, flow_name)
-            ### If the flow is not active, let's restart the flow
-            if flow is None:
-                self.flow_management.register_flow(user_id, session_id, flow_name)
-            elif not flow['is_active']:
-                ### Before reactivating the flow automatically we need to implement multi-planning
-                # self.flow_management.update_flow(user_id, session_id, flow_name, is_active=True)
+        if similarity >= threshold and 'task_name' in document.metadata:
+            task_name = document.metadata['task_name']
+            ### Let's check to see if a task already exists and is no longer active
+            task = self.task_management.get_task(user_id, session_id, task_name)
+            ### If the task is not active, let's restart the task
+            if task is None:
+                self.task_management.add_task(user_id, session_id, task_name)
+            elif not task['is_active']:
+                ### Before reactivating the task automatically we need to implement multi-planning
+                # self.task_management.update_task(user_id, session_id, task_name, is_active=True)
                 pass
-            return flow_name
+            return task_name
         else:
             return None
 

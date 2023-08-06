@@ -2,7 +2,7 @@ from typing import Any, Dict
 from agentforge.ai.cognition.planner import PlanningController
 from agentforge.ai.cognition.query_engine import QueryEngine
 from agentforge.ai.cognition.symbolic import PredicateMemory
-from agentforge.ai.cognition.flow import FlowManagement
+from agentforge.ai.cognition.tasks import TaskManagement
 from agentforge.utils.stream import stream_string
 
 class Plan:
@@ -10,7 +10,7 @@ class Plan:
     def __init__(self):
         self.planner = PlanningController()
         self.predicate_memory = PredicateMemory()
-        self.flow_management = FlowManagement()
+        self.task_management = TaskManagement()
 
     def execute(self, context: Dict[str, Any]) -> Dict[str, Any]:
         input_ = {
@@ -58,8 +58,8 @@ class Plan:
             context["response"] = finalize_reponse
             response = self.planner.execute(input_, self.predicate_memory.get_attention(key))
             
-            self.flow_management.update_flow(user_id, context["input"]["modelId"], "plan", is_active=False)
-            print("[PLAN][update_flow]", user_id, context["input"]["modelId"], "plan", False)
+            self.task_management.update_task(user_id, context["input"]["modelId"], "plan", is_active=False)
+            print("[PLAN][update_task]", user_id, context["input"]["modelId"], "plan", False)
             context["response"] = response
             return context
 

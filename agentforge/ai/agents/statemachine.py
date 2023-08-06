@@ -11,15 +11,15 @@ class Node:
         self.dependencies = dependencies
         self.finished = threading.Event()
 
-    def run(self, context: Dict[str, Any], flows: Dict[str, Routine]) -> Dict[str, Any]:
+    def run(self, context: Dict[str, Any], tasks: Dict[str, Routine]) -> Dict[str, Any]:
         for dependency in self.dependencies:
             dependency.finished.wait()  # Wait until the dependency has finished
         try:
             new_context = self.execute(context)
             context.update(new_context)
         except BreakRoutineException as interruption:
-            routine = flows[str(interruption)]
-            new_context = StateMachine(routine.subroutines, flows).run(context)
+            routine = tasks[str(interruption)]
+            new_context = StateMachine(routine.subroutines, tasks).run(context)
             context.update(new_context)
         self.finished.set()  # Signal that this node has finished
         return context
@@ -29,13 +29,13 @@ class Node:
 
 
 class StateMachine:
-    def __init__(self, nodes: List[Node], flows: Dict[str, Routine]):
+    def __init__(self, nodes: List[Node], tasks: Dict[str, Routine]):
         self.nodes = nodes
-        self.flows = flows
+        self.tasks = tasks
 
     def run(self, context: Dict[str, Any]) -> Dict[str, Any]:
         for node in self.nodes:
-            threading.Thread(target=node.run, args=(context, self.flows)).start()
+            threading.Thread(target=node.run, args=(context, self.tasks)).start()
         for node in self.nodes:
             node.finished.wait()  # Wait until the node has finished
         self.reset()  # Reset the nodes when all have finished
