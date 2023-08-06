@@ -1,7 +1,7 @@
 from typing import Any, Dict
 from agentforge.utils import async_execution_decorator
 
-### Stores a context for a user in the memory
+### BELIEFS: Stores a context for a user in the memory
 class Remember:
     def __init__(self):
         pass

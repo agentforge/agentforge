@@ -5,7 +5,7 @@ from agentforge.interfaces import interface_interactor
 from base64 import b64encode
 from agentforge.ai import agent_interactor
 from agentforge.interfaces.model_profile import ModelProfile
-from agentforge.api.auth import get_api_key
+from agentforge.api.auth import get_api_key, verify_token_exists
 import asyncio
 from aioredis import Redis
 import traceback
@@ -27,6 +27,13 @@ async def agent(request: Request) -> AgentResponse:
     ## Parse Data --  from web acceptuseChat JSON, from client we need to pull ModelConfig
     ## and add add the prompt and user_id to the data
     data = await request.json()
+
+    ## First check API key for legitimacy
+    valid_token = verify_token_exists(context)
+    if valid_token is None:
+        raise Exception(f"Invalid Token {context['input']['apiToken']}")
+    # TODO: Bail on this response properly
+
 
     ## TODO: Verify auth, rate limiter, etc -- should be handled by validation layer
     if 'id' not in data:

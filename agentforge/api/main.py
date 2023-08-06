@@ -6,7 +6,7 @@ deeplake.__version__ = '3.6.2'
 from fastapi import Request
 from agentforge.api.model_profiles import router as model_profiles_router
 from agentforge.api.agent import router as agent_router
-from agentforge.api.token_access import router as token_router
+from agentforge.api.auth import router as token_router
 from agentforge.api.user import router as user_router
 from agentforge.api.app import init_api
 from agentforge.utils import logger

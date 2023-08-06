@@ -98,7 +98,7 @@ LLM response to the user based on the context added to the prompt by the previou
 
 The interface_factory provides generic access to interfaces such as APIs, models, and algorithms. Each interface is generically defined through an Adapter of its type, i.e. the Database adapter
 
-Each service is deployed as a docker container which share a docker Volume or other file-system. The specific services and API details we use are defined by environment variables
+Each service is deployed as a docker container which share a docker Volume or other file-system. The specific services and API details we use are defined by environment variables and accessed via the factory function.
 
 To create a new interface you must:
 
@@ -201,13 +201,21 @@ To run the FastAPI server(s) from inside the container:
 > Note: For development containers you will need to run the following processes for a full stack.
 
 On the Agent container:
-```PYTHONPATH="/app/agentforge/" uvicorn main:app --reload --host=0.0.0.0 --port=3000```
+```
+PYTHONPATH="/app/agentforge/" uvicorn main:app --reload --host=0.0.0.0 --port=3000
+```
 
 On the LLM container:
-```PYTHONPATH="/app/agentforge/" uvicorn llm:app --reload --host=0.0.0.0 --port=3000```
+```
+PYTHONPATH="/app/agentforge/" uvicorn llm:app --reload --host=0.0.0.0 --port=3000
+```
 
 On the Speech container:
-```PYTHONPATH="/app/agentforge/" uvicorn tts:app --reload --host=0.0.0.0 --port=3000```
+```
+PYTHONPATH="/app/agentforge/" uvicorn tts:app --reload --host=0.0.0.0 --port=3000
+```
 
 On the Wav2Lip container:
-```PYTHONPATH="/app/agentforge/" uvicorn w2l:app --reload --host=0.0.0.0 --port=3000```
+```
+PYTHONPATH="/app/agentforge/" uvicorn w2l:app --reload --host=0.0.0.0 --port=3000
+```

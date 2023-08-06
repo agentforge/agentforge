@@ -4,7 +4,7 @@ import base64
 import asyncio
 import re, os, json
 
-### Handles conversion of text to speech
+### COMMUNICATION: Handles conversion of text to speech
 class Speak:
     def __init__(self):
         self.tts = interface_interactor.get_interface("tts")

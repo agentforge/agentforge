@@ -3,7 +3,7 @@ from agentforge.interfaces.model_profile import ModelProfile
 from agentforge.utils import Parser
 from agentforge.interfaces import interface_interactor
 
-### Final aggregation of prompt template and other prompt context into
+### OBSERVATION: Final aggregation of prompt template and other prompt context into
 ### a single prompt string
 class Parse:
     def __init__(self):
@@ -23,15 +23,6 @@ class Parse:
         else:
             context['model_profile'] = m_profile
         return context
-
-    def verify_token_exists(self, context: Dict[str, Any]) -> bool:
-        if "apiToken" not in context["input"]:
-            raise Exception({"error": "apiToken is not found in API input"})
-        token_record = self.db.get("tokens", context["input"]["apiToken"])
-        print(token_record)
-        if token_record is not None:
-            return token_record
-        return None
     
     def get_instruction(self, context):
         if 'prompt' in context['input']:
@@ -42,15 +33,11 @@ class Parse:
             raise Exception(f"No valid prompt {context['input']}")
 
     def execute(self, context: Dict[str, Any]) -> Dict[str, Any]:
-        ## First check API key for legitimacy
-        valid_token = self.verify_token_exists(context)
-        if valid_token is None:
-            raise Exception(f"Invalid Token {context['input']['apiToken']}")
-        # TODO: Bail on this response properly
 
         context = self.get_model_id(context)
 
         context["input"]["user_id"] = valid_token["user_id"]
+        
         ### Pull necessary data for prompt template
         prompt_template = context['model_profile']['prompt_config']['prompt_template']
         name = context['model_profile']['avatar_config']['name']

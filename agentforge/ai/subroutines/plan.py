@@ -1,15 +1,16 @@
 from typing import Any, Dict
 from agentforge.ai.cognition.planner import PlanningController
 from agentforge.ai.cognition.query_engine import QueryEngine
-from agentforge.ai.cognition.symbolic import PredicateMemory
+from agentforge.ai.cognition.symbolic import SymbolicMemory
 from agentforge.ai.cognition.tasks import TaskManagement
 from agentforge.utils.stream import stream_string
 
+### PLANNING: Executes PDDL plans with help from LLM resource
 class Plan:
     ### Executes PDDL plans with help from LLM resource
     def __init__(self):
         self.planner = PlanningController()
-        self.predicate_memory = PredicateMemory()
+        self.symbolic_memory = SymbolicMemory()
         self.task_management = TaskManagement()
 
     def execute(self, context: Dict[str, Any]) -> Dict[str, Any]:
@@ -42,21 +43,21 @@ class Plan:
             query["response"] = context["input"]["prompt"] # The user response comes in as a prompt
             print("[PLAN] Learning new information...")
             stream_string('channel', "One moment while I make a note.", end_token=" ") # TODO: Make channel user specific, make text plan specific
-            learned, results = self.predicate_memory.learn(query, context) # TODO: I doubt the user formats the response correctly, we should rely on the LLM here
+            learned, results = self.symbolic_memory.learn(query, context) # TODO: I doubt the user formats the response correctly, we should rely on the LLM here
             print(learned, results)
             if learned:
                 stream_string('channel', "Okay I've jotted that down.", end_token=" ") # TODO: Make channel user specific, make text plan specific
-                self.predicate_memory.satisfy_attention(key, query, results)
+                self.symbolic_memory.satisfy_attention(key, query, results)
                 query_engine.pop_query()
 
         # If the predicate memory attention is satisfied kick off the plan
-        if self.predicate_memory.attention_satisfied(key):
+        if self.symbolic_memory.attention_satisfied(key):
             print("attention satisfied...")
             finalize_reponse = "I have all the info I need, let me finalize the plan."
             stream_string('channel', finalize_reponse, end_token=" ") # TODO: Make channel user specific, make text plan specific
             
             context["response"] = finalize_reponse
-            response = self.planner.execute(input_, self.predicate_memory.get_attention(key))
+            response = self.planner.execute(input_, self.symbolic_memory.get_attention(key))
             
             self.task_management.update_task(user_id, context["input"]["modelId"], "plan", is_active=False)
             print("[PLAN][update_task]", user_id, context["input"]["modelId"], "plan", False)
@@ -64,7 +65,7 @@ class Plan:
             return context
 
         # If the predicate memory attention does not exist, feed plan queries into the current attention
-        if not self.predicate_memory.attention_exists(key):
+        if not self.symbolic_memory.attention_exists(key):
             print("[PLAN] Creating new Attention to Plan")
 
             response = "Okay let's formulate a plan."
@@ -73,7 +74,7 @@ class Plan:
 
             queries = self.planner.domain.get_queries()
             query_engine.create_queries(queries)
-            self.predicate_memory.create_attention(queries, key)
+            self.symbolic_memory.create_attention(queries, key)
         else:
             queries = query_engine.get_queries()
 

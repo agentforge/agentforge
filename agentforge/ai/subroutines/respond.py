@@ -2,6 +2,7 @@ from typing import Any, Dict
 from agentforge.interfaces import interface_interactor
 from agentforge.utils import Parser
 
+### COMMUNICATION: Handles response generation
 class Respond:
     def __init__(self):
         self.service = interface_interactor.get_interface("llm")

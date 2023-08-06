@@ -4,7 +4,7 @@ from agentforge.interfaces import interface_interactor
 from agentforge.exceptions import BreakRoutineException
 from agentforge.ai.cognition.tasks import TaskManagement
 
-### Identify user intent
+### REASONING: Identify user intent
 class Intent:
     def __init__(self):
         self.tasks = []

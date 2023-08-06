@@ -25,7 +25,7 @@ def check_ttl(func):
     return wrapper
 
 ### Wrapper for OPQLMemory, allows the agent to learn and query from our symbolic memory
-class PredicateMemory:
+class SymbolicMemory:
     def __init__(self) -> None:
         self.entity_linker = EntityLinker()
         self.opql_memory = OPQLMemory()

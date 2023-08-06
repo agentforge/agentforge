@@ -5,6 +5,7 @@ from agentforge.ai.agents.statemachine import Node
 
 class PlanningRoutine(Routine):
     def __init__(self):
+        # TODO: Move this somewhere and/or tidy this up
         plan_prompts = [
             "Plan a garden for me.",
             "Could you help me design a garden?",

@@ -6,7 +6,7 @@ from pygments.util import ClassNotFound
 from pygments.formatters import HtmlFormatter
 from pygments.lexers.special import TextLexer
 
-### Preps output for end-user, stripping PII/IDs and anything else unserializable
+### COMMUNICATION: Preps output for end-user, stripping PII/IDs and anything else unserializable
 ### Also implements presentation layer
 class Prep:
     def __init__(self):

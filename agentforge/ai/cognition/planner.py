@@ -92,7 +92,7 @@ class PlanningController:
         """      
 
         ### Attention has been satisfied and we need to construct a plan for this domain
-        ### using the PredicateMemory Attention. When we are done and have a relevant plan
+        ### using the SymbolicMemory Attention. When we are done and have a relevant plan
         ### we can abandon out current attention focus.
         pddl_context = {
             "init": [],
