@@ -1,8 +1,8 @@
 from typing import Any, Dict
-from typing import Any, List, Tuple
+from typing import Any, Tuple
 from agentforge.interfaces import interface_interactor
 from agentforge.exceptions import BreakRoutineException
-from agentforge.ai.cognition.tasks import TaskManagement
+from agentforge.ai.attention.tasks import TaskManagement
 
 ### REASONING: Identify user intent
 class Intent:

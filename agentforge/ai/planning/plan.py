@@ -1,8 +1,8 @@
 from typing import Any, Dict
-from agentforge.ai.cognition.planner import PlanningController
-from agentforge.ai.cognition.query_engine import QueryEngine
-from agentforge.ai.cognition.symbolic import SymbolicMemory
-from agentforge.ai.cognition.tasks import TaskManagement
+from agentforge.ai.planning.planner import PlanningController
+from agentforge.ai.reasoning.query_engine import QueryEngine
+from agentforge.ai.beliefs.symbolic import SymbolicMemory
+from agentforge.ai.attention.tasks import TaskManagement
 from agentforge.utils.stream import stream_string
 
 ### PLANNING: Executes PDDL plans with help from LLM resource
@@ -27,12 +27,14 @@ class Plan:
         session_id = context['input']['model_id']
         key = f"{user_id}-{session_id}-plan-{self.planner.config.domain}"
 
-        ## TODO:
+        ## TODO: CHECK BELIEFS
         ## Check if a plan already exists and there is no other queries in progress
         ## If this is the case we enquire if the user wants to browse other plans or
         ## create a new plan
         ## This step is the confirmation step preferably achieved by CoT Reasoning Engine
 
+
+        ### UPDATE_BELIEFS
         # # if query exists and is a response, pop
         print("[INPUT] ", context["input"])
         sent = query_engine.get_sent_queries()
@@ -50,6 +52,7 @@ class Plan:
                 self.symbolic_memory.satisfy_attention(key, query, results)
                 query_engine.pop_query()
 
+        ### PLANNING
         # If the predicate memory attention is satisfied kick off the plan
         if self.symbolic_memory.attention_satisfied(key):
             print("attention satisfied...")
@@ -64,6 +67,7 @@ class Plan:
             context["response"] = response
             return context
 
+        ### UPDATE BELIEFS
         # If the predicate memory attention does not exist, feed plan queries into the current attention
         if not self.symbolic_memory.attention_exists(key):
             print("[PLAN] Creating new Attention to Plan")
@@ -78,7 +82,7 @@ class Plan:
         else:
             queries = query_engine.get_queries()
 
-        print("checking queries")
+        ### COMMUNICATION
         # Iterate through unsent queries and send the latest
         for query in queries:
             if query is not None:

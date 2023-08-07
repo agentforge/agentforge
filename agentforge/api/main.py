@@ -59,7 +59,7 @@ class RateLimiterMiddleware(BaseHTTPMiddleware):
 
 ### TODO: limit to dev/test environment
 from agentforge.interfaces import interface_interactor
-from agentforge.ai.cognition.planner import DomainBuilder
+from agentforge.ai.planning.planner import DomainBuilder
 
 db = interface_interactor.get_interface("db")
 d = DomainBuilder(db)

@@ -6,7 +6,6 @@ from typing import List
 from agentforge.interfaces import interface_interactor
 from functools import wraps
 from agentforge.utils import Parser
-from copy import deepcopy
 
 def check_ttl(func):
     @wraps(func)

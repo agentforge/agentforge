@@ -1,12 +1,12 @@
-from agentforge.ai.subroutines.respond import Respond
-from agentforge.ai.subroutines.parse import Parse
-from agentforge.ai.subroutines.speak import Speak
-from agentforge.ai.subroutines.lipsync import Lipsync
-from agentforge.ai.subroutines.remember import Remember
-from agentforge.ai.subroutines.recall import Recall
+from agentforge.ai.communication.respond import Respond
+from agentforge.ai.observation.parse import Parse
+from agentforge.ai.communication.speak import Speak
+from agentforge.ai.communication.lipsync import Lipsync
+from agentforge.ai.beliefs.remember import Remember
+from agentforge.ai.beliefs.recall import Recall
 from agentforge.ai.routines.routine import Routine
-from agentforge.ai.subroutines.prep import Prep
-from agentforge.ai.subroutines.intent import Intent
+from agentforge.ai.communication.prep import Prep
+from agentforge.ai.attention.intent import Intent
 from agentforge.ai.agents.statemachine import Node
 
 class ReactiveRoutine(Routine):

@@ -1,7 +1,7 @@
 from typing import Dict, Any
 from agentforge.ai.routines.reactive import ReactiveRoutine
 from agentforge.ai.routines.planning import PlanningRoutine
-from agentforge.ai.cognition.memory import Memory
+from agentforge.ai.beliefs.memory import Memory
 from agentforge.ai.agents.statemachine import StateMachine
 import threading
 

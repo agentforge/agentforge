@@ -1,5 +1,5 @@
-from agentforge.ai.subroutines.plan import Plan
-from agentforge.ai.subroutines.speak import Speak
+from agentforge.ai.planning.plan import Plan
+from agentforge.ai.communication.speak import Speak
 from agentforge.ai.routines.routine import Routine
 from agentforge.ai.agents.statemachine import Node
 
