@@ -1,9 +1,14 @@
-from agentforge.ai.cognition.query_engine import QueryEngine
+from agentforge.ai.reasoning.query_engine import QueryEngine
 from typing import Any, Dict
 from agentforge.interfaces import interface_interactor
-from agentforge.ai.cognition.symbolic import SymbolicMemory
+from agentforge.ai.beliefs.symbolic import SymbolicMemory
+from agentforge.utils.stream import stream_string
 
 ### REASONING: Identifies if there is a response to an outgoing query and learns from it
+
+class Query:
+  def __init__(self) -> None:
+     pass
 class Learn:
     def __init__(self):
       self.service = interface_interactor.get_interface("llm")
@@ -32,7 +37,7 @@ class Learn:
               query_engine.pop_query()
       return context
 
-class Query:
+class AskQuery:
     def __init__(self):
       self.service = interface_interactor.get_interface("llm")
 
@@ -56,6 +61,7 @@ class Query:
           if query is not None:
               print("asking ", query)
               query_engine.update_query(sent=True)
+              stream_string(query['query'])
               context["response"] = query['query']
 
               # Return new context to the user w/ response

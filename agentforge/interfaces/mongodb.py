@@ -104,6 +104,18 @@ class MongoDBKVStore(DB):
             logging.error(f'Delete operation failed for key {key}: {str(e)}')
             raise
 
+
+    def count(self, collection:str, filter: Dict[str, Any]) -> Cursor:
+        self._check_connection()
+        collection = self.db[collection]
+        try:
+            result = collection.count_documents(filter)
+            return result
+        except Exception as e:
+            logging.error(f'Get operation failed for filter {filter}: {str(e)}')
+            raise
+
+
     def get_many(self, collection:str, filter: Dict[str, Any]) -> Cursor:
         self._check_connection()
         collection = self.db[collection]

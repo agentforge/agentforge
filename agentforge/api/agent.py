@@ -54,7 +54,7 @@ async def agent(request: Request) -> AgentResponse:
         ## Get agent from agent Factory and run it
         agent = agent_interactor.get_agent()
         # print("[DEBUG][api][agent][agent] agent: ", agent)
-        output = agent.run({"input": data, "model_profile": model_profile})
+        output = agent.run({"input": data, "model": model_profile})
 
         async def event_generator():
             redis = Redis.from_url('redis://redis:6379/0')
@@ -81,11 +81,8 @@ async def agent(request: Request) -> AgentResponse:
     else:
         ## Get agent from agent Factory and run it
         agent = agent_interactor.get_agent()
-
         # print("[DEBUG][api][agent][agent] agent: ", agent)
-
-        output = agent.run({"input": data, "model_profile": model_profile})
-
+        output = agent.run({"input": data, "model": model_profile})
         # print("[DEBUG][api][agent][agent] agent: ", output)
 
         ### Parse video if needed

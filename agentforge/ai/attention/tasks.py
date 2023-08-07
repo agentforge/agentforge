@@ -1,7 +1,7 @@
 from typing import Any, Dict, Optional
 from datetime import datetime
 from agentforge.interfaces import interface_interactor
-
+from agentforge.ai.beliefs.symbolic import SymbolicMemory
 class TaskManagement:
     def __init__(self) -> None:
         self.db = interface_interactor.get_interface("db")
@@ -21,9 +21,13 @@ class TaskManagement:
         key = f"{user_id}:{session_id}:{task_name}"
         return self.db.create(self.collection, key, task_data)
 
-    def get_task(self, user_id: str, session_id: str, task_name: str) -> Optional[Any]:
+    def get_tasks(self, user_id: str, session_id: str, task_name: str) -> Optional[Any]:
         key = f"{user_id}:{session_id}:{task_name}"
-        return self.db.get(self.collection, key)
+        return self.db.get_many(self.collection, {"_id": key })
+
+    def count(self, user_id: str, session_id: str, task_name: str) -> Optional[Any]:
+        key = f"{user_id}:{session_id}:{task_name}"
+        return self.db.count(self.collection, {"_id": key })
 
     def update_task(self, user_id: str, session_id: str, task_name: str, is_active = None) -> None:
         task_ = self.get_task(user_id, session_id, task_name)
@@ -48,6 +52,6 @@ class TaskManagement:
         }
         print(filter_criteria)
         active_tasks = self.db.get_many(self.collection, filter_criteria)
-        for task_ in active_tasks:
-            return task_["task_name"]
+        for task in active_tasks:
+            return task["task_name"]
         return None

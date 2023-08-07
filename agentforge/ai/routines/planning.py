@@ -2,6 +2,7 @@ from agentforge.ai.planning.plan import Plan
 from agentforge.ai.communication.speak import Speak
 from agentforge.ai.routines.routine import Routine
 from agentforge.ai.agents.statemachine import Node
+from agentforge.ai.beliefs.remember import GetResponse
 
 class PlanningRoutine(Routine):
     def __init__(self):
@@ -57,8 +58,10 @@ class PlanningRoutine(Routine):
             "Let's come up with a plan for my garden.",
             "I'd like your support in planning my garden."
         ]
-        super().__init__("plan", plan_prompts)
+        super().__init__("plan a garden", plan_prompts)
+        get_response = Node(GetResponse("plan-garden").execute, [])
         self.subroutines = [
-            Node(Plan().execute, []),
-            Node(Speak().execute, [])
+            get_response,
+            Node(Plan("plan-garden").execute, [get_response]),
+            Node(Speak().execute, [get_response])
         ]

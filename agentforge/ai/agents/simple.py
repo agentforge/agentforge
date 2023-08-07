@@ -3,6 +3,9 @@ from agentforge.ai.routines.reactive import ReactiveRoutine
 from agentforge.ai.routines.planning import PlanningRoutine
 from agentforge.ai.beliefs.memory import Memory
 from agentforge.ai.agents.statemachine import StateMachine
+from agentforge.ai.agents.context import Context
+from agentforge.ai.attention.attention import Attention
+
 import threading
 
 class SimpleAgent:
@@ -10,10 +13,11 @@ class SimpleAgent:
         self.routine = ReactiveRoutine()
         self.additional_routines = {'plan': PlanningRoutine()}
 
-    def run(self, context: Dict[str, Any]) -> Dict[str, Any]:
-        # Use the context, config, and user_id to decide on a routine
-        context['memory'] = Memory()
+    def run(self, input: Dict[str, Any]) -> Dict[str, Any]:
+
+        context = Context(input)
+        context.set('memory', Memory())
+
         state_machine = StateMachine(self.routine.subroutines, self.additional_routines)
         threading.Thread(target=state_machine.run, args=(context,)).start()
-        # Return True immediately after starting the StateMachine
         return True
