@@ -98,7 +98,7 @@ class MongoDBKVStore(DB):
         self._check_connection()
         collection = self.db[collection]
         try:
-            collection.delete_one({"_id": key})
+            collection.delete_one(key)
             logging.info(f'Successfully deleted value for key {key}.')
         except Exception as e:
             logging.error(f'Delete operation failed for key {key}: {str(e)}')

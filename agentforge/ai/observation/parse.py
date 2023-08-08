@@ -22,14 +22,14 @@ class Parse:
         else:
             context.set('model', m_profile)
         return context
-    
+
     def ensure_instruction(self, context):
-        if 'prompt' in context['input']:
-            return context['input']['prompt']
-        elif 'messages' in context['input']:
-            return context['input']['messages'][-1]['content']
+        if 'prompt' in context.get('input'):
+            return context.get('input.prompt')
+        elif 'messages' in context.get('input'):
+            return context.get('input.messages')[-1]['content']
         else:
-            raise Exception(f"No valid prompt {context['input']}")
+            raise Exception(f"No valid prompt {context.get('input')}")
 
     def execute(self, context: Context) -> Dict[str, Any]:
         context = self.ensure_model_id(context)

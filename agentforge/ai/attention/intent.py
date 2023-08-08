@@ -51,7 +51,7 @@ class Intent:
             task_count = self.task_management.count(user_id, session_id, task_name)
 
             if task_count == 0:
-                task = self.task_management.add_task(user_id, session_id, task_name)
+                task_id = self.task_management.add_task(user_id, session_id, task_name)
                 # Create corresponding attention for this task
                 # If the predicate memory attention does not exist, feed plan queries into the current attention
                 print("[PLAN] Creating new Attention to Plan")
@@ -62,7 +62,7 @@ class Intent:
 
                 # queries = self.planner.domain.get_queries()
                 # query_engine.create_queries(queries)
-                self.attention.create_attention(task)
+                self.attention.create_attention(task, [])
 
             else:
                 print("need to ask queries about existing task?")

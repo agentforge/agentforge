@@ -39,5 +39,5 @@ class ModelProfile():
         return {"data": data}
 
     def delete(self, id: str) -> None:
-        self.db.delete("model_profiles", id)
+        self.db.delete("model_profiles", {"_id": id})
         return {}

@@ -15,12 +15,10 @@ class Node:
         for dependency in self.dependencies:
             dependency.finished.wait()  # Wait until the dependency has finished
         try:
-            new_context = self.execute(context)
-            context.update(new_context)
+            context = self.execute(context)
         except BreakRoutineException as interruption:
             routine = tasks[str(interruption)]
-            new_context = StateMachine(routine.subroutines, tasks).run(context)
-            context.update(new_context)
+            context = StateMachine(routine.subroutines, tasks).run(context)
         self.finished.set()  # Signal that this node has finished
         return context
 

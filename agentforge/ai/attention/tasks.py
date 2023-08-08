@@ -1,3 +1,4 @@
+import uuid
 from typing import Any, Dict, Optional
 from datetime import datetime
 from agentforge.interfaces import interface_interactor
@@ -10,6 +11,7 @@ class TaskManagement:
     def add_task(self, user_id: str, session_id: str, task_name: str, is_active: bool = True) -> Optional[Any]:
         creation_time = datetime.utcnow().isoformat()
         latest_update_time = creation_time
+        id = uuid.uuid4()
         task_data = {
             'user_id': user_id,
             'session_id': session_id,
@@ -18,31 +20,26 @@ class TaskManagement:
             'updated_at': latest_update_time,
             'is_active': is_active
         }
-        key = f"{user_id}:{session_id}:{task_name}"
-        return self.db.create(self.collection, key, task_data)
+        return self.db.create(self.collection, id, task_data)
 
     def get_tasks(self, user_id: str, session_id: str, task_name: str) -> Optional[Any]:
-        key = f"{user_id}:{session_id}:{task_name}"
-        return self.db.get_many(self.collection, {"_id": key })
+        return self.db.get_many(self.collection, {"user_id": user_id, "session_id": session_id, "task_name": task_name})
 
     def count(self, user_id: str, session_id: str, task_name: str) -> Optional[Any]:
-        key = f"{user_id}:{session_id}:{task_name}"
-        return self.db.count(self.collection, {"_id": key })
+        return self.db.count(self.collection, {"user_id": user_id, "session_id": session_id, "task_name": task_name})
 
     def update_task(self, user_id: str, session_id: str, task_name: str, is_active = None) -> None:
-        task_ = self.get_task(user_id, session_id, task_name)
+        task = self.get_task(user_id, session_id, task_name)
         print("[task_] get_task:", user_id, session_id, task_name)
-        if task_:
-            task_['updated_at'] = datetime.utcnow().isoformat()
+        if task:
+            task['updated_at'] = datetime.utcnow().isoformat()
             print("task_] updaing task_:", is_active)
             if is_active is not None:
-                task_['is_active'] = is_active
-            key = f"{user_id}:{session_id}:{task_name}"
-            self.db.set(self.collection, key, task_)
+                task['is_active'] = is_active
+            self.db.set(self.collection, task['_id'], task)
 
     def delete_task(self, user_id: str, session_id: str, task_name: str) -> None:
-        key = f"{user_id}:{session_id}:{task_name}"
-        self.db.delete(self.collection, key)
+        self.db.delete(self.collection, {"user_id": user_id, "session_id": session_id, "task_name": task_name})
 
     def active_task(self, user_id: str, session_id: str) -> bool:
         filter_criteria = {

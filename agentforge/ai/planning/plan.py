@@ -16,16 +16,9 @@ class Plan:
         self.domain = domain
 
     def execute(self, context: Dict[str, Any]) -> Dict[str, Any]:
-        input_ = {
-            "user_id": context["input"]["user_id"],
-            "session_id": context["input"]["id"],
-            "prompt": context['input'],
-            "generation_config": context['model_profile']['generation_config'],
-            "model_config": context['model_profile']['model_config'],
-        }
 
-        user_id = context['input']['user_id']
-        session_id = context['input']['model_id']
+        user_id = context.get('input.user_id')
+        session_id = context.get('input.model_id')
         key = f"{user_id}:{session_id}:{self.domain}"
 
         ## TODO: CHECK BELIEFS
@@ -42,7 +35,7 @@ class Plan:
             stream_string('channel', finalize_reponse, end_token=" ") # TODO: Make channel user specific, make text plan specific
 
             context["response"] = finalize_reponse
-            response = self.planner.execute(input_, self.attention.get_attention(key))
+            response = self.planner.execute(context.get_model_input(), self.attention.get_attention(key))
 
             self.task_management.update_task(user_id, context["input"]["model_id"], "plan", is_active=False)
             print("[PLAN][update_task]", user_id, context["input"]["model_id"], "plan", False)

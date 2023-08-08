@@ -30,11 +30,11 @@ class Speak:
             self.buffer += text
         if re.search(r'[.!?]\s*$', self.buffer) or text == '<|endoftext|>' and self.buffer != '':
             print("buffer", self.buffer)
-            wav_response = self.tts.call({'response': self.buffer, 'avatar_config': context['model_profile']['avatar_config']})
+            wav_response = self.tts.call({'response': self.buffer, 'avatar_config': context.get('model_profile.avatar_config')})
 
             if os.path.isfile(wav_response['filename']):
                 if av_type == 'video':
-                    lip_sync_file = self.w2l.call({'avatar_config': context['model_profile']['avatar_config'], 'audio_response': wav_response['filename']})
+                    lip_sync_file = self.w2l.call({'avatar_config': context.get('model_profile.avatar_config'), 'audio_response': wav_response['filename']})
                     with open(lip_sync_file['filename'], 'rb') as fh:
                         encoded_string = base64.b64encode(fh.read()).decode()
                         self.redis_store.publish('video', encoded_string)
@@ -52,16 +52,16 @@ class Speak:
         self.buffer = ""
         self.sequence_number = 0
         ### Synchronous example
-        if context['model_profile']['model_config']['speech'] and 'response' in context:
+        if context.get('model_profile.model_config.speech') and 'response' in context:
             wav_response = self.tts.call({'response': context['response'], 'avatar_config': context['model_profile']['avatar_config']})
             if wav_response is not None:
                 context['audio'] = {"audio_response": wav_response["filename"], "type": "audio/wav"}
         # Async example
-        elif context['model_profile']['model_config']['video'] and context['model_profile']['model_config']['streaming']:
+        elif context.get('model_profile.model_config.video') and context.get('model_profile.model_config.streaming'):
             asyncio.run(self.event_generator(context, 'video'))
             self.redis_store.publish('video', '<|endofvideo|>')
 
-        elif context['model_profile']['model_config']['speech'] and context['model_profile']['model_config']['streaming']:
+        elif context.get('model_profile.model_config.speech') and context.get('model_profile.model_config.streaming'):
             asyncio.run(self.event_generator(context, 'audio'))
         self.pubsub.unsubscribe('channel') # TODO: Make user specific for multi-user
         return context
