@@ -8,7 +8,7 @@
       limited-water - watersource
  )
  (:init 
-  (has-weeds plotA)
+  (weeds plotA)
   (empty plotB)
   (empty plotC)
   (available cucumber-seeds)

@@ -3,12 +3,9 @@ from typing import Any, Dict
 from agentforge.interfaces import interface_interactor
 from agentforge.ai.beliefs.symbolic import SymbolicMemory
 from agentforge.utils.stream import stream_string
+from agentforge.ai.agents.context import Context
 
 ### REASONING: Identifies if there is a response to an outgoing query and learns from it
-
-class Query:
-  def __init__(self) -> None:
-     pass
 class Learn:
     def __init__(self):
       self.service = interface_interactor.get_interface("llm")
@@ -40,7 +37,7 @@ class AskQuery:
     def __init__(self):
       self.service = interface_interactor.get_interface("llm")
 
-    def execute(self, context: Dict[str, Any]) -> Dict[str, Any]:
+    def execute(self, context: Context) -> Dict[str, Any]:
       # If this is in response to a query from the end-user, parse the response and input into OPQL
       # raise Exception(context)
       user_id = context.get('input.user_id')
@@ -55,8 +52,7 @@ class AskQuery:
       if len(queries) == 0 and context.has_key("queries"):
          # hack fix for mongo race condition? argh
          queries = context.get("queries")
-      # if query exists and is a response, pop
-
+      # if query exists and is a response, present it
       for query in queries:
           if query is not None:
               print("asking ", query)

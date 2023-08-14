@@ -5,7 +5,7 @@ from agentforge.ai.attention.tasks import TaskManagement
 from agentforge.utils.stream import stream_string
 from agentforge.ai.attention.attention import Attention
 
-### PLANNING: Executes PDDL plans with help from LLM resource
+### PLANNING SUBROUTINE: Executes PDDL plans with help from LLM resource
 class Plan:
     ### Executes PDDL plans with help from LLM resource
     def __init__(self, domain: str):
@@ -16,7 +16,6 @@ class Plan:
         self.domain = domain
 
     def execute(self, context: Dict[str, Any]) -> Dict[str, Any]:
-
         user_id = context.get('input.user_id')
         session_id = context.get('input.model_id')
         key = f"{user_id}:{session_id}:{self.domain}"
