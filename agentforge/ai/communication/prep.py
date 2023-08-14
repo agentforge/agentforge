@@ -17,5 +17,4 @@ class Prep:
         #     context['response'] = self.convert_html(context['response'])
         #     context['response'] = markdown.markdown(context['response'])
         context.set('choices', [{"text": context.get('response')}]) # OAI backwargs compatible
-        logger.info(context.pretty_print())
         return context

@@ -15,6 +15,7 @@ class Node:
         for dependency in self.dependencies:
             dependency.finished.wait()  # Wait until the dependency has finished
         try:
+            print("EXECUTING NODE", self.execute)
             context = self.execute(context)
         except BreakRoutineException as interruption:
             routine = tasks[str(interruption)]

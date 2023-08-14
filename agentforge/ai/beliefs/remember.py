@@ -15,7 +15,6 @@ class GetResponse:
 
         ### UPDATE_BELIEFS
         # # if query exists and is a response, pop
-        print("[INPUT] ", context.get("input"))
         sent = context.query_engine.get_sent_queries()
         if len(sent) > 0:
             query = sent[0]
@@ -42,7 +41,7 @@ class Remember:
     def execute(self, context: Dict[str, Any]) -> Dict[str, Any]:
         context.memory.remember(
             context.get('input.user_id'),
-            context.get('model_profile.avatar_config.name'),
+            context.get('model.avatar_config.name'),
             context.get('prompt'),
             context.get('response')
         )

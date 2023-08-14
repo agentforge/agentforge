@@ -2,7 +2,7 @@ from typing import Any, Dict
 from agentforge.interfaces import interface_interactor
 import base64
 import asyncio
-import re, os, json
+import re, os, json, time, threading
 
 ### COMMUNICATION: Handles conversion of text to speech
 class Speak:
@@ -12,14 +12,19 @@ class Speak:
         self.redis_store = interface_interactor.create_redis_connection()
         self.pubsub = self.redis_store.pubsub()
 
-    async def event_generator(self, context: Dict[str, Any], av_type: str):
+    def event_generator(self, context: Dict[str, Any], av_type: str):
+        self.pubsub.subscribe('channel') # TODO: Make user specific for multi-user
         while True:
             message = self.pubsub.get_message(ignore_subscribe_messages=True)
             if message:
                 data = message["data"].decode("utf-8")
                 should_break = self.parse_av_stream(data, context, av_type)
                 if should_break:
+                    self.redis_store.publish('video', '<|endofvideo|>')
+                    self.pubsub.unsubscribe('channel')
                     break
+            else:
+                time.sleep(0.1) # TODO: make this backoff
 
     ### This function should take a text chunk from a stream
     ### and maintain previous text chunks by aggregating them together.
@@ -30,11 +35,11 @@ class Speak:
             self.buffer += text
         if re.search(r'[.!?]\s*$', self.buffer) or text == '<|endoftext|>' and self.buffer != '':
             print("buffer", self.buffer)
-            wav_response = self.tts.call({'response': self.buffer, 'avatar_config': context.get('model_profile.avatar_config')})
+            wav_response = self.tts.call({'response': self.buffer, 'avatar_config': context.get('model.avatar_config')})
 
             if os.path.isfile(wav_response['filename']):
                 if av_type == 'video':
-                    lip_sync_file = self.w2l.call({'avatar_config': context.get('model_profile.avatar_config'), 'audio_response': wav_response['filename']})
+                    lip_sync_file = self.w2l.call({'avatar_config': context.get('model.avatar_config'), 'audio_response': wav_response['filename']})
                     with open(lip_sync_file['filename'], 'rb') as fh:
                         encoded_string = base64.b64encode(fh.read()).decode()
                         self.redis_store.publish('video', encoded_string)
@@ -48,20 +53,20 @@ class Speak:
         return True if text == '<|endoftext|>' else False
 
     def execute(self, context: Dict[str, Any]) -> Dict[str, Any]:
-        self.pubsub.subscribe('channel') # TODO: Make user specific for multi-user
         self.buffer = ""
         self.sequence_number = 0
         ### Synchronous example
-        if context.get('model_profile.model_config.speech') and 'response' in context:
+        print("EXECUTING SPEAK!")
+
+        if context.get('model.model_config.speech') and context.has_key('response'):
             wav_response = self.tts.call({'response': context['response'], 'avatar_config': context['model_profile']['avatar_config']})
             if wav_response is not None:
                 context['audio'] = {"audio_response": wav_response["filename"], "type": "audio/wav"}
-        # Async example
-        elif context.get('model_profile.model_config.video') and context.get('model_profile.model_config.streaming'):
-            asyncio.run(self.event_generator(context, 'video'))
-            self.redis_store.publish('video', '<|endofvideo|>')
 
-        elif context.get('model_profile.model_config.speech') and context.get('model_profile.model_config.streaming'):
-            asyncio.run(self.event_generator(context, 'audio'))
-        self.pubsub.unsubscribe('channel') # TODO: Make user specific for multi-user
+        if context.get('model.model_config.video') and context.get('model.model_config.streaming'):
+            threading.Thread(target=self.event_generator, args=(context, 'video')).start()
+        elif context.get('model.model_config.speech') and context.get('model.model_config.streaming'):
+            threading.Thread(target=self.event_generator, args=(context, 'audio')).start()
+
         return context
+

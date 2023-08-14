@@ -26,9 +26,10 @@ class Memory:
         # return self.deep_memory.recall(prompt, filter={"user": user, "agent": agent, "memory": True})
 
     # Retrieves the latest N interaction between user and agent
-    def session_history(self, user: str, agent: str, session_id: str, n: int = 5):
+    def session_history(self, user: str, agent: str, session_id: str, n: int = 2):
         self.working_memory.setup_memory(user, agent, user, session_id) # TODO: Differentiate between user name and ID
-        return self.working_memory.recall(user, agent, n)
+        session_hist = self.working_memory.recall(user, agent, n)
+        return session_hist
 
     # Add text data to the vectorstore
     def add_texts(self, texts: List[str], metadata: List[Dict], **kwargs):

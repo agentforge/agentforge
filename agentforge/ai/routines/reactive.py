@@ -16,7 +16,7 @@ class ReactiveRoutine(Routine):
         recall = Node(Recall().execute, [])
         parse = Node(Parse().execute, [recall])
         intent = Node(Intent().execute, [parse])
-        query = Node(AskQuery().execute, [parse, intent])
+        # query = Node(AskQuery().execute, [parse, intent])
         speak = Node(Speak().execute, [parse, intent])
         respond = Node(Respond().execute, [parse, intent])
         remember = Node(Remember().execute, [speak, respond])
@@ -24,10 +24,10 @@ class ReactiveRoutine(Routine):
             parse,
             recall,
             intent,
-            query,
+            # query,
             respond,
             speak,
             remember,
-            Node(Lipsync().execute, [remember]),
+            # Node(Lipsync().execute, [remember]),
             Node(Prep().execute, [remember]),
         ]

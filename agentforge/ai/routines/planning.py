@@ -63,5 +63,5 @@ class PlanningRoutine(Routine):
         self.subroutines = [
             get_response,
             Node(Plan("plan-garden").execute, [get_response]),
-            Node(Speak().execute, [get_response])
+            # Node(Speak().execute, [get_response])
         ]

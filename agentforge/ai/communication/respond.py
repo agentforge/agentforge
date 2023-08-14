@@ -13,13 +13,13 @@ class Respond:
     def execute(self, context: Dict[str, Any]) -> Dict[str, Any]:
         print("RESPOND")
         ### Another subroutine gotchu dawg, bail
+        print(context.has_key("response"))
         if context.has_key("response"):
             return context
-        
+
         # Iterate through unsent queries and send the latest if it exists
         query_engine = QueryEngine(context.get('input.user_id'), context.get('input.model_id'))
         for query in query_engine.get_queries():
-            print("[QUERY]", query)
             if query is not None:
                 print("[QUERY] asking a query", query['query'])
                 query_engine.update_query(sent=True)
@@ -36,6 +36,8 @@ class Respond:
             "model_config": context.get('model.model_config'),
         }
 
+        print(input)
+
         response = self.service.call(input)
 
         if response is not None and "choices" in response:
@@ -44,7 +46,7 @@ class Respond:
             response = response.replace(formatted, "")
             response = self.parser.parse_llm_response(response)
             for tok in ['eos_token', 'bos_token']:
-                if context.has_key(f"model_profile.model_config.{tok}"):
-                    response = response.replace(context.get(f"model_profile.model_config'.{tok}"), "")
+                if context.has_key(f"model.model_config.{tok}"):
+                    response = response.replace(context.get(f"model.model_config'.{tok}"), "")
             context.set("response", response)
         return context

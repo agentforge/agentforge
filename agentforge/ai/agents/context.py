@@ -50,7 +50,7 @@ class Context:
             value = value.get(k, None)
             if value is None:
                 return False
-        return True
+        return False
 
     ### Helper function to get entire formatted prompt
     def get_formatted(self):
@@ -68,12 +68,12 @@ class Context:
         # TODO: Implement this, pull this logic out into it's own function so we can reformat the template
         # i.e. session history back-off, summarization of memories, etc.
 
-        print(prompt_template,
-            name,
-            instruction,
-            f"biography: {biography}"
-            f"mem: {memory}"
-        )
+        # print(prompt_template,
+        #     name,
+        #     instruction,
+        #     f"biography: {biography}"
+        #     f"mem: {memory}"
+        # )
 
         return self.parser.format_template(
             prompt_template,
@@ -89,6 +89,6 @@ class Context:
             "user_id": self.get("input.user_id"),
             "session_id": self.get("input.id"),
             "prompt": self.get('prompt'),
-            "generation_config": self.get('model_profile.generation_config'),
-            "model_config": self.get('model_profile.model_config'),
+            "generation_config": self.get('model.generation_config'),
+            "model_config": self.get('model.model_config'),
         }

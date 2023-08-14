@@ -9,12 +9,12 @@ class Recall:
     def execute(self, context: Context) -> Dict[str, Any]:
         memories = context.memory.recall(
             context.get('input.user_id'),
-            context.get('model_profile.avatar_config.name'),
+            context.get('model.avatar_config.name'),
             context.get('prompt')
         )
         working = context.memory.session_history(
             context.get('input.user_id'),
-            context.get('model_profile.avatar_config.name'),
+            context.get('model.avatar_config.name'),
             context.get('input.id'),
         )
         context.set('recall', memories + " \n " + working)

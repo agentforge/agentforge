@@ -192,7 +192,7 @@ class MongoMemory:
     self.short_term_memory = MongoDBChatMessageHistory(
         connection_string=connection_string, session_id=session, database_name=os.environ.get("DB_NAME")
     )
-    
+
   # Stores memory for various agent avatars
   def setup_memory(self, human_prefix: str, ai_prefix: str, user_id: str, session_id: str):
     if not self.short_term_memory:
@@ -203,9 +203,6 @@ class MongoMemory:
   # Saves a response from another individual to short-term memory
   def remember(self, user: str, agent: str, prompt: str, response: str):
     # Do not save empty interactions
-    print(self.short_term_memory)
-    print(prompt.strip())
-    print(response)
     if prompt.strip() == "":
       return
     if self.short_term_memory:
