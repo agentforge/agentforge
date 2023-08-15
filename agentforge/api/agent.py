@@ -61,6 +61,7 @@ async def agent(request: Request) -> AgentResponse:
             async with redis.client() as client:
                 pubsub = client.pubsub()
                 await pubsub.subscribe('channel')
+                id_counter = 0  # Initialize an ID counter
                 while True:
                     message = await pubsub.get_message()
                     if message and message['type'] == 'message':
@@ -72,7 +73,9 @@ async def agent(request: Request) -> AgentResponse:
                             val = "ERR"
                         if val.strip() in ['</s>', '<|endoftext|>']:
                             return
-                        yield str(val)
+                        response = f"id: {id_counter}\ndata: {val}\n\n"  # Include the ID in the response
+                        yield response
+                        id_counter += 1  # Increment the ID counter
                     else:
                         await asyncio.sleep(1)
 

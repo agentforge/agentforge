@@ -79,6 +79,11 @@ class LocalLLM():
     self.setup(kwargs)
     self.load(model_key=kwargs['model_config'].get("model_name", self.model_key), **kwargs)
     kwargs.update(config)
+
+    ### For ctransformers only
+    if kwargs['model_config']["model_class"] == 'cAutoModelForCausalLM':
+      kwargs["generator"] = "cgenerate"
+    
     if "generator" in kwargs:
         # Use custom generator based on function string
         function_name = kwargs["generator"]

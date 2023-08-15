@@ -48,7 +48,7 @@ class Speak:
                         encoded_string = base64.b64encode(fh.read()).decode()
                         self.redis_store.publish('audio', encoded_string)
                 self.sequence_number += 1
-            self.buffer = ""
+        self.buffer = ""
 
         return True if text == '<|endoftext|>' else False
 

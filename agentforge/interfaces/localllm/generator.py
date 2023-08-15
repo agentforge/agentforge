@@ -91,6 +91,15 @@ class LocalGenerator:
       return True
     return False
 
+  def cgenerate(self, prompt, model, tokenizer, streamer, **kwargs):
+    tokens = tokenizer.encode(prompt)
+    ret = ""
+    for token in model.generate(tokens):
+        v = tokenizer.decode(token)
+        print(v)
+        ret += v
+    return ret
+
   # Generates a response given a prompt
   def generate(self, prompt, model, tokenizer, streamer, **kwargs):
     # Set model arguments from generation config.

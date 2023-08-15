@@ -69,6 +69,8 @@ class LocalLoader:
         torch_dtype = self.config.get("torch_dtype", "torch.float16")
         if torch_dtype == "torch.bfloat16":
             computed_torch = torch.bfloat16
+        elif torch_dtype == "torch.float32":
+            computed_torch = torch.float32
         else:
             computed_torch = torch.float16
         padding_side = self.config.get("padding_side", "left")
@@ -111,6 +113,7 @@ class LocalLoader:
                 **kwargs
             )
 
+
         if "peft_model" in self.config and self.config["peft_model"] != "":
             logger.info(f"Loading PEFT... {self.config['peft_model']}")
             if self.config["peft_model"][0] == "/": # hack to check for dirs -- this is what we use locally
@@ -129,6 +132,10 @@ class LocalLoader:
             add_special_tokens=False
         )
 
+        # TODO: Temp measure for open chat, need to make a parameter
+        self.tokenizer.add_tokens(["<|PAD|>", "<|end_of_turn|>"])
+        self.model.resize_token_embeddings(len(self.tokenizer))
+
         # if self.config["tokenizer_name"] == "OpenAssistant/oasst-sft-1-pythia-12b":
         #     special_tokens_dict = {'additional_special_tokens': ['<|prompter|>', '<|assistant|>']}
         #     num_added_toks = self.tokenizer.add_special_tokens(special_tokens_dict)
@@ -143,5 +150,6 @@ class LocalLoader:
 
         if not load_in_4bit and not load_in_8bit:
             self.model = self.model.to(self.device)
-        self.model.eval()  # Set the model to evaluation mode
+        if not self.config["model_class"] == 'cAutoModelForCausalLM':
+            self.model.eval()  # Set the model to evaluation mode
         logger.info(f"Model loaded and online...")
