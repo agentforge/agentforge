@@ -28,6 +28,5 @@ class ReactiveRoutine(Routine):
             respond,
             speak,
             remember,
-            # Node(Lipsync().execute, [remember]),
             Node(Prep().execute, [remember]),
         ]
