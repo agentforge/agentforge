@@ -61,6 +61,7 @@ async def agent(request: Request) -> AgentResponse:
             async with redis.client() as client:
                 pubsub = client.pubsub()
                 await pubsub.subscribe('channel')
+                id_counter = 0  # Initialize an ID counter
                 while True:
                     message = await pubsub.get_message()
                     if message and message['type'] == 'message':
