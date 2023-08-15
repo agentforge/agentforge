@@ -14,6 +14,7 @@ class Node:
     def run(self, context: Dict[str, Any], tasks: Dict[str, Routine]) -> Dict[str, Any]:
         for dependency in self.dependencies:
             dependency.finished.wait()  # Wait until the dependency has finished
+            print(dependency, " finished..")
         try:
             print("EXECUTING NODE", self.execute)
             context = self.execute(context)

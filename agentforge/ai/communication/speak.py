@@ -42,13 +42,15 @@ class Speak:
                     lip_sync_file = self.w2l.call({'avatar_config': context.get('model.avatar_config'), 'audio_response': wav_response['filename']})
                     with open(lip_sync_file['filename'], 'rb') as fh:
                         encoded_string = base64.b64encode(fh.read()).decode()
-                        self.redis_store.publish('video', encoded_string)
+                        data = {'data': encoded_string, "id": str(context._id)}
+                        self.redis_store.publish('video', json.dumps(data))
                 else:
                     with open(wav_response['filename'], 'rb') as fh:
                         encoded_string = base64.b64encode(fh.read()).decode()
                         self.redis_store.publish('audio', encoded_string)
                 self.sequence_number += 1
             self.buffer = ""
+            print(f"{self.buffer=}")
 
         return True if text == '<|endoftext|>' else False
 

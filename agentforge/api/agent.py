@@ -6,9 +6,9 @@ from base64 import b64encode
 from agentforge.ai import agent_interactor
 from agentforge.interfaces.model_profile import ModelProfile
 from agentforge.api.auth import get_api_key, verify_token_exists
-import asyncio
+import asyncio, uuid
 from aioredis import Redis
-import traceback
+import traceback, json
 from agentforge.utils import logger
 
 # Setup Agent
@@ -70,8 +70,15 @@ async def agent(request: Request) -> AgentResponse:
                             print(e)
                             traceback.print_exc()
                             val = "ERR"
-                        if val.strip() in ['</s>', '<|endoftext|>']:
-                            return
+                        # Strip off the </s> if it's there
+                        if len(val) >= 4 and val[-4:] == '</s>':
+                            val = val[:-4]
+                            yield str(val)
+                            break
+                        elif len(val) >= 13 and val[-13:] == '<|endoftext|>':
+                            val = val[:-13]
+                            yield str(val)
+                            break
                         yield str(val)
                     else:
                         await asyncio.sleep(1)
@@ -117,6 +124,7 @@ async def agent(request: Request) -> AgentResponse:
 ### Streaming for old Forge
 @router.get("/stream/{channel}")
 def stream(channel: str):
+    id = 5
     async def event_generator():
         redis = Redis.from_url('redis://redis:6379/0')
         async with redis.client() as client:
@@ -124,18 +132,25 @@ def stream(channel: str):
             await pubsub.subscribe('video')
             while True:
                 message = await pubsub.get_message()
-                if message and message['type'] == 'message':
+                # print(f"{message=}")
+                if message and message['type'] == 'message' and message['data'] != b'<|endofvideo|>':
                     try:
-                        val = message['data'].decode('utf-8')
+                        data = json.loads(message['data']) 
+                        val = data['data']
+                        _id = data['id']
                     except Exception as e:
                         print(e)
                         traceback.print_exc()
                         val = "ERR"
                     if val.strip() in ['</s>', '<|endoftext|>']:
                         return
-                    yield f"data: {str(val)}\n\n"
+                    print(f"str(_id){str(_id)}")
+                    response = f"id: {str(_id)}\ndata: {str(val)}\n\n"  # Include the ID in the response
+
+                    yield response
                 else:
-                    yield f"data: {str('data')}\n\n"
+                    response = f"id: {0}\ndata: {str('data')}\n\n"  # Include the ID in the response
+                    yield response
                     await asyncio.sleep(1)
     headers = {
         "Access-Control-Allow-Origin": "*",

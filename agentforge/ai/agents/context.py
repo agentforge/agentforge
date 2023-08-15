@@ -1,4 +1,4 @@
-import json
+import json, uuid
 from typing import Dict
 from agentforge.utils import Parser
 
@@ -6,6 +6,7 @@ class Context:
     def __init__(self, init: Dict = {}) -> None:
         self.parser = Parser()
         self.context_data = {}
+        self._id = uuid.uuid4()
         for k,v in init.items():
             self.set(k, v)
 
