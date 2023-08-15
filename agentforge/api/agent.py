@@ -134,7 +134,10 @@ def stream(channel: str):
             while True:
                 message = await pubsub.get_message()
                 # print(f"{message=}")
-                if message and message['type'] == 'message' and message['data'] != b'<|endofvideo|>':
+                if message and message['type'] == 'message' and message['data'] == b'<|endofvideo|>':
+                    yield '<|endofvideo|>'
+                    break
+                if message and message['type'] == 'message':
                     try:
                         data = json.loads(message['data']) 
                         val = data['data']
@@ -143,11 +146,7 @@ def stream(channel: str):
                         print(e)
                         traceback.print_exc()
                         val = "ERR"
-                    if val.strip() in ['</s>', '<|endoftext|>']:
-                        return
-                    print(f"str(_id){str(_id)}")
                     response = f"id: {str(_id)}\ndata: {str(val)}\n\n"  # Include the ID in the response
-
                     yield response
                 else:
                     response = f"id: {0}\ndata: {str('data')}\n\n"  # Include the ID in the response
