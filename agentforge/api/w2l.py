@@ -33,7 +33,7 @@ async def lipsync(request: Request) -> lipsyncResponse:
     data = await request.json()
 
     wav_file = data["audio_response"]
-    # avatar = data["avatar_config"]
+    # avatar = data["persona"]
 
     # Interpret the wav file
     opts = {

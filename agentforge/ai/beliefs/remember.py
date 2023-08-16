@@ -41,7 +41,7 @@ class Remember:
     def execute(self, context: Dict[str, Any]) -> Dict[str, Any]:
         context.memory.remember(
             context.get('input.user_id'),
-            context.get('model.avatar_config.name'),
+            context.get('model.persona.name'),
             context.get('instruction'),
             context.get('response').replace("<s>","").strip(),
         )

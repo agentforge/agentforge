@@ -35,11 +35,11 @@ class Speak:
             self.buffer += text
         if re.search(r'[.!?]\s*$', self.buffer) or text == '<|endoftext|>' and self.buffer != '':
             print("buffer", self.buffer)
-            wav_response = self.tts.call({'response': self.buffer, 'avatar_config': context.get('model.avatar_config')})
+            wav_response = self.tts.call({'response': self.buffer, 'persona': context.get('model.persona')})
 
             if os.path.isfile(wav_response['filename']):
                 if av_type == 'video':
-                    lip_sync_file = self.w2l.call({'avatar_config': context.get('model.avatar_config'), 'audio_response': wav_response['filename']})
+                    lip_sync_file = self.w2l.call({'persona': context.get('model.persona'), 'audio_response': wav_response['filename']})
                     with open(lip_sync_file['filename'], 'rb') as fh:
                         encoded_string = base64.b64encode(fh.read()).decode()
                         data = {'data': encoded_string, "id": str(context._id)}
@@ -61,7 +61,7 @@ class Speak:
         print("EXECUTING SPEAK!")
 
         if context.get('model.model_config.speech') and context.has_key('response'):
-            wav_response = self.tts.call({'response': context['response'], 'avatar_config': context['model_profile']['avatar_config']})
+            wav_response = self.tts.call({'response': context['response'], 'persona': context['model_profile']['persona']})
             if wav_response is not None:
                 context['audio'] = {"audio_response": wav_response["filename"], "type": "audio/wav"}
 

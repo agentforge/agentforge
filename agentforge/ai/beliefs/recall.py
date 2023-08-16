@@ -10,12 +10,12 @@ class Recall:
         print(context.pretty_print("input"))
         memories = context.memory.recall(
             context.get('input.user_id'),
-            context.get('model.avatar_config.name'),
+            context.get('model.persona.name'),
             context.get('prompt')
         )
         working = context.memory.session_history(
             context.get('input.user_id'),
-            context.get('model.avatar_config.name'),
+            context.get('model.persona.name'),
             context.get('input.id'),
             n=6
         )

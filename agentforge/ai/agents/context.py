@@ -61,8 +61,8 @@ class Context:
     ### Helper function to get entire formatted prompt
     def get_formatted(self):
         prompt_template = self.get('model.prompt_config.prompt_template')
-        name = self.get('model.avatar_config.name')
-        biography = self.get('model.avatar_config.biography')
+        name = self.get('model.persona.name')
+        biography = self.get('model.persona.biography')
         memory = self.get('recall')
         instruction = self.get('prompt')
         

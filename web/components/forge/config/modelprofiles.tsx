@@ -9,10 +9,10 @@ import { TrashIcon, CopyIcon, Pencil1Icon, PlayIcon } from '@radix-ui/react-icon
 interface ModelProfile {
   _id: string;
   avatar: string;
-  avatar_config: avatar_config;
+  persona: persona;
 }
 
-interface avatar_config {
+interface persona {
   // Define properties related to the avatar configuration
   name: string;
   display_name: string;
@@ -119,8 +119,8 @@ const ModelProfilesTable: React.FC<{ pageSize: number }> = ({ pageSize }) => {
           {profilesToShow.map((profile, index) => (
             <tr key={index} className={`${index % 2 === 0 ? 'bg-gray-700' : ''}`}>
               <td className="border px-4 py-2"><img src={profile.avatar} alt="avatar" /></td>
-              <td className="border px-4 py-2">{profile.avatar_config.name}</td>
-              <td className="border px-4 py-2">{profile.avatar_config.display_name}</td>
+              <td className="border px-4 py-2">{profile.persona.name}</td>
+              <td className="border px-4 py-2">{profile.persona.display_name}</td>
               <td className="border px-4 py-2">
                 <Button type='button' onClick={() => handleDelete(profile._id)} extraClasses="float-right">
                   <TrashIcon />
