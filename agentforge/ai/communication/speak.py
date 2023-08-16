@@ -20,7 +20,7 @@ class Speak:
                 data = message["data"].decode("utf-8")
                 should_break = self.parse_av_stream(data, context, av_type)
                 if should_break:
-                    self.redis_store.publish('video', '<|endofvideo|>')
+                    self.redis_store.publish(av_type, '<|endofvideo|>')
                     self.pubsub.unsubscribe('channel')
                     break
             else:
@@ -36,7 +36,7 @@ class Speak:
         if re.search(r'[.!?]\s*$', self.buffer) or text == '<|endoftext|>' and self.buffer != '':
             print("buffer", self.buffer)
             wav_response = self.tts.call({'response': self.buffer, 'persona': context.get('model.persona')})
-
+            print(f"{wav_response=}")
             if os.path.isfile(wav_response['filename']):
                 if av_type == 'video':
                     lip_sync_file = self.w2l.call({'persona': context.get('model.persona'), 'audio_response': wav_response['filename']})
