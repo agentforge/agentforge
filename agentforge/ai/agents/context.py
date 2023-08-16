@@ -41,8 +41,13 @@ class Context:
                 return
         target.pop(keys[-1], None)
 
-    def pretty_print(self):
-        return json.dumps(self.context_data, indent=4)
+    def pretty_print(self, key=None):
+        if key is None:
+            return json.dumps(self.context_data, indent=4)
+        if key in self.context_data:
+            return json.dumps(self.context_data[key], indent=4)
+        else:
+            raise ValueError(f"Key {key} not found in context")
 
     def has_key(self, key: str) -> bool:
         keys = key.split('.')

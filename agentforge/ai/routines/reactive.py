@@ -13,12 +13,12 @@ from agentforge.ai.agents.statemachine import Node
 class ReactiveRoutine(Routine):
     def __init__(self):
         super().__init__("reactive")
-        recall = Node(Recall().execute, [])
-        parse = Node(Parse().execute, [recall])
+        parse = Node(Parse().execute, [])
+        recall = Node(Recall().execute, [parse])
         intent = Node(Intent().execute, [parse])
         # query = Node(AskQuery().execute, [parse, intent])
-        speak = Node(Speak().execute, [parse, intent])
-        respond = Node(Respond().execute, [parse, intent])
+        speak = Node(Speak().execute, [recall, parse, intent])
+        respond = Node(Respond().execute, [recall, parse, intent])
         remember = Node(Remember().execute, [speak, respond])
         self.subroutines = [
             parse,

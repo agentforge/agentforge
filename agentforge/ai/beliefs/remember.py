@@ -39,15 +39,13 @@ class Remember:
     
     @async_execution_decorator
     def execute(self, context: Dict[str, Any]) -> Dict[str, Any]:
-        print(context.get('prompt'))
-        print(context.get('response'))
-        # context.memory.remember(
-        #     context.get('input.user_id'),
-        #     context.get('model.avatar_config.name'),
-        #     context.get('prompt'),
-        #     context.get('response')
-        # )
-        # return context
+        context.memory.remember(
+            context.get('input.user_id'),
+            context.get('model.avatar_config.name'),
+            context.get('instruction'),
+            context.get('response').replace("<s>","").strip(),
+        )
+        return context
 
 ### BELIEFS: Stores a context for a user in the memory
 ### Update: Stores symbolic information from unstructured text

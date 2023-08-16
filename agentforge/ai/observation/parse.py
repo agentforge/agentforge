@@ -34,6 +34,8 @@ class Parse:
     def execute(self, context: Context) -> Dict[str, Any]:
         context = self.ensure_model_id(context)
         instruction = self.ensure_instruction(context)
+        print(instruction)
+        context.set('instruction', instruction)
         context.set('prompt', instruction)
         # Parse ID from frontend and translate into model_profile
         return context

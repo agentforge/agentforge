@@ -15,10 +15,11 @@ class VectorStoreMemory:
     print(f"searching for {prompt}")
     filter["memory"] = True
     docs = self.vectorstore.search(prompt, n=2, filter=filter, **kwargs)
+    print("LONG-TERM MEMORY")
+    print(docs)
     result = ""
     for doc in docs:
-        content = doc.page_content.replace('\n', ' ')
-        result += content
+        result += doc.page_content
     return result
 
   # Async method using threading for memorization -- need app for Flask context

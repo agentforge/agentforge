@@ -8,6 +8,11 @@ from agentforge.interfaces import interface_interactor
 
 MILVUS_COLLECTION = os.environ.get("MILVUS_COLLECTION") #general knowledge store for this client
 
+import re
+
+def sanitize_string(input_string):
+    return re.sub(r'[^a-zA-Z0-9_]', '_', input_string)
+
 class Memory:
     def __init__(self) -> None:
         self.working_memory = interface_interactor.get_interface("working_memory")
@@ -18,15 +23,16 @@ class Memory:
         self.working_memory.remember(user, agent, prompt, response)
 
         ### Deep memory deprecated for now -- using preloaded vectorstore DB
-        # self.deep_memory.remember(user, agent, prompt, response)
+        self.deep_memory.remember(user, agent, prompt, response, collection=sanitize_string(f"memories_{user}_{agent}"))
 
     # Recall relevant memories from this agent based on this prompt
     def recall(self, user: str, agent: str, prompt: str):
-        return self.deep_memory.recall(prompt, collection=MILVUS_COLLECTION)
-        # return self.deep_memory.recall(prompt, filter={"user": user, "agent": agent, "memory": True})
+        knowledge = self.deep_memory.recall(prompt, collection=MILVUS_COLLECTION)
+        memories = self.deep_memory.recall(prompt, collection=sanitize_string(f"memories_{user}_{agent}"))
+        return knowledge + memories
 
     # Retrieves the latest N interaction between user and agent
-    def session_history(self, user: str, agent: str, session_id: str, n: int = 2):
+    def session_history(self, user: str, agent: str, session_id: str, n: int = 5):
         self.working_memory.setup_memory(user, agent, user, session_id) # TODO: Differentiate between user name and ID
         session_hist = self.working_memory.recall(user, agent, n)
         return session_hist
