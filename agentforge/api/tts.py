@@ -24,6 +24,7 @@ async def text_to_speech(request: Request) -> TtsResponse:
     print(data)
     prompt = data["response"]
     avatar = data["persona"]
+    print(avatar)
     id = uuid.uuid4()
     filename = f"/app/cache/wav/out-{id}.wav" # TODO: This is not scalable we need to establish a different filename per request
     speaker_wav = os.environ.get('DST_PATH') + avatar["speaker_wav"] if "speaker_wav" in avatar else None

@@ -16,11 +16,7 @@ class TextToSpeech():
     if speaker_wav is not None and text != '':
       self.tts_custom.tts_to_file(text=normalize_transcription(text), file_path=filename, speaker_wav=speaker_wav, language="en")
     else:
-      if speaker_idx is None and text != '':
-        speaker_idx = 0
-      self.tts.tts_to_file(text=text, speaker=self.tts.speakers[speaker_idx], file_path=filename)
-    elif text == '':
-      print("ERROR: Empty text string")
+      self.tts.tts_to_file(text=normalize_transcription(text), speaker=self.tts.speakers[speaker_idx], file_path=filename)
     return filename
 
 if __name__ == "__main__":

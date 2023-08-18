@@ -20,7 +20,7 @@ class Speak:
                 data = message["data"].decode("utf-8")
                 should_break = self.parse_av_stream(data, context, av_type)
                 if should_break:
-                    self.redis_store.publish('video', '<|endofvideo|>')
+                    self.redis_store.publish(av_type, '<|endofvideo|>')
                     self.pubsub.unsubscribe('channel')
                     break
             else:
