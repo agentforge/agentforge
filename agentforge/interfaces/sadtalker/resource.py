@@ -16,7 +16,7 @@ class SadTalker():
   def __init__(self) -> None:
 
     self.loaded_model = None
-    self.config_dir = os.environ.get('CONFIG_DIR', '/app/agentforge/config')
+    self.config_dir ='/app/agentforge/agentforge/interfaces/sadtalker'
     self.checkpoint_dir = os.environ.get('SADTALKER_CHECKPOINT_DIR', './checkpoints')
     self.result_dir = os.environ.get('SADTALKER_RESULT_DIR', './results')
     self.batch_size = int(os.environ.get('SADTALKER_BATCH_SIZE', 1))

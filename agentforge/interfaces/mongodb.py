@@ -33,7 +33,7 @@ class MongoDBKVStore(DB):
             raise
 
     # Explicitly create document with key
-    def create(self, collection:str, key: str, data: Dict[str, Any]) -> None:
+    def create(self, collection:str, key: str, data: Dict[str, Any]) -> Dict[str, Any]:
         self._check_connection()
         collection = self.db[collection]
         try:
@@ -43,6 +43,7 @@ class MongoDBKVStore(DB):
             data["_id"] = key  # add the key to the data dict
             collection.insert_one(data)
             logging.info(f'Successfully created record with key {key}.')
+            return data
         except Exception as e:
             logging.error(f'Create operation failed for key {key}: {str(e)}')
             raise

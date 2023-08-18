@@ -1,11 +1,13 @@
-import json, uuid
+import json, uuid, os
 from typing import Dict
 from agentforge.utils import Parser
 
 class Context:
     def __init__(self, init: Dict = {}) -> None:
         self.parser = Parser()
+        self.task_routines = {}
         self.context_data = {}
+        self.prompts = self.read_prompts()
         self._id = uuid.uuid4()
         for k,v in init.items():
             self.set(k, v)
@@ -98,3 +100,15 @@ class Context:
             "generation_config": self.get('model.generation_config'),
             "model_config": self.get('model.model_config'),
         }
+
+
+    def read_prompts(self):
+        directory = os.path.join(os.path.dirname(__file__), '../prompts')
+        prompts_dict = {}
+        for filename in os.listdir(directory):
+            file_path = os.path.join(directory, filename)
+            if os.path.isfile(file_path):
+                with open(file_path, 'r') as file:
+                    content = file.read()
+                    prompts_dict[filename] = content
+        return prompts_dict

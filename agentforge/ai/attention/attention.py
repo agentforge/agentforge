@@ -19,17 +19,17 @@ def check_ttl(func):
         return None
     return wrapper
 
-
 class Attention:
     def __init__(self):
         self.db = interface_interactor.get_interface("db")
 
     ### When you need to acquire some information, let's apply some attention to the situation
     ### so we can remember what we have learned and what we still need to learn
-    def create_attention(self, queries: List[str], key: str) -> None:
+    def create_attention(self, task, queries: List[str], key: str) -> None:
         # Creating an attention document with queries and timestamp
         if queries is not None and len(queries) > 0:
             attention_doc = {
+                "task_id": task._id,
                 "queries": queries,
                 "satisfied": [False] * len(queries),
                 "timestamp": datetime.utcnow().isoformat()

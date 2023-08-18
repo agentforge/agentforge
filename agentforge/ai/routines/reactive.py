@@ -12,7 +12,7 @@ from agentforge.ai.agents.statemachine import Node
 
 class ReactiveRoutine(Routine):
     def __init__(self):
-        super().__init__("reactive")
+        super().__init__("reactive", [])
         parse = Node(Parse().execute, [])
         recall = Node(Recall().execute, [parse])
         intent = Node(Intent().execute, [parse])

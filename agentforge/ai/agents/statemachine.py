@@ -18,9 +18,11 @@ class Node:
         try:
             print("EXECUTING NODE", self.execute)
             context = self.execute(context)
+
         except BreakRoutineException as interruption:
             routine = tasks[str(interruption)]
             context = StateMachine(routine.subroutines, tasks).run(context)
+
         self.finished.set()  # Signal that this node has finished
         return context
 

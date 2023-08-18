@@ -8,7 +8,7 @@ class DB(Protocol):
     def connection(self, config: DbConfig) -> None:
         pass
 
-    def create(self, collection: str, key: str, data: dict) -> Optional[Any]:
+    def create(self, collection: str, key: str, data: Dict[str, Any]) -> Optional[Any]:
         pass
 
     def get(self, collection: str, key: str) -> Optional[Any]:

@@ -59,11 +59,10 @@ class RateLimiterMiddleware(BaseHTTPMiddleware):
 
 ### TODO: limit to dev/test environment
 from agentforge.interfaces import interface_interactor
-from agentforge.ai.planning.planner import DomainBuilder
 
-db = interface_interactor.get_interface("db")
-d = DomainBuilder(db)
-d.upload_documents_from_folder('garden', '/app/agentforge/agentforge/config/configs/planner/domains/garden', 'p_example')
+# db = interface_interactor.get_interface("db")
+# d = DomainBuilder(db)
+# d.upload_documents_from_folder('garden', '/app/agentforge/agentforge/config/configs/planner/domains/garden', 'p_example')
 
 app = init_api()
 app.add_middleware(LoggingMiddleware)

@@ -53,7 +53,6 @@ async def agent(request: Request) -> AgentResponse:
     if model_profile['model_config']['streaming']:
         ## Get agent from agent Factory and run it
         agent = agent_interactor.get_agent()
-        # print("[DEBUG][api][agent][agent] agent: ", agent)
         output = agent.run({"input": data, "model": model_profile})
 
         async def event_generator():
@@ -133,7 +132,6 @@ def stream(channel: str):
             await pubsub.subscribe('video')
             while True:
                 message = await pubsub.get_message()
-                # print(f"{message=}")
                 if message and message['type'] == 'message' and message['data'] == b'<|endofvideo|>':
                     yield '<|endofvideo|>'
                     break

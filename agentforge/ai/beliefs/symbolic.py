@@ -11,8 +11,8 @@ class SymbolicMemory:
         self.opql_memory = OPQLMemory()
         self.bs_filter = OPQLMemory() # Our bullshit filter stores negations, i.e. the earth is not flat.
         self.llm = interface_interactor.get_interface("llm")
-        self.db = interface_interactor.get_interface("db")
-        self.vectorstore = interface_interactor.get_interface("vectorstore")
+        # self.db = interface_interactor.get_interface("db")
+        # self.vectorstore = interface_interactor.get_interface("vectorstore")
         self.parser = Parser()
 
         # TODO: Move to env
@@ -27,8 +27,8 @@ class SymbolicMemory:
     def classify(self, query, response, prompt, context):
         input_ = {
             "prompt": prompt.replace("{response}", response).replace("{query}", query),
-            "generation_config": context['model_profile']['generation_config'], # TODO: We need to use a dedicated model
-            "model_config": context['model_profile']['model_config'],
+            "generation_config": context.get('model.generation_config'), # TODO: We need to use a dedicated model
+            "model_config": context.get('model.model_config'),
             "streaming_override": False, # sets streaming to False
         }
         # Disable streaming of classification output -- deepcopy so we don't effect the model_config
@@ -73,7 +73,9 @@ class SymbolicMemory:
     # Given a query (w/response) and context we learn an object, predicate, subject triplet
     # Returns: True/False + results if information was successfully learned or not
     def learn(self, query, context):
-        results = self.classify(query['query'], query['response'], query['prompt'], context)
+        prompt = context.prompts[f"{query['type']}.cot.prompt"]
+        results = self.classify(query['text'], context.get("instruction"), prompt, context)
+        print(results)
         if len(results) == 0:
             print("Error with classification. See logs.")
             return False, []
@@ -87,10 +89,10 @@ class SymbolicMemory:
         # For Boolean the results are True, False, or None. Subject is capture in query context.
         elif query['type'] == "boolean":
             if results[0].lower() in  ["true", "yes", "1"]:
-                self.create_predicate("User", query["relation"], query["subject"]) # TODO: Need to pull user name
+                self.create_predicate("User", query["relation"], query["class"]) # TODO: Need to pull user name
                 return True, results
             elif results[0].lower() in  ["false", "no", "0"]:
-                self.create_negation("User", query["relation"], query["subject"]) # TODO: Need to pull user name
+                self.create_negation("User", query["relation"], query["class"]) # TODO: Need to pull user name
                 return True, results
             else:
                 return False, []

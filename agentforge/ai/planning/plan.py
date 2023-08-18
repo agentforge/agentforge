@@ -1,19 +1,17 @@
-from typing import Any, Dict
+from typing import Any, Dict, List
 from agentforge.ai.planning.planner import PlanningController
 from agentforge.ai.beliefs.symbolic import SymbolicMemory
-from agentforge.ai.attention.tasks import TaskManagement
+from agentforge.ai.attention.tasks import TaskManager
 from agentforge.utils.stream import stream_string
-from agentforge.ai.attention.attention import Attention
 
 ### PLANNING SUBROUTINE: Executes PDDL plans with help from LLM resource
 class Plan:
     ### Executes PDDL plans with help from LLM resource
-    def __init__(self, domain: str):
-        self.planner = PlanningController()
-        self.symbolic_memory = SymbolicMemory()
-        self.attention = Attention()
-        self.task_management = TaskManagement()
+    def __init__(self, domain: str, goals: List[str]):
+        self.planner = PlanningController(domain)
+        self.task_management = TaskManager()
         self.domain = domain
+        self.goals = goals
 
     def execute(self, context: Dict[str, Any]) -> Dict[str, Any]:
         user_id = context.get('input.user_id')
@@ -27,18 +25,37 @@ class Plan:
         ## This step is the confirmation step preferably achieved by CoT Reasoning Engine
 
         ### PLANNING
-        # If the predicate memory attention is satisfied kick off the plan
-        if self.attention.attention_satisfied(key):
-            print("attention satisfied...")
+        # If there are no remaining queries for the planning task, we can execute the plan
+        task = context.get("task")
+        done = task.done()
+
+        print(f"PLAN PLAN PLAN{task != None} and {not done} and {len(task.all())}") 
+        print(task != None and not done and len(task.all()))
+        print(task)
+
+        if task != None and not done and len(task.all()) == 0:
+            # Get the current goal
+            goal = self.goals[task.stage]
+            print("GOAL", goal)
+            queries = self.planner.create_queries(goal)
+            print(f"{queries=}")
+            list(map(task.push, queries)) # efficiently push queries to the task
+            context.set("response", task.activate())
+            print(task.to_dict())
+            self.task_management.save(task)
+
+        elif task != None and done:
             finalize_reponse = "I have all the info I need, let me finalize the plan."
-            stream_string('channel', finalize_reponse, end_token=" ") # TODO: Make channel user specific, make text plan specific
 
-            context["response"] = finalize_reponse
-            response = self.planner.execute(context.get_model_input(), self.attention.get_attention(key))
+            # TODO: Make channel user specific, make text plan specific
+            stream_string('channel', finalize_reponse, end_token=" ")
 
-            self.task_management.update_task(user_id, context["input"]["model_id"], "plan", is_active=False)
-            print("[PLAN][update_task]", user_id, context["input"]["model_id"], "plan", False)
-            context["response"] = response
+            context.set("response", finalize_reponse)
+            response = self.planner.execute(context.get_model_input(), task)
+
+            task.active = True
+            self.task_management.save(task)
+            context.set("response", response)
             return context
 
         return context

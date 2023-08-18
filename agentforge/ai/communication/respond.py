@@ -1,32 +1,33 @@
 from typing import Any, Dict
 from agentforge.interfaces import interface_interactor
-from agentforge.ai.reasoning.query_engine import QueryEngine
 from agentforge.utils import Parser
 from agentforge.utils.stream import stream_string
+from agentforge.ai.attention.tasks import TaskManager
 
 ### COMMUNICATION: Handles response generation
 class Respond:
     def __init__(self):
+        self.task_management = TaskManager()
         self.service = interface_interactor.get_interface("llm")
         self.parser = Parser()
 
     def execute(self, context: Dict[str, Any]) -> Dict[str, Any]:
         print("RESPOND")
         ### Another subroutine gotchu dawg, bail
-        print(context.has_key("response"))
         if context.has_key("response"):
             return context
 
         # Iterate through unsent queries and send the latest if it exists
-        query_engine = QueryEngine(context.get('input.user_id'), context.get('input.model_id'))
-        for query in query_engine.get_queries():
-            if query is not None:
-                print("[QUERY] asking a query", query['query'])
-                query_engine.update_query(sent=True)
-                stream_string('channel', query['query']) # TODO: Make channel user specific
-                context.set("response", query['query'])
-                # Return new context to the user w/ response
-                return context
+        task = context.get("task")
+        # query_engine = QueryEngine(context.get('input.user_id'), context.get('input.model_id'))
+        if task is not None:
+            query = task.activate()
+            print("[QUERY] asking a query", query)
+            stream_string('channel', query) # TODO: Make channel user specific
+            context.set("response", query)
+            self.task_management.save(task)
+            # Return new context to the user w/ response
+            return context
 
         # If no query exists respond to the user based on the input and context
         formatted = context.get_formatted()
@@ -35,9 +36,6 @@ class Respond:
             "generation_config": context.get('model.generation_config'),
             "model_config": context.get('model.model_config'),
         }
-
-        print(input)
-
         response = self.service.call(input)
 
         if response is not None and "choices" in response:

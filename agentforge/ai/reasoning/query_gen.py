@@ -1,14 +1,18 @@
 from typing import Any, Dict
 from agentforge.ai.agents.context import Context
 from agentforge.ai.planning.pddl_to_graph import get_seed_queries
+from agentforge.ai.attention.tasks import TaskManager
 
 ### REASONING: We need to identify the gaps in our knowledge that we need to fill
 ### This can either come from a Task or come from the agent's inner-reflections
 class QueryGenerator:
-  def __init__():
-    pass
+  def __init__(self):
+    self.task_manager = TaskManager()
+    
 
   def execute(self, context: Context) -> Dict[str, Any]:
+    user_id = context.get("input.user_id")
+    session_id = context.get("input.model_id")
     ### Consider the following: 
     # 
     #   Current Task (if any)
@@ -23,17 +27,17 @@ class QueryGenerator:
     goal = context.get("goal")
 
     ### If the Task exists, is active, and has a query, we should ask it
-    if self.task_manager.task_exists():
-      task = self.task_manager.get_active_task()
+    active_task =  self.task_manager.active_task(user_id, session_id)
+    if active_task != None:
       if task.has_query():
-        return task.get_query()
+        return task.peek()
     
     ### If there is an attention formed but no active task, we should identify what task to activate
     if self.attention.has_attention():
       task = self.task_manager.get_active_task()
       if task == None:
         return self.attention.get_attention()
-      
+
     ### If there are gaps in our knowledge, we should try to close those gaps
     queries = get_seed_queries(goal)
     for query_obj, details in queries.items():

@@ -36,7 +36,7 @@ class Speak:
         if re.search(r'[.!?]\s*$', self.buffer) or text == '<|endoftext|>' and self.buffer != '':
             print("buffer", self.buffer)
             wav_response = self.tts.call({'response': self.buffer, 'persona': context.get('model.persona')})
-
+            print(f"{wav_response=}")
             if os.path.isfile(wav_response['filename']):
                 if av_type == 'video':
                     lip_sync_file = self.w2l.call({'persona': context.get('model.persona'), 'audio_response': wav_response['filename']})
@@ -65,6 +65,7 @@ class Speak:
             if wav_response is not None:
                 context['audio'] = {"audio_response": wav_response["filename"], "type": "audio/wav"}
 
+        print(context.get('model.model_config.video') and context.get('model.model_config.streaming'))
         if context.get('model.model_config.video') and context.get('model.model_config.streaming'):
             threading.Thread(target=self.event_generator, args=(context, 'video')).start()
         elif context.get('model.model_config.speech') and context.get('model.model_config.streaming'):
