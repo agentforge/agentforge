@@ -105,12 +105,11 @@ class Parser:
     return candidate
 
   def parse_llm_stream(self, text):
-     
+    return self.POSTFIXDICT[text.strip()]
 
   # Keyed to alpaca-7b, needs to be updated for other models
   # TODO: make this more robust -- IMPLEMENT FOR STREAMING!
   def parse_llm_response(self, text, skip_tokens=[]):
-      
       for i in POSTFIXES + skip_tokens:
           text = text.split(i)
           text = text[0]
