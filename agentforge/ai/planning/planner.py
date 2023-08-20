@@ -221,7 +221,6 @@ class PlanningController:
         #     query = self.create_query(seed_key, template, "string", effects)
         #     ret.append(query)
         print(hierarchy)
-        raise ValueError("STOP") 
         return ret
 
     def extract_outermost_parentheses(self, s):

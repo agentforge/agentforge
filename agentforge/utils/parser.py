@@ -6,6 +6,37 @@ from pygments.util import ClassNotFound
 from pygments.formatters import HtmlFormatter
 from pygments.lexers.special import TextLexer
 
+PREFIXES = ["My response would be:", "My response is:", "### Response:"]
+POSTFIXES = ['### Thought',
+        '# End',
+        '# end',
+        "# noqa",
+        "#noqa",
+        '! # No answer',
+        'Output:', '"""',
+        "### Input:",
+        "#noinstantiation",
+        "## Output:",
+        "# End of Instruction",
+        "### End",
+        "### Instruction"
+        "### Instruction:",
+        "# Instruction",
+        "# Python Responses",
+        "# Output:",
+        "#if __name__ == '__main__':",
+        "#end document",
+        "<# end of output #>",
+        "% endinstruction",
+        "# End of story",
+        "# Ask a question",
+        "#include",
+        "// output",
+        "Note:",
+        "</s>",
+        "<|endoftext|>"
+      ]
+
 def clean_newlines(self, input_string: str):
     return input_string.replace("\n", "<br>")
 
@@ -41,7 +72,9 @@ def convert_html(self, input_string: str, remove_code: bool = False):
 
 class Parser:
   def __init__(self):
-    pass
+    self.POSTFIXDICT = {}
+    for i in POSTFIXES:
+        self.POSTFIXDICT[i] = True
 
   def parse_prompt(self, text):
     return text.strip()
@@ -71,42 +104,17 @@ class Parser:
     candidate = candidate.lstrip('\n')
     return candidate
 
+  def parse_llm_stream(self, text):
+     
+
   # Keyed to alpaca-7b, needs to be updated for other models
-  # TODO: make this more robust
+  # TODO: make this more robust -- IMPLEMENT FOR STREAMING!
   def parse_llm_response(self, text, skip_tokens=[]):
-      prefixes = ["My response would be:", "My response is:", "### Response:"]
-      postfixes = ['### Thought',
-        '# End',
-        '# end',
-        "# noqa",
-        "#noqa",
-        '! # No answer',
-        'Output:', '"""',
-        "### Input:",
-        "#noinstantiation",
-        "## Output:",
-        "# End of Instruction",
-        "### End",
-        "### Instruction",
-        "# Instruction",
-        "# Python Responses",
-        "# Output:",
-        "#if __name__ == '__main__':",
-        "#end document",
-        "<# end of output #>",
-        "% endinstruction",
-        "# End of story",
-        "# Ask a question",
-        "#include",
-        "// output",
-        "Note:",
-        "</s>",
-        "<|endoftext|>"
-      ]
-      for i in postfixes + skip_tokens:
+      
+      for i in POSTFIXES + skip_tokens:
           text = text.split(i)
           text = text[0]
-      for i in prefixes:
+      for i in PREFIXES:
           text = text.split(i)
           if len(text) > 1:
             text = text[1]

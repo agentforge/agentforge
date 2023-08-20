@@ -399,15 +399,10 @@ def get_seed_queries(seed: str, domain_file: str, problem_file: str):
     print(types)
 
     G, dot = create_graph(parameter_types, actions, preconditions, effects)
-    print(G)
-    print(G.nodes)
-    # Visualization for debugging
-    # GV = create_viz_graph(actions, preconditions, effects)
     visualize_graph(dot)
 
     # Trace the graph starting from "growing ?seedling"
     objects = trace_pddl_graph(objects, G, seed)
-    print(f"{objects=}")
     final_objs = {}
     for k,v in objects.items():
         parameter_type = parameter_types[k]
@@ -416,5 +411,4 @@ def get_seed_queries(seed: str, domain_file: str, problem_file: str):
         if parameter_type in types:
             final_objs[k]["parent"] = types[parameter_type]
 
-    print(f"{final_objs=}")
     return final_objs
