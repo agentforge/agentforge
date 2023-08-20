@@ -7,6 +7,7 @@ from pydantic import BaseModel, Field
 from datetime import datetime
 from agentforge.ai.agents.context import Context
 from collections import deque
+
 """
 ### Basic Task Model
 Allows us to return a Task model from this module
@@ -63,6 +64,7 @@ class Task(BaseModel):
 
     def done(self) -> bool:
         return len(self.queries['queue']) == 0 and len(self.queries['active']) == 0 and len(self.queries['complete']) > 0
+    
     """
     Creates new queries for the task using the planner
     """
@@ -72,9 +74,6 @@ class Task(BaseModel):
 
     def all(self) -> Optional[Dict]:
         return self.queries['queue'] if self.queries['queue'] else []
-
-    def all_sent(self) -> Optional[List[Dict]]:
-        return [query for query in self.queries['queue'] if 'sent' in query and query['sent']] if self.queries['queue'] else []
 
     def push(self, query: Dict=None):
         self.queries['queue'].append(query)
@@ -98,15 +97,36 @@ class Task(BaseModel):
     def push_failed(self, query):
         self.queries['failed'].append(query)
 
-    # Adds a query to the completed lists - for retrying
-    def activate(self) -> str:
+    """
+    Input - context: Context object
+            llm: LLM object
+
+    Output - str:  Adds a query to the active list from the queue by calling the LLM
+    """
+    def activate(self, context, llm) -> str:
         if len(self.queries['active']) > 0:
-            raise ValueError("Attempted to activate a query when there is already an active query")
+            return self.queries['active'][0]['text']
         query = self.queries['queue'].popleft()
+
+        # We need to create a query via the LLM using the context and query
+        input = context.get_model_input()
+        prompt = context.prompts[f"{query['type']}.query.prompt"]
+        data = {
+            "goal": query['goal'],
+            "type": query['type'],
+            "detail": query['object'].replace("?",""),
+            "action": query['goal'],
+        }
+        print(query)
+        print(input)
+        input['prompt'] = context.process_prompt(prompt, data)
+        query['text'] = llm.call(input)["choices"][0]["text"]
+        print(query['text'])
+        # We've got our query now activate it
         self.queries['active'].append(query)
         return query['text']
 
-    # Adds a query to the completed lists - for retrying
+    # Only gets active query, will not activate a new one
     def get_active_query(self) -> Optional[Dict]:
         if len(self.queries['active']) == 0:
             return None

@@ -89,10 +89,10 @@ class SymbolicMemory:
         # For Boolean the results are True, False, or None. Subject is capture in query context.
         elif query['type'] == "boolean":
             if results[0].lower() in  ["true", "yes", "1"]:
-                self.create_predicate("User", query["relation"], query["class"]) # TODO: Need to pull user name
+                self.create_predicate("User", query["relation"], query["object"]) # TODO: Need to pull user name
                 return True, results
             elif results[0].lower() in  ["false", "no", "0"]:
-                self.create_negation("User", query["relation"], query["class"]) # TODO: Need to pull user name
+                self.create_negation("User", query["relation"], query["object"]) # TODO: Need to pull user name
                 return True, results
             else:
                 return False, []

@@ -73,10 +73,14 @@ class SimpleAgent:
         self.task_routines = {"garden": PlanningRoutine("garden", garden_prompts, garden_goals)}
 
     def run(self, input: Dict[str, Any]) -> Dict[str, Any]:
-        context = Context(input)
-        context.memory =  Memory()
-        context.task_routines = self.task_routines #add to context for reference in routines
+        self.context = Context(input)
+        self.context.memory =  Memory()
+        self.context.task_routines = self.task_routines #add to context for reference in routines
 
         state_machine = StateMachine(self.routine.subroutines, self.task_routines)
-        threading.Thread(target=state_machine.run, args=(context,)).start()
+        threading.Thread(target=state_machine.run, args=(self.context,)).start()
+        return True
+    
+    def abort(self):
+        self.context.abort()
         return True

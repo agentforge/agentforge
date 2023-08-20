@@ -3,11 +3,13 @@ from agentforge.ai.planning.planner import PlanningController
 from agentforge.ai.beliefs.symbolic import SymbolicMemory
 from agentforge.ai.attention.tasks import TaskManager
 from agentforge.utils.stream import stream_string
+from agentforge.interfaces import interface_interactor
 
 ### PLANNING SUBROUTINE: Executes PDDL plans with help from LLM resource
 class Plan:
     ### Executes PDDL plans with help from LLM resource
     def __init__(self, domain: str, goals: List[str]):
+        self.service = interface_interactor.get_interface("llm")
         self.planner = PlanningController(domain)
         self.task_management = TaskManager()
         self.domain = domain
@@ -29,7 +31,7 @@ class Plan:
         task = context.get("task")
         done = task.done()
 
-        print(f"PLAN PLAN PLAN{task != None} and {not done} and {len(task.all())}") 
+        print(f"PLAN PLAN PLAN{task != None} and {not done} and {len(task.all())}")
         print(task != None and not done and len(task.all()))
         print(task)
 
@@ -40,7 +42,7 @@ class Plan:
             queries = self.planner.create_queries(goal)
             print(f"{queries=}")
             list(map(task.push, queries)) # efficiently push queries to the task
-            context.set("response", task.activate())
+            context.set("response", task.activate(context, self.service))
             print(task.to_dict())
             self.task_management.save(task)
 

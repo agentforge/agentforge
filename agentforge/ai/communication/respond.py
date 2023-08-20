@@ -12,7 +12,7 @@ class Respond:
         self.parser = Parser()
 
     def execute(self, context: Dict[str, Any]) -> Dict[str, Any]:
-        print("RESPOND")
+        print("RESPOND?", context.has_key("response"))
         ### Another subroutine gotchu dawg, bail
         if context.has_key("response"):
             return context
@@ -21,9 +21,9 @@ class Respond:
         task = context.get("task")
         # query_engine = QueryEngine(context.get('input.user_id'), context.get('input.model_id'))
         if task is not None:
-            query = task.activate()
+            query = task.activate(context, self.service)
             print("[QUERY] asking a query", query)
-            stream_string('channel', query) # TODO: Make channel user specific
+            # stream/string('channel', query) # TODO: Make channel user specific
             context.set("response", query)
             self.task_management.save(task)
             # Return new context to the user w/ response

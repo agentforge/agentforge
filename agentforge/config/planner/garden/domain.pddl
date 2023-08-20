@@ -5,8 +5,8 @@
   (:types
     plant - string
     seed clone - plant
-    plot pot - location
-    location - numeric
+    outdoor-plot indoor-pot - location
+    plant-count location - numeric
     water-container curing-container - container
     container tool amendment - boolean
     mulch fertilizer - amendment
@@ -16,35 +16,37 @@
     (prepared ?location - location)
     (flowering ?plant - plant)
     (watered-plant ?plant - plant)
-    (mulched ?plot - plot)
+    (mulched ?location - location)
     (fertilized ?location - location)
     (infested ?plant - plant)
-    (weeds ?plot - plot)
+    (weeds ?location - location)
     (dug ?location - location)
     (planted ?plant - plant ?location - location)
     (watered-plant ?plant - plant)
-    (watered-plot ?plot - plot)
+    (watered-location ?location - location)
     (matured ?plant - plant)
     (alive ?plant - plant)
     (growing ?plant - plant)
     (digging-tool-available ?digging-tool - tool)
-    (seed-available ?seed - seed)
-    (clone-available ?clone - clone)
     (fertilizer-available ?fertilizer - fertilizer)
     (growing-location-fertilized ?location - location)
     (mulch-available ?mulch - mulch)
     (water-container-available ?water-can - water-container)
-    (pot-available ?pot - pot)
+    (indoor-pot-available ?indoor-pot - indoor-pot)
     (empty ?water-can - container)
-    (dry ?plot - plot)
+    (dry ?location - location)
     (unplanted ?location - location)
     (germinating ?seed - seed)
     (plant-in-curing-container ?plant - plant ?curing-container - curing-container)
     (plant-drying ?plant - plant)
-    (freezing-conditions ?plot - plot)
+    (freezing-conditions ?outdoor-plot - outdoor-plot)
     (amendment-available ?amendment - amendment)
     (amended ?location - location)
     (plant-available ?plant - plant)
+    (seed-available ?seed - seed)
+    (clone-available ?clone - clone)
+    (plant-count-complete ?plant-count - plant-count)
+    (outdoot-plot-available ?outdoor-plot - outdoor-plot)
   )
 
   (:action get-fertilizer
@@ -55,21 +57,29 @@
     :parameters (?digging-tool - tool)
     :effect (digging-tool-available ?digging-tool))
 
-  (:action get-pots
-    :parameters (?pot - pot ?plant - plant)
-    :effect (pot-available ?pot))
+  (:action prep-outdoor-plot
+    :parameters (?outdoor-plot - outdoor-plot ?plant - plant)
+    :effect (outdoot-plot-available ?outdoor-plot))
+
+  (:action get-indoor-pots
+    :parameters (?indoor-pot - indoor-pot ?plant - plant)
+    :effect (indoor-pot-available ?indoor-pot))
+
+  (:action get-number-of-plants
+    :parameters (?plant-count - plant-count)
+    :effect (plant-count-complete ?plant-count))
 
   (:action get-seeds
-    :parameters (?seed - seed)
-    :effect (plant-available ?seed))
+    :parameters (?seed - seed ?plant - plant)
+    :effect (seed-available ?seed))
 
   (:action get-clone
-    :parameters (?clone - clone)
-    :effect (plant-available ?clone))
+    :parameters (?clone - clone ?plant - plant)
+    :effect (clone-available ?clone))
 
   (:action prepare
-    :parameters (?location - location ?digging-tool - tool)
-    :precondition (and (digging-tool-available ?digging-tool) (unplanted ?pot) (dry ?pot) (fertilized ?pot))
+    :parameters (?location - location ?digging-tool - tool ?plant-count - plant-count)
+    :precondition (and (or (seed-available ?plant) (clone-available ?plant)) (or (outdoot-plot-available ?location) (indoor-pot-available ?location)) (plant-count-complete ?plant-count) (digging-tool-available ?digging-tool) (unplanted ?location) (dry ?location) (fertilized ?location))
     :effect (prepared ?location))
 
   (:action plant-it
@@ -93,27 +103,27 @@
     :effect (and (growing ?plant)))
 
   (:action sow
-    :parameters (?plot - plot ?seed - seed)
-    :precondition (and (plot-dug ?plot) (seed-available ?seed))
-    :effect (and (growing ?plant) (planted ?seed ?plot)))
+    :parameters (?location - location ?seed - seed)
+    :precondition (and (dug ?location) (plant-available ?seed))
+    :effect (and (growing ?seed) (planted ?seed ?location)))
 
   (:action sprout
-    :parameters (?plant - plant ?plot - plot ?seed - seed)
-    :precondition (planted ?seed ?plot)
-    :effect (and (growing ?plant ?plot) (sprout-in-plot ?plant ?plot)))
+    :parameters (?plant - plant ?location - location ?seed - seed)
+    :precondition (planted ?seed ?location)
+    :effect (and (growing ?plant ?location)))
 
   (:action transition-to-flowering
-    :parameters (?plant - plant ?plot - plot)
+    :parameters (?plant - plant ?location - location)
     :precondition (and (growing ?plant) (alive ?plant))
     :effect (flowering ?plant))
 
   (:action harvest
-    :parameters (?plant - plant ?plot - plot)
-    :precondition (and (planted ?plant ?plot) (flowering ?plant) (alive ?plant))
-    :effect(and (not (planted ?plant ?plot)) (not (alive ?plant)) (not (growing ?plant)) (harvested ?plant)))
+    :parameters (?plant - plant ?location - location)
+    :precondition (and (planted ?plant ?location) (flowering ?plant) (alive ?plant))
+    :effect(and (not (planted ?plant ?location)) (not (alive ?plant)) (not (growing ?plant)) (harvested ?plant)))
 
   (:action dry
-    :parameters (?plant - plant ?plot - plot ?curing-container - curing-container )
+    :parameters (?plant - plant ?curing-container - curing-container )
     :precondition (harvested ?plant)
     :effect(and (plant-drying ?plant) (plant-in-curing-container ?plant ?curing-container)))
 
@@ -123,14 +133,14 @@
     :effect (and (watered-plant ?plant) (not (dry ?location)) (empty ?water-can)))
 
   (:action apply-mulch
-    :parameters (?plot - plot ?mulch - mulch)
-    :precondition (and (plot-dug ?plot) (mulch-available ?mulch))
-    :effect (mulched ?plot))
+    :parameters (?location - location ?mulch - mulch)
+    :precondition (and (dug ?location) (mulch-available ?mulch))
+    :effect (mulched ?location))
 
   (:action dig-soil
-    :parameters (?plot - plot ?digging-tool - tool)
-    :precondition (and (prepared ?plot) (not (plot-dug ?plot)) (digging-tool-available ?digging-tool))
-    :effect (plot-dug ?plot))
+    :parameters (?location - location ?digging-tool - tool)
+    :precondition (and (prepared ?location) (not (dug ?location)) (digging-tool-available ?digging-tool))
+    :effect (dug ?location))
 
   (:action amend-soil
     :parameters (?location - location ?amendment - amendment)
@@ -146,11 +156,6 @@
     :parameters (?plant - plant ?pesticide - pesticide)
     :precondition (and (infested ?plant) (growing ?plant) (flowering ?plant) (alive ?plant) (pesticide-available ?pesticide))
     :effect (not (infested ?plant)))
-
-  (:action remove-weeds
-    :parameters (?plot - plot ?plant - plant)
-    :precondition (and (weeds ?plot) (growing ?plant) (planted ?plant ?plot))
-    :effect (not (weeds ?plot)))
 
   (:action prune
     :parameters (?plant - plant ?tool - tool)
@@ -169,13 +174,18 @@
 
   (:action add-biocontrol
     :parameters (?plant - plant ?biocontrol - biocontrol)
-    :precondition (and (growing ?plant) (infested ?plot) (planted ?plant))
-    :effect (not (infested ?plot)))
+    :precondition (and (growing ?plant) (infested ?location) (planted ?plant))
+    :effect (not (infested ?location)))
+
+  (:action remove-weeds
+    :parameters (?outdoor-plot - outdoor-plot ?plant - plant)
+    :precondition (and (weeds ?outdoor-plot) (growing ?plant) (planted ?plant ?outdoor-plot))
+    :effect (not (weeds ?outdoor-plot)))
 
   (:action cover
-    :parameters (?plant - plant ?plot - plot)
-    :precondition (and (growing ?plant) (freezing-conditions ?plot) (not (covered ?plot)))
-    :effect (covered ?plot))
+    :parameters (?plant - plant ?outdoor-plot - outdoor-plot)
+    :precondition (and (growing ?plant) (freezing-conditions ?outdoor-plot) (not (covered ?outdoor-plot)))
+    :effect (covered ?outdoor-plot))
 
   (:action add-support-structure
     :parameters (?plant - plant ?structure - support-structure)

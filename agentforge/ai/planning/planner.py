@@ -5,6 +5,7 @@ from typing import List, Dict, Any
 import uuid
 from agentforge.interfaces import interface_interactor
 from agentforge.ai.planning.pddl_to_graph import get_seed_queries
+from collections import defaultdict
 
 # TODO: make env files for this
 FAST_DOWNWARD_ALIAS = "lama"
@@ -77,7 +78,7 @@ class PlanningController:
             "goal": [],
             "object": [],
         }
-        queries = attention['queries']
+        queries = attention['queries']['complete']
         for query in queries:
             for effect in query["effect"]:
                 for result in query["results"]: # for each result we gathered for goals, innits, objects
@@ -120,7 +121,7 @@ class PlanningController:
     """
     def create_query(self, obj: str, template: str, datatype: str, effects: List[Dict]) -> str:
         query = {}
-        query['object'] = obj
+        query['object'] = obj.replace("?","").replace("-", " ")
         query['text'] = template
         query['type'] = datatype
         query['effect'] = effects
@@ -170,7 +171,7 @@ class PlanningController:
             'or': '[ENT] [R1] has a [ENT] [R2]',
             'numeric': '[ENT] [R1] has [ENT] [R2]',
         }
-        hierarchy = {}
+        hierarchy = defaultdict(list)
         for seed_key, seed in seeds.items():
             klass = seed['class'] # ?plant
             datatype = seed['type']
@@ -181,19 +182,24 @@ class PlanningController:
             template = templates[datatype]
             if parent not in TYPE_KLASSES and parent not in hierarchy:
                 # check to see if we have asked the parent question already
-                hierarchy[parent] = seed_key
+                hierarchy[parent].append(seed_key)
+
             elif parent in hierarchy:
                 template = templates['or']
-                template = template.replace("{values}", " or ".join([klass, hierarchy[parent]]))   
+                hierarchy[parent].append(seed_key)
+                template = template.replace("{values}", " or ".join(hierarchy))   
+            
             else:
                 template = template.replace("{klass}", seed_key)
             
+
             template = template.replace("{goal}", goal)
             query = self.create_query(seed_key, template, datatype, effects)
             relation = relations[datatype].replace("{goal}", goal)
 
             query["relation"] = relation
             query["goal"] = goal
+            query["class"] = klass
             query["type"] = seed['type']
             ret.append(query)
 
@@ -214,6 +220,8 @@ class PlanningController:
         #     sub_effects = self.init_subtype_predicates(predicate)
         #     query = self.create_query(seed_key, template, "string", effects)
         #     ret.append(query)
+        print(hierarchy)
+        raise ValueError("STOP") 
         return ret
 
     def extract_outermost_parentheses(self, s):

@@ -1,0 +1,3 @@
+### Instruction
+Given the user's goal of <|goal|>, the question we need to ask is not specific enough. We want to know specifically what <|detail|> they are interested in <|action|>. Can you please reformulate the question to ask the user exactly what <|detail|> they want to <|action|>? The expected response type is <|type|>.
+### Response

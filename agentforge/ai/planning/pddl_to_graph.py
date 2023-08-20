@@ -5,93 +5,110 @@ from pddlpy import DomainProblem
 from graphviz import Digraph
 import re
 
-# Function to extract types from action parameters
-def extract_types_from_parameters(parameter_types, parameters):
-    # print(f"{parameters=}")
-    for key, var_type in parameters.items():
-        parameter_types[key] = var_type
+# Function to convert a predicate dictionary into a string representation
+def predicate_to_str(predicate):
+    if isinstance(predicate, dict):
+        return " ".join([" ".join([k] + predicate[k]) for k in predicate])
+    return predicate
 
-# Function to create the graph
+def add_preconditions(precond, action, G, dot, addtl_links, negate=False, previous_precond=None):
+    if isinstance(precond, dict):
+        for key, value in precond.items():
+            if key == "and":
+                for item in value:
+                    add_preconditions(item, action, G, dot, addtl_links, negate=negate)
+            elif key == "or":
+                prev_or_precond = None
+                for item in value:
+                    prev_or_precond = add_preconditions(item, action, G, dot, addtl_links, negate=negate, previous_precond=prev_or_precond)
+            elif key == "not":
+                add_preconditions(value, action, G, dot, addtl_links, negate=True)
+            else:
+                precond_str = "not " + predicate_to_str(precond) if negate else predicate_to_str(precond)
+                G.add_edge(precond_str, action, label="precondition")
+                dot.edge(precond_str, action, color="blue")
+                addtl_links[key] = precond
+                if previous_precond:
+                    G.add_edge(previous_precond, precond_str, label="OR")
+                    dot.edge(previous_precond, precond_str, color="orange", label="OR")
+                return precond_str
+    else:
+        precond_str = "not " + precond if negate else precond
+        G.add_edge(precond_str, action, label="precondition")
+        dot.edge(precond_str, action, color="blue")
+        if previous_precond:
+            G.add_edge(previous_precond, precond_str, label="OR")
+            dot.edge(previous_precond, precond_str, color="orange", label="OR")
+        return precond_str
+
+
+def add_effects(effect, action, G, dot, negate=False):
+    if isinstance(effect, dict):
+        for key, value in effect.items():
+            if key == "and":
+                for item in value:
+                    add_effects(item, action, G, dot, negate=negate)
+            elif key == "not":
+                add_effects(value, action, G, dot, negate=True)
+            else:
+                effect_str = "not " + predicate_to_str(effect) if negate else predicate_to_str(effect)
+                G.add_edge(action, effect_str, label="effect")
+                dot.edge(action, effect_str, color="red")
+    else:
+        effect_str = "not " + effect if negate else effect
+        G.add_edge(action, effect_str, label="effect")
+        dot.edge(action, effect_str, color="red")
+
 def create_graph(parameter_types, actions, preconditions, effects):
     G = nx.DiGraph()
+    dot = Digraph(strict=True)
     addtl_links = {}
 
-    # Add actions as nodes
+    def add_node(graph, name, shape="ellipse", **kwargs):
+        graphviz_attrs = {key: str(value) for key, value in kwargs.items()}
+        graph.add_node(name, **kwargs)
+        dot.node(name, shape=shape, **graphviz_attrs)
+
+    def add_edge(graph, src, dst, color="black", label=""):
+        graph.add_edge(src, dst, color=color, label=label)
+        dot.edge(src, dst, color=color, label=label)
+
+    # Function to extract types from action parameters
+    def extract_types_from_parameters(parameter_types, parameters):
+        for key, var_type in parameters.items():
+            parameter_types[key] = var_type
+
     for action, detail in actions.items():
         extract_types_from_parameters(parameter_types, detail["parameters"])
-        G.add_node(action, parameters=detail["parameters"])
+        add_node(G, action, shape="box", parameters=detail["parameters"])
 
-    # Add edges for preconditions and effects
-    for action, precond_list in preconditions.items():
-        for precond in precond_list:
-            precond_list = precond.split(" ")
-            idx = 0
-            while precond_list[idx] in ["not", "(", "and", "or"]:
-                idx += 1
-            addtl_links[precond_list[idx]] = precond
-            G.add_edge(precond, action, label="precondition")
-    
-    for action, effect_list in effects.items():
-        for effect in effect_list:
-            G.add_edge(action, effect, label="effect")
+    for action, precond in preconditions.items():
+        add_preconditions(precond, action, G, dot, addtl_links)
+
+    # Additional links for effects
+    for action, effect in effects.items():
+        add_effects(effect, action, G, dot)
 
     # Additional links
+    print(f"{addtl_links=}")
+    print(f"{effects=}")
     for action, effect_list in effects.items():
-        for effect in effect_list:
-            effect_list = effect.split(" ")
-            valid1 = effect_list[0] in addtl_links.keys()
+        for effect_key, val in effect_list.items():
+            valid1 = effect_key in addtl_links.keys()
             if not valid1:
                 continue
-            valid2 = effect != addtl_links[effect_list[0]]
-            valid3 = "not " + effect != addtl_links[effect_list[0]]
-            if valid1 and valid2 and valid3:
-                G.add_edge(effect, addtl_links[effect_list[0]], label="additional_link")
+            valid2 = val != addtl_links[effect_key][effect_key]
+            # valid3 = "not " + effect != addtl_links[effect_list[0]]
+            print(f"{valid1} and {valid2}")
+            if valid1 and valid2:
+                print(f"{effect_key=}")
+                print(f"{addtl_links[effect_key]=}")
+                add_edge(G, effect_key + " " + val[0], effect_key + " " + addtl_links[effect_key][effect_key][0], label="polymorphic")
 
-    return G
+    return G, dot
 
-# Definition of the function to create the graph
-def create_viz_graph(actions, preconditions, effects):
-    graph = {}
-    for action, details in actions.items():      
-        graph[action] = {
-            "preconditions": preconditions.get(action, []),
-            "effects": effects.get(action, []),
-            "parameters": details["parameters"]
-        }
-    return graph
-
-# Defining the visualize_graph function as provided earlier
-def visualize_graph(graph):
-    addtl_links = {}
-    dot = Digraph(strict=True)
-    for action, connections in graph.items():
-        dot.node(action, shape="box", style="filled", color="lightyellow")
-        for precond in connections['preconditions']:
-            # for effect to precond matching
-            precond_list = precond.split(" ")
-            idx = 0
-            while precond_list[idx] in ["not", "(", "and", "or"]:
-                idx += 1
-            addtl_links[precond_list[idx]] = precond
-            dot.node(precond, shape="ellipse", style="filled", color="lightblue")
-            dot.edge(precond, action, color="blue")
-        for effect in connections['effects']:
-            dot.node(effect, shape="ellipse", style="filled", color="lightgreen")
-            dot.edge(action, effect, color="red")
-
-    # additonal links
-    for action, connections in graph.items():
-        for effect in connections['effects']:
-            effect_list = effect.split(" ")
-            valid1 = effect_list[0] in addtl_links.keys()
-            if not valid1:
-                continue
-            valid2 = effect != addtl_links[effect_list[0]]
-            valid3 = "not " + effect != addtl_links[effect_list[0]]
-            if valid1 and valid2 and valid3 :
-                dot.edge(effect, addtl_links[effect_list[0]], color="green")
-
-    # Render the graph and save it
+# Updated visualize_graph function with concise string conversion
+def visualize_graph(dot: Digraph):
     dot.render('./garden_graph', format='png', cleanup=True)
     return dot
 
@@ -126,7 +143,35 @@ def extract_types(file_name):
 
     return types_dict
 
-# Definition of the function to extract preconditions from a PDDL file
+def parse_predicate(predicate_str):
+    predicate_parts = [part.strip("()") for part in predicate_str.strip().split()]
+    return {predicate_parts[0]: [p.strip("()") for p in predicate_parts[1:]]}
+
+def split_bracketed_expressions(expr_str):
+    expressions = []
+    start = 0
+    bracket_count = 0
+    for i, char in enumerate(expr_str):
+        if char == '(':
+            bracket_count += 1
+        elif char == ')':
+            bracket_count -= 1
+            if bracket_count == 0:
+                expressions.append(expr_str[start:i+1])
+                start = i+2
+    return expressions
+
+def parse_expression(expr_str):
+    expr_str = expr_str.strip()
+    if expr_str.startswith('(and'):
+        return {'and': [parse_expression(e) for e in split_bracketed_expressions(expr_str[5:-1].strip())]}
+    elif expr_str.startswith('(or'):
+        return {'or': [parse_expression(e) for e in split_bracketed_expressions(expr_str[4:-1].strip())]}
+    elif expr_str.startswith('(not'):
+        return {'not': parse_expression(expr_str[5:-1].strip())}
+    else:
+        return parse_predicate(expr_str[1:-1])
+
 def extract_preconditions(file_name):
     with open(file_name, 'r') as file:
         lines = file.readlines()
@@ -143,22 +188,36 @@ def extract_preconditions(file_name):
             action_name = line.split()[1]
 
         if inside_action and line.startswith(":precondition"):
-            preconditions_list = []
             precondition_line = line.split(":precondition")[1].strip()
-            if precondition_line.startswith("(and"):
-                preconditions = precondition_line[5:-1].split(') (')
-                for precondition in preconditions:
-                    preconditions_list.append(precondition.strip().replace("(", "").replace(")", ""))
-            else:
-                preconditions_list.append(precondition_line.strip().replace("(", "").replace(")", ""))
-
-            preconditions_dict[action_name] = preconditions_list
+            preconditions_dict[action_name] = parse_expression(precondition_line)
             inside_action = False
             action_name = None
 
     return preconditions_dict
 
-# Definition of the function to extract effects from a PDDL file
+def parse_effect_expression(expr_str):
+    expr_str = expr_str.strip()
+    if expr_str.startswith('(and'):
+        return {'and': [parse_effect_expression(e) for e in split_bracketed_expressions(expr_str[5:-1].strip())]}
+    elif expr_str.startswith('(not'):
+        return {'not': parse_effect_expression(expr_str[5:-1].strip())}
+    else:
+        return parse_predicate(expr_str[1:-1])
+
+def split_bracketed_expressions(expr_str):
+    expressions = []
+    start = 0
+    bracket_count = 0
+    for i, char in enumerate(expr_str):
+        if char == '(':
+            bracket_count += 1
+        elif char == ')':
+            bracket_count -= 1
+            if bracket_count == 0:
+                expressions.append(expr_str[start:i+1])
+                start = i+2
+    return expressions
+
 def extract_effects(file_name):
     with open(file_name, 'r') as file:
         lines = file.readlines()
@@ -175,16 +234,8 @@ def extract_effects(file_name):
             action_name = line.split()[1]
 
         if inside_action and line.startswith(":effect"):
-            effects_list = []
             effect_line = line.split(":effect")[1].strip()
-            if effect_line.startswith("(and"):
-                effects = effect_line[5:-1].split(') (')
-                for effect in effects:
-                    effects_list.append(effect.strip().replace("(", "").replace(")", ""))
-            else:
-                effects_list.append(effect_line.strip().replace("(", "").replace(")", ""))
-
-            effects_dict[action_name] = effects_list
+            effects_dict[action_name] = parse_effect_expression(effect_line)
             inside_action = False
             action_name = None
 
@@ -255,41 +306,52 @@ def extract_pddl_info(domain_file, problem_file):
 
     return actions, predicates, effects, preconditions, types
 
-def extract_last_variable_from_string(string):
+
+# Function to extract the last variable from a string or dictionary expression
+def extract_last_variable_from_expression(expression):
+    if isinstance(expression, dict):
+        expression_str = " ".join([k] + expression[k] for k in expression)
+    else:
+        expression_str = expression
     pattern = r'\?[\w\-]+'
-    matches = re.findall(pattern, string)
+    matches = re.findall(pattern, expression_str)
     return matches[-1] if matches else None
 
-# Function to run on a root node
+# Updated function to run on a root node
 def run_node(objects, node):
-    variable = extract_last_variable_from_string(node)
+    variable = extract_last_variable_from_expression(node)
     if variable:
         objects[variable].add(node)
 
-# Function to run on a root edge
+# Updated function to run on a root edge
 def run_edge(objects, edges):
     for edge in edges:
-        variable = extract_last_variable_from_string(edge)
+        variable = extract_last_variable_from_expression(edge)
         if variable:
             objects[variable].add(edge)
 
-# Function to evaluate a node
+# Updated function to evaluate a node
 def eval_node(objects, graph, node):
     predecessors = list(graph.predecessors(node))
-    # print(f"{predecessors=}, {node=}")
     if not predecessors:
         run_node(objects, node)
     return True
 
-# Function to evaluate an edge
+# Updated function to evaluate an edge
 def eval_edge(objects, graph, edge):
     predecessors = list(graph.predecessors(edge[0]))
-    # print(f"{predecessors=}, {edge=}")
     if not predecessors:
         run_edge(objects, edge)
     return True
 
-# Recursive function to trace the graph
+# Function to trace the PDDL graph (unchanged)
+def trace_pddl_graph(objects, graph, root_node):
+    visited_nodes = set()
+    trace_graph(objects, graph, root_node, visited_nodes)
+    # Convert the sets to lists before returning
+    return {key: list(value) for key, value in objects.items()}
+
+# Recursive function to trace the graph (unchanged)
 def trace_graph(objects, graph, node, visited_nodes):
     if node in visited_nodes:
         return
@@ -300,12 +362,6 @@ def trace_graph(objects, graph, node, visited_nodes):
         eval_edge(objects, graph, edge)
         trace_graph(objects, graph, predecessor, visited_nodes)
 
-# Function to trace the PDDL graph
-def trace_pddl_graph(objects, graph, root_node):
-    visited_nodes = set()
-    trace_graph(objects, graph, root_node, visited_nodes)
-    # Convert the sets to lists before returning
-    return {key: list(value) for key, value in objects.items()}
 
 # Lookup type for this objeect, drilling down if necessary
 def lookup_type(type_klasses: List, types: Dict, key: str) -> str:
@@ -326,30 +382,32 @@ def get_seed_queries(seed: str, domain_file: str, problem_file: str):
     actions, predicates, effects, preconditions, types = extract_pddl_info(domain_file, problem_file)
 
     # Printing the extracted information
-    # print("Actions:")
-    # for action_name, action_details in actions.items():
-    #     print(f"  {action_name}: {action_details}")
+    print("Actions:")
+    for action_name, action_details in actions.items():
+        print(f"  {action_name}: {action_details}")
 
-    # print("\n\nPredicates:")
-    # print(predicates)
+    print("\n\nPredicates:")
+    print(predicates)
 
-    # print("\n\nEffects:")
-    # print(effects)
+    print("\n\nEffects:")
+    print(effects)
 
-    # print("\n\nPreconditions:")
-    # print(preconditions)
+    print("\n\nPreconditions:")
+    print(preconditions)
 
-    # print("\n\nTypes:")
-    # print(types)
+    print("\n\nTypes:")
+    print(types)
 
-    G = create_graph(parameter_types, actions, preconditions, effects)
-
+    G, dot = create_graph(parameter_types, actions, preconditions, effects)
+    print(G)
+    print(G.nodes)
     # Visualization for debugging
     # GV = create_viz_graph(actions, preconditions, effects)
-    # visualize_graph(GV)
+    visualize_graph(dot)
 
     # Trace the graph starting from "growing ?seedling"
     objects = trace_pddl_graph(objects, G, seed)
+    print(f"{objects=}")
     final_objs = {}
     for k,v in objects.items():
         parameter_type = parameter_types[k]

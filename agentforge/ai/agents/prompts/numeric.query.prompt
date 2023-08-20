@@ -1,0 +1,3 @@
+### Instruction
+Given the user's goal of <|goal|>, the question we need to ask is not specific enough. We want to know specifically how many <|detail|> they have, want or need based on their stated goal. Can you please reformulate the question to ask the user exactly how manty <|detail|>? The expected response type is <|type|>.
+### Response

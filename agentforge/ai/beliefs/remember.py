@@ -31,11 +31,14 @@ class GetResponse:
             stream_string('channel', "One moment while I make a note.", end_token="\n\n")
             learned, results = self.symbolic_memory.learn(query, context)
             print(learned, results)
-
+            query["results"] = results
             if learned:
                 # TODO: Make channel user specific, make text plan specific
                 stream_string('channel', "Okay I've jotted that down.", end_token=" ")
                 task.push_complete(query)
+                self.task_management.save(task)
+            else:
+                task.push_failed(query)
                 self.task_management.save(task)
         return context
 
