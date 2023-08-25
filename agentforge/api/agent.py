@@ -10,9 +10,11 @@ import asyncio, uuid
 from aioredis import Redis
 import traceback, json
 from agentforge.utils import logger
+from agentforge.utils.parser import Parser
 
 # Setup Agent
 agent = agent_interactor.create_agent()
+parser = Parser() # for quick stream parsing
 
 class AgentResponse(BaseModel):
   data: dict
@@ -37,7 +39,6 @@ async def agent(request: Request) -> AgentResponse:
     ## Parse Data --  from web acceptuseChat JSON, from client we need to pull ModelConfig
     ## and add add the prompt and user_id to the data
     data = await request.json()
-
     ## First check API key for legitimacy
     valid_token = verify_token_exists(data)
     if valid_token is None:

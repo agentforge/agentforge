@@ -4,8 +4,9 @@ import time
 from typing import List, Dict, Any
 import uuid
 from agentforge.interfaces import interface_interactor
-from agentforge.ai.planning.pddl_to_graph import get_seed_queries
+from agentforge.ai.planning.pddl_to_graph import QueryGenerator
 from collections import defaultdict
+from agentforge.utils import logger
 
 # TODO: make env files for this
 FAST_DOWNWARD_ALIAS = "lama"
@@ -149,66 +150,44 @@ class PlanningController:
         domain_file = self.config.domain_pddl_file_path
         problem_file = self.config.domain_pddl_problem_path
         ret = []
-        predicates = []
-
-        seeds = self.seed_queries = get_seed_queries(goal, domain_file, problem_file)
+        q = QueryGenerator()
+        seeds = q.get_seed_queries(goal, domain_file, problem_file)
         goal_data = goal.split(" ")
         goal = goal_data[0] # split the goal into the goal and the object, 1st is always predicate
 
-        print(f"{seeds=}")
+        logger.info(f"{seeds=}")
+        # raise ValueError("STOP")
+        # return seeds
 
         # TODO: Refactor this to use LLMs to automatically generate queries
         # using the given context here
-        templates = {
-            'string': "What kind of {klass} do you want {goal}?",
-            'boolean': 'Do you have a {klass}?',
-            'or': "Are you {goal} a {values}?",
-            'numeric': "How many {klass} do you want {goal}?"
-        }
-        relations = {
-            'string': '[ENT] [R1] {goal} [ENT] [R2]',
-            'boolean': '[ENT] [R1] has a [ENT] [R2]',
-            'or': '[ENT] [R1] has a [ENT] [R2]',
-            'numeric': '[ENT] [R1] has [ENT] [R2]',
-        }
-        hierarchy = defaultdict(list)
-        for seed_key, seed in seeds.items():
-            klass = seed['class'] # ?plant
-            datatype = seed['type']
-            parent = seed['parent']
+        # hierarchy = defaultdict(list)
+        processed_seeds = []
+        for action_name, seed_list in seeds.items():
+            for seed in seed_list:
+                seed['goal']  = goal
+                # seed['type'] = seed['type'].replace("?", "")
+                seed['action'] = action_name
+                processed_seeds.append(seed)
+        return processed_seeds
+        #     # effects = self.init_simple_effects(goal, klass)
 
-            effects = self.init_simple_effects(goal, klass)
+        #     template = template.replace("{goal}", goal)
+        #     query = self.create_query(seed_key, template, datatype, effects)
+        #     relation = relations[datatype].replace("{goal}", goal)
 
-            template = templates[datatype]
-            if parent not in TYPE_KLASSES and parent not in hierarchy:
-                # check to see if we have asked the parent question already
-                hierarchy[parent].append(seed_key)
+        #     query["relation"] = relation
+        #     query["goal"] = goal
+        #     query["class"] = klass
+        #     query["seed"] = seed
+        #     ret.append(query)
 
-            elif parent in hierarchy:
-                template = templates['or']
-                hierarchy[parent].append(seed_key)
-                template = template.replace("{values}", " or ".join(hierarchy))   
-            
-            else:
-                template = template.replace("{klass}", seed_key)
-            
-
-            template = template.replace("{goal}", goal)
-            query = self.create_query(seed_key, template, datatype, effects)
-            relation = relations[datatype].replace("{goal}", goal)
-
-            query["relation"] = relation
-            query["goal"] = goal
-            query["class"] = klass
-            query["type"] = seed['type']
-            ret.append(query)
-
-            # Extract the predicates from the seeds
-            for predicate in seed['predicates']:
-                # for each predicate we need to create a object and init
-                predicate = predicate.split(" ")
-                # Grab the predicate and add it to the init
-                predicates.append(predicate)
+        #     # Extract the predicates from the seeds
+        #     for predicate in seed['predicates']:
+        #         # for each predicate we need to create a object and init
+        #         predicate = predicate.split(" ")
+        #         # Grab the predicate and add it to the init
+        #         predicates.append(predicate)
 
         # print(f"{subtypes=}")
         # # Followup for subtypes, i.e. ?object has-x, has-y, has-z
@@ -220,7 +199,7 @@ class PlanningController:
         #     sub_effects = self.init_subtype_predicates(predicate)
         #     query = self.create_query(seed_key, template, "string", effects)
         #     ret.append(query)
-        print(hierarchy)
+        # print(hierarchy)
         return ret
 
     def extract_outermost_parentheses(self, s):

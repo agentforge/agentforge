@@ -20,7 +20,7 @@ class GetResponse:
         ### UPDATE_BELIEFS
         # # if query exists and is a response, pop
         task = context.get("task")
-        task.pretty_print()
+        # task.pretty_print()
         query = task.get_active_query()
         print("[ACTIVE QUERY]", query)
         if query is not None:

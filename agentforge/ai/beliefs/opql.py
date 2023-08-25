@@ -2,6 +2,7 @@ import torch
 import numpy as np
 from transformers import BertTokenizer, BertModel
 from agentforge.ai.beliefs.linker import EntityLinker
+from fuzzywuzzy import fuzz
 
 ### The OPQL memory is a key-value memory. Keys are computed from embeddings of the topic
 ## entity, e.g. On the Origin of Species, looked up from the entity embedding table, and relation embeddings from the pretrained relation
@@ -10,9 +11,12 @@ from agentforge.ai.beliefs.linker import EntityLinker
 class OPQLMemory:
     def __init__(self):
         self.keys = []
-        self.values = []
+        self.pvalues = []
+        self.svalues = []
+        self.ovalues = []
         self.tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
         self.model = BertModel.from_pretrained('bert-base-uncased')
+        self.fuzzy_weight = .5
         
     def set(self, obj, relation, subj):
         entity_inputs = self.tokenizer(obj, return_tensors="pt")
@@ -26,9 +30,17 @@ class OPQLMemory:
         key = torch.cat([relation_embedding, entity_embedding], dim=-1)
 
         self.keys.append(key.detach().numpy().flatten())
-        self.values.append(subj)
+        self.svalues.append(subj)
+        self.pvalues.append(relation)
+        self.ovalues.append(obj)
         
-    def get(self, entity_name, relation, k=1, threshold=.95):
+    def get(self, entity_name, relation, k=5, threshold=.90):
+        if entity_name in self.svalues:
+            print(self.svalues.index(entity_name))
+            idx = self.svalues.index(entity_name)
+            return [(self.keys[idx], self.ovalues[idx], 1.0)]
+
+        relation = f"[ENT] [R1] {relation} [ENT] [R2]" # for OPQL format
         relation_inputs = self.tokenizer(relation, return_tensors="pt")
         relation_embedding = self.model(**relation_inputs).last_hidden_state.mean(dim=1)
 
@@ -48,14 +60,19 @@ class OPQLMemory:
         # Get top k similarity scores and indices
         top_scores, top_indices = torch.topk(similarity_scores, k, dim=-1)
 
-        # Filter by threshold if provided
-        if threshold is not None:
-            filtered_results = [(self.keys[index], self.values[index], score.item()) 
-                                for index, score in zip(top_indices, top_scores) if score.item() >= threshold]
-            return filtered_results
-        else:
-            # Return the corresponding keys and similarity scores
-            return [(self.keys[index], self.values[index], score.item()) for index, score in zip(top_indices, top_scores)]
+        results = []
+
+        for index, score in zip(top_indices, top_scores):
+            stored_entity = self.ovalues[index]
+            fuzzy_score = fuzz.ratio(entity_name, stored_entity) / 100.0 # Fuzzy score on a scale of 0 to 1
+            # Combine the fuzzy score and similarity score
+            combined_score = fuzzy_score * score.item()
+
+            # Apply threshold if provided
+            if threshold is None or combined_score >= threshold:
+                results.append((self.keys[index], self.svalues[index], combined_score))
+
+        return results
 
 def test():
     # Example usage
@@ -82,30 +99,34 @@ def test():
         "In 1969, Neil Armstrong and Buzz Aldrin landed on the Moon as part of NASA's Apollo 11 mission.",
         "Pride and Prejudice, authored by Jane Austen, first appeared in 1813.",
         "The first photograph was captured by Joseph Nicéphore Niépce in the early 19th century.",
-        "The concept of zero as a number was developetextd in ancient India.",
-        "Twitter was launched by Jack Dorsey, Biz Stone, and Evan Williams in 2006."
+        "The concept of zero as a number was developed in ancient India.",
+        "Twitter was launched by Jack Dorsey, Biz Stone, and Evan Williams in 2006.",
+        "Frank Grove is growing Cannabis Sativa",
+        "Frank Grove lives in Tulsa",
+        "Tulsa is in Oklahoma",
+        "Frank Grove has a son named Neel Grove"
     ]
     invalid = []
 
     for text in example_sentences:
         obj, relation, subject = entity_linker.link_relations(text)
-        print(f"Object: {obj}\nRelation: {relation}\nSubject: {subject}")
+        # print(f"Object: {obj}\nRelation: {relation}\nSubject: {subject}")
         if obj and relation and subject:
             opql_memory.set(obj, relation, subject)
         else:
             invalid.append(text)
 
     # Test
-    relation = "launched"
-    entity_name = "Twitter"
+    relation = "is growing"
+    entity_name = "Frank Grove"
 
-    most_similar = opql_memory.get(entity_name, relation, k=1, threshold=0.1)
+    most_similar = opql_memory.get(entity_name, relation, k=5, threshold=.9)
 
     print("Most Similar Embeddings:")
-    for key, value, score in most_similar:
-        print("Key:", key, "Value:", value, "Score:", score)
+    for _, value, score in most_similar:
+        print("Value:", value, "Score:", score)
 
-    text = "Charles Darwin published his book On the Origin of Species in 1859."
-    obj, relation, subject = entity_linker.link_relations(text)
-    print(f"Object: {obj}\nRelation: {relation}\nSubject: {subject}")
-    print("Invalid Strings", invalid)
+    # text = "Charles Darwin published his book On the Origin of Species in 1859."
+    # obj, relation, subject = entity_linker.link_relations(text)
+    # print(f"Object: {obj}\nRelation: {relation}\nSubject: {subject}")
+    print("Invalid Strings", f"{len(invalid)} / {len(example_sentences)}")

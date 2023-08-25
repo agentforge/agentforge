@@ -1,8 +1,18 @@
 import torch, re
+from typing import List, Dict
+from pydantic import BaseModel, Field
 from agentforge.interfaces import interface_interactor
 from agentforge.utils import Parser
 from agentforge.ai.beliefs.linker import EntityLinker
 from agentforge.ai.beliefs.opql import OPQLMemory
+from agentforge.ai.beliefs.classifier import Classifier
+from agentforge.ai.agents.context import Context
+
+class QueryInterface(BaseModel):
+    text: str
+    relation: str
+    object: str
+    type: str
 
 ### Wrapper for OPQLMemory, allows the agent to learn and query from our symbolic memory
 class SymbolicMemory:
@@ -14,67 +24,15 @@ class SymbolicMemory:
         # self.db = interface_interactor.get_interface("db")
         # self.vectorstore = interface_interactor.get_interface("vectorstore")
         self.parser = Parser()
-
+        self.classifier = Classifier()
         # TODO: Move to env
         self.ATTENTION_TTL_DAYS = 7 # The TTL for attention documents is set to 7 days
 
-    def validate_classification(self, test):
-        pattern = re.compile(r'### Instruction:\s*(.*?)\s*### Input:\s*(.*?)\s*### Thought Process:\s*(.*?)\s*### Response:\s*(.*?)', re.DOTALL)
-        match = pattern.match(test)
-        return bool(match)
-
-    ### Given a query and response use a few-shot CoT LLM reponse to pull information out
-    def classify(self, query, response, prompt, context):
-        input_ = {
-            "prompt": prompt.replace("{response}", response).replace("{query}", query),
-            "generation_config": context.get('model.generation_config'), # TODO: We need to use a dedicated model
-            "model_config": context.get('model.model_config'),
-            "streaming_override": False, # sets streaming to False
-        }
-        # Disable streaming of classification output -- deepcopy so we don't effect the model_config
-        print("[PROMPT]")
-        print(input_['prompt'])
-        print("[PROMPT]")
-        llm_val = self.llm.call(input_)
-        if llm_val is not None and "choices" in llm_val:
-            response = llm_val["choices"][0]["text"]
-            response = response.replace(input_['prompt'], "")
-            for tok in ["eos_token", "bos_token"]:
-                if tok in input_["model_config"]:
-                    response = response.replace(input_["model_config"][tok],"")
-            ### Often times we do not actually get a response, but just the Chain of Thought
-            ### In this case try to rerun the LLM to get a Response
-            prompts = input_['prompt'].split("\n\n")
-            main_example = prompts[-1]
-            print("[MAIN EXAMPLE]")
-            print(main_example + "\n" + response)
-            print("[MAIN EXAMPLE]")    
-            if not self.validate_classification(main_example + "\n" + response):
-                print("[PROMPTINVALID]")
-                print(response)
-                print("[PROMPTINVALID]")
-                input_["prompt"] = input_["prompt"] + response + "\n### Response:"
-                input_["generation_config"]["max_new_tokens"] = 128 # limit so we can focus on results
-                llm_val = self.llm.call(input_)
-                response = llm_val["choices"][0]["text"]
-                response = response.replace(input_['prompt'], "")
-            if "### Response:" in response:
-                response = response.split("### Response:")[1] # TODO: This probably only really works on WizardLM models
-            response = self.parser.parse_llm_response(response)
-            print("[PROMPTX]")
-            print(response)
-            print("[PROMPTX]")
-            for tok in ["eos_token", "bos_token"]:
-                if tok in input_["model_config"]:
-                    response = response.replace(input_["model_config"][tok],"")
-            return response.split(",")
-        return []
-
     # Given a query (w/response) and context we learn an object, predicate, subject triplet
     # Returns: True/False + results if information was successfully learned or not
-    def learn(self, query, context):
+    def learn(self, query: QueryInterface, context: Context):
         prompt = context.prompts[f"{query['type']}.cot.prompt"]
-        results = self.classify(query['text'], context.get("instruction"), prompt, context)
+        results = self.classifier.classify(query['text'], context.get("instruction"), prompt, context)
         print(results)
         if len(results) == 0:
             print("Error with classification. See logs.")
@@ -100,9 +58,9 @@ class SymbolicMemory:
 
     # Unguided entity learner using old-school NLP techniques
     # Problematic! -- We need to use few-shot CoT LLMs for greater depth of reasoning.
-    def entity_learn(self, query):
+    def entity_learn(self, query: QueryInterface):
         print("Learning...", query)
-        obj, relation, subject = self.entity_linker.link_relations(query['query'])
+        obj, relation, subject = self.entity_linker.link_relations(query['text'])
         self.create_predicate(obj, relation, subject)
 
     def create_predicate(self, obj, relation, subject):
@@ -131,3 +89,7 @@ class SymbolicMemory:
         print("Most Similar Embeddings:")
         for key, value, score in most_similar:
             print("Key:", key, "Value:", value, "Score:", score)
+
+
+def test():
+    pass

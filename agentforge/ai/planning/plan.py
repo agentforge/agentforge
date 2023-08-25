@@ -42,6 +42,7 @@ class Plan:
             queries = self.planner.create_queries(goal)
             print(f"{queries=}")
             list(map(task.push, queries)) # efficiently push queries to the task
+
             context.set("response", task.activate(context, self.service))
             print(task.to_dict())
             self.task_management.save(task)

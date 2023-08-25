@@ -22,13 +22,14 @@ class Task(BaseModel):
     created_at: datetime
     updated_at: datetime
     active: bool
-    queries: Optional[Dict[str, List[Any]]] = {'queue': deque([]), 'complete': deque([]), 'active': deque([])}
+    queries: Optional[Dict[str, List[Any]]] = {'queue': deque([]),'complete': deque([]),'active': deque([]),'failed': deque([])}
 
     @classmethod
     def from_dict(cls, task_data: dict):
         t = cls(**task_data)
-        t['queries'] = {'queue': deque(t['queries']['queue']),
+        t.queries = {'queue': deque(t['queries']['queue']),
                         'complete': deque(t['queries']['complete']),
+                        'failed': deque(t['queries']['failed']),
                         'active': deque(t['queries']['active'])}
         return t
 
@@ -108,18 +109,20 @@ class Task(BaseModel):
             return self.queries['active'][0]['text']
         query = self.queries['queue'].popleft()
 
-        # We need to create a query via the LLM using the context and query
+        # # We need to create a query via the LLM using the context and query
         input = context.get_model_input()
-        prompt = context.prompts[f"{query['type']}.query.prompt"]
-        data = {
-            "goal": query['goal'],
-            "type": query['type'],
-            "detail": query['object'].replace("?",""),
-            "action": query['goal'],
-        }
-        print(query)
-        print(input)
-        input['prompt'] = context.process_prompt(prompt, data)
+        # prompt = context.prompts[f"{query['type']}.query.prompt"]
+        # data = {
+        #     "goal": query['goal'],
+        #     "type": query['type'],
+        #     "detail": query['object'].replace("?",""),
+        #     "action": query['goal'],
+        # }
+        # print(query)
+        # print(input)
+        # query = {}
+        input['prompt'] = query['text']
+        # input['prompt'] = context.process_prompt(prompt, data)
         query['text'] = llm.call(input)["choices"][0]["text"]
         print(query['text'])
         # We've got our query now activate it
@@ -128,6 +131,7 @@ class Task(BaseModel):
 
     # Only gets active query, will not activate a new one
     def get_active_query(self) -> Optional[Dict]:
+        print(self.queries) 
         if len(self.queries['active']) == 0:
             return None
         return self.queries['active'].popleft()

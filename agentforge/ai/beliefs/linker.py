@@ -18,7 +18,9 @@ class EntityLinker:
         if len(entities) >= 2:
             modified_text = text.replace(entities[0][0], "[ENT] [R1]", 1)
             modified_text = modified_text.replace(entities[1][0], "[ENT] [R2]", 1)
-            
+
+            # Split the modified text at "[ENT] [R2]" and keep everything to the left
+            modified_text = modified_text.split("[ENT] [R2]", 1)[0] + "[ENT] [R2]"
             return entities[0][0], modified_text, entities[1][0]
         else:
             return None, None, None

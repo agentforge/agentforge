@@ -122,7 +122,7 @@
     :precondition (and (planted ?plant ?location) (flowering ?plant) (alive ?plant))
     :effect(and (not (planted ?plant ?location)) (not (alive ?plant)) (not (growing ?plant)) (harvested ?plant)))
 
-  (:action dry
+  (:action dry-buds
     :parameters (?plant - plant ?curing-container - curing-container )
     :precondition (harvested ?plant)
     :effect(and (plant-drying ?plant) (plant-in-curing-container ?plant ?curing-container)))
