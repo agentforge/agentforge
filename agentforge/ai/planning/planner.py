@@ -143,7 +143,7 @@ class PlanningController:
     """
     Input - goal: The goal of the plan to be created. i.e. "growing ?plant"
     Output - A list of queries in Dictionary
-    Creates queries using PDDL Graph functionality.
+    Creates queries using PDDL Graph functionality -- this is basically where we insert out goal-state
     """
     def create_queries(self, goal: str) -> List[Dict]:
         # Get the PDDL documents
@@ -166,10 +166,10 @@ class PlanningController:
         for action_name, seed_list in seeds.items():
             for seed in seed_list:
                 seed['goal']  = goal
-                # seed['type'] = seed['type'].replace("?", "")
                 seed['action'] = action_name
                 processed_seeds.append(seed)
         return processed_seeds
+
         #     # effects = self.init_simple_effects(goal, klass)
 
         #     template = template.replace("{goal}", goal)

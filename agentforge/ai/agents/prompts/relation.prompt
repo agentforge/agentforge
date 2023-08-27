@@ -1,0 +1,41 @@
+### Instruction: Identify the semantic relationship between the two given concepts.
+### Input: "Dog, Wolf"
+### Response:
+### Thought Process:
+1. The instruction asks to identify the semantic relationship between "Dog" and "Wolf."
+2. Both are canines.
+3. A wolf is a wild ancestor of the domestic dog.
+### Result: Ancestor-Descendant
+
+### Instruction: Identify the semantic relationship between the two given concepts.
+### Input: "Square, Rectangle"
+### Response:
+### Thought Process:
+1. The instruction asks to identify the semantic relationship between "Square" and "Rectangle."
+2. Both are quadrilaterals.
+3. A square is a specific type of rectangle where all sides are equal.
+### Result: Subset
+
+### Instruction: Identify the semantic relationship between the two given concepts.
+### Input: "Car, Gasoline"
+### Response:
+### Thought Process:
+1. The instruction asks to identify the semantic relationship between "Car" and "Gasoline."
+2. Cars often use gasoline for fuel.
+3. Gasoline powers many types of cars.
+### Result: Fuel-PoweredBy
+
+### Instruction: Identify the semantic relationship between the two given concepts.
+### Input: "Human, Oxygen"
+### Response:
+### Thought Process:
+1. The instruction asks to identify the semantic relationship between "Human" and "Oxygen."
+2. Humans breathe oxygen for survival.
+3. Oxygen is essential for human respiration.
+### Result: EssentialFor-Survival
+
+### Instruction: Identify the semantic relationship between the two given concepts.
+### Input: "{object}, {subject}"
+### Response:
+### Thought Process:
+1. The instruction asks to identify the semantic relationship between "{object}" and "{subject}."

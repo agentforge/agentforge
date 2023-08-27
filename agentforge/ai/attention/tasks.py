@@ -7,11 +7,13 @@ from pydantic import BaseModel, Field
 from datetime import datetime
 from agentforge.ai.agents.context import Context
 from collections import deque
+from agentforge.utils import logger
 
 """
 ### Basic Task Model
 Allows us to return a Task model from this module
 Task manages its own queries and attention
+A task is something like -- help user plan their garden, help user plan their vacation, etc.
 """
 class Task(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()), alias="_id")
@@ -104,30 +106,12 @@ class Task(BaseModel):
 
     Output - str:  Adds a query to the active list from the queue by calling the LLM
     """
-    def activate(self, context, llm) -> str:
+    def activate(self) -> str:
         if len(self.queries['active']) > 0:
-            return self.queries['active'][0]['text']
+            return self.queries['active'][0]
         query = self.queries['queue'].popleft()
-
-        # # We need to create a query via the LLM using the context and query
-        input = context.get_model_input()
-        # prompt = context.prompts[f"{query['type']}.query.prompt"]
-        # data = {
-        #     "goal": query['goal'],
-        #     "type": query['type'],
-        #     "detail": query['object'].replace("?",""),
-        #     "action": query['goal'],
-        # }
-        # print(query)
-        # print(input)
-        # query = {}
-        input['prompt'] = query['text']
-        # input['prompt'] = context.process_prompt(prompt, data)
-        query['text'] = llm.call(input)["choices"][0]["text"]
-        print(query['text'])
-        # We've got our query now activate it
         self.queries['active'].append(query)
-        return query['text']
+        return query
 
     # Only gets active query, will not activate a new one
     def get_active_query(self) -> Optional[Dict]:

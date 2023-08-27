@@ -4,12 +4,13 @@ from agentforge.ai.beliefs.symbolic import SymbolicMemory
 from agentforge.ai.attention.tasks import TaskManager
 from agentforge.utils.stream import stream_string
 from agentforge.interfaces import interface_interactor
+from agentforge.utils import logger
 
 ### PLANNING SUBROUTINE: Executes PDDL plans with help from LLM resource
 class Plan:
     ### Executes PDDL plans with help from LLM resource
     def __init__(self, domain: str, goals: List[str]):
-        self.service = interface_interactor.get_interface("llm")
+        self.llm = interface_interactor.get_interface("llm")
         self.planner = PlanningController(domain)
         self.task_management = TaskManager()
         self.domain = domain
@@ -42,8 +43,34 @@ class Plan:
             queries = self.planner.create_queries(goal)
             print(f"{queries=}")
             list(map(task.push, queries)) # efficiently push queries to the task
+            
+            ### Get activated query if any
+            query = task.activate(context)
 
-            context.set("response", task.activate(context, self.service))
+            # # We need to create a query via the LLM using the context and query
+            input = context.get_model_input()
+            prompt = context.prompts[f"{query['type']}.query.prompt"]
+            data = {
+                "goal": query['goal'],
+                "type": query['type'],
+                "detail": query['object'].replace("?",""),
+                "action": query['action'],
+            }
+
+            input['prompt'] = context.process_prompt(prompt, data)
+            query['text'] = self.llm.call(input)["choices"][0]["text"].replace(input['prompt'], "")
+
+            ## Capture Relational Information
+            new_prompt = context.prompts["relation.prompt"]
+
+            input['prompt'] = new_prompt.replace("{object}", query['object']).replace("{subject}", "User")
+
+            query['relation'] = self.llm.call(input)["choices"][0]["text"].replace(input['prompt'], "")
+
+            logger.info(f"{query=}")
+            raise ValueError("STOP")
+            context.set("response", query['text'])
+
             print(task.to_dict())
             self.task_management.save(task)
 

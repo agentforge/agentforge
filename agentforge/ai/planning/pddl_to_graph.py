@@ -377,6 +377,10 @@ class QueryGenerator:
     # Function to extract the last variable from a string or dictionary expression
     def extract_last_variable_from_expression(self, expression):
         logger.info("[EXTRACTING] " + expression)
+        if expression in self.attributes:
+            return self.attributes[expression]
+        else:
+            raise ValueError("FAIL")
         if isinstance(expression, dict):
             expression_str = " ".join([k] + expression[k] for k in expression)
         else:
@@ -390,13 +394,9 @@ class QueryGenerator:
         action = [i for i in graph.successors(node)]
         logger.info(f"{node=}")
         logger.info(f"{action=}")
-        variable = self.extract_last_variable_from_expression(node)
-        if variable:
-            if len(action[0].split(" ")) > 1:
-                key = "edge"
-            else:
-                key = "action"
-            objects[variable].append({key: action, "variable": variable})
+        variables = self.extract_last_variable_from_expression(node)
+        for variable in variables:
+            objects[variable].append({"successors": action, "variable": variable})
 
     # Updated function to run on a root edge
     def run_edge(self, objects, graph, edges):
@@ -404,15 +404,14 @@ class QueryGenerator:
             logger.info(f"[EDGE] {edge}")
             action = [i for i in graph.successors(self.root_element(edge))]
             logger.info(f"EDGE ACTION: {action}")
-            variable = self.extract_last_variable_from_expression(edge)
-            if variable:
-                print(variable)
-                if len(action[0].split(" ")) > 1:
-                    objects[variable].append({"predicate": action[0]})
-                else:
-                    objects[variable].append({"action": action[0]})
-        else:
-                print("NO EDGE?", edge)
+            variables = self.extract_last_variable_from_expression(edge)
+            for variable in variables:
+                if variable:
+                    print(variable)
+                    if len(action[0].split(" ")) > 1:
+                        objects[variable].append({"predicate": action[0]})
+                    else:
+                        objects[variable].append({"action": action[0]})
 
     # Updated function to evaluate a node
     def eval_node(self, objects, graph, node):
@@ -445,7 +444,6 @@ class QueryGenerator:
             edge = (predecessor, node)
             self.eval_edge(objects, graph, edge)
             self.trace_graph(objects, graph, predecessor, visited_nodes)
-
 
     # Lookup type for this objeect, drilling down if necessary
     def lookup_type(self, type_klasses: List, types: Dict, key: str) -> str:
@@ -487,13 +485,24 @@ class QueryGenerator:
         logger.info(json.dumps(types))
 
         G, dot = self.create_graph(actions, preconditions, effects)
+        attributes = nx.get_edge_attributes(G, 'variables')
+        # logger.info(attributes)
+        # raise ValueError("attributes")
+        self.attributes = defaultdict(list)
+        self.effects = defaultdict(list)
+        for k,v in attributes.items():
+            for item in k:
+                self.attributes[item].append(v)
+                self.effects[v].append(item)
+        logger.info("ATTRIBUTES...   ")
+        logger.info(self.attributes)
         self.visualize_graph(dot)
 
         # Trace the graph starting from "growing ?seedling"
         self.objects_store = {}
         objects = self.trace_pddl_graph(objects, G, seed)
         
-        logger.info(objects)
+        logger.info(f"{objects=}")
         logger.info(len(objects))
         # prompts = generate_all_prompts(actions, predicates, effects, preconditions)
         final_queries = {}
@@ -506,24 +515,34 @@ class QueryGenerator:
         for prompt in prompts["prepare"]:
             print(prompt)
 
-        raise ValueError("STOP")
-        final_prompts = defaultdict(list)
-        for obj, action_list in objects.items():
-            parameter_type = self.parameter_types[obj]
-            type_ = self.lookup_type(type_klasses, types, parameter_type)
-            for action in action_list:
-                if "predicate" in action:
-                    action_name = action["predicate"]
-                else:
-                    action_name = action["action"]
-                if action_name in prompts:
-                    if action_name not in final_prompts:
-                        final_prompts[action_name].append({'text': prompts[action_name], "type": type_, "class": parameter_type})
+        logger.info("parameter_types")
+        logger.info(self.parameter_types)
 
-        # print(len(prompts)
-        logger.info("FINAL PROMPTS")
-        logger.info(len(final_prompts))
-        return final_prompts
+        final_queries = defaultdict(list)
+        def process_prompt(obj):
+            for action in action_list:
+                logger.info(action)
+                action_name = None
+                if "action" in action and action["action"] in actions:
+                    action_name = action["action"]
+                if action_name and action_name in prompts:
+                    if action_name not in final_queries:
+                        for prompt in prompts[action_name]:
+                            parameter_type = self.parameter_types[prompt.split(" ")[-1]]
+                            type_ = self.lookup_type(type_klasses, types, parameter_type)
+                            final_queries[action_name].append({'text': prompt, "type": type_, "object": obj})
+                        # final_prompts[action_name].append({'text': prompts[action_name], "type": type_})
+
+        for obj, action_list in objects.items():
+            if len(obj.split(" ")) > 1:
+                for o in obj.split(" "):
+                    process_prompt(o)
+            else:
+                process_prompt(obj)
+
+        logger.info("final_queries")
+        logger.info(final_queries)
+        return final_queries
 
         # final_objs = {}
         # for k,v in objects.items():

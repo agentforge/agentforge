@@ -32,7 +32,8 @@ class SymbolicMemory:
     # Returns: True/False + results if information was successfully learned or not
     def learn(self, query: QueryInterface, context: Context):
         prompt = context.prompts[f"{query['type']}.cot.prompt"]
-        results = self.classifier.classify(query['text'], context.get("instruction"), prompt, context)
+        args = {"query": query['text'], "response": context.get("instruction")}
+        results = self.classifier.classify(args, prompt, context)
         print(results)
         if len(results) == 0:
             print("Error with classification. See logs.")
@@ -45,7 +46,7 @@ class SymbolicMemory:
                 self.create_predicate("User", query["relation"], subject) # TODO: Need to pull user name
             return True, results
         # For Boolean the results are True, False, or None. Subject is capture in query context.
-        elif query['type'] == "boolean":
+        elif query['type'] == "boolean":    
             if results[0].lower() in  ["true", "yes", "1"]:
                 self.create_predicate("User", query["relation"], query["object"]) # TODO: Need to pull user name
                 return True, results

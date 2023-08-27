@@ -1,36 +1,41 @@
 ### Instruction: Classify the text into a single or a list of plants.
 ### Input: "What kind of plants do you want to grow? I want to grow peaches."
+### Response:
 ### Thought Process:
 1. The instruction asks to classify the text.
 2. The text is about growing plants.
 3. "Peaches" is mentioned as the plant someone wants to grow.
-### Response: peaches
+### Result: peaches
 
 ### Instruction: Classify the text into a single or a list of plants.
 ### Input: "What kind of plants do you want to grow? Actually let's not"
+### Response:
 ### Thought Process:
 1. The instruction asks to classify the text.
 2. The text is about growing plants.
 3. No specific plant is mentioned.
-### Response: None
+### Result: None
 
 ### Instruction: Classify the text into a single or a list of plants.
 ### Input: "What kind of plants do you want to grow? Let's grow beets and okra."
+### Response:
 ### Thought Process:
 1. The instruction asks to classify the text.
 2. The text is about growing plants.
 3. "Beets" and "okra" are mentioned as plants someone wants to grow.
-### Response: beets, okra
+### Result: beets, okra
 
 ### Instruction: Classify the text into a single or a list of plants.
 ### Input: "What kind of plants do you want to grow? Hold on."
+### Response:
 ### Thought Process:
 1. The instruction asks to classify the text.
 2. The text is about growing plants.
 3. No specific plant is mentioned.
-### Response: None
+### Result: None
 
 ### Instruction: Classify the following into a single or a list of plants. If no plants are specified, return "None".
 ### Input: {query} {response}
+### Response:
 ### Thought Process:
 1. The instruction asks to classify the text.

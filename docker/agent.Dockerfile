@@ -18,9 +18,8 @@ RUN apt-get update && apt install g++-10 && apt-get install build-essential gdb 
 
 RUN pip install bcrypt pymongo
 RUN pip install inflect
-RUN pip install twilio
+RUN pip install twilio 
 RUN pip3 install python-jose
-
 
 WORKDIR /app/agentforge/agentforge/api
 

@@ -21,7 +21,7 @@ class Respond:
         task = context.get("task")
         # query_engine = QueryEngine(context.get('input.user_id'), context.get('input.model_id'))
         if task is not None:
-            query = task.activate(context, self.service)
+            query = task.activate()
             print("[QUERY] asking a query", query)
             # stream/string('channel', query) # TODO: Make channel user specific
             context.set("response", query)
