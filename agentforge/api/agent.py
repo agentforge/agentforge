@@ -137,7 +137,7 @@ def stream(channel: str):
                 if message and message['type'] == 'message' and message['data'] != b'<|endofvideo|>':
                     try:
                         data = json.loads(message['data']) 
-                        val = data['data']
+                        val = data['data'].decode('utf-8')
                         _id = data['id']
                     except Exception as e:
                         print(e)
