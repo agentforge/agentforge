@@ -1,3 +1,4 @@
 ### Instruction
-Given the user's goal of <|goal|>, the question we need to ask is not specific enough. We want to know specifically how many <|detail|> they have, want or need based on their stated goal. Can you please reformulate the question to ask the user exactly how manty <|detail|>? The expected response type is <|type|>.
-### Response
+<|biography|> Your current task is to create a question for the Human.
+Given the goal of <|goal|> <|object|>, what question would you ask to determine how many <|condition|> for the <|object|> ? The response from the Human will be a <|type|>.
+### Response:

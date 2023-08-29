@@ -4,7 +4,6 @@ from agentforge.ai.routines.planning import PlanningRoutine
 from agentforge.ai.beliefs.memory import Memory
 from agentforge.ai.agents.statemachine import StateMachine
 from agentforge.ai.agents.context import Context
-from agentforge.ai.reasoning.query_engine import QueryEngine
 
 import threading
 

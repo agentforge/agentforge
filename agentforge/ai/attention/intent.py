@@ -81,7 +81,7 @@ class Intent:
         
 
     def execute(self, context: Context) -> Dict[str, Any]:
-       
+        print('[INTENT]')
         user_id = context.get('input.user_id')
         agent_id = context.get('input.model_id')
 
@@ -93,12 +93,15 @@ class Intent:
             print("[INTENT] active task:", active_task.name)
             context.set("task", active_task)
             active_task.run(context)
+            return context
 
         # else let's see if the user is requesting a task
         task = self.text_intent(context, user_id, agent_id)
-        if task is None:
+        print(f"[INTENT] task: {task}")
+        if task is None:    
             # just banter, no tasks here!
             return context
         else:
             context.set("task", task)
             task.run(context)
+            return context

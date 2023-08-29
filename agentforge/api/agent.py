@@ -21,6 +21,19 @@ class AgentResponse(BaseModel):
 
 router = APIRouter()
 # redis_store = interface_interactor.create_redis_connection()
+import os
+import nltk
+
+# Function to check if wordnet is downloaded
+def is_wordnet_downloaded(nltk_data_path):
+    for path in nltk.data.path:
+        if os.path.exists(os.path.join(path, 'corpora/wordnet.zip')):
+            return True
+    return False
+
+# Check if wordnet is downloaded, if not, download it
+if not is_wordnet_downloaded(nltk.data.path):
+    nltk.download('wordnet')
 
 @router.get("/", operation_id="helloWorld", dependencies=[Depends(get_api_key)])
 def hello() -> AgentResponse:

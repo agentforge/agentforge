@@ -34,7 +34,7 @@
 3. Oxygen is essential for human respiration.
 ### Result: EssentialFor-Survival
 
-### Instruction: Identify the semantic relationship between the two given concepts.
+### Instruction: Considering the goal {goal} identify the semantic relationship between the two given concepts.
 ### Input: "{object}, {subject}"
 ### Response:
 ### Thought Process:

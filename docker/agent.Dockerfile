@@ -16,7 +16,7 @@ RUN apt-get update && apt install g++-10 && apt-get install build-essential gdb 
     cmake ../../src DCMAKE_BUILD_TYPE=RELEASE && \
     make
 
-RUN pip install bcrypt pymongo
+RUN pip install bcrypt pymongo word2number
 RUN pip install inflect
 RUN pip install twilio 
 RUN pip3 install python-jose

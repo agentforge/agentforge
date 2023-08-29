@@ -2,7 +2,7 @@ import threading
 from typing import Dict, Any, List, Protocol, Optional, Callable
 from agentforge.ai.routines.routine import Routine
 from agentforge.exceptions import BreakRoutineException
-
+from agentforge.utils import logger
 from queue import Queue
 
 class Node:
@@ -17,7 +17,13 @@ class Node:
             print(dependency, " finished..")
         try:
             print("EXECUTING NODE", self.execute)
+            logger.info("[NODE]")
+            logger.info(context)
+            logger.info("[/NODE]")
             context = self.execute(context)
+            logger.info("[NODE]")
+            logger.info(context)
+            logger.info("[/NODE]")
 
         except BreakRoutineException as interruption:
             routine = tasks[str(interruption)]

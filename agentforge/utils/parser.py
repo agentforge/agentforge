@@ -6,7 +6,7 @@ from pygments.util import ClassNotFound
 from pygments.formatters import HtmlFormatter
 from pygments.lexers.special import TextLexer
 
-PREFIXES = ["My response would be:", "My response is:", "### Response:"]
+PREFIXES = ["My response would be:", "My response is:", "### Response:", "<s>"]
 POSTFIXES = ['### Thought',
         '# End',
         '# end',
@@ -34,7 +34,9 @@ POSTFIXES = ['### Thought',
         "// output",
         "Note:",
         "</s>",
-        "<|endoftext|>"
+        "<|endoftext|>",
+        "##",
+        "###"
       ]
 
 def clean_newlines(self, input_string: str):

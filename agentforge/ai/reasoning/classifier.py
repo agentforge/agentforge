@@ -53,9 +53,10 @@ class Classifier:
               llm_val = self.llm.call(input_)
               response = llm_val["choices"][0]["text"]
               response = response.replace(input_['prompt'], "")
-          if "### Response:" in response:
+          if "Response:" in response:
               response = response.split("Response:")[-1] # TODO: This probably only really works on WizardLM models
-          response = self.parser.parse_llm_response(response)
+          response = response.split("\n")[0] # get rid of additional context usually seperated by newlines
+          response = self.parser.parse_llm_response(response).strip()
           logger.info("[PROMPTX]")
           logger.info(response)
           logger.info("[PROMPTX]")

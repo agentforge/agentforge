@@ -1,41 +1,36 @@
-### Instruction: Classify the text into a single or a list of plants.
-### Input: "What kind of plants do you want to grow? I want to grow peaches."
-### Response:
+### Instruction: Classify the text into a single or a list of datatype strings.
+### Input: "What kind of strings do you want for <|verb|>? I want to <|verb|> peaches."
 ### Thought Process:
 1. The instruction asks to classify the text.
-2. The text is about growing plants.
-3. "Peaches" is mentioned as the plant someone wants to grow.
-### Result: peaches
+2. The text is about <|verb|> strings.
+3. "Peaches" is mentioned as the string someone wants to <|verb|>.
+### Response: peaches
 
-### Instruction: Classify the text into a single or a list of plants.
-### Input: "What kind of plants do you want to grow? Actually let's not"
-### Response:
+### Instruction: Classify the text into a single or a list of strings.
+### Input: "What kind of strings do you want for <|verb|>? Actually let's not"
 ### Thought Process:
 1. The instruction asks to classify the text.
-2. The text is about growing plants.
-3. No specific plant is mentioned.
-### Result: None
+2. The text is about <|verb|> strings.
+3. No specific string is mentioned.
+### Response: None
 
-### Instruction: Classify the text into a single or a list of plants.
-### Input: "What kind of plants do you want to grow? Let's grow beets and okra."
-### Response:
+### Instruction: Classify the text into a single or a list of strings.
+### Input: "What kind of strings do you want for <|verb|>? Let's <|verb|> beets and okra."
 ### Thought Process:
 1. The instruction asks to classify the text.
-2. The text is about growing plants.
-3. "Beets" and "okra" are mentioned as plants someone wants to grow.
-### Result: beets, okra
+2. The text is about <|verb|> strings.
+3. "Beets" and "okra" are mentioned as strings someone wants to <|verb|>.
+### Response: beets, okra
 
-### Instruction: Classify the text into a single or a list of plants.
-### Input: "What kind of plants do you want to grow? Hold on."
-### Response:
+### Instruction: Classify the text into a single or a list of strings.
+### Input: "What kind of strings do you want for <|verb|>? Hold on."
 ### Thought Process:
 1. The instruction asks to classify the text.
-2. The text is about growing plants.
-3. No specific plant is mentioned.
-### Result: None
+2. The text is about <|verb|> strings.
+3. No specific string is mentioned.
+### Response: None
 
-### Instruction: Classify the following into a single or a list of plants. If no plants are specified, return "None".
-### Input: {query} {response}
-### Response:
+### Instruction: Classify the following into a single or a list of strings. If no strings are specified, return "None".
+### Input: "What kind of strings do you want for <|verb|>? <|response|>"
 ### Thought Process:
 1. The instruction asks to classify the text.

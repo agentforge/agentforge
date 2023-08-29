@@ -1,3 +1,4 @@
 ### Instruction
-Given the user's goal of <|goal|>, the question we need to ask is not specific enough. We want to know specifically what <|detail|> they are interested in <|action|>. Can you please reformulate the question to ask the user exactly what <|detail|> they want to <|action|>? The expected response type is <|type|>.
-### Response
+<|biography|> Today you are a simple query generation assistant. Your current task is to create a single question based on the following input. Do not include additional questions or remarks. Do not note that you have rephrased the original text.
+###Input Given the goal of <|goal|> <|object|>, what question would you ask to determine <|condition|> for the <|object|> in question? Create a single question that captures this context and ask the Human.
+### Response:

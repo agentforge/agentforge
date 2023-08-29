@@ -1,6 +1,5 @@
 from agentforge.ai.communication.respond import Respond
 from agentforge.ai.observation.parse import Parse
-from agentforge.ai.reasoning.query import AskQuery
 from agentforge.ai.communication.speak import Speak
 from agentforge.ai.communication.lipsync import Lipsync
 from agentforge.ai.beliefs.remember import Remember
@@ -16,7 +15,6 @@ class ReactiveRoutine(Routine):
         parse = Node(Parse().execute, [])
         recall = Node(Recall().execute, [parse])
         intent = Node(Intent().execute, [parse])
-        # query = Node(AskQuery().execute, [parse, intent])
         speak = Node(Speak().execute, [recall, parse, intent])
         respond = Node(Respond().execute, [recall, parse, intent])
         remember = Node(Remember().execute, [speak, respond])
@@ -24,7 +22,6 @@ class ReactiveRoutine(Routine):
             parse,
             recall,
             intent,
-            # query,
             respond,
             speak,
             remember,

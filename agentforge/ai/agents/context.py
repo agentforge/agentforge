@@ -1,7 +1,7 @@
 import json, uuid, os
 from typing import Dict
 from agentforge.utils import Parser
-from agentforge.utils import AbortController
+from agentforge.utils import AbortController, logger
 
 """
     Context Class - Shared State for Agent Subroutines
@@ -56,6 +56,8 @@ class Context:
     # as a delimiter and then recursively set the value
     # in the nested dictionary structure.
     def set(self, key: str, value):
+        if key == "response":
+            logger.info(f"Setting response: {value}")
         keys = key.split('.')
         target = self.context_data
         for k in keys[:-1]:
@@ -73,11 +75,16 @@ class Context:
 
     def pretty_print(self, key=None):
         if key is None:
-            return json.dumps(self.context_data, indent=4)
+            return json.dumps(self.context_data, default=self._json_serializable, indent=4)
         if key in self.context_data:
-            return json.dumps(self.context_data[key], indent=4)
+            return json.dumps(self.context_data[key], default=self._json_serializable, indent=4)
         else:
             raise ValueError(f"Key {key} not found in context")
+
+    def _json_serializable(self, obj):
+        if hasattr(obj, "name"):
+            return {"name": obj.name}
+        raise TypeError(f"Object of type {obj.__class__.__name__} is not JSON serializable")
 
     def has_key(self, key: str) -> bool:
         keys = key.split('.')

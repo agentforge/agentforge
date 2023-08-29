@@ -1,36 +1,43 @@
-from agentforge.ai.reasoning.query_engine import QueryEngine
 from typing import Any, Dict
 from agentforge.interfaces import interface_interactor
-from agentforge.utils.stream import stream_string
 from agentforge.ai.agents.context import Context
 
-class AskQuery:
+
+"""
+  Query: Generates a query for the user to respond to and any other query reasoning
+
+"""
+class Query:
     def __init__(self):
-      self.service = interface_interactor.get_interface("llm")
+      self.llm = interface_interactor.get_interface("llm")
 
-    def execute(self, context: Context) -> Dict[str, Any]:
-      # If this is in response to a query from the end-user, parse the response and input into OPQL
-      # raise Exception(context)
-      user_id = context.get('input.user_id')
-      session_id = context.get('input.id')
+    """
+    Input - context: Context object
+            query: Dict object
 
-      # Initialize the query engine for this user and session and run it
-      query_engine = QueryEngine(user_id, session_id)
+    Output - Dict:  Adds a query to the active list from the queue by calling the LLM
+    """
 
-      # First we need to check if there are existing responded-to queries that need
-      # to be processed. If so we process them here into OPQL triplets
-      queries = query_engine.get_queries()
-      if len(queries) == 0 and context.has_key("queries"):
-         # hack fix for mongo race condition? argh
-         queries = context.get("queries")
-      # if query exists and is a response, present it
-      for query in queries:
-          if query is not None:
-              print("asking ", query)
-              query_engine.update_query(sent=True)
-              stream_string(query['query'])
-              context.set("response", query['query'])
+    def get(self, context: Context, query: Dict) -> Dict[str, Any]:
+        # # We need to create a query via the LLM using the context and query
+        input = context.get_model_input()
+        prompt = context.prompts[f"{query['type']}.query.prompt"]
+        data = {
+            "condition": query['text'],
+            "goal": query['goal'],
+            "type": query['type'],
+            "object": query['object'].replace("?",""),
+            "action": query['action'],
+            "biography": context.get('model.persona.biography'),
+        }
 
-              # Return new context to the user w/ response
-              return context
-      return context
+        # custom generation settings for query
+        input['generation_config']['max_new_tokens'] = 512
+        input['generation_config']['stopping_criteria'] = input['generation_config']['stopping_criteria'] + ",\n"
+
+        input['prompt'] = context.process_prompt(prompt, data)
+        query['condition'] = data['condition']
+        query['text'] = self.llm.call(input)["choices"][0]["text"].replace(input['prompt'], "")
+        query['text'] = query['text'].split("\n")[0] # Only take the first line
+        context.set("response", query['text'])
+        return query

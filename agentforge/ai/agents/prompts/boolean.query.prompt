@@ -1,3 +1,4 @@
 ### Instruction
-Given the user's goal of <|goal|>, the question we need to ask is not specific enough. We want to know if they possess or have the ability to possess <|detail|>. Can you please reformulate the question to ask the user if they have access to a <|detail|>? Only provide a single response to this instruction.
-### Response
+<|biography|> Your current task is to create a question for the Human.
+Given the goal of <|goal|> <|object|>, what question would you ask to determine yes or no, a boolean, <|condition|> for the <|object|> ? The response from the Human will be a <|type|>.
+### Response:

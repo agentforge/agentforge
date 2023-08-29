@@ -6,10 +6,22 @@ from graphviz import Digraph
 import re, json
 from agentforge.utils import logger
 
+"""
+Extracts the PDDL dependency graph from the given domain
+creates a visualisation of the graph, backtracks through the graph
+to find the root nodes and edges, and then generates seed queries
+based on the root nodes and edges
 
-class QueryGenerator:
-    def __init__(self):
-        pass
+The seed queries are then used to generate prompts for the user
+"""
+
+# TODO: Add a function to serialize/deserialize planning graphs to/from JSON
+# TODO: Simplify to use a cached version of the graphs
+# TODO: Alter eval node/edge functions to query knowledge base
+class PDDLGraph:
+    def __init__(self, domain_file, problem_file):
+        self.domain_file = domain_file
+        self.problem_file = problem_file
 
     def loads(self, actions, predicates, effects):
         self.actions = actions
@@ -30,26 +42,6 @@ class QueryGenerator:
                     queries.append(f"{key} {value_str}")
         return queries
 
-    def generate_precondition_prompt(self, action_name, precond_str):
-        prompt_context = f"""
-        You are an AI assistant aware of various tasks and their requirements. Here are the details of the tasks and conditions:
-
-        Actions:
-        {self.actions[action_name]}
-
-        Predicates:
-        {self.predicates}
-
-        Precondition for '{action_name}':
-        {precond_str}
-
-        Effects:
-        {self.effects[action_name]}
-
-        You need to inquire about the requirements for the action '{action_name}'. Frame a question that encompasses the relationships in the precondition.
-        """
-        return prompt_context
-
     def generate_all_prompts(self, preconditions):
         prompts = defaultdict(list)
         logger.info("generate_all_prompts")
@@ -59,7 +51,6 @@ class QueryGenerator:
             logger.info(f"{len(queries)}")
             logger.info(f"{queries}")
             for query in queries:
-                # prompt = self.generate_precondition_prompt(action_name, query)
                 prompts[action_name].append(query)
         return prompts
 
@@ -155,15 +146,6 @@ class QueryGenerator:
         for action, effect in effects.items():
             self.add_effects(effect, action, G, dot)
 
-        # Additional links
-        # for action, effect_list in effects.items():
-        #     for effect_key, val in effect_list.items():
-        #         valid1 = effect_key in addtl_links.keys()
-        #         if not valid1:
-        #             continue
-        #         valid2 = val != addtl_links[effect_key][effect_key]
-        #         if valid1 and valid2:
-        #             add_edge(G, effect_key + " " + val[0], effect_key + " " + addtl_links[effect_key][effect_key][0], label="polymorphic")
         logger.info(G.nodes(data=True))  # Attributes of all nodes
         return G, dot
 
@@ -339,9 +321,9 @@ class QueryGenerator:
                 
         return predicates
 
-    def extract_pddl_info(self, domain_file, problem_file):
+    def extract_pddl_info(self):
         # Initialize the DomainProblem with the given domain and problem files
-        domprob = DomainProblem(domain_file, problem_file)
+        domprob = DomainProblem(self.domain_file, self.problem_file)
 
         # Extracting all actions (operators)
         actions = {}
@@ -353,15 +335,15 @@ class QueryGenerator:
             }
 
         # Extracting all predicates (this may require additional parsing logic based on the PDDL structure)
-        predicates = self.extract_predicates(domain_file)
+        predicates = self.extract_predicates(self.domain_file)
 
         # You may add additional extraction logic for other elements of the PDDL files here
-        effects = self.extract_effects(domain_file)
+        effects = self.extract_effects(self.domain_file)
 
-        preconditions = self.extract_preconditions(domain_file)
+        preconditions = self.extract_preconditions(self.domain_file)
 
         # Test the further adjusted extract_types function with the given PDDL file
-        types = self.extract_types(domain_file)
+        types = self.extract_types(self.domain_file)
 
 
         return actions, predicates, effects, preconditions, types
@@ -452,7 +434,7 @@ class QueryGenerator:
         elif key in types and types[key] in types:
             return self.lookup_type(type_klasses, types, types[key])
 
-    def get_seed_queries(self, seed: str, domain_file: str, problem_file: str):
+    def get_seed_queries(self, seed: str):
         # Dictionary to keep track of variable types
         self.parameter_types = {}
         type_klasses = ["boolean", "object", "numeric", "string", "array", "null"]
@@ -460,12 +442,11 @@ class QueryGenerator:
         # Dictionary to keep track of objects and their corresponding unique root nodes/edges
         objects = defaultdict(list)
 
-        query_generator = QueryGenerator()
-
         # Extracting the information from the PDDL 2.1 files
-        actions, predicates, effects, preconditions, types = self.extract_pddl_info(domain_file, problem_file)
+        actions, predicates, effects, preconditions, types = self.extract_pddl_info()
 
-        query_generator.loads(actions, predicates, effects)
+        # Load into our 
+        self.loads(actions, predicates, effects)
 
         # Printing the extracted information
         print("Actions:")
@@ -508,7 +489,7 @@ class QueryGenerator:
         final_queries = {}
 
         # Generate the prompts
-        prompts = query_generator.generate_all_prompts(preconditions)
+        prompts = self.generate_all_prompts(preconditions)
         logger.info(prompts)
 
         # Print the prompts for the "prepare" action as examples
@@ -530,8 +511,7 @@ class QueryGenerator:
                         for prompt in prompts[action_name]:
                             parameter_type = self.parameter_types[prompt.split(" ")[-1]]
                             type_ = self.lookup_type(type_klasses, types, parameter_type)
-                            final_queries[action_name].append({'text': prompt, "type": type_, "object": obj})
-                        # final_prompts[action_name].append({'text': prompts[action_name], "type": type_})
+                            final_queries[action_name].append({'text': prompt, "type": type_, "object": parameter_type})
 
         for obj, action_list in objects.items():
             if len(obj.split(" ")) > 1:
@@ -543,53 +523,3 @@ class QueryGenerator:
         logger.info("final_queries")
         logger.info(final_queries)
         return final_queries
-
-        # final_objs = {}
-        # for k,v in objects.items():
-        #     final_objs[k] = {"class": parameter_type, "predicates": v, "type": f"{type_}"}
-        #     if parameter_type in types:
-        #         final_objs[k]["parent"] = types[parameter_type]
-
-
-    # Function to generate prompt for a specific precondition
-    # def generate_precondition_prompt(actions, predicates, effects, action_name, precond_str):
-    #     prompt_context = f"""
-    #     You are an AI assistant aware of various tasks and their requirements. Here are the details of the tasks and conditions:
-
-    #     Actions:
-    #     {actions[action_name]}
-
-    #     Predicates:
-    #     {predicates}
-
-    #     Precondition for '{action_name}':
-    #     {precond_str}
-
-    #     Effects:
-    #     {effects[action_name]}
-
-    #     You need to inquire about the requirements for the action '{action_name}'. Frame a question that encompasses the relationships in the precondition.
-    #     """
-    #     return prompt_context
-
-    # def process_precondition(key, value, precond_str, parent=None):
-    #     if key == "and":
-    #         precond_str += " AND ".join([str(v) for v in value])
-    #     elif key == "or":
-    #         precond_str += " OR ".join([str(v) for v in value])
-    #     elif key == "not":
-    #         precond_str += " NOT " + str(value)
-    #     else:
-    #         precond_str += str(value)
-    #     return precond_str
-
-    # # Function to generate all prompts for the given preconditions
-    # def generate_all_prompts(actions, predicates, effects, preconditions):
-    #     prompts = defaultdict(list)
-    #     for action_name, precond in preconditions.items():
-    #         for key, value in precond.items():
-    #             precond_str = process_precondition(key, value, "")
-    #             p = generate_precondition_prompt(actions, predicates, effects, action_name, precond_str)
-    #             prompts[action_name].append(p)
-    #     return prompts
-

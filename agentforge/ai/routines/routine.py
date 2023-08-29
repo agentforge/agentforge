@@ -4,6 +4,9 @@ from typing import Dict, Any, Protocol, List, Optional
 from agentforge.exceptions import SubroutineException
 from agentforge.interfaces import interface_interactor
 import traceback
+from agentforge.utils import logger
+from agentforge.ai.agents.context import Context
+
 
 ### Describes a routine, i.e. going to the grocery store or reacting to user input
 ### A routine is a collection of subroutines with a specific order
@@ -39,8 +42,9 @@ class Routine():
             traceback.print_exc()
   
     # Run routine, each iteration of cognitive stack check to see if we need to divert the task
-    def run(self, context: Optional[Dict[str, Any]]) -> Dict[str, Any]:
+    def run(self, context: Context) -> Dict[str, Any]:
         for subroutine in self.subroutines:
-            print(subroutine)
+            logger.info("[SUBROUTINE CONTEXT]")
+            logger.info(context)
             context = subroutine.execute(context)
         return context

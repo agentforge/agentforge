@@ -5,6 +5,10 @@ from agentforge.ai.attention.tasks import TaskManager
 from agentforge.utils.stream import stream_string
 from agentforge.interfaces import interface_interactor
 from agentforge.utils import logger
+from agentforge.ai.planning.pddl import PDDLGraph
+from agentforge.ai.reasoning.query import Query
+from agentforge.ai.reasoning.relation import Relation
+from agentforge.ai.agents.context import Context
 
 ### PLANNING SUBROUTINE: Executes PDDL plans with help from LLM resource
 class Plan:
@@ -16,7 +20,30 @@ class Plan:
         self.domain = domain
         self.goals = goals
 
-    def execute(self, context: Dict[str, Any]) -> Dict[str, Any]:
+    """
+        Gether information phase of the planning task
+        -- gather from user, environment, and memory
+    """
+    def gather(self, goal: str) -> List[Dict[str, Any]]:
+        # Creates queries for the planning task
+        domain_file = self.planner.config.domain_pddl_file_path
+        problem_file = self.planner.config.domain_pddl_problem_path
+
+        q = PDDLGraph(domain_file, problem_file)
+        seeds = q.get_seed_queries(goal)
+        goal_data = goal.split(" ")
+        goal = goal_data[0] # split the goal into the goal and the object, 1st is always predicate
+
+        logger.info(f"{seeds=}")
+        queries = []
+        for action_name, seed_list in seeds.items():
+            for seed in seed_list:
+                seed['goal']  = goal
+                seed['action'] = action_name
+                queries.append(seed)
+        return queries
+
+    def execute(self, context: Context) -> Dict[str, Any]:
         user_id = context.get('input.user_id')
         session_id = context.get('input.model_id')
         key = f"{user_id}:{session_id}:{self.domain}"
@@ -36,42 +63,29 @@ class Plan:
         print(task != None and not done and len(task.all()))
         print(task)
 
+        # if task in progress but no queries, generate them
         if task != None and not done and len(task.all()) == 0:
             # Get the current goal
             goal = self.goals[task.stage]
             print("GOAL", goal)
-            queries = self.planner.create_queries(goal)
+            queries = self.gather(goal)
+
             print(f"{queries=}")
             list(map(task.push, queries)) # efficiently push queries to the task
-            
+        
+        if task != None and not done:
             ### Get activated query if any
-            query = task.activate(context)
+            query = task.activate()
 
-            # # We need to create a query via the LLM using the context and query
-            input = context.get_model_input()
-            prompt = context.prompts[f"{query['type']}.query.prompt"]
-            data = {
-                "goal": query['goal'],
-                "type": query['type'],
-                "detail": query['object'].replace("?",""),
-                "action": query['action'],
-            }
-
-            input['prompt'] = context.process_prompt(prompt, data)
-            query['text'] = self.llm.call(input)["choices"][0]["text"].replace(input['prompt'], "")
+            query = Query().get(context, query)
 
             ## Capture Relational Information
-            new_prompt = context.prompts["relation.prompt"]
-
-            input['prompt'] = new_prompt.replace("{object}", query['object']).replace("{subject}", "User")
-
-            query['relation'] = self.llm.call(input)["choices"][0]["text"].replace(input['prompt'], "")
+            # query = Relation().extract(context, query)
 
             logger.info(f"{query=}")
-            raise ValueError("STOP")
+            # raise ValueError("STOP")
             context.set("response", query['text'])
 
-            print(task.to_dict())
             self.task_management.save(task)
 
         elif task != None and done:

@@ -3,10 +3,10 @@
   (:requirements :strips :typing :negative-preconditions)
 
   (:types
-    plant - string
+    plant location strain - string
     seed clone - plant
     outdoor-plot indoor-pot - location
-    plant-count location - numeric
+    plant-count - numeric
     water-container curing-container - container
     container tool amendment - boolean
     mulch fertilizer - amendment
@@ -42,10 +42,9 @@
     (freezing-conditions ?outdoor-plot - outdoor-plot)
     (amendment-available ?amendment - amendment)
     (amended ?location - location)
-    (plant-available ?plant - plant)
     (seed-available ?seed - seed)
     (clone-available ?clone - clone)
-    (plant-count-complete ?plant-count - plant-count)
+    (strain-chosen ?plant)
     (outdoot-plot-available ?outdoor-plot - outdoor-plot)
   )
 
@@ -65,13 +64,13 @@
     :parameters (?indoor-pot - indoor-pot ?plant - plant)
     :effect (indoor-pot-available ?indoor-pot))
 
-  (:action get-number-of-plants
-    :parameters (?plant-count - plant-count)
-    :effect (plant-count-complete ?plant-count))
-
   (:action get-seeds
     :parameters (?seed - seed ?plant - plant)
     :effect (seed-available ?seed))
+
+  (:action choose-strain
+    :parameters (?strain - strain)
+    :effect (strain-chosen ?strain))
 
   (:action get-clone
     :parameters (?clone - clone ?plant - plant)
@@ -79,12 +78,12 @@
 
   (:action prepare
     :parameters (?location - location ?digging-tool - tool ?plant-count - plant-count)
-    :precondition (and (or (seed-available ?plant) (clone-available ?plant)) (or (outdoot-plot-available ?location) (indoor-pot-available ?location)) (plant-count-complete ?plant-count) (digging-tool-available ?digging-tool) (unplanted ?location) (dry ?location) (fertilized ?location))
+    :precondition (and (strain-chosen ?strain) (or (seed-available ?plant) (clone-available ?plant)) (or (outdoot-plot-available ?location) (indoor-pot-available ?location)) (digging-tool-available ?digging-tool) (fertilizer-available ?fertilizer))
     :effect (prepared ?location))
 
   (:action plant-it
     :parameters (?location - location ?plant - plant)
-    :precondition (and (plant-available ?plant) (prepared ?location))
+    :precondition (and (or (seed-available ?plant) (clone-available ?plant)) (prepared ?location))
     :effect (and (planted ?plant ?location) (growing ?plant)))
 
   (:action fill-watering-can
@@ -104,7 +103,7 @@
 
   (:action sow
     :parameters (?location - location ?seed - seed)
-    :precondition (and (dug ?location) (plant-available ?seed))
+    :precondition (and (dug ?location) (seed-available ?seed))
     :effect (and (growing ?seed) (planted ?seed ?location)))
 
   (:action sprout
