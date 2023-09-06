@@ -73,7 +73,7 @@ class SymbolicMemory:
         else:
             relation = " related to "
 
-        object_singular = query["object"]
+        object_singular = query["class"]
         subject = "Human"
         verb = query["goal"]
         condition = query["condition"]
@@ -86,7 +86,8 @@ class SymbolicMemory:
             prompt = context.prompts[f"multi.cot.prompt"]
             args["multi"] = get_multi(condition)
         else:
-            prompt = context.prompts[f"{query['type']}.cot.prompt"]
+            prompt = context.prompts[f"{query['datatype']}.cot.prompt"]
+
         prompt = context.process_prompt(prompt, args)
 
         # args = {"query": query['text'], }
@@ -96,24 +97,26 @@ class SymbolicMemory:
             print("Error with classification. See logs.")
             return False, []
         # For string types the results fo classification are a List[str] corresponding to the subject
-        if query['type'] == "string":
+        if query['datatype'] == "string":
+            if len(results) > 0 and results[0] == "None":
+                return False, []
             for subject in results:
                 subject = subject.replace(" ", "-").strip() # If any spaces are involved they will break PDDL
                 print("[SYMBOLIC] ", subject)
                 self.create_predicate("Human", relation, subject) # TODO: Need to pull user name
             return True, results
         # For Boolean the results are True, False, or None. Subject is capture in query context.
-        elif query['type'] == "boolean":
+        elif query['datatype'] == "boolean":
             if results[0].lower() in  ["true", "yes", "1"]:
                 self.create_predicate("Human", relation, object_singular) # TODO: Need to pull user name
-                return True, results
+                return True, [True]
             elif results[0].lower() in  ["false", "no", "0"]:
                 self.create_negation("Human", relation, object_singular) # TODO: Need to pull user name
-                return True, results
+                return True, [False]
             else:
-                return False, []
+                return False, [None]
         # For Number the results are must adhere to some numeric values. Subject is capture in query context.
-        elif query['type'] == "numeric":
+        elif query['datatype'] == "numeric":
             try:
                 # Try to convert the result to an integer
                 if results[0].isdigit():

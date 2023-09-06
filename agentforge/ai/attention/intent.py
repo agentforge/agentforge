@@ -58,10 +58,12 @@ class Intent:
             return None
         
         ### Let's check to see if a task already exists and is no longer active
-        name = document.metadata['name']
-        task_count = self.task_management.count(user_id, session_id, name)
+        task_name = document.metadata['name']
+        task_count = self.task_management.count(user_id, session_id, task_name)
         if task_count == 0:
-            new_task = self.task_management.add_task(user_id, session_id, name)
+            new_task = self.task_management.init_task(context, task_name)
+            self.task_management.save(new_task)
+
             # Create corresponding attention for this task
             # If the predicate memory attention does not exist, feed plan queries into the current attention
             print("[PLAN] Creating new Attention to Plan")
@@ -71,7 +73,7 @@ class Intent:
             return new_task
         else:
             print("need to ask queries about existing task?")
-            tasks = self.task_management.get_tasks(user_id, session_id, name)
+            tasks = self.task_management.get_tasks(user_id, session_id, task_name)
             response = "Do you want to talk about\n"
             for task in tasks:
                 response += f"{task['name']}\n"

@@ -1,7 +1,7 @@
 from agentforge.ai.planning.plan import Plan
 from agentforge.ai.routines.routine import Routine
 from agentforge.ai.agents.statemachine import Node
-from agentforge.ai.beliefs.remember import GetResponse
+from agentforge.ai.communication.ack import Acknowledge
 from typing import List
 
 """
@@ -13,8 +13,8 @@ Planning Routine - This routine is triggered when the user asks for help with pl
 class PlanningRoutine(Routine):
     def __init__(self, domain: str, plan_prompts: List[str], goals: List[str]):
         super().__init__(domain, plan_prompts)
-        get_response = Node(GetResponse(domain).execute, [])
+        ack = Node(Acknowledge(domain).execute, [])
         self.subroutines = [
-            get_response,
-            Node(Plan(domain, goals).execute, [get_response]),
+            ack,
+            Node(Plan(domain, goals).execute, [ack]),
         ]

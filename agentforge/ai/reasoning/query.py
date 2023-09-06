@@ -21,12 +21,12 @@ class Query:
     def get(self, context: Context, query: Dict) -> Dict[str, Any]:
         # # We need to create a query via the LLM using the context and query
         input = context.get_model_input()
-        prompt = context.prompts[f"{query['type']}.query.prompt"]
+        prompt = context.prompts[f"{query['datatype']}.query.prompt"]
         data = {
             "condition": query['text'],
             "goal": query['goal'],
-            "type": query['type'],
-            "object": query['object'].replace("?",""),
+            "type": query['datatype'],
+            "object": query['class'].replace("?",""),
             "action": query['action'],
             "biography": context.get('model.persona.biography'),
         }
@@ -37,6 +37,14 @@ class Query:
 
         input['prompt'] = context.process_prompt(prompt, data)
         query['condition'] = data['condition']
+
+        conditions = data['condition'].split(" OR ") #conditions can be split by OR
+        predicates = {}
+        for condition in conditions:  
+          datum = condition.split(" ")
+          if len(datum) > 1:
+              predicates[datum[0]] = datum[1:]
+        query['predicates'] = predicates
         query['text'] = self.llm.call(input)["choices"][0]["text"].replace(input['prompt'], "")
         query['text'] = query['text'].split("\n")[0] # Only take the first line
         context.set("response", query['text'])

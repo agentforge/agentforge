@@ -1,13 +1,16 @@
 import uuid, json
 from datetime import datetime
-from typing import Any, Dict, Optional, List
+from typing import Any, Dict, Optional, List, Callable
 from agentforge.interfaces import interface_interactor
 from agentforge.ai.beliefs.symbolic import SymbolicMemory
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, root_validator
 from datetime import datetime
 from agentforge.ai.agents.context import Context
 from collections import deque
 from agentforge.utils import logger
+
+# TODO: Move this to env
+MAX_QUERY_RETRIES = 3
 
 """
 ### Basic Task Model
@@ -24,15 +27,15 @@ class Task(BaseModel):
     created_at: datetime
     updated_at: datetime
     active: bool
-    queries: Optional[Dict[str, List[Any]]] = {'queue': deque([]),'complete': deque([]),'active': deque([]),'failed': deque([])}
+    actions: Optional[Dict[str, List[Any]]] = {'queue': deque([]),'complete': deque([]),'active': deque([]),'failed': deque([])}
 
     @classmethod
     def from_dict(cls, task_data: dict):
         t = cls(**task_data)
-        t.queries = {'queue': deque(t['queries']['queue']),
-                        'complete': deque(t['queries']['complete']),
-                        'failed': deque(t['queries']['failed']),
-                        'active': deque(t['queries']['active'])}
+        t.actions = {'queue': deque(t['actions']['queue']),
+                        'complete': deque(t['actions']['complete']),
+                        'failed': deque(t['actions']['failed']),
+                        'active': deque(t['actions']['active'])}
         return t
 
     def to_dict(self):
@@ -66,39 +69,46 @@ class Task(BaseModel):
         context.task_routines[self.name].run(context)
 
     def done(self) -> bool:
-        return len(self.queries['queue']) == 0 and len(self.queries['active']) == 0 and len(self.queries['complete']) > 0
+        return len(self.actions['queue']) == 0 and len(self.actions['active']) == 0 and len(self.actions['complete']) > 0
     
     """
     Creates new queries for the task using the planner
     """
 
     def peek(self) -> Optional[Dict]:
-        return self.queries['queue'][0] if self.queries['queue'] else None
+        return self.actions['queue'][0] if self.actions['queue'] else None
 
     def all(self) -> Optional[Dict]:
-        return self.queries['queue'] if self.queries['queue'] else []
+        return self.actions['queue'] if self.actions['queue'] else []
 
     def push(self, query: Dict=None):
-        self.queries['queue'].append(query)
+        self.actions['queue'].append(query)
 
     # Update the first query in the queue, i.e. the head
     def update_query(self, **kwargs):
-        if self.queries['queue']:
-            self.queries['queue'][0].update(kwargs)
+        if self.actions['queue']:
+            self.actions['queue'][0].update(kwargs)
 
     # Pop the first query in the queue, i.e. the head
     def pop(self) -> Optional[Dict]:
-        if self.queries['queue']:
-            return self.queries['queue'].popleft()
+        if self.actions['queue']:
+            return self.actions['queue'].popleft()
         return None
 
     # Adds a query to the completed lists - this is a successful query
     def push_complete(self, query):
-        self.queries['complete'].append(query)
+        self.actions['complete'].append(query)
 
     # Adds a query to the completed lists - for retrying
     def push_failed(self, query):
-        self.queries['failed'].append(query)
+        if 'retries' in query and query['retries'] > MAX_QUERY_RETRIES:
+            self.actions['failed'].append(query)
+        elif 'retries' in query:
+            query['retries'] = query['retries'] + 1
+            self.actions['queue'].append(query)
+        else:
+            query['retries'] = 1
+            self.actions['queue'].append(query)
 
     """
     Input - context: Context object
@@ -106,24 +116,37 @@ class Task(BaseModel):
 
     Output - str:  Adds a query to the active list from the queue by calling the LLM
     """
-    def activate(self) -> str:
-        if len(self.queries['active']) > 0:
-            return self.queries['active'][0]
-        query = self.queries['queue'].popleft()
-        self.queries['active'].append(query)
-        return query
+    def activate_query(self) -> str:
+        query = None
+        if len(self.actions['active']) > 0:
+            return self.actions['active'][0]
+        # Iterate through the active list
+        for i, action in enumerate(self.actions['active']):
+            # Check if metadata exists and if it contains "query"
+            if 'metadata' in action and action['metadata'] == "query":
+                # Remove and return the action
+                query = self.actions['active'].pop(i)
+        if query is not None:
+            self.actions['active'].append(query)
+            return query
 
     # Only gets active query, will not activate a new one
     def get_active_query(self) -> Optional[Dict]:
-        print(self.queries) 
-        if len(self.queries['active']) == 0:
+        print(self.actions)
+        if len(self.actions['active']) == 0:
             return None
-        return self.queries['active'].popleft()
+        # Iterate through the active list
+        for i, action in enumerate(self.actions['active']):
+            # Check if metadata exists and if it contains "query"
+            if 'metadata' in action and action['metadata'] == "query":
+                # Remove and return the action
+                return self.actions['active'].pop(i)
+        
 
 """
 TaskManager class is responsible for managing tasks for the agent through the DB
 Tasks are stored in the database and are associated with a user_id and session_id
-Tasks also manage their attention and queries to the user.
+Tasks also manage their attention and actions/queries/plans to the user.
 """
 class TaskManager:
     def __init__(self) -> None:
@@ -131,10 +154,15 @@ class TaskManager:
         self.collection = 'tasks'
 
     """
-    Input: user_id, session_id, name
-    Output: Task object
+        Inits a Task from a context, task id, and active state.
+        Input - context: Context object
+                name: str
+                active: bool
     """
-    def add_task(self, user_id: str, session_id: str, name: str, active: bool = True) -> Optional[Any]:
+    def init_task(self, context: Context, name: str, active: bool = True) -> Task:
+        user_id = context.get('input.user_id')
+        session_id = context.get('input.model_id')
+
         creation_time = datetime.utcnow().isoformat()
         latest_update_time = creation_time
         id = str(uuid.uuid4())
@@ -146,7 +174,7 @@ class TaskManager:
             'updated_at': latest_update_time,
             'active': active
         }
-        return Task.from_dict(self.db.create(self.collection, id, task_data))
+        return Task.from_dict(task_data)
 
     """
     Input: user_id, session_id, name

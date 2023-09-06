@@ -1,7 +1,7 @@
 import glob
 import os
 import time
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Optional
 import uuid
 from agentforge.interfaces import interface_interactor
 from agentforge.ai.planning.pddl import PDDLGraph
@@ -10,36 +10,18 @@ from agentforge.utils import logger
 
 # TODO: make env files for this
 FAST_DOWNWARD_ALIAS = "lama"
+
 PLANNER_DIRECTORY = os.environ.get("PLANNER_DIRECTORY")
 TYPE_KLASSES = ["boolean", "object", "numeric", "string", "array", "null"]
 
-def get_cost(x):
-    splitted = x.split()
-    counter = 0
-    found = False
-    cost = 1e5
-    for i, xx in enumerate(splitted):
-        if xx == "cost":
-            counter = i
-            found = True
-            break
-    if found:
-        cost = float(splitted[counter+2])
-    return cost
-class PlanningControllerConfig:
-    def __init__(self, domain: str):        
-        # initialize the attributes
-        self.domain = domain
-        self.domain_pddl_file_path = f"{PLANNER_DIRECTORY}/{domain}/domain.pddl"
-        self.domain_pddl_problem_path = f"{PLANNER_DIRECTORY}/{domain}/p01.pddl"
-        self.time_limit = 200
-        self.task = uuid.uuid4()
-        self.run = 0
-        self.print_prompts = False
 """
-Creates PDDL plans using the Fast Downward planner.
-Input - domain: The domain of the plan to be created.
-Output - A plan in PDDL format and Natural Language format.
+    Creates a PDDL plan using the Fast Downward planner.
+    Typically requires a domain and problem file.
+
+    Input - domain: The domain of the plan to be created.
+    Output - A plan in PDDL format and Natural Language format.
+
+    Calls the LLM to generate a plan in natural language format.
 """
 class PlanningController:
     def __init__(self, domain: str):
@@ -52,13 +34,27 @@ class PlanningController:
         # Create a PlanningControllerConfig object
         self.config = PlanningControllerConfig(domain)
 
+    def get_cost(self, x):
+        splitted = x.split()
+        counter = 0
+        found = False
+        cost = 1e5
+        for i, xx in enumerate(splitted):
+            if xx == "cost":
+                counter = i
+                found = True
+                break
+        if found:
+            cost = float(splitted[counter+2])
+        return cost
+
     # TODO: Refactor for new query system
-    def execute(self, input, attention):
+    def execute(self, input, task, problem_data):
 
         # Grab a standard plan template
         plan_template = """
             (define (problem user-problem)
-                (:domain {domain})
+                (:domain {task.name})
                 (:objects 
                     {object}
                 )
@@ -79,42 +75,21 @@ class PlanningController:
             "goal": [],
             "object": [],
         }
-        queries = attention['queries']['complete']
-        for query in queries:
-            for effect in query["effect"]:
-                for result in query["results"]: # for each result we gathered for goals, innits, objects
-                    if effect["type"] in ["goal", "object", "init"]:
-                        val = effect["val"].replace("{val}", result)
-                        if val not in pddl_context[effect["type"]]:
-                            pddl_context[effect["type"]].append(val)
+        for effects in problem_data:
+            for effect in effects:
+                val = effect["val"]
+                if val not in pddl_context[effect["type"]]:
+                    pddl_context[effect["type"]].append(val)
 
         plan_template = plan_template.replace("{object}", "\n".join(pddl_context["object"]))
         plan_template = plan_template.replace("{init}", "\n".join(pddl_context["init"]))
         plan_template = plan_template.replace("{goal}", "\n".join(pddl_context["goal"]))
-        print(plan_template)
+        plan_template = plan_template.replace("{task.name}", task.name)
+        logger.info(plan_template)
 
         ### Once the problem plan has been generated let's run the planning algorithms
         # TODO: Refactor to use our input
         return self.llm_ic_pddl_planner(input, plan_template)
-
-    def init_simple_effects(self, goal: str, klass: str):
-        return [{   
-                "val":f"({goal}" + " {val})",
-                "type": "goal"
-            },
-            {   "val": "{val} - " + klass,
-                "type": "object"
-            }]
-
-    def init_subtype_predicates(self, predicate: str):
-        return [{
-                "val": "{val}-{subtype} - {subtype}",
-                "type": "object"
-            },
-            {
-                "val": f"({predicate} " + "{val}-{subtype} {val})",
-                "type": "init"
-            }]
 
     """
     Input - seed: The seed of the plan to be created. i.e. "(growing ?plant)"
@@ -127,75 +102,6 @@ class PlanningController:
         query['type'] = datatype
         query['effect'] = effects
         return query
-    
-    """
-    Predicates come in a handfule of types, we need to support and determine
-    what type of predicate, that will determine how we build our PDDL plan.
-
-    1. Simple predicates are predicates that are just a single predicate/obj, i.e. plot-fertilized ?plot"
-    2. Subtype predicates start with 'has', include a subtype obj and primary type obj, i.e. has-seed-type ?seed ?plant"
-    2. 
-    
-    """
-    def analyze_predicates(self):
-        pass
-
-    # def create_queries(self, goal: str) -> List[Dict]:
-    #     # Get the PDDL documents
-    #     domain_file = self.config.domain_pddl_file_path
-    #     problem_file = self.config.domain_pddl_problem_path
-    #     ret = []
-    #     q = PDDLGraph()
-    #     seeds = q.get_seed_queries(goal, domain_file, problem_file)
-    #     goal_data = goal.split(" ")
-    #     goal = goal_data[0] # split the goal into the goal and the object, 1st is always predicate
-
-    #     logger.info(f"{seeds=}")
-    #     # raise ValueError("STOP")
-    #     # return seeds
-
-    #     # TODO: Refactor this to use LLMs to automatically generate queries
-    #     # using the given context here
-    #     # hierarchy = defaultdict(list)
-    #     processed_seeds = []
-    #     for action_name, seed_list in seeds.items():
-    #         for seed in seed_list:
-    #             seed['goal']  = goal
-    #             seed['action'] = action_name
-    #             processed_seeds.append(seed)
-    #     return processed_seeds
-
-    #     #     # effects = self.init_simple_effects(goal, klass)
-
-    #     #     template = template.replace("{goal}", goal)
-    #     #     query = self.create_query(seed_key, template, datatype, effects)
-    #     #     relation = relations[datatype].replace("{goal}", goal)
-
-    #     #     query["relation"] = relation
-    #     #     query["goal"] = goal
-    #     #     query["class"] = klass
-    #     #     query["seed"] = seed
-    #     #     ret.append(query)
-
-    #     #     # Extract the predicates from the seeds
-    #     #     for predicate in seed['predicates']:
-    #     #         # for each predicate we need to create a object and init
-    #     #         predicate = predicate.split(" ")
-    #     #         # Grab the predicate and add it to the init
-    #     #         predicates.append(predicate)
-
-    #     # print(f"{subtypes=}")
-    #     # # Followup for subtypes, i.e. ?object has-x, has-y, has-z
-    #     # if len(subtypes) > 0:
-    #     #     values = " or ".join(subtypes)
-    #     #     template = templates['or']
-    #     #     template.replace("{values}", values)
-    #     #     template.replace("{goal}", goal)
-    #     #     sub_effects = self.init_subtype_predicates(predicate)
-    #     #     query = self.create_query(seed_key, template, "string", effects)
-    #     #     ret.append(query)
-    #     # print(hierarchy)
-    #     return ret
 
     def extract_outermost_parentheses(self, s):
         # Indexes of the outermost opening and closing parentheses
@@ -292,7 +198,7 @@ class PlanningController:
         for fn in glob.glob(f"{plan_file_name}.*"):
             with open(fn, "r") as f:
                 plans = f.readlines()
-                cost = get_cost(plans[-1])
+                cost = self.get_cost(plans[-1])
                 if cost < best_cost:
                     best_cost = cost
                     best_plan = "\n".join([p.strip() for p in plans[:-1]])
@@ -300,6 +206,9 @@ class PlanningController:
         # E. translate the plan back to natural language, and write it to result
         if best_plan:
             plans_nl = self.plan_to_language(best_plan, input)
+            self.best_plan = best_plan
+            self.best_cost = best_cost
+            self.plans_nl = plans_nl
         
         end_time = time.time()
         if best_plan:
@@ -308,3 +217,19 @@ class PlanningController:
         else:
             print(f"[info] task {task} takes {end_time - start_time} sec, no solution found")
             return "No plan found."
+        
+
+"""
+    Config object for the PlanningController
+"""
+class PlanningControllerConfig:
+    def __init__(self, domain: str):        
+        # initialize the attributes
+        self.domain = domain
+        self.domain_pddl_file_path = f"{PLANNER_DIRECTORY}/{domain}/domain.pddl"
+        self.domain_pddl_problem_path = f"{PLANNER_DIRECTORY}/{domain}/p01.pddl"
+        self.time_limit = 200
+        self.task = uuid.uuid4()
+        self.run = 0
+        self.print_prompts = False
+        
