@@ -21,12 +21,6 @@ class Respond:
         task = context.get("task")
         # query_engine = QueryEngine(context.get('input.user_id'), context.get('input.model_id'))
         if task is not None:
-            # query = task.activate()
-            # print("[QUERY] asking a query", query)
-            # stream/string('channel', query) # TODO: Make channel user specific
-            # context.set("response", query)
-            # self.task_management.save(task)
-            # Return new context to the user w/ response
             return context
 
         # If no query exists respond to the user based on the input and context

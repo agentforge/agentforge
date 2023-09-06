@@ -117,30 +117,40 @@ class Task(BaseModel):
     Output - str:  Adds a query to the active list from the queue by calling the LLM
     """
     def activate_query(self) -> str:
-        query = None
         if len(self.actions['active']) > 0:
             return self.actions['active'][0]
-        # Iterate through the active list
-        for i, action in enumerate(self.actions['active']):
-            # Check if metadata exists and if it contains "query"
-            if 'metadata' in action and action['metadata'] == "query":
-                # Remove and return the action
-                query = self.actions['active'].pop(i)
+        query = None
+        # Iterate through the queue
+        for i, action in enumerate(self.actions['queue']):
+            # Check if metatype exists and if it contains "query"
+            if 'metatype' in action and action['metatype'] == "query":
+                query = self.actions['queue'][i]
+                # Remove the item at index i
+                self.actions['queue'] = deque(list(self.actions['queue'])[:i] + list(self.actions['queue'])[i+1:])
+                break  # Exit loop once a query is found                
         if query is not None:
             self.actions['active'].append(query)
             return query
+        else:
+            return None  # Return None if no query is found
 
     # Only gets active query, will not activate a new one
     def get_active_query(self) -> Optional[Dict]:
-        print(self.actions)
         if len(self.actions['active']) == 0:
             return None
-        # Iterate through the active list
+        query = None
+        # Iterate through the queue
         for i, action in enumerate(self.actions['active']):
-            # Check if metadata exists and if it contains "query"
-            if 'metadata' in action and action['metadata'] == "query":
-                # Remove and return the action
-                return self.actions['active'].pop(i)
+            # Check if metatype exists and if it contains "query"
+            if 'metatype' in action and action['metatype'] == "query":
+                query = self.actions['active'][i]
+                # Remove the item at index i
+                self.actions['active'] = deque(list(self.actions['active'])[:i] + list(self.actions['active'])[i+1:])
+                break  # Exit loop once a query is found                
+        if query is not None:
+            return query
+        else:
+            return None  # Return None if no query is found
         
 
 """

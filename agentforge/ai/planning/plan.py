@@ -73,7 +73,8 @@ class Plan:
 
             print(f"{queries=}")
             list(map(task.push, queries)) # efficiently push queries to the task
-        
+            logger.info(f"{task=}")
+
         if task != None and not done:
             ### Get activated query if any
             query = task.activate_query()
