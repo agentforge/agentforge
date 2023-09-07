@@ -165,7 +165,7 @@ class PlanningController:
         prompt = """
                 ### Instruction: Your goal is to help the user plan. Transform the PDDL plan into a sequence of behaviors without further explanation. Format the following into a natural language plan. Here is the plan to translate:"""
         prompt += f"{plan} ### Response:"
-        print("plan_to_language", prompt)
+        logger.info("plan_to_language", prompt)
         res = self.query(prompt, input_, extract_parens=False, streaming_override=True).strip() + "\n"
         return res
 
@@ -183,13 +183,13 @@ class PlanningController:
         with open(task_pddl_file_name, "w") as f:
             f.write(task_pddl_)
 
-        print("Running fast downward...")
+        logger.info("Running fast downward...")
         # Fast downward call
         func_call = f"python /app/downward/fast-downward.py --alias {FAST_DOWNWARD_ALIAS} " + \
                 f"--search-time-limit {self.config.time_limit} --plan-file {plan_file_name} " + \
                 f"--sas-file {sas_file_name} " + \
                 f"{self.config.domain_pddl_file_path} {task_pddl_file_name}"
-        print(func_call)
+        logger.info(func_call)
         os.system(func_call)
 
         # D. collect the least cost plan
@@ -212,10 +212,10 @@ class PlanningController:
         
         end_time = time.time()
         if best_plan:
-            print(f"[info] task {task} takes {end_time - start_time} sec, found a plan with cost {best_cost}")
+            logger.info(f"[info] task {task} takes {end_time - start_time} sec, found a plan with cost {best_cost}")
             return plans_nl
         else:
-            print(f"[info] task {task} takes {end_time - start_time} sec, no solution found")
+            logger.info(f"[info] task {task} takes {end_time - start_time} sec, no solution found")
             return "No plan found."
         
 

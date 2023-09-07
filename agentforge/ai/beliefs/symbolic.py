@@ -9,6 +9,7 @@ from agentforge.ai.reasoning.classifier import Classifier
 from agentforge.ai.agents.context import Context
 from word2number import w2n
 from nltk.corpus import wordnet as wn
+from agentforge.utils import logger
 
 """
     Split conditional PDDL statement -- maybe move this to PDDL module
@@ -16,15 +17,14 @@ from nltk.corpus import wordnet as wn
     Output: string with comma separated conditions "seed availabel, clone avail"
 """
 def get_multi(query_str):
-    # Step 1: Replace hyphens with spaces
+    # Step 1: Remove any string starting with '?'
+    query_str = re.sub(r'\?[\w\-]+', '', query_str)
+    # Step 2: Replace hyphens with spaces
     query_str = re.sub('-', ' ', query_str)
-    # Step 2: Remove any string starting with '?'
-    query_str = re.sub(r'\?\w+', '', query_str)
     # Step 3: Split by 'OR'
     query_list = query_str.split('OR')
     # Step 4: Trim extra spaces
     query_list = [x.strip() for x in query_list]
-    
     return ", ".join(query_list)
 
 def pluralize_nltk(word):

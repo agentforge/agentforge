@@ -22,7 +22,7 @@ class Plan:
         domain_file = self.planner.config.domain_pddl_file_path
         problem_file = self.planner.config.domain_pddl_problem_path
         self.pddl_graph = PDDLGraph(domain_file, problem_file)
-        self.pddl = PDDL()
+        self.pddl = PDDL(self.pddl_graph)
 
     """
         Gether information phase of the planning task
@@ -94,7 +94,7 @@ class Plan:
             finalize_reponse = "I have all the info I need, let me finalize the plan."
 
             goal = self.goals[task.stage]
-            problem_data = self.pddl.create_pddl_problem_state(task.actions["complete"], goal, self.pddl_graph)
+            problem_data = self.pddl.create_pddl_problem_state(task.actions["complete"], goal)
             logger.info(problem_data)
             logger.info("Creating PDDL Plan")
 

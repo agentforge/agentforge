@@ -22,14 +22,12 @@
 3. "Beets" and "okra" are mentioned as strings someone wants to.
 #### Response: beets, okra
 
-
 ### Instruction: Classify into one of the following strings: outdoor plot available, indoor pot available
 #### Input: "I have a backyard plot"
 #### Thought Process:
 1. The instruction asks to classify the text.
 2. The text mentions a backyard plot, which is outdoors.
 #### Response: outdoor plot available
-
 
 ### Instruction: Classify into one of the following strings: {multi}
 #### Input: {response}

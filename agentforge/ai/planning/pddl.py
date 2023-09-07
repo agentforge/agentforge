@@ -39,10 +39,48 @@ class PDDLFragment(BaseModel):
     instances: Optional[List[str]] = Field(None)
     predicate: Optional[str] = Field(None)
 
+    """
+        Input - PDDLFragment
+
+        Output - (type, fragment)
+            
+        Given the goal, object, and predicate we can create a PDDL problem fragment
+        These values are optional and can be None. If they are None we do not
+        return that fragment.
+
+        A predicate can have multiple objects, i.e. "has-seed-type ?seed ?plant"
+
+        Example:
+            {
+                "val": "(growing ?plant)",
+                "type": "goal"
+            }
+    
+    """
+    def init_pddl_problem_fragment(self) -> List[dict]:
+        inst = [i.replace(" ", "-") for i in self.instances]
+        if self.type == "goal":
+            return [{
+                "val":f"({self.predicate} {' '.join(inst)})",
+                "type": "goal"
+            }]
+        elif self.type == "init":
+            return [{
+                "val":f"({self.predicate} {' '.join(inst)})",
+                "type": "init"
+            }]
+        elif self.type == "object":
+            vals = zip(self.objects, inst)
+            return [{
+                "val":f"{instance} - {obj.replace(' ', '-')}",
+                "type": "object"
+            } for obj, instance in vals]
+
 class PDDLGraph:
     def __init__(self, domain_file, problem_file):
         self.domain_file = domain_file
         self.problem_file = problem_file
+        self.types = {}
 
     def loads(self, actions, predicates, effects):
         self.actions = actions
@@ -485,6 +523,7 @@ class PDDLGraph:
 
         logger.info("\n\nTypes:")
         logger.info(json.dumps(types))
+        self.types = types
 
         G, dot = self.create_graph(actions, preconditions, effects)
         attributes = nx.get_edge_attributes(G, 'variables')
@@ -548,82 +587,72 @@ class PDDLGraph:
 
 
 class PDDL:
-    def __init__(self):
-        pass
+    def __init__(self, pddl_graph):
+        self.pddl_graph = pddl_graph
     
     """
     # We need to iterate through the responses and create the PDDL problem
     """
-    def create_pddl_problem_state(self, queries: List[Dict], goal: str, pddl_graph: PDDLGraph) -> List[Dict]:
-        # First add the goal statement
-        goal, obj = goal.split(" ")
-        obj = obj.replace("?", "")
-        goal_arr = [PDDLFragment(type="goal", instances=[obj], predicate=goal)]
+    def create_pddl_problem_state(self, queries: List[Dict], goal: str) -> List[Dict]:
+        self.variables = defaultdict(list)
 
-        # Add all objects and init states
-        all_fragments = []
+        # Add all queried objects and init states
+        fragments = []
         for query in queries:
             logger.info(query)
-            all_fragments.extend(self.process_query(query))
-        
-        for obj, obj_type in pddl_graph.parameter_types.items():
-            all_fragments.append(PDDLFragment(type="object", objects=[obj_type], instances=[obj_type]))
 
-        return [self.init_pddl_problem_fragment(i) for i in all_fragments + goal_arr]
+            # BOOLEAN CASE
+            if query['datatype'] == "boolean" and len(query["results"]) > 0:
+                # If the response is true create a init and object fragment
+                if query["results"][0] == True:
+                    predicate = list(query["predicates"].keys())[0]
+                    instances = [i.replace("?", "") for i in query["predicates"][predicate]] # replace ?
+                    fragments.append(PDDLFragment(type="object", objects=[query["class"]], instances=instances))
+                    fragments.append(PDDLFragment(type="init", predicate=predicate, instances=instances))
+                # If the response is false create object fragment
+                if query["results"][0] == False:
+                    fragments.append(PDDLFragment(type="object", objects=[query["class"]], instances=[query["class"]]))
 
-    """
-        We need to process query/response from user and create a PDDLFragment
-        depending on the type of query/response
-        boolean: if the response is true create a predicate fragment
-    """
-    def process_query(self, query: Dict[str, Any]) -> List[PDDLFragment]:
-        fragments = []
-        if query['datatype'] == "boolean" and len(query["results"]) > 0:
-            # If the response is true create a init and object fragment
-            if query["results"][0] == True:
-                fragments.append(PDDLFragment(type="object", objects=[query["class"]], instances=[query["class"]]))
-                fragments.append(PDDLFragment(type="init", predicate=list(query["predicates"].keys())[0], instances=[query["class"]]))
-            # If the response is false create object fragment
-            if query["results"][0] == False:
-                fragments.append(PDDLFragment(type="object", objects=[query["class"]], instances=[query["class"]]))
-        elif query['datatype'] == "string":
-            for result in query["results"]:
-                fragments.append(PDDLFragment(type="init", predicate=list(query["predicates"].keys())[0], instances=[result]))
-        return fragments
+            # STRING CASE
+            elif query['datatype'] == "string":
+                objs = [query["class"] for i in range(len(query["results"]))]
 
-    """
-        Input - PDDLFragment
+                # maintain a list of obj/type pairings for our goal
+                for obj, result in zip(objs, query["results"]):
+                    self.variables[obj].append(result)
 
-        Output - (type, fragment)
-            
-        Given the goal, object, and predicate we can create a PDDL problem fragment
-        These values are optional and can be None. If they are None we do not
-        return that fragment.
+                for result in query["results"]:
+                    predicate = result.replace(" ", "-")
+                    if predicate in query["predicates"]: #if the predicate is the result, this is an OR BRANCH
+                        instances = [i.replace("?", "") for i in query["predicates"][predicate]] # replace ?
+                    else: # This is a root String Node, i.e. no branching we need to capture the sematnic info
+                        predicate = list(query["predicates"].keys())[0]
+                        instances = [result]
 
-        A predicate can have multiple objects, i.e. "has-seed-type ?seed ?plant"
+                    init_fragment = PDDLFragment(type="init", predicate=predicate, instances=instances)
+                    object_fragment = PDDLFragment(type="object", objects=objs, instances=instances)
+                    fragments.append(init_fragment)
+                    fragments.append(object_fragment)
 
-        Example:
-            {
-                "val": "(growing ?plant)",
-                "type": "goal"
-            }
-    
-    """
-    def init_pddl_problem_fragment(self, fragment: PDDLFragment) -> List[dict]:
-        inst = [i.replace(" ", "-") for i in fragment.instances]
-        if fragment.type == "goal":
-            return [{
-                "val":f"({fragment.predicate} {' '.join(inst)})",
-                "type": "goal"
-            }]
-        elif fragment.type == "init":
-            return [{
-                "val":f"({fragment.predicate} {' '.join(inst)})",
-                "type": "init"
-            }]
-        elif fragment.type == "object":
-            vals = zip(fragment.objects, inst)
-            return [{
-                "val":f"{instance} - {obj}",
-                "type": "object"
-            } for obj, instance in vals]
+            ## IF THIS IS A SUBTYPE WE SHOULD SAVE THAT INFORMATION SOMEWHERE
+            if self.pddl_graph.types[query["class"]] != query['datatype']:
+                pass
+
+        # Add all objects to the problem
+        for _, obj_type in self.pddl_graph.parameter_types.items():
+            fragments.append(PDDLFragment(type="object", objects=[obj_type], instances=[obj_type]))
+
+        # LAST add the goal statement
+        logger.info(f"{self.variables=}")
+        goal_data = goal.split(" ")
+        objs = goal_data[1:]
+        goal = goal_data[0]
+        instances = []
+        for obj in objs:
+            clean_obj = self.pddl_graph.parameter_types[obj]
+            instances.append(clean_obj)
+            # instances.extend(self.variables[clean_type])
+
+        obj = obj.replace("?", "") # TODO: add support for multi-predicate goals
+        goal_arr = [PDDLFragment(type="goal", instances=instances, predicate=goal)]
+        return [i.init_pddl_problem_fragment() for i in fragments + goal_arr]
