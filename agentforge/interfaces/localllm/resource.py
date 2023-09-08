@@ -7,13 +7,13 @@
 import gc, os
 import torch
 from agentforge.config import Config
-import logging
 from .generator import LocalGenerator
 from .loader import LocalLoader
 from accelerate import Accelerator
 from agentforge.utils import Parser
 from agentforge.interfaces.localllm.lib.text_streamer import TextStreamer
 from dotenv import load_dotenv
+from agentforge.utils import logger
 
 ### Manages Base LLM functions ###
 class LocalLLM():
@@ -30,9 +30,6 @@ class LocalLLM():
         self.device = self.accelerator.device
     else:
         self.device = "cuda"
-
-    # create a shared dictionary to store the model to be used by other workers
-    logging.info(f"LLM CUDA enabled: {torch.cuda.is_available()}")
 
     if self.model_key:
         self.setup(self.config, init=True)
@@ -103,6 +100,8 @@ class LocalLLM():
         self.text_streamer(streaming),
         **kwargs
     )
+    logger.info(f"[PROMPT] {prompt}")
+    logger.info(f"[output] {output}")
     return output
 
   def load_model(self, config):

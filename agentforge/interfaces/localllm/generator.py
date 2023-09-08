@@ -4,6 +4,7 @@ from transformers import GenerationConfig, StoppingCriteriaList, StoppingCriteri
 import numpy as np
 from typing import Optional, TypedDict, NamedTuple, List, Dict, Callable
 from agentforge.config import Config
+from agentforge.utils import logger
 
 def convert_to_serializable(obj):
     if isinstance(obj, StopOnTokens):
@@ -22,6 +23,7 @@ class StopOnTokens(StoppingCriteria):
         self.stop_token_ids = stop_token_ids
 
     def __call__(self, input_ids: torch.LongTensor, scores: torch.FloatTensor, **kwargs) -> bool:
+        logger.info("STOP ON TOKENS")
         # Iterate through each list in stop_token_ids
         for stop_ids_list in self.stop_token_ids:
             # Determine the length of the current list
@@ -29,6 +31,7 @@ class StopOnTokens(StoppingCriteria):
             # Check if the last n tokens of input_ids[0] match the current list
             match = True
             idx = 0
+            logger.info(f"{input_ids[0][-n:]} == {stop_ids_list}")
             for i in input_ids[0][-n:]:
                 # Compare individual elements
                 if i != stop_ids_list[idx]:
@@ -107,6 +110,7 @@ class LocalGenerator:
       config = model.module.generation_config
     else:
       config = model.generation_config
+    # kwargs["generation_config"].update(vars(config))
     gen_config = kwargs["generation_config"]
     model_config = kwargs["model_config"]
 
@@ -133,6 +137,9 @@ class LocalGenerator:
 
     if "stopping_criteria" in gen_config:
       stops = [tokenizer.encode(i.strip()) for i in gen_config["stopping_criteria"].split(",")]
+      logging.info("[STOPS]")
+      logging.info(stops)
+      logging.info(gen_config["stopping_criteria"].split(","))
       stop = StopOnTokens(stops)
       stopping_criteria = StoppingCriteriaList([stop])
       gen_config["stopping_criteria"] = stopping_criteria
@@ -148,6 +155,12 @@ class LocalGenerator:
       start_time = time.time()
 
       with torch.no_grad():
+          # instantiate logits processors
+          # logits_processor = LogitsProcessorList(
+          #     [
+          #         MinLengthLogitsProcessor(10, eos_token_id=model.generation_config.eos_token_id),
+          #     ]
+          # )
           # If we are using multi-gpu, we need to use the model.module.generate method.
           if self.multi_gpu:
             gen = model.module.generate
@@ -159,10 +172,6 @@ class LocalGenerator:
               'return_dict_in_generate': True,
               'attention_mask': torch.ones_like(input_ids),
           }
-
-          if stopping_criteria != None:
-            final_kwargs['stopping_criteria'] = stopping_criteria
-
           logging.info(f"Rendering with {json.dumps(generation_config, indent=4, default=convert_to_serializable)}")
           if streamer != None:
             final_kwargs['streamer'] = streamer

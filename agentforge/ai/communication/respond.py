@@ -11,32 +11,31 @@ class Respond:
         self.parser = Parser()
 
     def execute(self, context: Dict[str, Any]) -> Dict[str, Any]:
-        print("RESPOND")
+        logger.info("RESPOND")
         ### Another subroutine gotchu dawg, bail
-        print(context.has_key("response"))
+        # logger.info(context.has_key("response"))
         if context.has_key("response"):
+            logger.info("[RESPONSE SATISFIED]")
             return context
 
         # Iterate through unsent queries and send the latest if it exists
         query_engine = QueryEngine(context.get('input.user_id'), context.get('input.model_id'))
         for query in query_engine.get_queries():
             if query is not None:
-                print("[QUERY] asking a query", query['query'])
+                logger.info("[QUERY] asking a query", query['query'])
                 query_engine.update_query(sent=True)
                 stream_string('channel', query['query']) # TODO: Make channel user specific
                 context.set("response", query['query'])
                 # Return new context to the user w/ response
                 return context
 
-        # If no query exists respond to the user based on the input and context
-        formatted = context.get_formatted()
         input = {
             "prompt": formatted,
             "generation_config": context.get('model.generation_config'),
             "model_config": context.get('model.model_config'),
         }
 
-        print(input)
+        logger.info(input)
 
         response = self.service.call(input)
 
