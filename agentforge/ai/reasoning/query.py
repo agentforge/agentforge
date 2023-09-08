@@ -19,6 +19,8 @@ class Query:
     """
 
     def get(self, context: Context, query: Dict) -> Dict[str, Any]:
+        if query is None:
+          return context
         # # We need to create a query via the LLM using the context and query
         input = context.get_model_input()
         prompt = context.prompts[f"{query['datatype']}.query.prompt"]

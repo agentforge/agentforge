@@ -79,16 +79,20 @@ class Plan:
             ### Get activated query if any
             query = task.activate_query()
 
-            query = Query().get(context, query)
+            if query is not None:
+                query = Query().get(context, query)
 
-            ## Capture Relational Information
-            # query = Relation().extract(context, query)
+                ## Capture Relational Information
+                # query = Relation().extract(context, query)
 
-            logger.info(f"{query=}")
-            # raise ValueError("STOP")
-            context.set("response", query['text'])
+                logger.info(f"{query=}")
+                # raise ValueError("STOP")
+                context.set("response", query['text'])
 
-            self.task_management.save(task)
+                self.task_management.save(task)
+
+            ### Check for activated plan
+            
 
         elif task != None and done:
             finalize_reponse = "I have all the info I need, let me finalize the plan."

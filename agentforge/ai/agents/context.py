@@ -43,12 +43,14 @@ class Context:
     # In the get method, we split the key using the dot
     # as a delimiter and then recursively fetch the value
     # from the nested dictionary structure.
-    def get(self, key: str):
+    def get(self, key: str, default: str = None):
         keys = key.split('.')
         value = self.context_data
         for k in keys:
             value = value.get(k, None)
             if value is None:
+                if default is not None:
+                    return default
                 return None
         return value
 

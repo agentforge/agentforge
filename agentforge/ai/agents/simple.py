@@ -73,7 +73,13 @@ class SimpleAgent:
 
     def run(self, input: Dict[str, Any]) -> Dict[str, Any]:
         self.context = Context(input)
-        self.context.memory =  Memory()
+
+        # load prefix/postfix for prompt and setup memory
+        prefix = self.context.get('model.model_config.prefix')
+        postfix = prefix = self.context.get('model.model_config.postfix')
+        self.context.memory =  Memory(prefix, postfix)
+
+        # add task routines to context
         self.context.task_routines = self.task_routines #add to context for reference in routines
 
         state_machine = StateMachine(self.routine.subroutines, self.task_routines)

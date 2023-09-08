@@ -65,7 +65,7 @@ class LocalLLM():
     self.generator.set_models(self.model, self.tokenizer, self.text_streamer(False))
 
   # Setup and return the text streamer
-  def text_streamer(self, streaming):
+  def text_streamer(self, streaming, context):
     if streaming == False:
       return None
     return TextStreamer(self.tokenizer, skip_prompt=True)
