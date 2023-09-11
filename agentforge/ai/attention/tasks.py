@@ -141,10 +141,10 @@ class Task(BaseModel):
             return None  # Return None if no query is found
 
     def get_active_query(self) -> Optional[Dict]:
-        self.get_active_n("query")
+        return self.get_active_n("query")
 
     def get_active_plan(self) -> Optional[Dict]:
-        self.get_active_n("plan")
+        return self.get_active_n("plan")
 
     # Only gets active query, will not activate a new one
     def get_active_n(self, metatype: str) -> Optional[Dict]:

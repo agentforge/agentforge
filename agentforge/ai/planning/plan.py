@@ -78,7 +78,7 @@ class Plan:
         if task != None and not done:
             ### Get activated query if any
             query = task.activate_query()
-
+            plan = task.activate_plan()
             if query is not None:
                 query = Query().get(context, query)
 
@@ -92,11 +92,12 @@ class Plan:
                 self.task_management.save(task)
 
             ### Check for activated plan
-            stream_string('channel', "<PLAN-ACTIVE>", end_token=" ")
-            plan = task.activate_plan()
-            context.set("plan", plan['plan_nl'])
+            elif plan is not None:
+                stream_string('channel', "<PLAN-ACTIVE>", end_token=" ")
+                context.set("plan", plan['plan_nl'])
 
         elif task != None and done:
+            ## Queries complete, let's execute the plan
             finalize_reponse = "I have all the info I need, let me finalize the plan."
 
             goal = self.goals[task.stage]
@@ -112,7 +113,14 @@ class Plan:
 
             task.active = True
             # setup plan as next action in task sequence
-            task.push({"plan_nl": response, "plan": self.planner.best_plan, "cost": self.planner.best_cost, "metatype": "plan"})
+            plan_task = {
+                "plan_nl": response,
+                "plan": self.planner.best_plan,
+                "cost": self.planner.best_cost,
+                "metatype": "plan",
+                "problem": problem_data,
+            }
+            task.push(plan_task)
             self.task_management.save(task)
             context.set("response", response)
             return context
