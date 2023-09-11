@@ -97,6 +97,7 @@ class LocalLLM():
         prompt,
         self.loader.model,
         self.loader.tokenizer,
+        self.loader.slow_tokenizer,
         self.text_streamer(streaming),
         **kwargs
     )
@@ -107,9 +108,10 @@ class LocalLLM():
   def load_model(self, config):
     # Check key and load logic according to key
     # self.config = self.config_controller.get_config(model_key)
-    model, tokenizer = self.loader.load(config['model_config'], device=self.device)
+    model, tokenizer, slow_tokenizer = self.loader.load(config['model_config'], device=self.device)
     self.model = model
     self.tokenizer = tokenizer
+    self.slow_tokenizer = slow_tokenizer
     self.model_key = config['model_config']['model_name']
 
   def unload_model(self):

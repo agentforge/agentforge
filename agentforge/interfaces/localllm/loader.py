@@ -33,7 +33,7 @@ class LocalLoader:
             self.huggingface(device) # hf now supports llama -> TODO: convert to llama.cpp
         else:
             self.huggingface(device)
-        return self.model, self.tokenizer
+        return self.model, self.tokenizer, self.slow_tokenizer
 
     # LOADING PEFT LORA
     def load_adapter(self, orig_model, lora_apply_dir=None, lora_config=None, ddp=None):
@@ -113,7 +113,6 @@ class LocalLoader:
                 **kwargs
             )
 
-
         if "peft_model" in self.config and self.config["peft_model"] != "":
             logger.info(f"Loading PEFT... {self.config['peft_model']}")
             if self.config["peft_model"][0] == "/": # hack to check for dirs -- this is what we use locally
@@ -126,6 +125,7 @@ class LocalLoader:
                     torch_dtype=torch_dtype,
                 )
         logger.info(f"Loading AutoTokenizer... {tokenizer_klass}")
+        self.slow_tokenizer = tokenizer_klass.from_pretrained(self.config["tokenizer_name"], add_prefix_space=True)
         self.tokenizer = tokenizer_klass.from_pretrained(
             self.config["tokenizer_name"],
             padding=False,
