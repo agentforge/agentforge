@@ -90,7 +90,8 @@ class Parser:
           key = placeholder  # The key is the content within < >
           if key in kwargs:
               value = kwargs[key]  # Get the value from kwargs
-              prompt_template = prompt_template.replace(f"<{key}>", value)
+              if value is not None:
+                prompt_template = prompt_template.replace(f"<{key}>", value)
           else:
               # If we didn't provide this key we want to get rid of the placeholder
               prompt_template = prompt_template.replace(f"<{key}>", "")

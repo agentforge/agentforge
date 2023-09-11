@@ -2,6 +2,8 @@ import json, uuid, os
 from typing import Dict
 from agentforge.utils import Parser
 from agentforge.utils import AbortController, logger
+from bson.objectid import ObjectId
+
 
 """
     Context Class - Shared State for Agent Subroutines
@@ -38,7 +40,6 @@ class Context:
     def is_aborted(self):
         user_id = self.get("input.user_id")
         return self.abort_controller.get_signal(user_id)
-
 
     # In the get method, we split the key using the dot
     # as a delimiter and then recursively fetch the value
@@ -84,6 +85,8 @@ class Context:
             raise ValueError(f"Key {key} not found in context")
 
     def _json_serializable(self, obj):
+        if isinstance(obj, ObjectId):
+            return str(obj)
         if hasattr(obj, "name"):
             return {"name": obj.name}
         raise TypeError(f"Object of type {obj.__class__.__name__} is not JSON serializable")
@@ -100,11 +103,13 @@ class Context:
     ### Helper function to get entire formatted prompt
     def get_formatted(self):
         prompt_template = self.get('model.prompt_config.prompt_template')
-        name = self.get('model.persona.name')
         biography = self.get('model.persona.biography')
         memory = self.get('recall')
+        plan = self.get('plan')
         instruction = self.get('prompt')
-        
+        username = self.get('input.user_name', "Human")
+        agentname = self.get('model.persona.display_name', "Agent")
+
         ### VALIDATE FORMATTED TEMPLATE
         # formatted_template cannot be greater than the context window size of the model (and is preferably less)
         # we need to tokenize the formatted template and check the length
@@ -123,11 +128,12 @@ class Context:
 
         return self.parser.format_template(
             prompt_template,
-            name=name,
+            name=agentname,
             instruction=instruction,
             biography=biography,
             memory=memory,
-            human="Human"
+            human=username,
+            plan=plan,
         )
     
     def get_model_input(self):
@@ -138,7 +144,6 @@ class Context:
             "generation_config": self.get('model.generation_config'),
             "model_config": self.get('model.model_config'),
         }
-
 
     def read_prompts(self):
         directory = os.path.join(os.path.dirname(__file__), './prompts')

@@ -6,6 +6,11 @@ from agentforge.utils import logger
 # TODO MOVE TO ENV
 MAX_CLASSIFIER_RETRIES = 3
 
+"""
+    This classification scheme requires knowing the types and options of
+    the classification, generally information gained from PDDL or some other
+    knowledge graph or world state.
+"""
 class Classifier:
     def __init__(self) -> None:
         self.llm = interface_interactor.get_interface("llm")
@@ -14,29 +19,47 @@ class Classifier:
     def validate_classification(self, test):
         pattern = re.compile(r'### Instruction:\s*(.*?)\s*### Input:\s*(.*?)\s*### Thought Process:\s*(.*?)\s*### Response:\s*(.*?)', re.DOTALL)
         pattern2 = re.compile(r'Final Decision: ([\-a-zA-Z0-9, _]+)</s>', re.DOTALL)
+        pattern3 = re.compile(r'Final classification: ([\-a-zA-Z0-9, _]+)</s>', re.DOTALL)
         match = pattern.match(test)
         match2 = pattern2.match(test)
-        return bool(match) or bool(match2)
+        match3 = pattern3.match(test)
+        return bool(match) or bool(match2) or bool(match3)
   
     def extract_classification(self, test):
         results = []
-        pattern = r'Final Decision: ([\-a-zA-Z0-9, _]+)</s>'
-        pattern2 = r'Response: ([\-a-zA-Z0-9, _]+)</s>'
-        # Search for the pattern in the text
-        results.append(self.test(pattern, test))
-        results.append(self.test(pattern2, test))
+        patterns = [
+            r'Final Decision: ([\-a-zA-Z0-9, _]+)</s>',
+            r'Response: ([\-a-zA-Z0-9, _]+)</s>',
+            r'Final classification: ([\-a-zA-Z0-9, _]+)</s>',
+            r'Final Answer: ([\-a-zA-Z0-9, _]+)</s>',
+            r'Final ([\-a-zA-Z0-9, _]+): ([\-a-zA-Z0-9, _]+)</s>',
+        ]
+        for p in patterns:
+            results.append(self.test(p, test))
+
         res = [x for x in results if x is not None]
         return res[0] if len(res) > 0 else None
 
     def test(self, pattern, test):
         match = re.search(pattern, test)
         # Extract the value if found
-        extracted_value = match.group(1) if match else None
+        extracted_value = match.group(0) if match else None
         if extracted_value:
             return extracted_value
         return None
 
-    ### Given a query and response use a few-shot CoT LLM reponse to pull information out
+    """
+        Given a query and response use a few-shot CoT LLM reponse to pull information out
+        
+        Input - context: Context object
+        prompt = context.prompts["relation.prompt"]
+        args = {
+          "object": query['object'].replace("?","").strip().title(),
+          "subject": "User",
+          "goal": query['goal'],
+          "action": query['action'],
+        }
+    """
     def classify(self, args, prompt, context, retries=0):
         for k, v in args.items():
             prompt = prompt.replace(f"{{{k}}}", v)
@@ -65,7 +88,7 @@ class Classifier:
             return [value]
 
         # Remove eos_token and bos_tokens
-        for tok in ["eos_token", "bos_token"]:
+        for tok in ["eos_token", "bos_token", 'prefix', 'postfix']:
             if tok in input_["model_config"]:
                 generated = generated.replace(input_["model_config"][tok],"")
 

@@ -156,7 +156,7 @@ class PlanningController:
         result_text = result_text.replace(input_['prompt'], "")
         if extract_parens:
             result_text = self.extract_outermost_parentheses(result_text)
-        for tok in ['eos_token', 'bos_token']:
+        for tok in ['eos_token', 'bos_token', 'prefix', 'postfix']:
             if tok in input_['model_config']:
                 result_text = result_text.replace(input_['model_config'][tok], "")
         return result_text
@@ -165,7 +165,8 @@ class PlanningController:
         prompt = """
                 ### Instruction: Your goal is to help the user plan. Transform the PDDL plan into a sequence of behaviors without further explanation. Format the following into a natural language plan. Here is the plan to translate:"""
         prompt += f"{plan} ### Response:"
-        logger.info("plan_to_language", prompt)
+        logger.info("plan_to_language")
+        logger.info(prompt)
         res = self.query(prompt, input_, extract_parens=False, streaming_override=True).strip() + "\n"
         return res
 
@@ -217,7 +218,7 @@ class PlanningController:
         else:
             logger.info(f"[info] task {task} takes {end_time - start_time} sec, no solution found")
             return "No plan found."
-        
+
 
 """
     Config object for the PlanningController

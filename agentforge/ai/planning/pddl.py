@@ -5,6 +5,7 @@ from pddlpy import DomainProblem
 from graphviz import Digraph
 import re, json
 from agentforge.utils import logger
+from agentforge.interfaces import interface_interactor
 
 from pydantic import BaseModel, Field
 from typing import List, Optional, Dict
@@ -76,11 +77,67 @@ class PDDLFragment(BaseModel):
                 "type": "object"
             } for obj, instance in vals]
 
+
+class PDDLGraphModel(BaseModel):
+    domain_file: Optional[str] = ""
+    problem_file: Optional[str] = ""
+    primary_key: Optional[str] = ""
+    parameter_types: Optional[Dict[str, Any]] = Field(default=None)
+    types: Optional[Dict[str, Any]] = Field(default=None)
+    attributes: Optional[Dict[str, Any]] = Field(default=None)
+    effects: Optional[Dict[str, Any]] = Field(default=None)
+    objects_store: Optional[Dict[str, Any]] = Field(default=None)
+    actions: Optional[Dict[str, Any]] = Field(default=None)
+    predicates: Optional[Dict[str, Any]] = Field(default=None)
+    preconditions: Optional[Dict[str, Any]] = Field(default=None)
 class PDDLGraph:
-    def __init__(self, domain_file, problem_file):
+    def __init__(self, domain_file: str, problem_file: str, primary_key: str):
+        self.db = interface_interactor.get_interface("db")
+
+        # Dynamically initialize attributes based on the Pydantic model
+        for field in PDDLGraphModel.__annotations__.keys():
+            setattr(self, field, None if field != "types" else {})
+
+        # Override defaults
+        self.primary_key = primary_key
         self.domain_file = domain_file
         self.problem_file = problem_file
-        self.types = {}
+
+        self.deserialize_from_db()
+
+    def deserialize_from_db(self) -> None:
+        # Fetch the data from MongoDB based on the primary key
+        db_data = self.db.get("pddl", self.primary_key)
+        
+        if db_data:
+            # Use Pydantic for deserialization
+            pddl_graph_model = PDDLGraphModel(**db_data)
+            
+            # Populate the object variables dynamically
+            for field, value in pddl_graph_model.dict().items():
+                setattr(self, field, value)
+
+    def serialize_to_json_and_db(self) -> None:
+        # Initialize an empty Pydantic model
+        pddl_graph_model = PDDLGraphModel()
+
+        # Dynamically populate the Pydantic model with data from the PDDLGraph object
+        for field in PDDLGraphModel.__annotations__.keys():
+            value = getattr(self, field, None)
+            setattr(pddl_graph_model, field, value)
+
+        # Serialize using the Pydantic model
+        serialized_data = pddl_graph_model.dict()
+
+        # Check if an entry with the same primary key already exists
+        existing_entry = self.db.get("pddl", self.primary_key)
+
+        if existing_entry:
+            # Update the existing entry
+            self.db.set("pddl", self.primary_key, serialized_data)
+        else:
+            # Create a new entry
+            self.db.create("pddl", self.primary_key, serialized_data)
 
     def loads(self, actions, predicates, effects):
         self.actions = actions
@@ -154,7 +211,6 @@ class PDDLGraph:
                 G.add_edge(previous_precond, precond_str, label="OR")
                 dot.edge(previous_precond, precond_str, color="orange", label="OR")
             return precond_str
-
 
     def add_effects(self, effect, action, G, dot, negate=False):
         if isinstance(effect, dict):
@@ -380,33 +436,6 @@ class PDDLGraph:
                 
         return predicates
 
-    def extract_pddl_info(self):
-        # Initialize the DomainProblem with the given domain and problem files
-        domprob = DomainProblem(self.domain_file, self.problem_file)
-
-        # Extracting all actions (operators)
-        actions = {}
-        for operator_name in domprob.operators():
-            operator = domprob.domain.operators[operator_name]
-            actions[operator_name] = {
-                "parameters": operator.variable_list,
-                # You can extract additional attributes of the operator here
-            }
-
-        # Extracting all predicates (this may require additional parsing logic based on the PDDL structure)
-        predicates = self.extract_predicates(self.domain_file)
-
-        # You may add additional extraction logic for other elements of the PDDL files here
-        effects = self.extract_effects(self.domain_file)
-
-        preconditions = self.extract_preconditions(self.domain_file)
-
-        # Test the further adjusted extract_types function with the given PDDL file
-        types = self.extract_types(self.domain_file)
-
-
-        return actions, predicates, effects, preconditions, types
-
     # get the predicate of the 'predicate ?object' string
     # for negated elemnts ignore the 'not' and get the predicate
     def root_element(self, node):
@@ -493,23 +522,46 @@ class PDDLGraph:
         elif key in types and types[key] in types:
             return self.lookup_type(type_klasses, types, types[key])
 
-    def get_seed_queries(self, seed: str):
+
+    """
+        Iterates the entire graph and creates necessary state but does not traverse
+        the graph to find the root nodes/edges
+    
+    """
+    def setup_graph(self):
         # Dictionary to keep track of variable types
         self.parameter_types = {}
-        type_klasses = ["boolean", "object", "numeric", "string", "array", "null"]
+        self.type_klasses = ["boolean", "object", "numeric", "string", "array", "null"]
 
         # Dictionary to keep track of objects and their corresponding unique root nodes/edges
-        objects = defaultdict(list)
+        self.objects = defaultdict(list)
 
         # Extracting the information from the PDDL 2.1 files
-        actions, predicates, effects, preconditions, types = self.extract_pddl_info()
+        domprob = DomainProblem(self.domain_file, self.problem_file)
 
-        # Load into our 
-        self.loads(actions, predicates, effects)
+        # Extracting all actions (operators)
+        self.actions = {}
+        for operator_name in domprob.operators():
+            operator = domprob.domain.operators[operator_name]
+            self.actions[operator_name] = {
+                "parameters": operator.variable_list,
+                # You can extract additional attributes of the operator here
+            }
+
+        # Extracting all predicates (this may require additional parsing logic based on the PDDL structure)
+        self.predicates = self.extract_predicates(self.domain_file)
+
+        # You may add additional extraction logic for other elements of the PDDL files here
+        self.effects = self.extract_effects(self.domain_file)
+
+        self.preconditions = self.extract_preconditions(self.domain_file)
+
+        # Test the further adjusted extract_types function with the given PDDL file
+        self.types = self.extract_types(self.domain_file)
 
         # Printing the extracted information
         print("Actions:")
-        for action_name, action_details in actions.items():
+        for action_name, action_details in self.actions.items():
             print(f"  {action_name}: {action_details}")
 
         # print("\n\nPredicates:")
@@ -519,16 +571,14 @@ class PDDLGraph:
         # print(effects)
 
         logger.info("\n\nPreconditions:")
-        logger.info(json.dumps(preconditions))
+        logger.info(json.dumps(self.preconditions))
 
         logger.info("\n\nTypes:")
-        logger.info(json.dumps(types))
-        self.types = types
+        logger.info(json.dumps(self.types))
+        self.types = self.types
 
-        G, dot = self.create_graph(actions, preconditions, effects)
-        attributes = nx.get_edge_attributes(G, 'variables')
-        # logger.info(attributes)
-        # raise ValueError("attributes")
+        self.G, self.dot = self.create_graph(self.actions, self.preconditions, self.effects)
+        attributes = nx.get_edge_attributes(self.G, 'variables')
         self.attributes = defaultdict(list)
         self.effects = defaultdict(list)
         for k,v in attributes.items():
@@ -536,13 +586,25 @@ class PDDLGraph:
                 self.attributes[item].append(v)
                 self.effects[v].append(item)
 
-        logger.info("ATTRIBUTES...   ")
+        logger.info("ATTRIBUTES...")
         logger.info(self.attributes)
-        self.visualize_graph(dot)
+        self.visualize_graph(self.dot)
+        self.serialize_to_json_and_db()
+
+    """
+        Input seed: str
+        Given a seed goal, identify nodes at the edge of the graph where we
+        do not have information and need to query the environment or the user
+
+    """
+
+    def get_seed_queries(self, seed: str):
+        # setup graph if needed
+        self.setup_graph()
 
         # Trace the graph starting from "growing ?seedling"
         self.objects_store = {}
-        objects = self.trace_pddl_graph(objects, G, seed)
+        objects = self.trace_pddl_graph(self.objects, self.G, seed)
         
         logger.info(f"{objects=}")
         logger.info(len(objects))
@@ -550,7 +612,7 @@ class PDDLGraph:
         final_queries = {}
 
         # Generate the prompts
-        prompts = self.generate_all_prompts(preconditions)
+        prompts = self.generate_all_prompts(self.preconditions)
         logger.info(prompts)
 
         # Print the prompts for the "prepare" action as examples
@@ -565,12 +627,12 @@ class PDDLGraph:
             for action in action_list:
                 logger.info(action)
                 action_name = None
-                if "action" in action and action["action"] in actions:
+                if "action" in action and action["action"] in self.actions:
                     action_name = action["action"]
                 if action_name and action_name in prompts and action_name not in final_queries:
                     for prompt in prompts[action_name]:
                         parameter_type = self.parameter_types[prompt.split(" ")[-1]]
-                        type_ = self.lookup_type(type_klasses, types, parameter_type)
+                        type_ = self.lookup_type(self.type_klasses, self.types, parameter_type)
                         query = {'text': prompt, "datatype": type_, "class": parameter_type}
                         final_queries[action_name].append(query)
 
@@ -635,7 +697,7 @@ class PDDL:
                     fragments.append(object_fragment)
 
             ## IF THIS IS A SUBTYPE WE SHOULD SAVE THAT INFORMATION SOMEWHERE
-            if self.pddl_graph.types[query["class"]] != query['datatype']:
+            if query["class"] in self.pddl_graph.types and self.pddl_graph.types[query["class"]] != query['datatype']:
                 pass
 
         # Add all objects to the problem

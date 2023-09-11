@@ -19,7 +19,7 @@ Task manages its own queries and attention
 A task is something like -- help user plan their garden, help user plan their vacation, etc.
 """
 class Task(BaseModel):
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()), alias="_id")
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()), alias="id")
     user_id: str
     session_id: str
     name: str
@@ -117,13 +117,19 @@ class Task(BaseModel):
     Output - str:  Adds a query to the active list from the queue by calling the LLM
     """
     def activate_query(self) -> str:
+        return self.activate_n("query")
+
+    def activate_plan(self) -> str:
+        return self.activate_n("plan")
+
+    def activate_n(self, metatype: str) -> str:
         if len(self.actions['active']) > 0:
             return self.actions['active'][0]
         query = None
         # Iterate through the queue
         for i, action in enumerate(self.actions['queue']):
             # Check if metatype exists and if it contains "query"
-            if 'metatype' in action and action['metatype'] == "query":
+            if 'metatype' in action and action['metatype'] == metatype:
                 query = self.actions['queue'][i]
                 # Remove the item at index i
                 self.actions['queue'] = deque(list(self.actions['queue'])[:i] + list(self.actions['queue'])[i+1:])
@@ -134,15 +140,21 @@ class Task(BaseModel):
         else:
             return None  # Return None if no query is found
 
-    # Only gets active query, will not activate a new one
     def get_active_query(self) -> Optional[Dict]:
+        self.get_active_n("query")
+
+    def get_active_plan(self) -> Optional[Dict]:
+        self.get_active_n("plan")
+
+    # Only gets active query, will not activate a new one
+    def get_active_n(self, metatype: str) -> Optional[Dict]:
         if len(self.actions['active']) == 0:
             return None
         query = None
         # Iterate through the queue
         for i, action in enumerate(self.actions['active']):
             # Check if metatype exists and if it contains "query"
-            if 'metatype' in action and action['metatype'] == "query":
+            if 'metatype' in action and action['metatype'] == metatype:
                 query = self.actions['active'][i]
                 # Remove the item at index i
                 self.actions['active'] = deque(list(self.actions['active'])[:i] + list(self.actions['active'])[i+1:])
@@ -193,7 +205,7 @@ class TaskManager:
     """
     def get_tasks(self, user_id: str, session_id: str, name: str) -> Optional[Any]:
         task_ctr = self.db.get_many(self.collection, {"user_id": user_id, "session_id": session_id, "name": name})
-        return [Task(t) for t in task_ctr]
+        return [Task.from_dict(t) for t in task_ctr]
 
     """
     Input: user_id, session_id, name

@@ -35,7 +35,7 @@ class Query:
 
         # custom generation settings for query
         input['generation_config']['max_new_tokens'] = 512
-        input['generation_config']['stopping_criteria'] = input['generation_config']['stopping_criteria'] + ",\n"
+        input['generation_config']['stopping_criteria'] = input['generation_config']['stopping_criteria'] + ",###"
 
         input['prompt'] = context.process_prompt(prompt, data)
         query['condition'] = data['condition']

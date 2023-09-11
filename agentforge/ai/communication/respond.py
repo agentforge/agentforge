@@ -29,7 +29,7 @@ class Respond:
 
         # If no query exists respond to the user based on the input and context
         formatted = context.get_formatted()
-        for tok in ['eos_token', 'bos_token']:
+        for tok in ['eos_token', 'bos_token', 'prefix', 'postfix']:
             if context.has_key(f"model.model_config.{tok}"):
                 formatted = formatted.replace(context.get(f"model.model_config'.{tok}"), "")
 
@@ -41,7 +41,8 @@ class Respond:
         # Add user and agent name to stopping criteria
         username = context.get('input.user_name', "Human")
         agentname = context.get('model.persona.display_name')
-        new_stop = input['generation_config']['stopping_criteria']+ f",{username}:,{agentname}:,### Response:,### Instructions:"
+        xtra_stops = f",###,Human:,GreenSage:"
+        new_stop = input['generation_config']['stopping_criteria'] + xtra_stops
         input['generation_config']['stopping_criteria'] = new_stop
         response = self.service.call(input)
 
@@ -50,7 +51,7 @@ class Respond:
             ### We want to parse the output here -- this output goes to end user
             response = response.replace(formatted, "")
             response = self.parser.parse_llm_response(response)
-            for tok in ['eos_token', 'bos_token']:
+            for tok in ['eos_token', 'bos_token', 'prefix', 'postfix']:
                 if context.has_key(f"model.model_config.{tok}"):
                     response = response.replace(context.get(f"model.model_config'.{tok}"), "")
             context.set("response", response)

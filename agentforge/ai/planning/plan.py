@@ -21,7 +21,7 @@ class Plan:
         self.goals = goals
         domain_file = self.planner.config.domain_pddl_file_path
         problem_file = self.planner.config.domain_pddl_problem_path
-        self.pddl_graph = PDDLGraph(domain_file, problem_file)
+        self.pddl_graph = PDDLGraph(domain_file, problem_file, domain)
         self.pddl = PDDL(self.pddl_graph)
 
     """
@@ -92,7 +92,9 @@ class Plan:
                 self.task_management.save(task)
 
             ### Check for activated plan
-            
+            stream_string('channel', "<PLAN-ACTIVE>", end_token=" ")
+            plan = task.activate_plan()
+            context.set("plan", plan['plan_nl'])
 
         elif task != None and done:
             finalize_reponse = "I have all the info I need, let me finalize the plan."

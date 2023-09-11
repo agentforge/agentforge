@@ -214,9 +214,9 @@ class MongoMemory:
   def recall(self, prefix: str, postfix: str, n: int = 5):
       mem = self.short_term_memory.messages
       def get_content(obj):
-          total_prefix = f"{prefix}{self.human_prefix}: " if obj.__class__.__name__ == "HumanMessage" else f"{postfix}{self.ai_prefix}: "
-          # postfix = f" {self.human_postfix}" if obj.__class__.__name__ == "HumanMessage" else f" {self.human_postfix}"
-          return total_prefix + obj.content # + postfix
+          total_prefix = f"{prefix} " if obj.__class__.__name__ == "HumanMessage" else ""
+          postfix_val = f" {postfix}" if obj.__class__.__name__ == "HumanMessage" else ""
+          return total_prefix + obj.content + postfix_val
       # TODO: Need a more robust way to ensure we don't hit token limit for prompt
-      hist = "\n".join(list(map(lambda obj: get_content(obj), mem[-n:])))
+      hist = "".join(list(map(lambda obj: get_content(obj), mem[-n:])))
       return hist
