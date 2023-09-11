@@ -218,7 +218,8 @@ class TaskManager:
     def save(self, task: Task) -> None:
         if task:
             task.updated_at = datetime.utcnow().isoformat()
-            print("task_] updaing task_:", task.id)
+            logger.info("task_updating task_:")
+            logger.info(task.to_dict())
             self.db.set(self.collection, task.id, task.to_dict())
         else:
             raise ValueError(f"Attempted to save task with {task}")

@@ -633,7 +633,7 @@ class PDDLGraph:
                     for prompt in prompts[action_name]:
                         parameter_type = self.parameter_types[prompt.split(" ")[-1]]
                         type_ = self.lookup_type(self.type_klasses, self.types, parameter_type)
-                        query = {'text': prompt, "datatype": type_, "class": parameter_type}
+                        query = {'condition': prompt, "datatype": type_, "class": parameter_type}
                         final_queries[action_name].append(query)
 
         for obj, action_list in objects.items():

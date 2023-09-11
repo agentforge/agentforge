@@ -91,17 +91,6 @@ class PlanningController:
         # TODO: Refactor to use our input
         return self.llm_ic_pddl_planner(input, plan_template)
 
-    """
-    Input - seed: The seed of the plan to be created. i.e. "(growing ?plant)"
-    Output - A question in Natural Language format
-    """
-    def create_query(self, obj: str, template: str, datatype: str, effects: List[Dict]) -> str:
-        query = {}
-        query['object'] = obj.replace("?","").replace("-", " ")
-        query['text'] = template
-        query['type'] = datatype
-        query['effect'] = effects
-        return query
 
     def extract_outermost_parentheses(self, s):
         # Indexes of the outermost opening and closing parentheses

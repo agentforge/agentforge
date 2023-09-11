@@ -25,7 +25,7 @@ class Query:
         input = context.get_model_input()
         prompt = context.prompts[f"{query['datatype']}.query.prompt"]
         data = {
-            "condition": query['text'],
+            "condition": query['condition'],
             "goal": query['goal'],
             "type": query['datatype'],
             "object": query['class'].replace("?",""),
