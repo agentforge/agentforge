@@ -28,6 +28,7 @@ class Task(BaseModel):
     updated_at: datetime
     active: bool
     actions: Optional[Dict[str, List[Any]]] = {'queue': deque([]),'complete': deque([]),'active': deque([]),'failed': deque([])}
+    history: Optional[List[Any]] = []
 
     @classmethod
     def from_dict(cls, task_data: dict):
@@ -76,7 +77,21 @@ class Task(BaseModel):
 
     def is_empty_complete(self) -> bool:
         return len(self.actions['complete']) == 0
-    
+
+    ### Tasks consist of stages, each with a series of actions to reach a goal
+    ### on plan. Intermediate stages allow us to complete plans that may required
+    ### many time steps.
+    def iterate_stage_and_flush(self):
+        # Increment the stage
+        self.stage += 1
+        
+        # Flush action queues into history
+        for action_queue in self.actions.values():
+            self.history.extend(list(action_queue))
+
+        # Reset action queues to their default states
+        self.actions = {'queue': deque([]), 'complete': deque([]), 'active': deque([]), 'failed': deque([])}
+
     """
     Creates new queries for the task using the planner
     """
