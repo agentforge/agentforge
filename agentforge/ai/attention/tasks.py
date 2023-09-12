@@ -68,8 +68,14 @@ class Task(BaseModel):
     def run(self, context: Context) -> None:
         context.task_routines[self.name].run(context)
 
-    def done(self) -> bool:
-        return len(self.actions['queue']) == 0 and len(self.actions['active']) == 0 and len(self.actions['complete']) > 0
+    def is_empty_queue(self) -> bool:
+        return len(self.actions['queue']) == 0
+        
+    def is_empty_active(self) -> bool:
+        return len(self.actions['active']) == 0
+
+    def is_empty_complete(self) -> bool:
+        return len(self.actions['complete']) == 0
     
     """
     Creates new queries for the task using the planner
@@ -96,8 +102,8 @@ class Task(BaseModel):
         return None
 
     # Adds a query to the completed lists - this is a successful query
-    def push_complete(self, query):
-        self.actions['complete'].append(query)
+    def push_complete(self, action):
+        self.actions['complete'].append(action)
 
     # Adds a query to the completed lists - for retrying
     def push_failed(self, query):

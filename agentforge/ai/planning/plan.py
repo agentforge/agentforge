@@ -9,6 +9,7 @@ from agentforge.ai.planning.pddl import PDDLGraph, PDDL
 from agentforge.ai.reasoning.query import Query
 from agentforge.ai.reasoning.relation import Relation
 from agentforge.ai.agents.context import Context
+from agentforge.ai.reasoning.zeroshot import ZeroShotClassifier
 
 ### PLANNING SUBROUTINE: Executes PDDL plans with help from LLM resource
 class Plan:
@@ -44,6 +45,19 @@ class Plan:
                 queries.append(seed)
         return queries
 
+    # Helper function to activate a query
+    def init_query(self, task, context):
+        query = task.activate_query()
+        if query is not None:
+            query = Query().get(context, query)
+            ## Capture Relational Information
+            # query = Relation().extract(context, query)
+            logger.info(f"{query=}")
+            # raise ValueError("STOP")
+            context.set("response", query['text'])
+            self.task_management.save(task)
+        return context
+
     def execute(self, context: Context) -> Dict[str, Any]:
         user_id = context.get('input.user_id')
         session_id = context.get('input.model_id')
@@ -58,54 +72,71 @@ class Plan:
         ### PLANNING
         # If there are no remaining queries for the planning task, we can execute the plan
         task = context.get("task")
-        done = task.done()
 
-        print(f"PLAN PLAN PLAN{task != None} and {not done} and {len(task.all())}")
-        print(task != None and not done and len(task.all()))
-        print(task)
+        ### If there is no task we should not engage in planning at this time...
+        if task is None:
+            return context
 
+        user_done = False
+        agent_done = True #TODO: When we add agent actions we need to make this smarter
+
+        empty_queue = task.is_empty_queue()
+        empty_active = task.is_empty_active()
+        empty_complete = task.is_empty_complete()
+
+        ### Check additional user intent on plan
+        plan = task.get_active_plan()
+        user_input = context.get("instruction")
+
+        ## TEST: Determine if the user has completed a plan
+        if plan is not None:
+            z = ZeroShotClassifier()
+            z_val = z.classify("### Instruction: Does this imply the user has completed the current plan? Respond with Yes or No. ### Input: {{user_input}} ### Response: ", ["Yes", "No"], {"user_input": user_input}, context)
+            if z_val == "Yes":
+                user_done = True
+                ## Move the plan to the next stage and trace graph to create new queries.
+                task.stage = task.stage + 1
+                if task.stage >= len(self.goals):
+                    ## If the next stage does not exist, congragulate the user! Job well done
+                    stream_string('channel', f"You've done it! You've completed the {task.name} plan.", end_token=" ")
+                    # TODO: save and return here
+                task.push_complete(plan)
+                self.task_management.save(task)
+            else:
+                stream_string('channel', "<PLAN-ACTIVE>", end_token=" ")
+                context.set("plan", plan['plan_nl'])
+
+        logger.info(f"empty_queue: {empty_queue}, empty_active: {empty_active}, plan: {plan}, empty_complete: {empty_complete}")
+
+        # GATHER NEW QUERIES FOR THIS STATE
         # if task in progress but no queries, generate them and create the PDDL Plan callback
-        if task != None and not done and len(task.all()) == 0:
+        # Triggers when we have no actions queued/active and we are either at an end-stage
+        # point initiated by the user/agent or 
+        if empty_queue and empty_active and ((user_done and agent_done) or empty_complete):
             # Get the current goal
             goal = self.goals[task.stage]
             print("GOAL", goal)
             queries = self.gather(goal)
-
             print(f"{queries=}")
             list(map(task.push, queries)) # efficiently push queries to the task
             logger.info(f"{task=}")
+            self.init_query(task, context)
 
-        if task != None and not done:
-            ### Get activated query if any
-            query = task.activate_query()
-            plan = task.activate_plan()
-            if query is not None:
-                query = Query().get(context, query)
+        # QUERY USER: Activate a query if we have none active
+        elif not empty_queue and empty_active:
+            context = self.init_query(task, context)
 
-                ## Capture Relational Information
-                # query = Relation().extract(context, query)
-
-                logger.info(f"{query=}")
-                # raise ValueError("STOP")
-                context.set("response", query['text'])
-
-                self.task_management.save(task)
-
-            ### Check for activated plan
-            elif plan is not None:
-                stream_string('channel', "<PLAN-ACTIVE>", end_token=" ")
-                context.set("plan", plan['plan_nl'])
-
-        elif task != None and done:
+        # PLAN: Not a new instance/stage and no queries, we're at planning time
+        elif empty_queue and empty_active:
             ## Queries complete, let's execute the plan
-            finalize_reponse = "I have all the info I need, let me finalize the plan."
+            finalize_reponse = "I have all the info I need, let me finalize the current plan."
 
             goal = self.goals[task.stage]
             problem_data = self.pddl.create_pddl_problem_state(task.actions["complete"], goal)
             logger.info(problem_data)
             logger.info("Creating PDDL Plan")
 
-            # TODO: Make channel user specific, make text plan specific
+            # TODO: Make channel user specific
             stream_string('channel', finalize_reponse, end_token=" ")
 
             context.set("response", finalize_reponse)
@@ -118,9 +149,10 @@ class Plan:
                 "plan": self.planner.best_plan,
                 "cost": self.planner.best_cost,
                 "metatype": "plan",
-                "problem": problem_data,
+                "state": problem_data,
             }
             task.push(plan_task)
+            task.activate_plan()
             self.task_management.save(task)
             context.set("response", response)
             return context

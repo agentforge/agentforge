@@ -1,11 +1,12 @@
 from typing import Any, Dict
 from agentforge.utils import async_execution_decorator
+from agentforge.utils import Parser
 
 ### BELIEFS: Stores a context for a user in the memory
 ### Remember: Stores message history between user and agent
 class Remember:
     def __init__(self):
-        pass
+        self.parser = Parser()
     
     @async_execution_decorator
     def execute(self, context: Dict[str, Any]) -> Dict[str, Any]:
@@ -15,11 +16,14 @@ class Remember:
         if context.get('response') == None:
             return context
 
+        response = context.get('response').replace("<s>","").strip()
+        response = self.parser.parse_llm_response(response)
+
         context.memory.remember(
             context.get('input.user_id'),
             context.get('model.persona.name'),
             context.get('instruction'),
-            context.get('response').replace("<s>","").strip(),
+            response,
         )
         return context
 

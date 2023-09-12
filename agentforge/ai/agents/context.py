@@ -4,7 +4,6 @@ from agentforge.utils import Parser
 from agentforge.utils import AbortController, logger
 from bson.objectid import ObjectId
 
-
 """
     Context Class - Shared State for Agent Subroutines
 

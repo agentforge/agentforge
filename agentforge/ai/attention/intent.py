@@ -89,11 +89,6 @@ class Intent:
         print('[INTENT]')
         user_input = context.get('instruction')
 
-        ## TEST: New intent gathering method
-        z = ZeroShotClassifier()
-        z_val = z.classify("### Instruction: Does this imply the user has completed the current plan? Respond with Yes or No. ### Input: {{user_input}} ### Response: ", ["Yes", "No"], {"user_input": user_input}, context)
-        logger.info(f"PLAN COMPLETE: {z_val}")
-
         # z_val = z.classify("### Instruction: Does this mean the user wants to initiate a new garden plan? Respond with Yes or No. ### Input: {{user_input}} ### Response: ", ["Yes", "No"], {"user_input": user_input}, context)
         # logger.info(f"PLAN A GARDEN: {z_val}")
 

@@ -67,6 +67,7 @@ class SimpleAgent:
         # Goals are the end point of each possible state of the plan
         garden_goals = [
             "growing ?cannabis-plant",
+            "flowering ?cannabis-plant",
             "harvest ?cannabis-plant",
         ]
         self.task_routines = {"garden": PlanningRoutine("garden", garden_prompts, garden_goals)}
