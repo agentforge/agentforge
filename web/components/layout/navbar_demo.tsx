@@ -26,7 +26,7 @@ export default function Navbar_demo() {
         {/* Header - desktop */}
         <div className="hidden md:flex w-[1120px] mx-5 flex h-16 max-w-screen-xl items-center justify-between xl:mx-auto ">
           {/*Logotype - left algined*/}
-          <Link href="/" className="flex items-center font-display text-2xl">
+          <Link href="/" className="flex items-center font-display text-2xl text-black dark:text-white">
             <Image
               src="/agentforge-logo.svg"
               alt="AgentForge logo"
@@ -42,7 +42,7 @@ export default function Navbar_demo() {
           {/* Ref: https://tailwindui.com/components/marketing/elements/headers */}
           <div className="hidden md:flex md:gap-x-[96px] md:pt-[8px]">
             <div className="relative">
-              <button type="button" className="flex items-center gap-x-1 font-mono text-lg font-medium leading-6 text-white"
+              <button type="button" className="flex items-center gap-x-1 font-mono text-lg font-medium leading-6 text-black dark:text-white"
                       onClick={() => router.push('#sec-vision')}
               >
                 Vision
@@ -52,7 +52,7 @@ export default function Navbar_demo() {
 
           <div className="hidden md:flex md:gap-x-[48px] md:pt-[8px]">
             <div className="relative">
-              <button type="button" className="flex items-center gap-x-1 font-mono text-lg font-medium leading-6 text-white"
+              <button type="button" className="flex items-center gap-x-1 font-mono text-lg font-medium leading-6 text-black dark:text-white"
                       onClick={() => router.push('#sec-cognition')}
               >
                 Cognition engine
@@ -62,7 +62,7 @@ export default function Navbar_demo() {
 
           <div className="hidden md:flex md:gap-x-[48px] md:pt-[8px]">
             <div className="relative">
-              <button type="button" className="flex items-center gap-x-1 font-mono text-lg font-medium leading-6 text-white" 
+              <button type="button" className="flex items-center gap-x-1 font-mono text-lg font-medium leading-6 text-black dark:text-white" 
                       onClick={() => router.push('#sec-projects')}
               >
                 Projects
@@ -73,7 +73,7 @@ export default function Navbar_demo() {
           {/*DEMO button - right algined*/}
           <div className="md:visible">
               <button
-                className="font-mono rounded-[4px] border-2 border-white p-1.5 px-4 text-base text-white transition-all hover:bg-white/50"
+                className="font-mono rounded-[4px] border-2 border-black dark:border-white p-1.5 px-4 text-base text-black dark:text-white transition-all hover:bg-white/50"
                 onClick={() => router.push('/demo')}
               >
                 DEMO
@@ -89,7 +89,7 @@ export default function Navbar_demo() {
           {/*DEMO button - left algined*/}
             <div className="md:hidden">
               <button
-                className="font-mono rounded-[4px] border-2 border-white p-1.5 px-4 text-sm text-white transition-all hover:bg-white/50"
+                className="font-mono rounded-[4px] border-2 border-black dark:border-white p-1.5 px-4 text-sm text-black dark:text-white transition-all hover:bg-white/50"
                 onClick={() => router.push('/demo')}>
                 DEMO
               </button>
@@ -133,7 +133,7 @@ export default function Navbar_demo() {
                           <div className="-mx-3">
                             <button type="button" className={"flex w-full items-center justify-between rounded-lg " + 
                                                               "py-2 pl-3 pr-3.5 font-mono text-base font-semibold " + 
-                                                              "leading-7 text-black hover:bg-gray-50"} 
+                                                              "leading-7 text-black dark:text-white hover:bg-gray-50"} 
                                     aria-controls="disclosure-1" aria-expanded="false"
                                     onClick={() => {router.push('#sec-vision'); setMobileMenuOpen(false);}}
                             >
@@ -141,7 +141,7 @@ export default function Navbar_demo() {
                             </button>
                             <button type="button" className={"flex w-full items-center justify-between rounded-lg " + 
                                                               "py-2 pl-3 pr-3.5 text-base font-mono font-semibold " + 
-                                                              "leading-7 text-black hover:bg-gray-50"} 
+                                                              "leading-7 text-black dark:text-white hover:bg-gray-50"} 
                                     aria-controls="disclosure-1" aria-expanded="false"
                                     onClick={() => {router.push('#sec-cognition'); setMobileMenuOpen(false);}}
                             >
@@ -149,7 +149,7 @@ export default function Navbar_demo() {
                             </button>
                             <button type="button" className={"flex w-full items-center justify-between rounded-lg " + 
                                                               "py-2 pl-3 pr-3.5 text-base font-mono font-semibold " + 
-                                                              "leading-7 text-black hover:bg-gray-50"} 
+                                                              "leading-7 text-black dark:text-white hover:bg-gray-50"} 
                                     aria-controls="disclosure-1" aria-expanded="false"
                                     onClick={() => {router.push('#sec-projects'); setMobileMenuOpen(false);}}
                             >
@@ -164,7 +164,7 @@ export default function Navbar_demo() {
               </div>
               ) : ( 
                 <div className="flex lg:hidden">
-                <button type="button" className="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-white"
+                <button type="button" className="-m-2.5 inline-flex items-center justify-center rounded-md p-2.5 text-black dark:text-white"
                 onClick={() => setMobileMenuOpen(true)} >
                   <span className="sr-only">Open main menu</span>
                   <svg className="h-6 w-6" fill="white" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
