@@ -18,22 +18,31 @@ def convert_to_serializable(obj):
     raise TypeError(key_err)
 
 class _SentinelTokenStoppingCriteria(StoppingCriteria):
-    def __init__(self, sentinel_token_ids: torch.LongTensor,
-                 starting_idx: int):
+
+    def __init__(self, sentinel_token_ids: list, starting_idx: int):
         StoppingCriteria.__init__(self)
         self.sentinel_token_ids = sentinel_token_ids
         self.starting_idx = starting_idx
+        if len(self.sentinel_token_ids) > 0:
+          self.shortest = min([x.shape[-1] for x in sentinel_token_ids])
 
     def __call__(self, input_ids: torch.LongTensor, _scores: torch.FloatTensor) -> bool:
         for sample in input_ids:
             trimmed_sample = sample[self.starting_idx:]
-            # Can't unfold, output is still too tiny. Skip.
-            if trimmed_sample.shape[-1] < self.sentinel_token_ids.shape[-1]:
+            trimmed_len = trimmed_sample.shape[-1]
+            if trimmed_len < self.shortest:
                 continue
 
-            for window in trimmed_sample.unfold(0, self.sentinel_token_ids.shape[-1], 1):
-                if torch.all(torch.eq(self.sentinel_token_ids, window)):
+            for sentinel in self.sentinel_token_ids:
+                sentinel_len = sentinel.shape[-1]
+                if trimmed_len < sentinel_len:
+                    continue
+
+                window = trimmed_sample[-sentinel_len:]
+                logger.info(f"{sentinel} == {window}")
+                if torch.all(torch.eq(sentinel, window)):
                     return True
+
         return False
 
 # Drives text generation for multiple models.
@@ -111,7 +120,7 @@ class LocalGenerator:
     if sequence_bias_vals is not None:
       for s in sequence_bias_vals:
         sequence_bias[tuple(slow_tokenizer([s], add_special_tokens=False).input_ids[0])] = 10.0
-
+    logger.info(f"{sequence_bias=}")
     # Config drive overrides -- ID over string
     if "eos_token_id" in model_config:
       print("eos_token_id set...")
@@ -133,21 +142,41 @@ class LocalGenerator:
 
     gen_config = {k: v for k, v in gen_config.items() if v is not None and v != ""}
 
+     # Token IDs -- faster and cheaper
     if "stopping_criteria" in gen_config:
-      filt_stops = [value for value in gen_config["stopping_criteria"].split(",") if value]
-      stops = [tokenizer(i.strip(), add_special_tokens=False, return_tensors="pt").input_ids.to("cuda")[0] for i in filt_stops]
       logging.info("[STOPS]")
-      logging.info(stops)
-      logging.info(gen_config["stopping_criteria"].split(","))
-      stops_list = [_SentinelTokenStoppingCriteria(i, starting_idx=0) for i in stops]
-      stopping_criteria = StoppingCriteriaList(stops_list)
-      gen_config["stopping_criteria"] = stopping_criteria
+      logging.info(gen_config["stopping_criteria"])
+      stop_words = gen_config["stopping_criteria"]
     else:
-      stopping_criteria = None
-    
+      stop_words = []
+
+    ## less efficient to tokenize so often but works for dynamic
+    if "stopping_criteria_string" in gen_config:
+        stop_word_strings = gen_config["stopping_criteria_string"].split(",")
+    else:
+       stop_word_strings = []
+
+    for txt in stop_word_strings:
+      tok = tokenizer.encode(f"<s>{txt}", add_special_tokens=False)[1:]
+      stop_words.append(tok)
+
+    stopping_criteria_list = StoppingCriteriaList()
+
+    sentinel_token_ids = []
+    for l in stop_words:
+        sentinel_token_ids.append(torch.LongTensor(l).cuda()) #also consider 29937, 2277
+
     with torch.autocast("cuda"):
       inputs = tokenizer(prompt, return_tensors="pt")
       input_ids = inputs["input_ids"].cuda()
+      if len(stop_words) > 0:
+        logger.info("sentinel_token_ids")
+        logger.info(sentinel_token_ids)
+        stopping_criteria_list.append(
+            _SentinelTokenStoppingCriteria(
+                sentinel_token_ids=sentinel_token_ids, starting_idx=len(input_ids[0])
+            )
+        )
       generation_config = GenerationConfig(
           **gen_config,
       )
@@ -165,15 +194,19 @@ class LocalGenerator:
             gen = model.module.generate
           else:
             gen = model.generate
-            final_kwargs = {
+          
+          final_kwargs = {
               'input_ids': input_ids,
               'generation_config': generation_config,
               'return_dict_in_generate': True,
               'attention_mask': torch.ones_like(input_ids),
-              # 'stopping_criteria': stopping_criteria,
           }
-          logging.info(f"Rendering with {json.dumps(generation_config, indent=4, default=convert_to_serializable)}")
-          
+
+          if len(stopping_criteria_list) > 0:
+            final_kwargs["stopping_criteria"] = stopping_criteria_list
+
+          # logging.info(f"Rendering with {json.dumps(final_kwargs, indent=4, default=convert_to_serializable)}")
+
           ### Extra kwargs
           if streamer != None:
             final_kwargs['streamer'] = streamer
