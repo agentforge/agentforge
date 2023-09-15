@@ -89,6 +89,9 @@ class Task(BaseModel):
         for action_queue in self.actions.values():
             self.history.extend(list(action_queue))
 
+        self.flush()
+
+    def flush(self):
         # Reset action queues to their default states
         self.actions = {'queue': deque([]), 'complete': deque([]), 'active': deque([]), 'failed': deque([])}
 

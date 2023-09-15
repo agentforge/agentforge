@@ -2,6 +2,7 @@ import re
 from agentforge.interfaces import interface_interactor
 from agentforge.utils.parser import Parser
 from agentforge.utils import logger
+from copy import deepcopy
 
 # TODO MOVE TO ENV
 MAX_CLASSIFIER_RETRIES = 3
@@ -19,10 +20,10 @@ class Classifier:
     def extract_classification(self, test):
         results = []
         patterns = [
-            r'[\s\S]*?Final Decision: ([\-a-zA-Z0-9, _]+)</s>',
-            r'[\s\S]*?Response: ([\-a-zA-Z0-9, _]+)</s>',
-            r'[\s\S]*?Final classification: ([\-a-zA-Z0-9, _]+)</s>',
-            r'[\s\S]*?Final Answer: ([\-a-zA-Z0-9, _]+)</s>',
+            r'[\s\S]*?Final Decision: ([\-a-zA-Z0-9, _]+)\s*</s>',
+            r'[\s\S]*?Response: ([\-a-zA-Z0-9, _]+)\s*</s>',
+            r'[\s\S]*?Final classification: ([\-a-zA-Z0-9, _]+)\s*</s>',
+            r'[\s\S]*?Final Answer: ([\-a-zA-Z0-9, _]+)\s*</s>'
             # r'[\s\S]*?Final ([\-a-zA-Z0-9, _]+): ([\-a-zA-Z0-9, _]+)</s>',
         ]
         for p in patterns:
@@ -54,9 +55,11 @@ class Classifier:
     def classify(self, args, prompt, context, retries=0):
         for k, v in args.items():
             prompt = prompt.replace(f"{{{k}}}", v)
+        gen_config = deepcopy(context.get('model.generation_config'))
+        gen_config['stopping_criteria'] = []
         input_ = {
             "prompt": prompt,
-            "generation_config": context.get('model.generation_config'), # TODO: We need to use a dedicated model
+            "generation_config": gen_config, # TODO: We need to use a dedicated model
             "model_config": context.get('model.model_config'),
             "streaming_override": False, # sets streaming to False
         }
@@ -75,6 +78,7 @@ class Classifier:
         
         # Attempt regex extraction
         value = self.extract_classification(generated)
+        logger.info(f"EXTRACTED ==> {value}")
         if value:
             return [value]
 
@@ -87,4 +91,3 @@ class Classifier:
         if retries < MAX_CLASSIFIER_RETRIES:
             return self.classify(args, prompt, context, retries=retries+1)
         return []
-        return response.split(",")

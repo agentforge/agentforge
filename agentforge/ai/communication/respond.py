@@ -4,6 +4,7 @@ from agentforge.utils import Parser
 from agentforge.utils.stream import stream_string
 from agentforge.ai.attention.tasks import TaskManager
 from agentforge.utils import logger
+from copy import deepcopy
 
 ### COMMUNICATION: Handles response generation
 class Respond:
@@ -13,37 +14,29 @@ class Respond:
         self.parser = Parser()
 
     def execute(self, context: Dict[str, Any]) -> Dict[str, Any]:
-        # logger.info("RESPOND?", context.has_key("response"))
         ### Another subroutine gotchu dawg, bail
         if context.has_key("response"):
             return context
 
-        # Iterate through unsent queries and send the latest if it exists
-        task = context.get("task")
-        # query_engine = QueryEngine(context.get('input.user_id'), context.get('input.model_id'))
-        if task is not None and task.get_active_query() is not None:
-            return context
-
-        # If no query exists respond to the user based on the input and context
         formatted = context.get_formatted()
 
-        # If no query exists respond to the user based on the input and context
-        formatted = context.get_formatted()
         for tok in ['eos_token', 'bos_token', 'prefix', 'postfix']:
             if context.has_key(f"model.model_config.{tok}"):
                 formatted = formatted.replace(context.get(f"model.model_config'.{tok}"), "")
 
+        gen_config = deepcopy(context.get('model.generation_config'))
         input = {
             "prompt": formatted,
-            "generation_config": context.get('model.generation_config'),
+            "generation_config": gen_config,
             "model_config": context.get('model.model_config'),
         }
-        # Add user and agent name to stopping criteria
-        username = context.get('input.user_name', "Human")
-        agentname = context.get('model.persona.display_name')
-        xtra_stops = f",###,Human:,GreenSage:"
-        new_stop = input['generation_config']['stopping_criteria'] + xtra_stops
-        input['generation_config']['stopping_criteria'] = new_stop
+
+        username = context.get("input.user_name") + ":"
+        agentname = context.get("model.persona.display_name") + ":"
+
+        # add 'User:' and 'Assistant:' type stopping criteria
+        gen_config["stopping_criteria_string"] = f"{username},{agentname}"
+
         response = self.service.call(input)
 
         if response is not None and "choices" in response:

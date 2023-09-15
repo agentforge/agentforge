@@ -6,16 +6,20 @@ from agentforge.utils import Parser
 from agentforge.ai.beliefs.linker import EntityLinker
 from agentforge.ai.beliefs.opql import OPQLMemory
 from agentforge.ai.reasoning.classifier import Classifier
+from agentforge.ai.reasoning.zeroshot import ZeroShotClassifier
 from agentforge.ai.agents.context import Context
 from word2number import w2n
 from nltk.corpus import wordnet as wn
 from agentforge.utils import logger
+import pickle
 
 """
     Split conditional PDDL statement -- maybe move this to PDDL module
     Input: query_str - string with OR conditions "seed-availabel ?plant OR clone-avail ?plant"
     Output: string with comma separated conditions "seed availabel, clone avail"
 """
+RELATION_PROMPT =  """### Instruction: Come up with a descriptive verb based on the input output pair, such as 'is a part of' or 'has chosen strain' for instance. Respond with a single verb. ### Input: Input: {{question}} Output: {{response}} ### Response: Verb:"""
+
 def get_multi(query_str):
     # Step 1: Remove any string starting with '?'
     query_str = re.sub(r'\?[\w\-]+', '', query_str)
@@ -44,7 +48,6 @@ def pluralize_nltk(word):
     else:
         return word + 's'
 
-
 class QueryInterface(BaseModel):
     text: str
     relation: str
@@ -54,16 +57,48 @@ class QueryInterface(BaseModel):
 ### Wrapper for OPQLMemory, allows the agent to learn and query from our symbolic memory
 class SymbolicMemory:
     def __init__(self) -> None:
-        self.entity_linker = EntityLinker()
-        self.opql_memory = OPQLMemory()
-        self.bs_filter = OPQLMemory() # Our bullshit filter stores negations, i.e. the earth is not flat.
         self.llm = interface_interactor.get_interface("llm")
-        # self.db = interface_interactor.get_interface("db")
+        self.db = interface_interactor.get_interface("db")
         # self.vectorstore = interface_interactor.get_interface("vectorstore")
         self.parser = Parser()
+        self.entity_linker = EntityLinker()
         self.classifier = Classifier()
-        # TODO: Move to env
-        self.ATTENTION_TTL_DAYS = 7 # The TTL for attention documents is set to 7 days
+        self.zeroshot = ZeroShotClassifier()
+        self.opql_memory = OPQLMemory()
+        self.bs_filter = OPQLMemory()
+
+    def save(self, key: str):
+        collection = "symbolic_memory"
+
+        # Serialize the current object
+        data = {"opql_memory": self.opql_memory.serialize(), "bs_filter": self.bs_filter.serialize()}
+        serialized_data = pickle.dumps(data)
+
+        # Check if the record already exists
+        if self.db.get(collection, key) is not None:
+            # Record exists; update it
+            self.db.set(collection, key, {"data": serialized_data})
+        else:
+            # Record doesn't exist; create it
+            self.db.create(collection, key, {"data": serialized_data})
+
+    def load(self, key: str):
+        collection = "symbolic_memory"
+        # Retrieve the serialized data from the database
+        stored_data = self.db.get(collection, key)
+        
+        if stored_data is not None:
+            # Deserialize and update the object
+            loaded_data = pickle.loads(stored_data["data"])
+            deserialized = {}
+            for k,v in loaded_data.items():
+                deserialized[k] = OPQLMemory.deserialize(v)
+            self.__dict__.update(deserialized)
+
+    def get_relation(self, query, result, context):
+        relation = self.zeroshot.classify(RELATION_PROMPT, [], {"question": query['text'], "response": result}, context)
+        if relation is None:
+            return " related to "
 
     # Given a query (w/response) and context we learn an object, predicate, subject triplet
     # Returns: True/False + results if information was successfully learned or not
@@ -74,47 +109,52 @@ class SymbolicMemory:
             relation = " related to "
 
         object_singular = query["class"]
-        subject = "Human"
+        user_name = context.get("input.user_id")
         verb = query["goal"]
         condition = query["condition"]
-        args = {
+        cot_args = {
                 "object_singular": object_singular,
-                "verb": verb, "subject": subject,
+                "verb": verb, "subject": "Human",
                 "response": context.get("instruction")
         }
         if " OR " in condition:
             prompt = context.prompts[f"multi.cot.prompt"]
-            args["multi"] = get_multi(condition)
+            cot_args["multi"] = get_multi(condition)
         else:
             prompt = context.prompts[f"{query['datatype']}.cot.prompt"]
 
-        prompt = context.process_prompt(prompt, args)
+        prompt = context.process_prompt(prompt, cot_args)
 
         # args = {"query": query['text'], }
-        results = self.classifier.classify(args, prompt, context)
-        print(results)
+        results = self.classifier.classify(cot_args, prompt, context)
         if len(results) == 0:
-            print("Error with classification. See logs.")
+            logger.info("Error with classification. See logs.")
             return False, []
+
         # For string types the results fo classification are a List[str] corresponding to the subject
         if query['datatype'] == "string":
-            if len(results) > 0 and results[0] == "None":
+            # None is a specific type of failure for strings
+            if len(results) == 0:
                 return False, []
+            if len(results) > 0 and results[0] == "None":
+                return False, [None]
             for subject in results:
                 subject = subject.replace(" ", "-").strip() # If any spaces are involved they will break PDDL
-                print("[SYMBOLIC] ", subject)
-                self.create_predicate("Human", relation, subject) # TODO: Need to pull user name
+                logger.info(f"[SYMBOLIC] {subject}")
+                self.create_predicate(user_name, relation, subject) # TODO: Need to pull user name
             return True, results
+
         # For Boolean the results are True, False, or None. Subject is capture in query context.
         elif query['datatype'] == "boolean":
             if results[0].lower() in  ["true", "yes", "1"]:
-                self.create_predicate("Human", relation, object_singular) # TODO: Need to pull user name
+                self.create_predicate(user_name, relation, object_singular) # TODO: Need to pull user name
                 return True, [True]
             elif results[0].lower() in  ["false", "no", "0"]:
-                self.create_negation("Human", relation, object_singular) # TODO: Need to pull user name
+                self.create_negation(user_name, relation, object_singular) # TODO: Need to pull user name
                 return True, [False]
             else:
                 return False, [None]
+
         # For Number the results are must adhere to some numeric values. Subject is capture in query context.
         elif query['datatype'] == "numeric":
             try:
@@ -124,14 +164,14 @@ class SymbolicMemory:
                 else:
                     num_value = w2n.word_to_num(results[0].lower())
                 # Create the predicate with the numeric value
-                self.create_predicate("Human", relation, object_singular, num_value)  # TODO: Need to define amounts
+                self.create_predicate(user_name, relation, object_singular, num_value)  # TODO: Need to define amounts
                 return True, results
             except ValueError:
                 # If conversion to integer fails
                 return False, []
             except Exception as e:
                 # Handle other exceptions
-                print(f"An error occurred: {e}")
+                logger.info(f"An error occurred: {e}")
                 return False, []
 
         return False, []
@@ -139,12 +179,12 @@ class SymbolicMemory:
     # Unguided entity learner using old-school NLP techniques
     # Problematic! -- We need to use few-shot CoT LLMs for greater depth of reasoning.
     def entity_learn(self, query: QueryInterface):
-        print("Learning...", query)
+        logger.info(f"Learning... {query}")
         obj, relation, subject = self.entity_linker.link_relations(query['text'])
         self.create_predicate(obj, relation, subject)
 
     def create_predicate(self, obj, relation, subject):
-        print(f"Object: {obj}\nRelation: {relation}\nSubject: {subject}")
+        logger.info(f"Object: {obj}\nRelation: {relation}\nSubject: {subject}")
         if obj and relation and subject:
             self.opql_memory.set(obj, relation, subject)
             return {"success": True}
@@ -152,24 +192,20 @@ class SymbolicMemory:
             return {"success": False, "message": f"Text is not a valid Object<{obj}>/Relation<{relation}>/Subject<{subject}>, please try again."}
 
     def create_negation(self, obj, relation, subject):
-        print(f"Object: {obj}\nRelation: {relation}\nSubject: {subject}")
+        logger.info(f"Object: {obj}\nRelation: {relation}\nSubject: {subject}")
         if obj and relation and subject:
             self.bs_filter.set(obj, relation, subject)
             return {"success": True}
         else:
             return {"success": False, "message": f"Text is not a valid Object<{obj}>/Relation<{relation}>/Subject<{subject}>, please try again."}
 
-    def get_predicate(self, relation, entity_name):
-        relation_embedding = self.opql_memory.model(**self.opql_memory.tokenizer(relation, return_tensors="pt")).last_hidden_state.mean(dim=1)
-        entity_embedding = self.opql_memory.model(**self.opql_memory.tokenizer(entity_name, return_tensors="pt")).last_hidden_state.mean(dim=1)
-        query_for_most_similar = torch.cat([relation_embedding, entity_embedding], dim=-1)
+    def get_predicate(self, entity_name, relation):
+        most_similar = self.opql_memory.get(entity_name, relation)
 
-        most_similar = self.opql_memory.get_most_similar(query_for_most_similar, k=1, threshold=0.1)
-
-        print("Most Similar Embeddings:")
+        logger.info("Most Similar Embeddings:")
         for key, value, score in most_similar:
-            print("Key:", key, "Value:", value, "Score:", score)
-
+            logger.info(f"Key: {key} Value: {value} Score:{score}")
+        return most_similar
 
 def test():
     pass

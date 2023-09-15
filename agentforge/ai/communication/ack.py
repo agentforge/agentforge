@@ -1,5 +1,6 @@
 from typing import Any, Dict
 from agentforge.ai.beliefs.symbolic import SymbolicMemory
+from agentforge.ai.reasoning.zeroshot import ZeroShotClassifier
 from agentforge.ai.attention.tasks import TaskManager
 from agentforge.utils import logger
 
@@ -9,22 +10,36 @@ from agentforge.utils import logger
 class Acknowledge:
     def __init__(self, domain):
         self.domain = domain
-        self.symbolic_memory = SymbolicMemory()
         self.task_management = TaskManager()
-    
+        self.symbolic_memory = SymbolicMemory()
+        self.zeroshot = ZeroShotClassifier()
+
+
     def execute(self, context: Dict[str, Any]) -> Dict[str, Any]:
-        # user_id = context['input']['user_id']
-        # session_id = context['input']['model_id']
-        # key = f"{user_id}:{session_id}:{self.domain}"
+        user_id = context.get('input.user_id')
+        session_id = context.get('input.model_id')
+        key = f"{user_id}:{session_id}"
+        self.symbolic_memory.load(key)
 
         ### UPDATE_BELIEFS
         # # if query exists and is a response, pop
         task = context.get("task")
+        valid_response = False
         # task.pretty_print()
         query = task.get_active_query()
         logger.info("[ACTIVE QUERY]")
         logger.info(query)
-        if query is not None:
+
+        if query is None:
+            return context
+
+        # use zeroshot to quick and dirty check if the user is talking about something else
+        prompt = "### Instruction: Is the following output a valid {type} response to this input? Input: {question} Output: {response} ### Response:"
+        valid_response = self.zeroshot.classify(prompt, ["Yes", "No"], {"type": query['datatype'], "question": query['text'], "response": context.get("instruction")}, context, max_new_tokens=2)
+        logger.info(f"VALID RESPONSE ACK {valid_response}")
+        valid_response = lambda s: True if s.lower() == 'yes' else False if s.lower() == 'no' else None
+
+        if valid_response:
             # raise ValueError("query not none")
             # feed in to the OPQL
             query["response"] = context.get("instruction") # The user response comes in as a prompt
@@ -38,12 +53,22 @@ class Acknowledge:
             logger.info(learned)
             logger.info(results)
             query["results"] = results
+
             if learned:
                 # TODO: Make channel user specific, make text plan specific
                 # stream_string('channel', "Okay I've jotted that down.", end_token=" ")
+                logger.info("PUSH COMPLETE")
                 task.push_complete(query)
                 self.task_management.save(task)
-            else:
-                task.push_failed(query)
-                self.task_management.save(task)
+                self.symbolic_memory.save(key)
+                context.set('task', task)
+                context.set('ack', results)
+                return context
+        
+        # Fail state
+        logger.info("PUSH FAILED")
+        task.push_failed(query)
+        self.task_management.save(task)
+        context.set('task', task)
         return context
+    

@@ -50,23 +50,31 @@ class Plan:
     def init_queries(self, task, context):
         # Get the current goal
         goal = self.goals[task.stage]
-        print("GOAL", goal)
+        logger.info("GOAL", goal)
         queries = self.gather(goal)
-        print(f"{queries=}")
+        logger.info(f"{queries=}")
         list(map(task.push, queries)) # efficiently push queries to the task
         logger.info(f"{task=}")
+        self.task_management.save(task)
         return self.init_query(task, context)
 
     # Helper function to activate a query
     def init_query(self, task, context):
         query = task.activate_query()
+        logger.info(f"INIT QUERY {query}")
         if query is not None:
-            query = Query().get(context, query)
-            ## Capture Relational Information
-            # query = Relation().extract(context, query)
-            logger.info(f"{query=}")
-            # raise ValueError("STOP")
-            context.set("response", query['text'])
+            if 'text' in query:
+                response = query['text']
+            else:
+                # only stream the new query if we are on the happy path
+                query = Query().get(context, query, streaming=False)
+                ## Capture Relational Information
+                # query = Relation().extract(context, query)
+                logger.info(f"{query=}")
+                # raise ValueError("STOP")
+                response = query['text']
+
+            context.set("query", response)
             self.task_management.save(task)
         return context
 
@@ -103,6 +111,7 @@ class Plan:
             if z_val == "Yes":
                 task.push_complete(plan)
                 task.iterate_stage_and_flush()
+                self.pddl.execute_plan(plan)
                 user_done = True
                 ## Move the plan to the next stage and trace graph to create new queries.
                 if task.stage >= len(self.goals):
@@ -129,14 +138,17 @@ class Plan:
         # Triggers when we have no actions queued/active and we are either at an end-stage
         # point initiated by the user/agent or 
         if empty_queue and empty_active and ((user_done and agent_done) or empty_complete):
-            self.init_queries(task, context)
+            logger.info("GATHERING NEW QUERIES")
+            context = self.init_queries(task, context)
 
         # QUERY USER: Activate a query if we have none active
         elif not empty_queue and empty_active:
+            logger.info("ACTIVATING QUERY")
             context = self.init_query(task, context)
 
         # PLAN: Not a new instance/stage and no queries, we're at planning time
         elif empty_queue and empty_active and not plan:
+            logger.info("PLANNING")
             ## Queries complete, let's execute the plan
             finalize_reponse = "I have all the info I need, let me finalize the current plan."
 
@@ -148,7 +160,6 @@ class Plan:
             # TODO: Make channel user specific
             stream_string('channel', finalize_reponse, end_token=" ")
 
-            context.set("response", finalize_reponse)
             response = self.planner.execute(context.get_model_input(), task, problem_data)
 
             task.active = True
@@ -163,7 +174,7 @@ class Plan:
             task.push(plan_task)
             task.activate_plan()
             self.task_management.save(task)
-            context.set("response", response)
+            context.set("plan_response", response)
             return context
 
         return context

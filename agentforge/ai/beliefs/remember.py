@@ -19,6 +19,13 @@ class Remember:
         response = context.get('response').replace("<s>","").strip()
         response = self.parser.parse_llm_response(response)
 
+        # Setup working memory
+        user_name = context.get('input.user_name')
+        agent = context.get('model.persona.name')
+        user = context.get('input.user_id')
+        session_id = context.get('input.model_id')
+        context.memory.working_memory.setup_memory(user_name, agent, user, session_id)
+
         context.memory.remember(
             context.get('input.user_id'),
             context.get('model.persona.name'),

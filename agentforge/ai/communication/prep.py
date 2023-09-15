@@ -1,5 +1,6 @@
 from typing import Any, Dict
 from agentforge.utils import logger
+from agentforge.utils.stream import stream_string
 
 ### COMMUNICATION: Preps output for end-user, stripping PII/IDs and anything else unserializable
 ### Also implements presentation layer
@@ -11,6 +12,8 @@ class Prep:
         print("EXECUTING PREP")
         if context.has_key('memory'):
             context.delete('memory')
+        context.save()
+
         print("not context.has_key")
         print(context.has_key('response'))
         if not context.has_key('response') or context.get('response') is None:

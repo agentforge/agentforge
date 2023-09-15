@@ -86,7 +86,6 @@ class PDDLGraphModel(BaseModel):
     types: Optional[Dict[str, Any]] = Field(default=None)
     attributes: Optional[Dict[str, Any]] = Field(default=None)
     effects: Optional[Dict[str, Any]] = Field(default=None)
-    objects_store: Optional[Dict[str, Any]] = Field(default=None)
     actions: Optional[Dict[str, Any]] = Field(default=None)
     predicates: Optional[Dict[str, Any]] = Field(default=None)
     preconditions: Optional[Dict[str, Any]] = Field(default=None)
@@ -327,7 +326,11 @@ class PDDLGraph:
         elif expr_str.startswith('(not'):
             return {'not': self.parse_expression(expr_str[5:-1].strip())}
         else:
-            return self.parse_predicate(expr_str[1:-1])
+            logger.info("PARSE_EXPRESSION")
+            logger.info(expr_str)
+            val = self.parse_predicate(expr_str[1:-1])
+            logger.info(val)
+            return val
 
     def extract_preconditions(self, file_name):
         with open(file_name, 'r') as file:
@@ -483,17 +486,35 @@ class PDDLGraph:
                     else:
                         objects[variable].append({"action": action[0]})
 
+    # if this node has been evaluated/action run
+    def is_evaluated_node(self, node):
+        logger.info("EVAL NODE")
+        logger.info(f"{node}")
+        # check knowledge base for node
+        return False
+
+    # if this edge has been evaluated/action run
+    def is_evaluated_edge(self, edge):
+        logger.info("EVAL EDGE")
+        logger.info(f"{edge}")
+        # check knowledge base for node
+        return False
+
     # Updated function to evaluate a node
     def eval_node(self, objects, graph, node):
         predecessors = list(graph.predecessors(self.root_element(node)))
-        if not predecessors:
+        predecessors_evaled = [p for p in predecessors if not self.is_evaluated_node(p)]
+        # If no predessors or all predessors are already evaluated
+        if not predecessors_evaled:
             self.run_node(objects, graph, node)
         return True
 
     # Updated function to evaluate an edge
     def eval_edge(self, objects, graph, edge):
         predecessors = list(graph.predecessors(self.root_element(edge[0])))
-        if not predecessors:
+        predecessors_evaled = [p for p in predecessors if not self.is_evaluated_edge(p)]
+        # If no predessors or all predessors are already evaluated
+        if not predecessors_evaled:
             self.run_edge(objects, graph, edge)
         return True
 
@@ -521,7 +542,6 @@ class PDDLGraph:
             return types[key]
         elif key in types and types[key] in types:
             return self.lookup_type(type_klasses, types, types[key])
-
 
     """
         Iterates the entire graph and creates necessary state but does not traverse
@@ -580,11 +600,9 @@ class PDDLGraph:
         self.G, self.dot = self.create_graph(self.actions, self.preconditions, self.effects)
         attributes = nx.get_edge_attributes(self.G, 'variables')
         self.attributes = defaultdict(list)
-        self.effects = defaultdict(list)
         for k,v in attributes.items():
             for item in k:
                 self.attributes[item].append(v)
-                self.effects[v].append(item)
 
         logger.info("ATTRIBUTES...")
         logger.info(self.attributes)
@@ -603,7 +621,6 @@ class PDDLGraph:
         self.setup_graph()
 
         # Trace the graph starting from "growing ?seedling"
-        self.objects_store = {}
         objects = self.trace_pddl_graph(self.objects, self.G, seed)
         
         logger.info(f"{objects=}")
@@ -652,6 +669,12 @@ class PDDL:
     def __init__(self, pddl_graph):
         self.pddl_graph = pddl_graph
     
+    """
+        Executes the actions in the plan iteratively updating the state
+    """
+    def execute_plan(self, plan):
+        pass
+
     """
     # We need to iterate through the responses and create the PDDL problem
     """

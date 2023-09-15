@@ -1,8 +1,10 @@
 import json, uuid, os
 from typing import Dict
+from agentforge.interfaces import interface_interactor
 from agentforge.utils import Parser
 from agentforge.utils import AbortController, logger
 from bson.objectid import ObjectId
+from copy import deepcopy
 
 """
     Context Class - Shared State for Agent Subroutines
@@ -17,6 +19,7 @@ from bson.objectid import ObjectId
 """
 class Context:
     def __init__(self, init: Dict = {}) -> None:
+        self.db = interface_interactor.get_interface("db")
         self.parser = Parser()
         self.task_routines = {}
         self.context_data = {}
@@ -25,6 +28,34 @@ class Context:
         self._id = uuid.uuid4()
         for k,v in init.items():
             self.set(k, v)
+
+    def save(self):
+        collection = "context"
+        ctx = deepcopy(self.context_data)
+        if "task" in ctx:
+            del ctx["task"]
+        # Prepare the data to be inserted; only serialize what's necessary
+        data = {
+            "context_data": ctx,
+            "prompts": self.prompts,
+        }
+
+        # Insert to the DB
+        self.db.create(collection, str(self._id), data)
+
+    def load(self, context_id: str):
+        collection = "context"
+        
+        # Retrieve data from DB
+        stored_data = self.db.get(collection, context_id)
+        
+        if stored_data is not None:
+            # Update the object with the loaded data
+            self.__dict__.update(stored_data)
+            
+            # Initialize parser and abort_controller since they were skipped during serialization
+            self.parser = Parser()
+            self.abort_controller = AbortController()
 
     """
     abort - Send a signal to the agent to abort a task
@@ -98,16 +129,30 @@ class Context:
             if value is None:
                 return False
         return False
+    
+    def get_messages(self, prefix="", postfix=""):
+        messages = []
+        for message in self.get('input.messages')[:-1]:
+            if message['role'] == 'user':
+                messages.append(f"{prefix}{message['content']}{postfix}")
+            elif message['role'] == 'assistant':
+                messages.append(message['content'])
+        return " ".join(messages)
 
     ### Helper function to get entire formatted prompt
     def get_formatted(self):
         prompt_template = self.get('model.prompt_config.prompt_template')
         biography = self.get('model.persona.biography')
         memory = self.get('recall')
+        if memory is not None and memory.strip() == "":
+            memory = None
         plan = self.get('plan')
         instruction = self.get('prompt')
         username = self.get('input.user_name', "Human")
         agentname = self.get('model.persona.display_name', "Agent")
+        query = self.get('query', None)
+        message_history = self.get_messages(prefix=f"{username}: ", postfix=f"\n{agentname}:")
+        ack = self.get('ack', None) # if response was an acknowledgement, we want to drop it
 
         ### VALIDATE FORMATTED TEMPLATE
         # formatted_template cannot be greater than the context window size of the model (and is preferably less)
@@ -133,6 +178,9 @@ class Context:
             memory=memory,
             human=username,
             plan=plan,
+            query=query,
+            message_history=message_history,
+            ack=ack,
         )
     
     def get_model_input(self):

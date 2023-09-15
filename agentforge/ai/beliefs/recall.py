@@ -14,13 +14,14 @@ class Recall:
             context.get('model.persona.name'),
             context.get('prompt')
         )
-        working = context.memory.session_history(
-            context.get('input.user_id'),
-            context.get('model.persona.name'),
-            context.get('input.id'),
-            n=2
-        )
+        # working = context.memory.session_history(
+        #     context.get('input.user_id'),
+        #     context.get('model.persona.name'),
+        #     context.get('input.id'),
+        #     n=4
+        # )
         logger.info("RECALLING")
-        logger.info(working)
-        context.set('recall', memories + " \n " + working)
+        # logger.info(working)
+        memories = memories.strip()
+        context.set('recall', memories)
         return context
