@@ -119,7 +119,7 @@ class LocalGenerator:
     sequence_bias = {}
     if sequence_bias_vals is not None:
       for s in sequence_bias_vals:
-        sequence_bias[tuple(slow_tokenizer([s], add_special_tokens=False).input_ids[0])] = 10.0
+        sequence_bias[tuple(slow_tokenizer([s], add_special_tokens=False).input_ids[0])] = 100.0
     logger.info(f"{sequence_bias=}")
     # Config drive overrides -- ID over string
     if "eos_token_id" in model_config:
@@ -157,6 +157,8 @@ class LocalGenerator:
        stop_word_strings = []
 
     for txt in stop_word_strings:
+      tok = tokenizer.encode(f"{txt}", add_special_tokens=False)
+      stop_words.append(tok)
       tok = tokenizer.encode(f"<s>{txt}", add_special_tokens=False)[1:]
       stop_words.append(tok)
 
