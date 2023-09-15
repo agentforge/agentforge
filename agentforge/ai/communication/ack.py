@@ -34,11 +34,16 @@ class Acknowledge:
             return context
 
         # use zeroshot to quick and dirty check if the user is talking about something else
-        prompt = "### Instruction: Is the following output a valid {type} response to this input? Input: {question} Output: {response} ### Response:"
-        valid_response = self.zeroshot.classify(prompt, ["Yes", "No"], {"type": query['datatype'], "question": query['text'], "response": context.get("instruction")}, context, max_new_tokens=2)
-        logger.info(f"VALID RESPONSE ACK {valid_response}")
-        valid_response = lambda s: True if s.lower() == 'yes' else False if s.lower() == 'no' else None
-
+        # prompt = "### Instruction: Is the following output not a followup or other question and a valid response to the input? Input: {question} Output: {response} ### Response:"
+        # valid_response = self.zeroshot.classify(prompt, ["Yes", "No"], {"type": query['datatype'], "question": query['text'], "response": context.get("instruction")}, context, max_new_tokens=1)
+        # response_func = lambda s: True if s.lower() == 'yes' else False if s.lower() == 'no' else None
+        # valid_response = response_func(valid_response)
+        # logger.info(f"VALID RESPONSE ACK {valid_response}")
+        
+        learned = False
+        results = []
+        valid_response = True
+        
         if valid_response:
             # raise ValueError("query not none")
             # feed in to the OPQL
@@ -64,11 +69,13 @@ class Acknowledge:
                 context.set('task', task)
                 context.set('ack', results)
                 return context
-        
+
         # Fail state
-        logger.info("PUSH FAILED")
-        task.push_failed(query)
+        logger.info(f"PUSH FAILED {valid_response}")
+        if valid_response and len(results) == 0:
+            task.push_failed(query)
+        else:
+            task.push_active(query)
         self.task_management.save(task)
         context.set('task', task)
         return context
-    

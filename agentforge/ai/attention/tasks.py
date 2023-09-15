@@ -123,6 +123,10 @@ class Task(BaseModel):
     def push_complete(self, action):
         self.actions['complete'].append(action)
 
+    # Adds a query to the completed lists - this is a successful query
+    def push_active(self, action):
+        self.actions['active'].append(action)
+
     # Adds a query to the completed lists - for retrying
     def push_failed(self, query):
         if 'retries' in query and query['retries'] > MAX_QUERY_RETRIES:
@@ -187,7 +191,6 @@ class Task(BaseModel):
             return query
         else:
             return None  # Return None if no query is found
-        
 
 """
 TaskManager class is responsible for managing tasks for the agent through the DB

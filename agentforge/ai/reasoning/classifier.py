@@ -12,33 +12,37 @@ MAX_CLASSIFIER_RETRIES = 3
     the classification, generally information gained from PDDL or some other
     knowledge graph or world state.
 """
+
+def extract_classification(val):
+    results = []
+    patterns = [
+        r'[\s\S]*?Final Decision: ([\-a-zA-Z0-9, _]+)\s*(</s>)?',
+        r'[\s\S]*?Response: ([\-a-zA-Z0-9, _]+)\s*(</s>)?',
+        r'[\s\S]*?Final classification: ([\-a-zA-Z0-9, _]+)\s*(</s>)?',
+        r'[\s\S]*?Final Answer: ([\-a-zA-Z0-9, _]+)\s*(</s>)?',
+        r'[\s\S]*?Final Output: ([\-a-zA-Z0-9, _]+)\s*</s>',
+        r'[\s\S]*?Response: \[(\"?)([a-zA-Z0-9\s]+)(\"?)\]\s*(</s>)?',
+        # r'[\s\S]*?Final ([\-a-zA-Z0-9, _]+): ([\-a-zA-Z0-9, _]+)</s>',
+    ]
+    for p in patterns:
+        ret = test(p, val)
+        results.append(ret)
+
+    res = [x for x in results if x is not None]
+    return res[0] if len(res) > 0 else None
+
+def test(pattern, v):
+    match = re.search(pattern, v)
+    # Extract the value if found
+    extracted_value = match.groups()[0] if match else None
+    if extracted_value:
+        return extracted_value
+    return None
+
 class Classifier:
     def __init__(self) -> None:
         self.llm = interface_interactor.get_interface("llm")
         self.parser = Parser()
-  
-    def extract_classification(self, test):
-        results = []
-        patterns = [
-            r'[\s\S]*?Final Decision: ([\-a-zA-Z0-9, _]+)\s*</s>',
-            r'[\s\S]*?Response: ([\-a-zA-Z0-9, _]+)\s*</s>',
-            r'[\s\S]*?Final classification: ([\-a-zA-Z0-9, _]+)\s*</s>',
-            r'[\s\S]*?Final Answer: ([\-a-zA-Z0-9, _]+)\s*</s>'
-            # r'[\s\S]*?Final ([\-a-zA-Z0-9, _]+): ([\-a-zA-Z0-9, _]+)</s>',
-        ]
-        for p in patterns:
-            results.append(self.test(p, test))
-
-        res = [x for x in results if x is not None]
-        return res[0] if len(res) > 0 else None
-
-    def test(self, pattern, test):
-        match = re.search(pattern, test)
-        # Extract the value if found
-        extracted_value = match.groups()[0] if match else None
-        if extracted_value:
-            return extracted_value
-        return None
 
     """
         Given a query and response use a few-shot CoT LLM reponse to pull information out
@@ -77,9 +81,10 @@ class Classifier:
         logger.info("[\PROMPT REPLACED]")
         
         # Attempt regex extraction
-        value = self.extract_classification(generated)
+        value = extract_classification(generated)
         logger.info(f"EXTRACTED ==> {value}")
         if value:
+            logger.info("RETURNING VALUE")
             return [value]
 
         # Remove eos_token and bos_tokens

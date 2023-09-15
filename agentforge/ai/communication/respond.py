@@ -25,6 +25,7 @@ class Respond:
                 formatted = formatted.replace(context.get(f"model.model_config'.{tok}"), "")
 
         gen_config = deepcopy(context.get('model.generation_config'))
+        context.set("prompt", formatted)
         input = {
             "prompt": formatted,
             "generation_config": gen_config,

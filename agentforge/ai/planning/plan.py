@@ -124,7 +124,7 @@ class Plan:
                 self.task_management.save(task)
                 return context
             else:
-                stream_string('channel', "<PLAN-ACTIVE>", end_token=" ")
+                # stream_string('channel', "<PLAN-ACTIVE>", end_token=" ")
                 context.set("plan", plan['plan_nl'])
 
         # Sample these after plan management

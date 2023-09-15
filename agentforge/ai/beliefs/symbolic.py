@@ -110,10 +110,11 @@ class SymbolicMemory:
 
         object_singular = query["class"]
         user_name = context.get("input.user_id")
+
         verb = query["goal"]
         condition = query["condition"]
         cot_args = {
-                "object_singular": object_singular,
+                "type": query["class"],
                 "verb": verb, "subject": "Human",
                 "response": context.get("instruction")
         }
@@ -136,7 +137,7 @@ class SymbolicMemory:
             # None is a specific type of failure for strings
             if len(results) == 0:
                 return False, []
-            if len(results) > 0 and results[0] == "None":
+            if len(results) > 0 and (results[0] == "Neither" or results[0] == "None"):
                 return False, [None]
             for subject in results:
                 subject = subject.replace(" ", "-").strip() # If any spaces are involved they will break PDDL

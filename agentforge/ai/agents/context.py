@@ -151,7 +151,7 @@ class Context:
         username = self.get('input.user_name', "Human")
         agentname = self.get('model.persona.display_name', "Agent")
         query = self.get('query', None)
-        message_history = self.get_messages(prefix=f"{username}: ", postfix=f"\n{agentname}:")
+        message_history = self.get_messages(prefix=f"\n{username}: ", postfix=f"\n{agentname}:")
         ack = self.get('ack', None) # if response was an acknowledgement, we want to drop it
 
         ### VALIDATE FORMATTED TEMPLATE
