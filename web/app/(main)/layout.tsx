@@ -7,6 +7,7 @@ import { sfPro, inter } from "../fonts";
 import Nav_demo from "@/components/layout/nav_demo";
 import Footer_demo from "@/components/layout/footer_demo";
 import { Suspense } from "react";
+import { ThemeProvider } from "@/components/ui/theme-provider";
 
 export const metadata = {
   title: 'AgentForge',
@@ -21,7 +22,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={cx(sfPro.variable, inter.variable)}>
-        <div className="fixed h-screen w-full bg-black" />
+        <div className="fixed h-screen w-full bg-white dark:bg-black" />
         <Suspense fallback="...">
           {/* @ts-expect-error Server Component */}
           {/*<Nav />*/}
@@ -30,7 +31,9 @@ export default function RootLayout({
           </div>
         </Suspense>
         {/* <main className="flex min-h-screen w-full flex-col items-center justify-center py-32"> */}
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           {children}
+        </ThemeProvider>
         {/* </main> */}
         <Analytics />
         {/* <Footer /> */}
