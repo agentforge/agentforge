@@ -23,7 +23,12 @@ class StateManager:
     def __init__(self):
         self.db = interface_interactor.get_interface("db")
 
-    def create_triplet(self, triplet: Triplet) -> Optional[Any]:
+    def create_triplet(self, node1_str: str, rel: str, node2_str: str) -> Optional[Any]:
+        # Create a triplet
+        node1 = Node(name=node1_str)
+        node2 = Node(name=node2_str)
+        edge = Edge(relationship=rel)
+        triplet = Triplet(src_node=node1, edge=edge, dst_node=node2)
         try:
             # Validate the Triplet model
             validated_triplet = Triplet(**triplet.dict())
@@ -37,12 +42,12 @@ class StateManager:
             validated_triplet.edge.relationship, 
             validated_triplet.dst_node.name
         )
-        
+
         if existing_triplet:
             print(f"A triplet with src: {validated_triplet.src_node.name}, relationship: {validated_triplet.edge.relationship}, and dst: {validated_triplet.dst_node.name} already exists.")
             return None
         
-        return self.db.create("state", validated_triplet.id, validated_triplet.dict())
+        return self.db.create("state",  str(uuid4()), validated_triplet.dict())
 
     def get_triplet(self, src_name: str, relationship: str, dst_name: str) -> Optional[Triplet]:
         filter_query = {
@@ -51,12 +56,27 @@ class StateManager:
             "dst_node.name": dst_name
         }
         data_cursor = self.db.get_many("state", filter_query)
+
+        # Convert the cursor to a list and check if it's empty
+        data_list = list(data_cursor)
+        if not data_list:
+            return None
+
+        # Return the first match from the list
+        return Triplet(**data_list[0])
+
+    def check(self, src_name: str, relationship: str) -> Optional[Triplet]:
+        filter_query = {
+            "src_node.name": src_name,
+            "edge.relationship": relationship
+        }
+        data_cursor = self.db.get_many("state", filter_query)
         
         # Convert the cursor to a list and check if it's empty
         data_list = list(data_cursor)
         if not data_list:
             return None
-        
+
         # Return the first match from the list
         return Triplet(**data_list[0])
 
@@ -65,14 +85,8 @@ class StateManager:
 
 def test():
     state_manager = StateManager()
-    
-    # Create a triplet
-    node1 = Node(name="Frank Grove")
-    node2 = Node(name="location")
-    edge = Edge(relationship="has available outdoor plot")
-    triplet = Triplet(src_node=node1, edge=edge, dst_node=node2)
 
-    state_manager.create_triplet(triplet)
+    created_id = state_manager.create_triplet("Frnak Grove", "has available outdoor plot", "location")
     print("Created Triplet:", state_manager.get_triplet("Frank Grove", "has available outdoor plot", "location"))
 
     # Perform aggregation
@@ -90,6 +104,7 @@ def test():
             }
         }
     ]
-    
+
     result = state_manager.aggregate(pipeline)
+    print(state_manager.check("Frnak Grove", "has available outdoor plot"))
     print("Aggregation Result:", result)

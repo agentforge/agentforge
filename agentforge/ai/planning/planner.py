@@ -75,11 +75,10 @@ class PlanningController:
             "goal": [],
             "object": [],
         }
-        for effects in problem_data:
-            for effect in effects:
-                val = effect["val"]
-                if val not in pddl_context[effect["type"]]:
-                    pddl_context[effect["type"]].append(val)
+        for effect in problem_data:
+            val = effect["val"]
+            if val not in pddl_context[effect["type"]]:
+                pddl_context[effect["type"]].append(val)
 
         plan_template = plan_template.replace("{object}", "\n".join(pddl_context["object"]))
         plan_template = plan_template.replace("{init}", "\n".join(pddl_context["init"]))
@@ -91,12 +90,11 @@ class PlanningController:
         # TODO: Refactor to use our input
         return self.llm_ic_pddl_planner(input, plan_template)
 
-
     def extract_outermost_parentheses(self, s):
         # Indexes of the outermost opening and closing parentheses
         open_idx = None
         close_idx = None
-        
+
         # Counter for the depth of nested parentheses
         depth = 0
 
@@ -221,4 +219,3 @@ class PlanningControllerConfig:
         self.task = uuid.uuid4()
         self.run = 0
         self.print_prompts = False
-        

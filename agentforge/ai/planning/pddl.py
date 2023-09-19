@@ -8,6 +8,7 @@ from graphviz import Digraph
 import re, json
 from agentforge.utils import logger
 from agentforge.interfaces import interface_interactor
+from agentforge.ai.beliefs.state import StateManager
 from datetime import datetime
 
 from pydantic import BaseModel, Field
@@ -110,6 +111,7 @@ class PDDLGraphModel(BaseModel):
 class PDDLGraph:
     def __init__(self, domain_file: str, problem_file: str, primary_key: str):
         self.db = interface_interactor.get_interface("db")
+        self.state_manager = StateManager()
 
         # Dynamically initialize attributes based on the Pydantic model
         for field in PDDLGraphModel.__annotations__.keys():
@@ -521,8 +523,8 @@ class PDDLGraph:
         if len(list(self.G.predecessors(self.root_element(predicate)))) == 0:
             return True
         # check knowledge base for node
-        
-        return False
+        valid = self.state_manager.check(self.user_name, predicate)
+        return valid is not None
 
     # Updated function to evaluate a node 
     def eval_node(self, objects, node):
@@ -659,12 +661,11 @@ class PDDLGraph:
         Input seed: str
         Given a seed goal, identify nodes at the edge of the graph where we
         do not have information and need to query the environment or the user
-
     """
-
-    def get_seed_queries(self, seed: str):
+    def get_seed_queries(self, user_name: str, seed: str):
         # setup graph if needed
         self.setup_graph()
+        self.user_name = user_name
 
         # Trace the graph starting from "growing ?seedling"
         objects = self.trace_pddl_graph(self.objects, seed)
@@ -797,13 +798,16 @@ class PDDL:
 
         obj = obj.replace("?", "") # TODO: add support for multi-predicate goals
         goal_arr = [PDDLFragment(type="goal", instances=instances, predicate=goal)]
-        return [i.init_pddl_problem_fragment() for i in fragments + goal_arr]
+        state = []
+        for i in fragments + goal_arr:
+            state.extend(i.init_pddl_problem_fragment())
+        return state
 
 def test():
     domain_file = '/app/agentforge/agentforge/config/planner/garden/domain.pddl'
     problem_file = '/app/agentforge/agentforge/config/planner/garden/problem.pddl'
     pddl_graph = PDDLGraph(domain_file, problem_file, "garden")
     pddl = PDDL(pddl_graph)
-    queries = pddl_graph.get_seed_queries("growing ?cannabis-plant")
+    queries = pddl_graph.get_seed_queries("Frank", "growing ?cannabis-plant")
     print(json.dumps(queries))
     return pddl_graph

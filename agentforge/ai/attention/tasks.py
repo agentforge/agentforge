@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import Any, Dict, Optional, List, Callable
 from agentforge.interfaces import interface_interactor
 from agentforge.ai.beliefs.symbolic import SymbolicMemory
+from agentforge.ai.beliefs.state import StateManager
 from pydantic import BaseModel, Field, root_validator
 from datetime import datetime
 from agentforge.ai.agents.context import Context
@@ -201,6 +202,7 @@ class TaskManager:
     def __init__(self) -> None:
         self.db = interface_interactor.get_interface("db")
         self.collection = 'tasks'
+        self.state_management = StateManager()
 
     """
         Inits a Task from a context, task id, and active state.
@@ -241,6 +243,12 @@ class TaskManager:
     """
     def count(self, user_id: str, session_id: str, name: str) -> Optional[Any]:
         return self.db.count(self.collection, {"user_id": user_id, "session_id": session_id, "name": name})
+
+    def save_state(self, user_name: str, triplets: List[dict]) -> Optional[Any]:
+        for triplet in [i for i in triplets if i['type'] == 'init']:
+            val = triplet['val']
+            predicate, obj = val.replace("(", "").replace(")", "").split(" ")
+            self.state_management.create_triplet(user_name, predicate, obj)
 
     def save(self, task: Task) -> None:
         if task:

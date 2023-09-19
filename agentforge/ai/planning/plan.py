@@ -2,7 +2,6 @@ from typing import Any, Dict, List
 from agentforge.ai.planning.planner import PlanningController
 from agentforge.ai.beliefs.symbolic import SymbolicMemory
 from agentforge.ai.attention.tasks import TaskManager
-from agentforge.ai.beliefs.state import StateManager
 from agentforge.utils.stream import stream_string
 from agentforge.interfaces import interface_interactor
 from agentforge.utils import logger
@@ -19,7 +18,6 @@ class Plan:
         self.llm = interface_interactor.get_interface("llm")
         self.planner = PlanningController(domain)
         self.task_management = TaskManager()
-        self.state_management = StateManager()
         self.domain = domain
         self.goals = goals
         domain_file = self.planner.config.domain_pddl_file_path
@@ -31,9 +29,9 @@ class Plan:
         Gether information phase of the planning task
         -- gather from user, environment, and memory
     """
-    def gather(self, goal: str) -> List[Dict[str, Any]]:
+    def gather(self, user_name: str, goal: str) -> List[Dict[str, Any]]:
         # Creates queries for the planning task
-        seeds = self.pddl_graph.get_seed_queries(goal)
+        seeds = self.pddl_graph.get_seed_queries(user_name, goal)
         goal_data = goal.split(" ")
         goal = goal_data[0] # split the goal into the goal and the object, 1st is always predicate
 
@@ -53,7 +51,7 @@ class Plan:
         # Get the current goal
         goal = self.goals[task.stage]
         logger.info("GOAL", goal)
-        queries = self.gather(goal)
+        queries = self.gather(context.get('input.user_name'), goal)
         logger.info(f"{queries=}")
         list(map(task.push, queries)) # efficiently push queries to the task
         logger.info(f"{task=}")
@@ -176,6 +174,7 @@ class Plan:
             task.push(plan_task)
             task.activate_plan()
             self.task_management.save(task)
+            self.task_management.save_state(context.get('input.user_name'), problem_data)
             context.set("plan_response", response)
             return context
 

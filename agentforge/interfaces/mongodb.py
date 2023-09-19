@@ -117,7 +117,6 @@ class MongoDBKVStore(DB):
             logging.error(f'Get operation failed for filter {filter}: {str(e)}')
             raise
 
-
     def get_many(self, collection:str, filter: Dict[str, Any]) -> Cursor:
         self._check_connection()
         collection = self.db[collection]
