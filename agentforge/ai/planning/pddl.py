@@ -416,7 +416,7 @@ class PDDLGraph:
 
     def extract_predicates(self, file_name: str) -> Dict[str, str]:
         predicates = {}
-        
+
         # Read the content of the file
         with open(file_name, 'r') as file:
             content = file.read()
@@ -500,34 +500,28 @@ class PDDLGraph:
 
     # if this node has been evaluated -- action
     def is_evaluated_node(self, node):
-        print("EVAL NODE")
         is_action = node in self.actions
         is_predicate = node in self.predicates
-        if is_predicate:
+        if is_predicate or is_action:
             return self.eval_predicate(node)
-        print(f"{node}: Action? {is_action} Pred? {is_predicate}")
         # check knowledge base for node
         return False
 
     # if this edge -- precondition or effect
     def is_evaluated_edge(self, edge):
-        print("EVAL EDGE")
         is_action = edge in self.actions
         is_predicate = edge in self.predicates
-        if is_predicate:
+        if is_predicate or is_action:
             return self.eval_predicate(edge)
-        print(f"{edge}: Action? {is_action} Pred? {is_predicate}")
         # check knowledge base for node
         return False
 
     def eval_predicate(self, predicate):
-        print(f"EVAL PREDICATE {len(list(self.G.predecessors(self.root_element(predicate))))}")
-        print(predicate)
-        print(self.G.nodes[predicate])
         # If there are no predecessors or all predecessors are already evaluated
         if len(list(self.G.predecessors(self.root_element(predicate)))) == 0:
             return True
         # check knowledge base for node
+        
         return False
 
     # Updated function to evaluate a node 
@@ -535,8 +529,6 @@ class PDDLGraph:
         predecessors = list(self.G.predecessors(self.root_element(node)))
         predecessors_evaled = [p for p in predecessors if not self.is_evaluated_node(p)]
         # If no predessors or all predessors are already evaluated
-        print(node)
-        print(predecessors_evaled)
         if not predecessors_evaled:
             self.run_node(objects, node)
             return False

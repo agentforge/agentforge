@@ -142,16 +142,16 @@ class SymbolicMemory:
             for subject in results:
                 subject = subject.replace(" ", "-").strip() # If any spaces are involved they will break PDDL
                 logger.info(f"[SYMBOLIC] {subject}")
-                self.create_predicate(user_name, relation, subject) # TODO: Need to pull user name
+                # self.create_predicate(user_name, relation, subject) # TODO: Need to pull user name
             return True, results
 
         # For Boolean the results are True, False, or None. Subject is capture in query context.
         elif query['datatype'] == "boolean":
             if results[0].lower() in  ["true", "yes", "1"]:
-                self.create_predicate(user_name, relation, object_singular) # TODO: Need to pull user name
+                # self.create_predicate(user_name, relation, object_singular) # TODO: Need to pull user name
                 return True, [True]
             elif results[0].lower() in  ["false", "no", "0"]:
-                self.create_negation(user_name, relation, object_singular) # TODO: Need to pull user name
+                # self.create_negation(user_name, relation, object_singular) # TODO: Need to pull user name
                 return True, [False]
             else:
                 return False, [None]
@@ -165,7 +165,7 @@ class SymbolicMemory:
                 else:
                     num_value = w2n.word_to_num(results[0].lower())
                 # Create the predicate with the numeric value
-                self.create_predicate(user_name, relation, object_singular, num_value)  # TODO: Need to define amounts
+                # self.create_predicate(user_name, relation, object_singular, num_value)  # TODO: Need to define amounts
                 return True, results
             except ValueError:
                 # If conversion to integer fails

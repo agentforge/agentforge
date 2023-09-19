@@ -42,3 +42,4 @@ aioredis
 asyncio
 passlib
 jinja2
+flair

@@ -2,6 +2,7 @@ from typing import Any, Dict, List
 from agentforge.ai.planning.planner import PlanningController
 from agentforge.ai.beliefs.symbolic import SymbolicMemory
 from agentforge.ai.attention.tasks import TaskManager
+from agentforge.ai.beliefs.state import StateManager
 from agentforge.utils.stream import stream_string
 from agentforge.interfaces import interface_interactor
 from agentforge.utils import logger
@@ -18,6 +19,7 @@ class Plan:
         self.llm = interface_interactor.get_interface("llm")
         self.planner = PlanningController(domain)
         self.task_management = TaskManager()
+        self.state_management = StateManager()
         self.domain = domain
         self.goals = goals
         domain_file = self.planner.config.domain_pddl_file_path

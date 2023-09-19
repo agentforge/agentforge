@@ -199,7 +199,7 @@ class PlanningController:
             self.best_plan = best_plan
             self.best_cost = best_cost
             self.plans_nl = plans_nl
-        
+
         end_time = time.time()
         if best_plan:
             logger.info(f"[info] task {task} takes {end_time - start_time} sec, found a plan with cost {best_cost}")
@@ -207,7 +207,6 @@ class PlanningController:
         else:
             logger.info(f"[info] task {task} takes {end_time - start_time} sec, no solution found")
             return "No plan found."
-
 
 """
     Config object for the PlanningController
