@@ -215,7 +215,7 @@ class PDDLGraph:
                     # addtl_links[key] = precond
                     if previous_precond:
                         G.add_edge(previous_precond, precond_str, label="OR")
-                        G.add_edge(precond_str, previous_precond, label="OR")
+                        # G.add_edge(precond_str, previous_precond, label="OR")
                         dot.edge(previous_precond, precond_str, color="orange", label="OR")
                     return precond_str
         else:
@@ -475,13 +475,6 @@ class PDDLGraph:
         matches = re.findall(pattern, expression_str)
         return matches[-1] if matches else None
 
-    def has_edge_with_label(self, node, label='OR'):
-        for neighbor in self.G.neighbors(node):
-            if 'label' in self.G[node][neighbor] and self.G[node][neighbor]['label'] == label:
-                return True, neighbor  # Returns True and the neighbor connected by this edge
-        return False, None  # Returns False if no such edge exists
-
-
     # Updated function to run on a root node
     def run_node(self, objects, node):
         print(f"RUNING {node}")
@@ -701,6 +694,9 @@ class PDDLGraph:
         print("parameter_types")
         print(self.parameter_types)
 
+        labels = nx.get_edge_attributes(self.G, 'label')
+        or_labels = [item for k, v in labels.items() if v == "OR" for item in k]
+        already_evaluated = set()
         final_queries = defaultdict(list)
         # For each object/action list generate queries
         for obj, action_list in objects.items():
@@ -712,22 +708,25 @@ class PDDLGraph:
                     continue
 
                 for prompt in prompts[action]:
-                    print(prompt.split(" ")[-1])
+                    # print(prompt.split(" ")[-1])
 
                     # ignore root negation preconditions for now, and make sure the obj/prompt pair is valid
                     if prompt[0:4] == "not " or obj not in prompt:
                         continue
 
                     # also ignore OR singletons, should be capture by OR boolean prompt
-                    print(prompt.split(" ")[0])
-                    or_cond, node = self.has_edge_with_label(prompt.split(" ")[0])
+                    # print(prompt.split(" ")[0])
+                    or_cond = prompt.split(" ")[0]in or_labels
                     if or_cond and " OR " not in prompt:
+                        print(f"IGNORE OR SINGLETON {prompt}")
                         continue
 
                     parameter_type = self.parameter_types[prompt.split(" ")[-1]]
                     type_ = self.lookup_type(self.type_klasses, self.types, parameter_type)
                     query = {'condition': prompt, "datatype": type_, "class": parameter_type}
-                    final_queries[action].append(query)
+                    if prompt not in already_evaluated:
+                        final_queries[action].append(query)
+                    already_evaluated.add(prompt)
 
         return final_queries
 
