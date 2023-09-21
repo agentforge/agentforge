@@ -214,7 +214,7 @@ class PlanningControllerConfig:
         # initialize the attributes
         self.domain = domain
         self.domain_pddl_file_path = f"{PLANNER_DIRECTORY}/{domain}/domain.pddl"
-        self.domain_pddl_problem_path = f"{PLANNER_DIRECTORY}/{domain}/p01.pddl"
+        self.domain_pddl_problem_path = f"{PLANNER_DIRECTORY}/{domain}/test.pddl"
         self.time_limit = 200
         self.task = uuid.uuid4()
         self.run = 0
