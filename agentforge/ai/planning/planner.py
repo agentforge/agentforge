@@ -219,3 +219,5 @@ class PlanningControllerConfig:
         self.task = uuid.uuid4()
         self.run = 0
         self.print_prompts = False
+        self.best_plan = "None"
+        self.best_cost = 0

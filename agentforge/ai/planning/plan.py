@@ -29,9 +29,9 @@ class Plan:
         Gether information phase of the planning task
         -- gather from user, environment, and memory
     """
-    def gather(self, user_name: str, goal: str) -> List[Dict[str, Any]]:
+    def gather(self, goal: str, user_name: str) -> List[Dict[str, Any]]:
         # Creates queries for the planning task
-        seeds = self.pddl_graph.get_seed_queries(user_name, goal)
+        seeds = self.pddl_graph.get_seed_queries(goal, user_name)
         goal_data = goal.split(" ")
         goal = goal_data[0] # split the goal into the goal and the object, 1st is always predicate
 
@@ -48,10 +48,11 @@ class Plan:
     # Helper function to explore knowledge graph/PDDL and create queries for our plan
     # if we need them
     def init_queries(self, task, context):
+        user_name = context.get('input.user_name')
         # Get the current goal
         goal = self.goals[task.stage]
-        logger.info("GOAL", goal)
-        queries = self.gather(context.get('input.user_name'), goal)
+        logger.info(f"GOAL {goal}")
+        queries = self.gather(goal, user_name)
         logger.info(f"{queries=}")
         list(map(task.push, queries)) # efficiently push queries to the task
         logger.info(f"{task=}")
@@ -109,9 +110,9 @@ class Plan:
             z = ZeroShotClassifier()
             z_val = z.classify("### Instruction: Does this imply the user has completed the current plan? Respond with Yes or No. ### Input: {{user_input}} ### Response: ", ["Yes", "No"], {"user_input": user_input}, context)
             if z_val == "Yes":
+                plan = self.pddl.execute(plan, context)
                 task.push_complete(plan)
                 task.iterate_stage_and_flush()
-                self.pddl.execute_plan(plan)
                 user_done = True
                 ## Move the plan to the next stage and trace graph to create new queries.
                 if task.stage >= len(self.goals):
@@ -121,7 +122,8 @@ class Plan:
                 else:
                     # create new quer
                     context = self.init_queries(task, context)
-                self.task_management.save(task)
+                logger.info(f"{task=}")
+                # self.task_management.save(task)
                 return context
             else:
                 # stream_string('channel', "<PLAN-ACTIVE>", end_token=" ")

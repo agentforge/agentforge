@@ -226,6 +226,10 @@ class TaskManager:
             'active': active
         }
         return Task.from_dict(task_data)
+    
+    def get_by_id(self, key: str) -> Optional[Any]:
+        task = self.db.get(self.collection, key)
+        return Task.from_dict(task)
 
     """
     Input: user_id, session_id, name

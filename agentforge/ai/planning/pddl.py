@@ -479,7 +479,7 @@ class PDDLGraph:
 
     # Updated function to run on a root node
     def run_node(self, objects, node):
-        print(f"RUNING {node}")
+        logger.info(f"RUNING {node}")
         action = [i for i in self.G.successors(node)]
         # logger.info(f"{node=}")
         # logger.info(f"{action=}")
@@ -490,7 +490,7 @@ class PDDLGraph:
 
     # Updated function to run on a root edge
     def run_edge(self, objects, edge):
-        print(f"RUNING EDGE {edge}")
+        logger.info(f"RUNING EDGE {edge}")
         # logger.info(f"[EDGE] {edge}")
         action = [i for i in self.G.successors(self.root_element(edge))]
         # logger.info(f"EDGE ACTION: {action}")
@@ -520,14 +520,18 @@ class PDDLGraph:
 
     def eval_predicate(self, predicate):
         # If there are no predecessors or all predecessors are already evaluated
+        logger.info(f"checking pred {predicate}")
+        logger.info(len(list(self.G.predecessors(self.root_element(predicate)))) == 0)
         if len(list(self.G.predecessors(self.root_element(predicate)))) == 0:
             return True
         # check knowledge base for node
         valid = self.state_manager.check(self.user_name, predicate)
+        logger.info(f"valid {valid} -- checked for {self.user_name}")
         return valid is not None
 
     # Updated function to evaluate a node 
     def eval_node(self, objects, node):
+        logger.info(f"EVAL NODE {node}")
         predecessors = list(self.G.predecessors(self.root_element(node)))
         predecessors_evaled = [p for p in predecessors if not self.is_evaluated_node(p)]
         # If no predessors or all predessors are already evaluated
@@ -539,6 +543,7 @@ class PDDLGraph:
     # Updated function to evaluate an edge
     def eval_edge(self, objects, edges):
         for edge in edges:
+            logger.info(f"EVAL EDGE {edge}")
             predecessors = list(self.G.predecessors(self.root_element(edge)))
             predecessors_evaled = [p for p in predecessors if not self.is_evaluated_edge(p)]
             # If no predessors or all predessors are already evaluated
@@ -549,13 +554,13 @@ class PDDLGraph:
     # Function to trace the PDDL graph (unchanged)
     def trace_pddl_graph(self, objects, root_node):
         visited_nodes = set()
-        print("objects bevore trace")
+        logger.info("objects bevore trace")
         print(objects)
         self.trace_graph(objects, root_node, visited_nodes)
-        print("objects after trace")
-        print(json.dumps(objects, indent=4))
+        logger.info("objects after trace")
+        logger.info(json.dumps(objects, indent=4))
         for obj, action_list in objects.items():
-            print(obj.split(" "))
+            logger.info(obj.split(" "))
         # Convert the sets to lists before returning
         return {key: list(value) for key, value in objects.items()}
 
@@ -600,13 +605,12 @@ class PDDLGraph:
         domprob = DomainProblem(self.domain_file, self.problem_file)
 
         self.worldobjects = domprob.worldobjects()
-        print(self.worldobjects)
+        logger.info(self.worldobjects)
         # Extracting all actions (operators)
         self.actions = {}
         # print(domprob.ground_operator('prepare'))
         for operator_name in domprob.operators():
             operator = domprob.domain.operators[operator_name]
-            print(operator)
             self.actions[operator_name] = {
                 "parameters": operator.variable_list,
                 "positive_preconditions": set_to_list(operator.precondition_pos),
@@ -662,10 +666,11 @@ class PDDLGraph:
         Given a seed goal, identify nodes at the edge of the graph where we
         do not have information and need to query the environment or the user
     """
-    def get_seed_queries(self, user_name: str, seed: str):
+    def get_seed_queries(self, seed: str, user_name: str):
+        # set user_name for use in downstream functions
+        self.user_name = user_name
         # setup graph if needed
         self.setup_graph()
-        self.user_name = user_name
 
         # Trace the graph starting from "growing ?seedling"
         objects = self.trace_pddl_graph(self.objects, seed)
@@ -677,15 +682,15 @@ class PDDLGraph:
 
         # Generate the prompts
         prompts = self.generate_all_prompts(self.preconditions)
-        print("PROMPTPS FOR SEEDDDD")
-        print(json.dumps(prompts, indent=4))
+        logger.info("PROMPTPS FOR SEEDDDD")
+        logger.info(json.dumps(prompts, indent=4))
 
         # Print the prompts for the "prepare" action as examples
         # for prompt in prompts["prepare"]:
         #     print(prompt)
 
-        print("parameter_types")
-        print(self.parameter_types)
+        logger.info("parameter_types")
+        logger.info(self.parameter_types)
 
         labels = nx.get_edge_attributes(self.G, 'label')
         or_labels = [item for k, v in labels.items() if v == "OR" for item in k]
@@ -711,7 +716,7 @@ class PDDLGraph:
                     # print(prompt.split(" ")[0])
                     or_cond = prompt.split(" ")[0]in or_labels
                     if or_cond and " OR " not in prompt:
-                        print(f"IGNORE OR SINGLETON {prompt}")
+                        logger.info(f"IGNORE OR SINGLETON {prompt}")
                         continue
 
                     parameter_type = self.parameter_types[prompt.split(" ")[-1]]
@@ -727,11 +732,49 @@ class PDDL:
     def __init__(self, pddl_graph):
         self.pddl_graph = pddl_graph
     
+    def execute(self, plan, context):
+        effects_list = self.execute_plan(plan['plan'], plan['state'])
+        effects_list = [{'val': f"({eff})", 'type': 'init'} for eff in effects_list]
+        plan['state'] = plan['state'] + effects_list
+        # Store new effects in DB state
+        for val in effects_list:
+            vals = val['val'].replace("(", "").replace(")", "").split(" ")
+            predicate = vals[0]
+            instances = vals[1:]
+            for i in instances:
+                self.pddl_graph.state_manager.create_triplet(context.get('input.user_name'), predicate, i)
+        return plan
+
     """
         Executes the actions in the plan iteratively updating the state
+        -- using pddlpy
     """
-    def execute_plan(self, plan):
-        pass
+    def execute_plan(self, plan, state):
+        object_status = {}
+        for fragment in state:
+            if fragment['type'] == "object":
+                val = fragment['val'].replace("(", "").replace(")", "").split(" - ")
+                obj = val[0]
+                klass = val[1]
+                object_status[klass] = obj
+        domprob = DomainProblem(self.pddl_graph.domain_file, self.pddl_graph.problem_file)
+        actions = plan.split("\n")
+        logger.info(f"{object_status=}")
+        effect_list = []
+        # For each valid action we need to get the effects
+        for action in actions:
+            action = action.replace("(", "").replace(")", "").strip()
+            if action == "":
+                continue
+            action_list = action.split(" ")
+            action = action_list[0]
+            variables = action_list[1:]
+            operator = domprob.domain.operators[action]
+            for effect in list(operator.effect_pos):
+                variables = [object_status[operator.variable_list[var]] for var in effect.predicate[1:]]
+                effect_str =  f"{effect.predicate[0]} {' '.join(variables)}"
+                effect_list.append(effect_str)
+        return effect_list
 
     """
     # We need to iterate through the responses and create the PDDL problem
@@ -808,6 +851,26 @@ def test():
     problem_file = '/app/agentforge/agentforge/config/planner/garden/problem.pddl'
     pddl_graph = PDDLGraph(domain_file, problem_file, "garden")
     pddl = PDDL(pddl_graph)
-    queries = pddl_graph.get_seed_queries("Frank", "growing ?cannabis-plant")
+    queries = pddl_graph.get_seed_queries("growing ?cannabis-plant", "Frank")
     print(json.dumps(queries))
-    return pddl_graph
+    domprob = DomainProblem(pddl_graph.domain_file, pddl_graph.problem_file)
+    for operator_name in domprob.operators():
+        print(domprob.domain.operators[operator_name])
+    
+    # plan_str = """
+    #     (prepare location digging-tool cannabis-plant og-kush fertilizer)
+    #     (germinate location cannabis-plant)
+    #     (plant-germinated location cannabis-plant)
+    # """
+    # inits = [
+    #     {
+    #         "val": "(has-seeds cannabis-plant)",
+    #         "type": "init"
+    #     }
+    # ]
+    from agentforge.ai.attention.tasks import TaskManager
+    t = TaskManager()
+    task = t.get_by_id("3a75e88b-b85d-4234-89e5-936c97d39bfb")
+
+    print(pddl.execute_plan(task.history[5]['plan'], task.history[5]['state']))
+    return domprob

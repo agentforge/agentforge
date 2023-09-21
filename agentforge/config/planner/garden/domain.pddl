@@ -30,7 +30,7 @@
       (growing-location-fertilized ?location - location)
       (mulch-available ?mulch - mulch)
       (water-container-available ?water-can - water-container)
-      (indoor-pot-available ?location - location)
+      (has-indoor-pot-available ?location - location)
       (empty ?water-can - water-container)
       (dry ?location - location)
       (unplanted ?location - location)
@@ -44,7 +44,7 @@
       (has-clones ?cannabis-plant - cannabis-plant)
       (strain-chosen ?strain - strain)
       (topped ?cannabis-plant - cannabis-plant ?location - location)
-      (outdoor-plot-available ?location - location)
+      (has-outdoor-plot-available ?location - location)
       (harvested ?cannabis-plant - cannabis-plant)
       (pesticide-available ?pesticide - pesticide)
       (pruning-tool-available ?pruning-tool - tool)
@@ -58,7 +58,7 @@
 
     (:action prepare
       :parameters (?location - location ?digging-tool - tool ?cannabis-plant - cannabis-plant ?strain - strain ?fertilizer - fertilizer)
-      :precondition (and (strain-chosen ?strain) (or (has-seeds ?cannabis-plant) (has-clones ?cannabis-plant)) (or (outdoor-plot-available ?location) (indoor-pot-available ?location)) (digging-tool-available ?digging-tool) (fertilizer-available ?fertilizer))
+      :precondition (and (strain-chosen ?strain) (or (has-seeds ?cannabis-plant) (has-clones ?cannabis-plant)) (or (has-outdoor-plot-available ?location) (has-indoor-pot-available ?location)) (digging-tool-available ?digging-tool) (fertilizer-available ?fertilizer))
       :effect (prepared ?location))
 
     (:action plant-it
