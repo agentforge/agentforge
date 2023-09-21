@@ -1,10 +1,10 @@
-class DecisionException(Exception):
-    """Exception raised for errors in the decision making process.
+class AgentException(Exception):
+    """Exception raised for errors in the agent creation process.
 
     Attributes:
         message -- explanation of the error
     """
-    def __init__(self, message="There was an error in the decision making process"):
+    def __init__(self, message="There was an error in the agent creation process"):
         self.message = message
         super().__init__(self.message)
 

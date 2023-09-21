@@ -1,3 +1,3 @@
-from .exception import DecisionException, RoutineException, SubroutineException, BreakRoutineException
+from .exception import AgentException, RoutineException, SubroutineException, BreakRoutineException
 
-__all__ = ["DecisionException", "RoutineException", "SubroutineException", "BreakRoutineException"]
+__all__ = ["AgentException", "RoutineException", "SubroutineException", "BreakRoutineException"]

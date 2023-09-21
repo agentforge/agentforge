@@ -1,0 +1,36 @@
+### Instruction: Extract the numeric value mentioned in the text.
+### Input: "How many apples do you want to buy? I want to buy 5."
+### Thought Process:
+1. The instruction asks to extract the numeric value.
+2. The text is about buying apples.
+3. "5" is mentioned as the quantity someone wants to buy.
+### Response: 5
+
+### Instruction: Extract the numeric value mentioned in the text.
+### Input: "How many books do you want to read? Actually, I'm not sure."
+### Thought Process:
+1. The instruction asks to extract the numeric value.
+2. The text is about reading books.
+3. No specific number is mentioned.
+### Response: None
+
+### Instruction: Extract the numeric value mentioned in the text.
+### Input: "How many miles did you run? I ran 3 miles and walked 2."
+### Thought Process:
+1. The instruction asks to extract the numeric value.
+2. The text is about running and walking.
+3. "3" is mentioned as the number of miles someone ran, and "2" as the number of miles walked.
+### Response: 3, 2
+
+### Instruction: Extract the numeric value mentioned in the text.
+### Input: "How many cookies do you want? Hold on."
+### Thought Process:
+1. The instruction asks to extract the numeric value.
+2. The text is about wanting cookies.
+3. No specific number is mentioned.
+### Response: None
+
+### Instruction: Extract the numeric value(s) from the following text. If no numeric value is specified, return "None."
+### Input: {query} {response}
+### Thought Process:
+1. The instruction asks to extract the numeric value.

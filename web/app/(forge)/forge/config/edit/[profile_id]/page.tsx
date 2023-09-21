@@ -14,7 +14,7 @@ type DataObject = {
   generation_config?: any;
   model_config?: any;
   prompt_config?: any;
-  avatar_config?: any;
+  persona?: any;
 };
 
 interface ConfigProps {
@@ -26,13 +26,13 @@ const initForm = (data: DataObject) => {
   let generation_config = data.generation_config;
   let model_config = data.model_config;
   let prompt_config = data.prompt_config;
-  let avatar_config = data.avatar_config;
+  let persona = data.persona;
   // Else grab the defaults
   const flattenedData = flattenObj(data);
     generation_config = Object.fromEntries(Object.entries(GENERATION_FIELDS).map(([key, { default: defaultValue }]) => [key, flattenedData[key] || defaultValue]))
     model_config = Object.fromEntries(Object.entries(MODEL_FIELDS).map(([key, { default: defaultValue }]) => [key, flattenedData[key] || defaultValue]))
     prompt_config = Object.fromEntries(Object.entries(PROMPT_FIELDS).map(([key, { default: defaultValue }]) => [key, flattenedData[key] || defaultValue]))
-    avatar_config = Object.fromEntries(Object.entries(AVATAR_FIELDS).map(([key, { default: defaultValue }]) => [key, flattenedData[key] || defaultValue]))
+    persona = Object.fromEntries(Object.entries(AVATAR_FIELDS).map(([key, { default: defaultValue }]) => [key, flattenedData[key] || defaultValue]))
   let metadata = data.metadata || {}; // Assuming metadata is a key in the original data object
   if (!metadata['user_id']) { 
     metadata['user_id'] = 'test_user';
@@ -42,7 +42,7 @@ const initForm = (data: DataObject) => {
     generation_config: generation_config,
     model_config: model_config,
     prompt_config: prompt_config,
-    avatar_config: avatar_config,
+    persona: persona,
     metadata: metadata,
   };
   return mergedObject

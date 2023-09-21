@@ -1,4 +1,4 @@
-from typing import Any, Optional, Protocol, Dict
+from typing import Any, Optional, Protocol, Dict, List
 from pymongo import MongoClient, errors
 from pymongo.cursor import Cursor
 from urllib.parse import quote_plus
@@ -11,6 +11,7 @@ from agentforge.adapters import DB
 class MongoDBKVStore(DB):
     def __init__(self, config: DbConfig) -> None:
         self.connection(config)
+        self.id = "id"
 
     def _check_connection(self):
         if not self.client or self.db is None:
@@ -33,16 +34,17 @@ class MongoDBKVStore(DB):
             raise
 
     # Explicitly create document with key
-    def create(self, collection:str, key: str, data: Dict[str, Any]) -> None:
+    def create(self, collection:str, key: str, data: Dict[str, Any]) -> Dict[str, Any]:
         self._check_connection()
         collection = self.db[collection]
         try:
-            if collection.find_one({"_id": key}):
+            if collection.find_one({"id": key}):
                 logging.error(f'Create operation failed for key {key}: record already exists.')
                 raise ValueError(f'A record with key {key} already exists.')
-            data["_id"] = key  # add the key to the data dict
+            data["id"] = key  # add the key to the data dict
             collection.insert_one(data)
             logging.info(f'Successfully created record with key {key}.')
+            return data
         except Exception as e:
             logging.error(f'Create operation failed for key {key}: {str(e)}')
             raise
@@ -51,9 +53,9 @@ class MongoDBKVStore(DB):
         self._check_connection()
         collection = self.db[collection]
         try:
-            result = collection.find_one({"_id": key})
+            result = collection.find_one({"id": key})
             if result:
-                del result["_id"]  # remove the _id field from the result
+                del result["id"]  # remove the _id field from the result
             return result
         except Exception as e:
             logging.error(f'Get operation failed for key {key}: {str(e)}')
@@ -64,8 +66,8 @@ class MongoDBKVStore(DB):
         self._check_connection()
         collection = self.db[collection]
         try:
-            data["_id"] = key  # add the key to the data dict
-            collection.update_one({"_id": key}, {"$set": data}, upsert=True)
+            data["id"] = key  # add the key to the data dict
+            collection.update_one({"id": key}, {"$set": data}, upsert=True)
             logging.info(f'Successfully set value for key {key}.')
         except Exception as e:
             logging.error(f'Set operation failed for keyChange the following  {key}: {str(e)}')
@@ -77,13 +79,13 @@ class MongoDBKVStore(DB):
         dest_collection = self.db[dest_collection]
         
         try:
-            document = src_collection.find_one({"_id": key})
+            document = src_collection.find_one({"id": key})
             if document is not None:
                 if new_key is None:
                     new_key = str(uuid.uuid4())
                     
-                document["_id"] = new_key
-                dest_collection.update_one({"_id": new_key}, {"$set": document}, upsert=True)
+                document["id"] = new_key
+                dest_collection.update_one({"id": new_key}, {"$set": document}, upsert=True)
                 
                 logging.info(f'Successfully copied document for key {key}. New key: {new_key}')
                 return True
@@ -98,10 +100,21 @@ class MongoDBKVStore(DB):
         self._check_connection()
         collection = self.db[collection]
         try:
-            collection.delete_one({"_id": key})
+            collection.delete_one(key)
             logging.info(f'Successfully deleted value for key {key}.')
         except Exception as e:
             logging.error(f'Delete operation failed for key {key}: {str(e)}')
+            raise
+
+
+    def count(self, collection:str, filter: Dict[str, Any]) -> Cursor:
+        self._check_connection()
+        collection = self.db[collection]
+        try:
+            result = collection.count_documents(filter)
+            return result
+        except Exception as e:
+            logging.error(f'Get operation failed for filter {filter}: {str(e)}')
             raise
 
     def get_many(self, collection:str, filter: Dict[str, Any]) -> Cursor:
@@ -113,3 +126,7 @@ class MongoDBKVStore(DB):
         except Exception as e:
             logging.error(f'Get operation failed for filter {filter}: {str(e)}')
             raise
+
+    def aggregate(self, collection: str, pipeline: List[Dict[str, Any]]) -> Optional[Any]:
+        col = self.db[collection]
+        return list(col.aggregate(pipeline))

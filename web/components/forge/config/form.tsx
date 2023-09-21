@@ -19,8 +19,8 @@ export interface ModelConfigFormProps {
 const ModelConfigForm: React.FC<ModelConfigFormProps> = ({ form, id }) =>  {
   const [currentTab, setCurrentTab] = React.useState<string>('avatar'); //defaults to avatar tab
   const { modelProfileConfigs, setModelProfileConfig} = useModelProfileConfig();
-  const config_types = ['avatar_config', 'model_config', 'generation_config', 'prompt_config', 'metadata'];
-  const avatar_config = form['avatar_config'] ?? {};
+  const config_types = ['persona', 'model_config', 'generation_config', 'prompt_config', 'metadata'];
+  const persona = form['persona'] ?? {};
   const model_config = form['model_config'] ?? {};
   const generation_config = form['generation_config'] ?? {};
   const prompt_config = form['prompt_config'] ?? {};
@@ -121,7 +121,7 @@ const ModelConfigForm: React.FC<ModelConfigFormProps> = ({ form, id }) =>  {
     <ScrollArea.Root className="w-full h-screen rounded overflow-hidden">
     <ScrollArea.Viewport className="w-full h-full rounded">
     <form className="pb-28 text-white">
-      {currentTab == "avatar" ? ( <AvatarConfig form={ avatar_config } />) : (<></>) }
+      {currentTab == "avatar" ? ( <AvatarConfig form={ persona } />) : (<></>) }
       {currentTab == "model" ? (<ModelConfig form={ model_config } />) : (<></>) }
       {currentTab == "generation" ? (<GenerationConfigForm form={ generation_config } />) : (<></>) }
       {currentTab == "prompt" ? (<PromptConfig form={ prompt_config } />) : (<></>) }

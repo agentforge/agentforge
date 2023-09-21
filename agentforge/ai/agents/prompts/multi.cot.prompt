@@ -1,0 +1,35 @@
+### Instruction: Classify into one of the following strings: None, peaches, beets, okra
+#### Input: "Peaches"
+#### Thought Process:
+1. The instruction asks to classify the text.
+2. The text is about strings.
+3. "Peaches" is mentioned.
+#### Response: peaches
+
+### Instruction: Classify into one of the following strings: None, peaches, beets, okra
+#### Input: I like apples
+#### Thought Process:
+1. The instruction asks to classify the text.
+2. The text mentions apples.
+3. apples is not within the acceptable answers.
+#### Response: None
+
+### Instruction: Classify into one of the following strings: None, peaches, beets, okra
+#### Input: "What kind of strings do you want for? Let's beets and okra."
+#### Thought Process:
+1. The instruction asks to classify the text.
+2. The text is about strings.
+3. "Beets" and "okra" are mentioned as strings someone wants to.
+#### Response: beets, okra
+
+### Instruction: Classify into one of the following strings: outdoor plot available, indoor pot available
+#### Input: "I have a backyard plot"
+#### Thought Process:
+1. The instruction asks to classify the text.
+2. The text mentions a backyard plot, which is outdoors.
+#### Response: outdoor plot available
+
+### Instruction: Classify into one of the following strings: {multi}
+#### Input: {response}
+#### Thought Process:
+1. The instruction asks to classify the text.

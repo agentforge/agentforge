@@ -1,0 +1,48 @@
+### Instruction: Classify the text into a yes or no boolean, or None if the question is not answered. Only respond with "True" "False" or "None"
+### Input: No
+### Thought Process:
+1. Identify response: "No".
+2. Response indicates unavailability of a container.
+3. Classify as False.
+4. Output is False; aligns with instructions.
+### Response: False
+
+### Instruction: Classify the text into a yes or no boolean, or None if the question is not answered. Only respond with "True" "False" or "None"
+### Input: Sure I have a space in the garden. 
+### Thought Process:
+1. Identify response: "Sure I have a space in the garden.".
+2. Response indicates affirmation.
+3. Classify as True.
+4. Output is True; aligns with instructions.
+### Response: True
+
+### Instruction: Classify the text into a yes or no boolean, or None if the question is not answered. Only respond with "True" "False" or "None"
+### Input: What is a pot?
+### Thought Process:
+1. Identify response: "What is a pot?".
+2. Response does not provide information about plants.
+3. Classify as None.
+4. Output is None; aligns with instructions.
+### Response: None  
+
+### Instruction: Classify the text into a yes or no boolean, or None if the question is not answered. Only respond with "True" "False" or "None"
+### Input:  No I live in an apartment.
+### Thought Process:
+1. Identify response: "No I live in an apartment.".
+2. Response indicates unavailability of a plot.
+3. Classify as False.
+4. Output is False; aligns with instructions.
+### Response: False  
+
+### Instruction: Classify the text into a yes or no boolean, or None if the question is not answered. Only respond with "True" "False" or "None"
+### Input: Please specify.
+### Thought Process:
+1. Identify response: "Please specify.".
+2. Response does not answer the question.
+3. Classify as None.
+4. Output is None; aligns with instructions.
+### Response: None
+
+### Instruction: Classify the text into a yes or no boolean, or None if the question is not answered. Only respond with "True" "False" or "None"
+### Input: {response}
+### Thought Process:

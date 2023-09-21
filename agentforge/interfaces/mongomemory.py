@@ -192,7 +192,7 @@ class MongoMemory:
     self.short_term_memory = MongoDBChatMessageHistory(
         connection_string=connection_string, session_id=session, database_name=os.environ.get("DB_NAME")
     )
-    
+
   # Stores memory for various agent avatars
   def setup_memory(self, human_prefix: str, ai_prefix: str, user_id: str, session_id: str):
     if not self.short_term_memory:
@@ -203,9 +203,6 @@ class MongoMemory:
   # Saves a response from another individual to short-term memory
   def remember(self, user: str, agent: str, prompt: str, response: str):
     # Do not save empty interactions
-    print(self.short_term_memory)
-    print(prompt.strip())
-    print(response)
     if prompt.strip() == "":
       return
     if self.short_term_memory:
@@ -214,12 +211,12 @@ class MongoMemory:
         self.short_term_memory.add_message(AIMessage(content=response, additional_kwargs=interaction_time))
 
   # Returns the last 5 interactions from the short term memory
-  def recall(self, user: str, agent: str, n: int = 5):
+  def recall(self, prefix: str, postfix: str, n: int = 5):
       mem = self.short_term_memory.messages
       def get_content(obj):
-          prefix = f"{self.human_prefix}: " if obj.__class__.__name__ == "HumanMessage" else f"{self.ai_prefix}: "
-          # postfix = f" {self.human_postfix}" if obj.__class__.__name__ == "HumanMessage" else f" {self.human_postfix}"
-          return prefix + obj.content # + postfix
+          total_prefix = f"{prefix} " if obj.__class__.__name__ == "HumanMessage" else ""
+          postfix_val = f" {postfix}" if obj.__class__.__name__ == "HumanMessage" else ""
+          return total_prefix + obj.content + postfix_val
       # TODO: Need a more robust way to ensure we don't hit token limit for prompt
-      hist = "\n".join(list(map(lambda obj: get_content(obj), mem[-5:])))
+      hist = "".join(list(map(lambda obj: get_content(obj), mem[-n:])))
       return hist

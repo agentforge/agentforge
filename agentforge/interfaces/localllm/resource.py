@@ -65,7 +65,7 @@ class LocalLLM():
     self.generator.set_models(self.model, self.tokenizer, self.text_streamer(False))
 
   # Setup and return the text streamer
-  def text_streamer(self, streaming):
+  def text_streamer(self, streaming, context):
     if streaming == False:
       return None
     return TextStreamer(self.tokenizer, skip_prompt=True)
@@ -79,6 +79,11 @@ class LocalLLM():
     self.setup(kwargs)
     self.load(model_key=kwargs['model_config'].get("model_name", self.model_key), **kwargs)
     kwargs.update(config)
+
+    ### For ctransformers only
+    if kwargs['model_config']["model_class"] == 'cAutoModelForCausalLM':
+      kwargs["generator"] = "cgenerate"
+    
     if "generator" in kwargs:
         # Use custom generator based on function string
         function_name = kwargs["generator"]

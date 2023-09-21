@@ -1,0 +1,36 @@
+### Instruction: Classify the text into a single or a list of strings. If no strings are specified, return "Neither".
+### Input: "What kind of plants do you want for growing? I want to grow peaches."
+### Thought Process:
+1. The instruction asks to classify the text.
+2. The text is about growing plants.
+3. "Peaches" is mentioned as the string someone wants to grow.
+### Response: peaches
+
+### Instruction: Classify the text into a single or a list of strings. If no strings are specified, return "Neither".
+### Input: "What kind of seeds do you want for growing? Actually let's not"
+### Thought Process:
+1. The instruction asks to classify the text.
+2. The text is about growing seeds.
+3. No specific seed is mentioned.
+### Response: Neither
+
+### Instruction: Classify the text into a single or a list of strings. If no strings are specified, return "Neither".
+### Input: "What kind of vegetables do you want for supper? Let's get beets and okra."
+### Thought Process:
+1. The instruction asks to classify the text.
+2. The text is about getting vegetables.
+3. "Beets" and "okra" are mentioned as strings someone wants to get.
+### Response: beets, okra
+
+### Instruction: Classify the text into a single or a list of strings. If no strings are specified, return "Neither".
+### Input: "What kind of games do you want for play? Hold on."
+### Thought Process:
+1. The instruction asks to classify the text.
+2. The text is about playing games.
+3. No specific string is mentioned.
+### Response: Neither
+
+### Instruction: Classify the following into a single or a list of strings. If no strings are specified, return "Neither".
+### Input: "What kind of <|type|> do you want for <|verb|>? <|response|>"
+### Thought Process:
+1. The instruction asks to classify the text.

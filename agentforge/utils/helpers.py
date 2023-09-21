@@ -12,6 +12,23 @@ from agentforge.utils import logger
 import importlib
 import threading
 from functools import wraps
+"""
+AbortController is used by the context to send signals to the agent
+usually to abort a task/streaming process
+
+"""
+class AbortController:
+    def __init__(self):
+        self.signals = {}
+        self.lock = threading.Lock()
+
+    def send_signal(self, user_id, signal):
+        with self.lock:
+            self.signals[user_id] = True
+
+    def get_signal(self, user_id):
+        with self.lock:
+            return self.signals.get(user_id, False)
 
 def timer_decorator(func):
     @wraps(func)

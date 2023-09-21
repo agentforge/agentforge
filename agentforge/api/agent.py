@@ -3,30 +3,62 @@ from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 from agentforge.interfaces import interface_interactor
 from base64 import b64encode
-from agentforge.ai import decision_interactor
+from agentforge.ai import agent_interactor
 from agentforge.interfaces.model_profile import ModelProfile
-from agentforge.api.auth import get_api_key
-import asyncio
+from agentforge.api.auth import get_api_key, verify_token_exists
+import asyncio, uuid
 from aioredis import Redis
-import traceback
+import traceback, json
+from agentforge.utils import logger
+from agentforge.utils.parser import Parser
+
 # Setup Agent
-decision = decision_interactor.create_decision()
+agent = agent_interactor.create_agent()
+parser = Parser() # for quick stream parsing
 
 class AgentResponse(BaseModel):
   data: dict
 
 router = APIRouter()
 # redis_store = interface_interactor.create_redis_connection()
+import os
+import nltk
+
+# Function to check if wordnet is downloaded
+def is_wordnet_downloaded(nltk_data_path):
+    for path in nltk.data.path:
+        if os.path.exists(os.path.join(path, 'corpora/wordnet.zip')):
+            return True
+    return False
+
+# Check if wordnet is downloaded, if not, download it
+if not is_wordnet_downloaded(nltk.data.path):
+    nltk.download('wordnet')
 
 @router.get("/", operation_id="helloWorld", dependencies=[Depends(get_api_key)])
 def hello() -> AgentResponse:
     return AgentResponse(data={"response": "Hello world"})
+
+
+@router.get("/v1/abort", operation_id="abort", dependencies=[Depends(get_api_key)])
+def abort() -> AgentResponse:
+    agent = agent_interactor.get_agent()
+    agent.abort()
+    return AgentResponse(data={"response": "aborted"})
+
 
 @router.post('/v1/completions', operation_id="createChatCompletion") #, dependencies=[Depends(get_api_key)])
 async def agent(request: Request) -> AgentResponse:
     ## Parse Data --  from web acceptuseChat JSON, from client we need to pull ModelConfig
     ## and add add the prompt and user_id to the data
     data = await request.json()
+    ## First check API key for legitimacy
+    valid_token = verify_token_exists(data)
+    if valid_token is None:
+        return {"error": "Invalid Token."}
+
+    # TODO: Bail on this response properly
+    data['user_id'] = valid_token['user_id']
 
     ## TODO: Verify auth, rate limiter, etc -- should be handled by validation layer
     if 'id' not in data:
@@ -34,22 +66,23 @@ async def agent(request: Request) -> AgentResponse:
 
     # TODO: To make this faster we should ideally cache these models, gonna be a lot of reads and few writes here
     model_profiles = ModelProfile()
-    if 'modelId' in data:
-        model_profile = model_profiles.get(data['modelId'])
+    logger.info(data)
+    if 'model_id' in data:
+        model_profile = model_profiles.get(data['model_id'])
     else:
         model_profile = model_profiles.get(data['id'])
 
     if model_profile['model_config']['streaming']:
-        ## Get Decision from Decision Factory and run it
-        decision = decision_interactor.get_decision()
-        # print("[DEBUG][api][agent][agent] decision: ", decision)
-        output = decision.run({"input": data, "model_profile": model_profile})
+        ## Get agent from agent Factory and run it
+        agent = agent_interactor.get_agent()
+        output = agent.run({"input": data, "model": model_profile})
 
         async def event_generator():
             redis = Redis.from_url('redis://redis:6379/0')
             async with redis.client() as client:
                 pubsub = client.pubsub()
                 await pubsub.subscribe('channel')
+                id_counter = 0  # Initialize an ID counter
                 while True:
                     message = await pubsub.get_message()
                     if message and message['type'] == 'message':
@@ -59,8 +92,15 @@ async def agent(request: Request) -> AgentResponse:
                             print(e)
                             traceback.print_exc()
                             val = "ERR"
-                        if val.strip() in ['</s>', '<|endoftext|>']:
-                            return
+                        # Strip off the </s> if it's there
+                        if len(val) >= 4 and val[-4:] == '</s>':
+                            val = val[:-4]
+                            yield str(val)
+                            break
+                        elif len(val) >= 13 and val[-13:] == '<|endoftext|>':
+                            val = val[:-13]
+                            yield str(val)
+                            break
                         yield str(val)
                     else:
                         await asyncio.sleep(1)
@@ -68,14 +108,11 @@ async def agent(request: Request) -> AgentResponse:
         return StreamingResponse(event_generator(), media_type="text/event-stream")
 
     else:
-        ## Get Decision from Decision Factory and run it
-        decision = decision_interactor.get_decision()
-
-        # print("[DEBUG][api][agent][agent] decision: ", decision)
-
-        output = decision.run({"input": data, "model_profile": model_profile})
-
-        # print("[DEBUG][api][agent][agent] decision: ", output)
+        ## Get agent from agent Factory and run it
+        agent = agent_interactor.get_agent()
+        # print("[DEBUG][api][agent][agent] agent: ", agent)
+        output = agent.run({"input": data, "model": model_profile})
+        # print("[DEBUG][api][agent][agent] agent: ", output)
 
         ### Parse video if needed
         if 'video' in output:
@@ -103,12 +140,13 @@ async def agent(request: Request) -> AgentResponse:
 
         # print("[DEBUG][api][agent][agent] output: ", output)
 
-        ## Return Decision output
+        ## Return agent output
         return AgentResponse(data=output)
 
 ### Streaming for old Forge
 @router.get("/stream/{channel}")
 def stream(channel: str):
+    id = 5
     async def event_generator():
         redis = Redis.from_url('redis://redis:6379/0')
         async with redis.client() as client:
@@ -116,18 +154,23 @@ def stream(channel: str):
             await pubsub.subscribe('video')
             while True:
                 message = await pubsub.get_message()
+                if message and message['type'] == 'message' and message['data'] == b'<|endofvideo|>':
+                    yield '<|endofvideo|>'
+                    break
                 if message and message['type'] == 'message':
                     try:
-                        val = message['data'].decode('utf-8')
+                        data = json.loads(message['data']) 
+                        val = data['data']
+                        _id = data['id']
                     except Exception as e:
                         print(e)
                         traceback.print_exc()
                         val = "ERR"
-                    if val.strip() in ['</s>', '<|endoftext|>']:
-                        return
-                    yield f"data: {str(val)}\n\n"
+                    response = f"id: {str(_id)}\ndata: {str(val)}\n\n"  # Include the ID in the response
+                    yield response
                 else:
-                    yield f"data: {str('data')}\n\n"
+                    response = f"id: {0}\ndata: {str('data')}\n\n"  # Include the ID in the response
+                    yield response
                     await asyncio.sleep(1)
     headers = {
         "Access-Control-Allow-Origin": "*",

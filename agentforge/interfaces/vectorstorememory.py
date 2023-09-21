@@ -11,43 +11,32 @@ class VectorStoreMemory:
     self.app = app
 
   # Does a similarity search to recall memories associated with this prompt
-  def recall(self, prompt, filter={}):
+  def recall(self, prompt, filter={}, **kwargs):
     print(f"searching for {prompt}")
     filter["memory"] = True
-    docs = self.vectorstore.search(prompt, n=4, filter=filter)
+    docs = self.vectorstore.search(prompt, n=2, filter=filter, **kwargs)
+    print("LONG-TERM MEMORY")
+    print(docs)
     result = ""
     for doc in docs:
-        content = doc.page_content.replace('\n', ' ')
-        result += content
+        result += doc.page_content
     return result
 
   # Async method using threading for memorization -- need app for Flask context
-  def remember(self, user: str, agent: str, prompt: str, response: str):
-      self.save_interaction(prompt, response, user, agent)
-      # remember_thread_args=(prompt, response, user, agent, app)
-      # remember_thread = threading.Thread(target=self.remember_with_app_context, args=remember_thread_args )
-      # remember_thread.start()
-
-  # TODO: Return a summarization of the session history parsed via summarization model if available
-  def session_history(self, user: str, agent: str):
-     return ""
-
-  # # Locking and thread ontext for async memory processing
-  # def remember_with_app_context(self, prompt, response, app):
-  #     with app.app_context():
-  #         self.save_interaction(prompt, response, user, agent)
-
-  # Saves a response from another individual to long-term memory
-  def save_interaction(self, prompt, response, user, agent):
+  def remember(self, user: str, agent: str, prompt: str, response: str, **kwargs):
     # Do not save empty interactions
     if prompt.strip() == "":
       return
     interaction = f"""{user}: {prompt}\n{agent}: {response}"""
     if self.vectorstore is not None:
         metadata = {"user": user, "agent": agent, "memory": True}
-        self.ingest(interaction, metadata)
+        self.add_texts(interaction, metadata, **kwargs)
 
-  def ingest(self, interaction, metadata, **kwargs):
+  # TODO: Return a summarization of the session history parsed via summarization model if available
+  def session_history(self, user: str, agent: str):
+     return ""
+
+  def add_texts(self, interaction, metadata, **kwargs):
       """Add documents to vectorstore."""
       current_time = kwargs.get("current_time", str(datetime.datetime.now()))
       # Avoid mutating input documents
@@ -55,4 +44,4 @@ class VectorStoreMemory:
           metadata["last_accessed_at"] = current_time
       if "created_at" not in metadata:
           metadata["created_at"] = current_time
-      return self.vectorstore.add_texts([interaction], [metadata], collection="memories")
+      return self.vectorstore.add_texts([interaction], [metadata], **kwargs)

@@ -6,7 +6,7 @@ deeplake.__version__ = '3.6.2'
 from fastapi import Request
 from agentforge.api.model_profiles import router as model_profiles_router
 from agentforge.api.agent import router as agent_router
-from agentforge.api.token_access import router as token_router
+from agentforge.api.auth import router as token_router
 from agentforge.api.user import router as user_router
 from agentforge.api.app import init_api
 from agentforge.utils import logger
@@ -59,11 +59,10 @@ class RateLimiterMiddleware(BaseHTTPMiddleware):
 
 ### TODO: limit to dev/test environment
 from agentforge.interfaces import interface_interactor
-from agentforge.ai.cognition.planner import DomainBuilder
 
-db = interface_interactor.get_interface("db")
-d = DomainBuilder(db)
-d.upload_documents_from_folder('garden', '/app/agentforge/agentforge/config/configs/planner/domains/garden', 'p_example')
+# db = interface_interactor.get_interface("db")
+# d = DomainBuilder(db)
+# d.upload_documents_from_folder('garden', '/app/agentforge/agentforge/config/configs/planner/domains/garden', 'p_example')
 
 app = init_api()
 app.add_middleware(LoggingMiddleware)
