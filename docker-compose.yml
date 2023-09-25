@@ -101,6 +101,24 @@ services:
               device_ids: ['1']
               capabilities: [gpu]
 
+  vqa:
+    image: vqa:qwenvl
+    ipc: host
+    restart: always
+    networks:
+      main-net:
+        aliases:
+          - vqa
+    volumes:
+      - cache-volume:/app/cache
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ['1']
+              capabilities: [gpu]
+
   agent:
     image: agent
     environment:
