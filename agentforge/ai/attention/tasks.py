@@ -229,7 +229,9 @@ class TaskManager:
     
     def get_by_id(self, key: str) -> Optional[Any]:
         task = self.db.get(self.collection, key)
-        return Task.from_dict(task)
+        if task:
+            return Task.from_dict(task)
+        return None
 
     """
     Input: user_id, session_id, name

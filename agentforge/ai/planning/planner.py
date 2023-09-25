@@ -30,6 +30,8 @@ class PlanningController:
         self.llm = interface_interactor.get_interface("llm")
         self.db = interface_interactor.get_interface("db")
         self.domain = domain
+        self.best_plan = "None"
+        self.best_cost = 0
         
         # Create a PlanningControllerConfig object
         self.config = PlanningControllerConfig(domain)
@@ -130,33 +132,6 @@ class PlanningController:
         s = "Here is some text (I want (only this) part) and this is not needed."
         return self.extract_outermost_parentheses(s)
 
-    def query(self, prompt_text, input_config, extract_parens=True, streaming_override=False):
-        result_text = "()"
-        input_ = {
-            "prompt": prompt_text,
-            "generation_config": input_config['generation_config'],
-            "model_config": input_config['model_config'],
-            "streaming_override": streaming_override,
-        }
-        response = self.llm.call(input_)
-        result_text = response['choices'][0]['text']
-        result_text = result_text.replace(input_['prompt'], "")
-        if extract_parens:
-            result_text = self.extract_outermost_parentheses(result_text)
-        for tok in ['eos_token', 'bos_token', 'prefix', 'postfix']:
-            if tok in input_['model_config']:
-                result_text = result_text.replace(input_['model_config'][tok], "")
-        return result_text
-
-    def plan_to_language(self, plan, input_):
-        prompt = """
-                ### Instruction: Your goal is to help the user plan. Transform the PDDL plan into a sequence of behaviors without further explanation. Format the following into a natural language plan. Here is the plan to translate:"""
-        prompt += f"{plan} ### Response:"
-        logger.info("plan_to_language")
-        logger.info(prompt)
-        res = self.query(prompt, input_, extract_parens=False, streaming_override=True).strip() + "\n"
-        return res
-
     # TODO: Extract this to its own separate service -- CPU intensive process blocks API
     def llm_ic_pddl_planner(self, input, task_pddl_):
         task = self.config.task
@@ -192,19 +167,19 @@ class PlanningController:
                     best_plan = "\n".join([p.strip() for p in plans[:-1]])
 
         # E. translate the plan back to natural language, and write it to result
-        if best_plan:
-            plans_nl = self.plan_to_language(best_plan, input)
-            self.best_plan = best_plan
-            self.best_cost = best_cost
-            self.plans_nl = plans_nl
+        # if best_plan:
+        #     plans_nl = self.plan_to_language(best_plan, input)
+        #     self.best_plan = best_plan
+        #     self.best_cost = best_cost
+        #     self.plans_nl = plans_nl
 
         end_time = time.time()
         if best_plan:
             logger.info(f"[info] task {task} takes {end_time - start_time} sec, found a plan with cost {best_cost}")
-            return plans_nl
+            return best_plan, best_cost
         else:
             logger.info(f"[info] task {task} takes {end_time - start_time} sec, no solution found")
-            return "No plan found."
+            return "", 0
 
 """
     Config object for the PlanningController
@@ -219,5 +194,3 @@ class PlanningControllerConfig:
         self.task = uuid.uuid4()
         self.run = 0
         self.print_prompts = False
-        self.best_plan = "None"
-        self.best_cost = 0

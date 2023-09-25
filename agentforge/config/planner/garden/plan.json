@@ -1,9 +1,13 @@
 {
   "name": "garden",
   "goals": [
+    "prepared ?location",
+    "planted ?cannabis-plant",
     "growing ?cannabis-plant",
     "flowering ?cannabis-plant",
-    "harvest ?cannabis-plant"
+    "harvested ?cannabis-plant",
+    "cured ?cannabis-plant",
+    "cleaned ?location"
   ],
   "prompts": [
     "Plan a garden for me.",
@@ -55,6 +59,6 @@
     "Support me in the process of garden planning.",
     "Let's come up with a plan for my garden.",
     "I'd like your support in planning my garden."
-]
+  ]
 
 }

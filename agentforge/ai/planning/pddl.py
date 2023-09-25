@@ -10,6 +10,7 @@ from agentforge.utils import logger
 from agentforge.interfaces import interface_interactor
 from agentforge.ai.beliefs.state import StateManager
 from datetime import datetime
+from copy import deepcopy
 
 from pydantic import BaseModel, Field
 from typing import List, Optional, Dict
@@ -486,6 +487,7 @@ class PDDLGraph:
         variables = self.extract_last_variable_from_expression(node)
         for variable in variables:
             if node not in objects[variable]:
+                logger.info(f"ADDING {node}")
                 objects[variable].append(node)
 
     # Updated function to run on a root edge
@@ -498,25 +500,30 @@ class PDDLGraph:
         variables = self.extract_last_variable_from_expression(edge)
         for variable in variables:
             for splitvar in variable.split(" "):
-                objects[splitvar] = list(set(objects[splitvar]).union(set(valid_actions)))
+                val = list(set(objects[splitvar]).union(set(valid_actions)))
+                logger.info(f"ADDING {val}")
+                objects[splitvar] = val
 
     # if this node has been evaluated -- action
-    def is_evaluated_node(self, node):
+    def evaluate(self, node):
         is_action = node in self.actions
         is_predicate = node in self.predicates
-        if is_predicate or is_action:
+        if is_predicate:
             return self.eval_predicate(node)
+        if is_action:
+            return self.eval_action(node)
         # check knowledge base for node
         return False
 
-    # if this edge -- precondition or effect
-    def is_evaluated_edge(self, edge):
-        is_action = edge in self.actions
-        is_predicate = edge in self.predicates
-        if is_predicate or is_action:
-            return self.eval_predicate(edge)
-        # check knowledge base for node
-        return False
+    def eval_action(self, action):
+        # for each action we need to determine if the effect
+        # has already occurred. If so no need to continue with
+        # this action -- works in DAG
+        logger.info(f"EVAL ACTION {action}")
+        for effect in self.actions[action]["positive_effects"]:
+            valid = self.state_manager.check(self.user_name, effect)
+            if valid is not None:
+                return True
 
     def eval_predicate(self, predicate):
         # If there are no predecessors or all predecessors are already evaluated
@@ -529,12 +536,37 @@ class PDDLGraph:
         logger.info(f"valid {valid} -- checked for {self.user_name}")
         return valid is not None
 
+    def process_checklist(self, tuple_list, checklist):
+        logger.info(f"PROCESSING CHECKLIST {checklist}")
+        all_vals = deepcopy(checklist)
+        for var in all_vals:
+            logger.info(f"CHECKING {var=}")
+            # Step 1: Find the tuple containing 'var'
+            for tup in tuple_list:
+                logger.info(f"CHECKING {tup=}")
+                if var in tup:
+                    # Step 2: Check if all elements of the tuple are in the checklist
+                    if all(x in checklist for x in tup):
+                        logger.info(f"ALL AVAILABLE {all(x in checklist for x in tup)}")
+                        logger.info(f"{tup=}")
+                        logger.info(f"{checklist=}")
+                        continue  # All elements found, return the original checklist
+                    else:
+                        # Step 3: Remove 'var' from checklist if any element is not in the checklist
+                        logger.info(f"REMOVING {var}")
+                        checklist.remove(var)
+        return checklist
+
     # Updated function to evaluate a node 
     def eval_node(self, objects, node):
         logger.info(f"EVAL NODE {node}")
         predecessors = list(self.G.predecessors(self.root_element(node)))
-        predecessors_evaled = [p for p in predecessors if not self.is_evaluated_node(p)]
+        predecessors_evaled = [p for p in predecessors if not self.evaluate(p)]
+        predecessors_evaled = self.process_checklist(self.or_tuples, predecessors_evaled)
+
         # If no predessors or all predessors are already evaluated
+        logger.info("predecessors_evaled")
+        logger.info(predecessors_evaled)
         if not predecessors_evaled:
             self.run_node(objects, node)
             return False
@@ -542,11 +574,22 @@ class PDDLGraph:
 
     # Updated function to evaluate an edge
     def eval_edge(self, objects, edges):
+        logger.info(f"EDGES: {edges}")
         for edge in edges:
             logger.info(f"EVAL EDGE {edge}")
             predecessors = list(self.G.predecessors(self.root_element(edge)))
-            predecessors_evaled = [p for p in predecessors if not self.is_evaluated_edge(p)]
+            predecessors_evaled = [p for p in predecessors if not self.evaluate(p)]
+            predecessors_evaled = self.process_checklist(self.or_tuples, predecessors_evaled)
+            
+            # checked if we already have this information
+            if edge in self.predicates:
+                checked = self.state_manager.check(self.user_name, edge)
+                if checked is not None:
+                    return True
+                
             # If no predessors or all predessors are already evaluated
+            logger.info("predecessors_evaled")
+            logger.info(predecessors_evaled)
             if not predecessors_evaled:
                 self.run_edge(objects, edge)
             return True
@@ -588,6 +631,7 @@ class PDDLGraph:
         Iterates the entire graph and creates necessary state but does not traverse
         the graph to find the root nodes/edges
     """
+
     def setup_graph(self):
         # For production environments use the pre-loaded graph state
         dev = os.getenv("ENV") == "dev" or os.getenv("ENV") == "test"
@@ -672,11 +716,15 @@ class PDDLGraph:
         # setup graph if needed
         self.setup_graph()
 
+        labels = nx.get_edge_attributes(self.G, 'label')
+        logger.info(labels)
+        self.or_labels = [item for k, v in labels.items() if v == "OR" for item in k]
+        self.or_tuples = [k for k, v in labels.items() if v == "OR"]
+        logger.info(f"{self.or_labels=}")
+        logger.info(f"{self.or_tuples=}")
         # Trace the graph starting from "growing ?seedling"
         objects = self.trace_pddl_graph(self.objects, seed)
-        
-        # logger.info(f"{objects=}")
-        # logger.info(len(objects))
+
         # prompts = generate_all_prompts(actions, predicates, effects, preconditions)
         final_queries = {}
 
@@ -692,8 +740,6 @@ class PDDLGraph:
         logger.info("parameter_types")
         logger.info(self.parameter_types)
 
-        labels = nx.get_edge_attributes(self.G, 'label')
-        or_labels = [item for k, v in labels.items() if v == "OR" for item in k]
         already_evaluated = set()
         final_queries = defaultdict(list)
         # For each object/action list generate queries
@@ -714,7 +760,7 @@ class PDDLGraph:
 
                     # also ignore OR singletons, should be capture by OR boolean prompt
                     # print(prompt.split(" ")[0])
-                    or_cond = prompt.split(" ")[0]in or_labels
+                    or_cond = prompt.split(" ")[0]in self.or_labels
                     if or_cond and " OR " not in prompt:
                         logger.info(f"IGNORE OR SINGLETON {prompt}")
                         continue
@@ -848,7 +894,7 @@ class PDDL:
 
 def test():
     domain_file = '/app/agentforge/agentforge/config/planner/garden/domain.pddl'
-    problem_file = '/app/agentforge/agentforge/config/planner/garden/problem.pddl'
+    problem_file = '/app/agentforge/agentforge/config/planner/garden/test.pddl'
     pddl_graph = PDDLGraph(domain_file, problem_file, "garden")
     pddl = PDDL(pddl_graph)
     queries = pddl_graph.get_seed_queries("growing ?cannabis-plant", "Frank")
@@ -868,9 +914,10 @@ def test():
     #         "type": "init"
     #     }
     # ]
-    from agentforge.ai.attention.tasks import TaskManager
-    t = TaskManager()
-    task = t.get_by_id("3a75e88b-b85d-4234-89e5-936c97d39bfb")
+    # from agentforge.ai.attention.tasks import TaskManager
+    # t = TaskManager()
+    # task = t.get_by_id("3a75e88b-b85d-4234-89e5-936c97d39bfb")
 
-    print(pddl.execute_plan(task.history[5]['plan'], task.history[5]['state']))
+    # print(pddl.execute_plan(task.history[5]['plan'], task.history[5]['state']))
+    pddl_graph.get_seed_queries("growing ?cannabis-plant", "Frank")
     return domprob

@@ -38,7 +38,6 @@ class Query:
         input['model_config']['streaming'] = streaming
         input['generation_config']['max_new_tokens'] = 512
         input['prompt'] = context.process_prompt(prompt, data)
-        
 
         conditions = data['condition'].split(" OR ") #conditions can be split by OR
         predicates = {}

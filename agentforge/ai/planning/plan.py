@@ -1,3 +1,4 @@
+import os, json
 from typing import Any, Dict, List
 from agentforge.ai.planning.planner import PlanningController
 from agentforge.ai.beliefs.symbolic import SymbolicMemory
@@ -108,7 +109,8 @@ class Plan:
         ## TEST: Determine if the user has completed a plan
         if plan is not None:
             z = ZeroShotClassifier()
-            z_val = z.classify("### Instruction: Does this imply the user has completed the current plan? Respond with Yes or No. ### Input: {{user_input}} ### Response: ", ["Yes", "No"], {"user_input": user_input}, context)
+            prompt = context.prompts["boolean.plan-complete.prompt"]
+            z_val = z.classify(prompt, ["Yes", "No"], {"user_input": user_input}, context)
             if z_val == "Yes":
                 plan = self.pddl.execute(plan, context)
                 task.push_complete(plan)
@@ -162,14 +164,26 @@ class Plan:
             # TODO: Make channel user specific
             stream_string('channel', finalize_reponse, end_token=" ")
 
-            response = self.planner.execute(context.get_model_input(), task, problem_data)
+            best_plan, best_cost = self.planner.execute(context.get_model_input(), task, problem_data)
+
+            if best_plan == "":
+                logger.info("NO PLAN FOUND")
+                return context
+
+            dir_name = os.getenv("PLANNER_DIRECTORY")
+            filename = "actions.json"
+            actions = {}
+            with open(f"{dir_name}/{self.domain}/{filename}", 'r') as f:
+                actions = json.load(f)
+            
+            plan_nl = self.plan_to_language(best_plan, context.get_model_input(), actions)
 
             task.active = True
             # setup plan as next action in task sequence
             plan_task = {
-                "plan_nl": response,
-                "plan": self.planner.best_plan,
-                "cost": self.planner.best_cost,
+                "plan_nl": plan_nl,
+                "plan": best_plan,
+                "cost": best_cost,
                 "metatype": "plan",
                 "state": problem_data,
             }
@@ -177,7 +191,51 @@ class Plan:
             task.activate_plan()
             self.task_management.save(task)
             self.task_management.save_state(context.get('input.user_name'), problem_data)
-            context.set("plan_response", response)
+            context.set("plan_response", plan_nl)
             return context
-
         return context
+
+    def query(self, prompt_text, input_config, extract_parens=True, streaming_override=False):
+        result_text = "()"
+        input_ = {
+            "prompt": prompt_text,
+            "generation_config": input_config['generation_config'],
+            "model_config": input_config['model_config'],
+            "streaming_override": streaming_override,
+        }
+        response = self.llm.call(input_)
+        result_text = response['choices'][0]['text']
+        result_text = result_text.replace(input_['prompt'], "")
+        if extract_parens:
+            result_text = self.extract_outermost_parentheses(result_text)
+        for tok in ['eos_token', 'bos_token', 'prefix', 'postfix']:
+            if tok in input_['model_config']:
+                result_text = result_text.replace(input_['model_config'][tok], "")
+        return result_text
+
+    def plan_to_language(self, plan, input_, actions={}):
+        keys = self.extract_action_keys(plan)
+        explanations = []
+        for key in keys:
+            if key not in actions:
+                continue
+            explanations.append(f"{key}: {actions[key]}")
+
+        prompt = """### Instruction: Your goal is to help the user plan. Transform the PDDL plan into a sequence of behaviors without further explanation. Format the following into a natural language plan. Action Definitions: {explanations}
+        Here is the plan to translate: {plan} ### Response:"""
+
+        prompt = prompt.replace("{plan}", plan)
+        prompt = prompt.replace("{explanations}", "\n".join(explanations))
+
+        logger.info("plan_to_language")
+        logger.info(prompt)
+        res = self.query(prompt, input_, extract_parens=False, streaming_override=True).strip() + "\n"
+        return res
+    
+    def extract_action_keys(self, plan):
+        keys = []
+        for line in plan.split("\n"):
+            line = line.replace("(", "").replace(")", "")
+            action = line.split(" ")[0]
+            keys.append(action)
+        return keys

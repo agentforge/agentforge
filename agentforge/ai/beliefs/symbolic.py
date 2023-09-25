@@ -18,7 +18,6 @@ import pickle
     Input: query_str - string with OR conditions "seed-availabel ?plant OR clone-avail ?plant"
     Output: string with comma separated conditions "seed availabel, clone avail"
 """
-RELATION_PROMPT =  """### Instruction: Come up with a descriptive verb based on the input output pair, such as 'is a part of' or 'has chosen strain' for instance. Respond with a single verb. ### Input: Input: {{question}} Output: {{response}} ### Response: Verb:"""
 
 def get_multi(query_str):
     # Step 1: Remove any string starting with '?'
@@ -96,7 +95,8 @@ class SymbolicMemory:
             self.__dict__.update(deserialized)
 
     def get_relation(self, query, result, context):
-        relation = self.zeroshot.classify(RELATION_PROMPT, [], {"question": query['text'], "response": result}, context)
+        relation_prompt = context.prompts[f"string.relation.prompt"]
+        relation = self.zeroshot.classify(relation_prompt, [], {"question": query['text'], "response": result}, context)
         if relation is None:
             return " related to "
 
