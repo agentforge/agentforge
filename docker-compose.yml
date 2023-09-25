@@ -102,7 +102,7 @@ services:
               capabilities: [gpu]
 
   vqa:
-    image: vqa:qwenvl
+    image: vqa
     ipc: host
     restart: always
     networks:
