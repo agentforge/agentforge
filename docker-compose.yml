@@ -108,7 +108,7 @@ services:
     networks:
       main-net:
         aliases:
-          - vqa
+          - vqa2
     volumes:
       - cache-volume:/app/cache
     deploy:
