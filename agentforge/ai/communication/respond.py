@@ -16,6 +16,7 @@ class Respond:
     def execute(self, context: Dict[str, Any]) -> Dict[str, Any]:
         ### Another subroutine gotchu dawg, bail
         if context.has_key("response"):
+            logger.info("Response already exists, skipping response generation")
             return context
 
         formatted = context.get_formatted()

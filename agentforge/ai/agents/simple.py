@@ -8,7 +8,7 @@ import threading, json, os
 
 def load(root_directory):
     json_list = []
-    
+
     # Walk through the root directory and its subdirectories
     for dirpath, dirnames, filenames in os.walk(root_directory):
         # Check if 'plan.json' is in the list of filenames

@@ -46,6 +46,9 @@
       (topped ?cannabis-plant - cannabis-plant ?location - location)
       (has-outdoor-plot-available ?location - location)
       (harvested ?cannabis-plant - cannabis-plant)
+      (cured ?cannabis-plant - cannabis-plant)
+      (dryed ?cannabis-plant - cannabis-plant)
+      (cleaned ?location - location)
       (pesticide-available ?pesticide - pesticide)
       (pruning-tool-available ?pruning-tool - tool)
       (pruned ?cannabis-plant - cannabis-plant)
@@ -117,7 +120,12 @@
     (:action dry-buds
       :parameters (?cannabis-plant  - cannabis-plant ?curing-container - curing-container )
       :precondition (harvested ?cannabis-plant)
-      :effect(and (plant-drying ?cannabis-plant) (plant-in-curing-container ?cannabis-plant ?curing-container)))
+      :effect(and (dryed ?cannabis-plant) (plant-in-curing-container ?cannabis-plant ?curing-container)))
+
+    (:action cure-buds
+      :parameters (?cannabis-plant  - cannabis-plant ?curing-container - curing-container )
+      :precondition (harvested ?cannabis-plant)
+      :effect(and (cured ?cannabis-plant) (plant-in-curing-container ?cannabis-plant ?curing-container)))
 
     (:action water
       :parameters (?cannabis-plant  - cannabis-plant ?water-can - water-container ?location - location)

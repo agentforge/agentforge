@@ -98,7 +98,7 @@ class PDDLFragment(BaseModel):
 class PDDLGraphModel(BaseModel):
     domain_file: Optional[str] = ""
     problem_file: Optional[str] = ""
-    id: Optional[str] = ""
+    domain: Optional[str] = ""
     parameter_types: Optional[Dict[str, Any]] = Field(default=None)
     types: Optional[Dict[str, Any]] = Field(default=None)
     attributes: Optional[Dict[str, Any]] = Field(default=None)
@@ -119,7 +119,7 @@ class PDDLGraph:
             setattr(self, field, None if field != "types" else {})
 
         # Override defaults
-        self.id = primary_key
+        self.domain = primary_key
         self.domain_file = domain_file
         self.problem_file = problem_file
 
@@ -127,14 +127,15 @@ class PDDLGraph:
 
     def deserialize_from_db(self) -> None:
         # Fetch the data from MongoDB based on the primary key
-        db_data = self.db.get("pddl", self.id)
-        
+        db_data = self.db.get("pddl", self.domain)
+
         if db_data:
             # Use Pydantic for deserialization
             pddl_graph_model = PDDLGraphModel(**db_data)
             
             # Populate  the object variables dynamically
             for field, value in pddl_graph_model.dict().items():
+                logger.info(f"setattr({field}, {value})")
                 setattr(self, field, value)
 
     def serialize_to_json_and_db(self) -> None:
@@ -150,14 +151,14 @@ class PDDLGraph:
         serialized_data = pddl_graph_model.dict()
 
         # Check if an entry with the same primary key already exists
-        existing_entry = self.db.get("pddl", self.id)
+        existing_entry = self.db.get("pddl", self.domain)
 
         if existing_entry:
             # Update the existing entry
-            self.db.set("pddl", self.id, serialized_data)
+            self.db.set("pddl", self.domain, serialized_data)
         else:
             # Create a new entry
-            self.db.create("pddl", self.id, serialized_data)
+            self.db.create("pddl", self.domain, serialized_data)
 
     def loads(self, actions, predicates, effects):
         self.actions = actions
@@ -631,7 +632,6 @@ class PDDLGraph:
         Iterates the entire graph and creates necessary state but does not traverse
         the graph to find the root nodes/edges
     """
-
     def setup_graph(self):
         # For production environments use the pre-loaded graph state
         dev = os.getenv("ENV") == "dev" or os.getenv("ENV") == "test"
@@ -673,7 +673,11 @@ class PDDLGraph:
         self.preconditions = self.extract_preconditions(self.domain_file)
 
         # Test the further adjusted extract_types function with the given PDDL file
-        self.types = self.extract_types(self.domain_file)
+        # self.types = self.extract_types(self.domain_file)
+        print(f"{os.getenv('PLANNER_DIRECTORY')} -- {self.domain}")
+        file_path = os.path.join(os.getenv('PLANNER_DIRECTORY'), self.domain, "types.json")
+        with open(file_path, 'r') as json_file:
+            self.types = json.load(json_file)
 
         # Printing the extracted information
         # print("Actions:")
@@ -778,10 +782,16 @@ class PDDLGraph:
                             invalid = (self.state_manager.check(self.user_name, t.split(" ")[0]) is not None) or invalid
                         if invalid:
                             continue
+                    
+                    type_ = "boolean"
+                    if " OR " in prompt:
+                        type_ = "string"
+                    else:
+                        parameter_type = prompt.split(" ")[0]
+                        type_ = self.lookup_type(self.type_klasses, self.types, parameter_type)
 
-                    parameter_type = self.parameter_types[prompt.split(" ")[-1]]
-                    type_ = self.lookup_type(self.type_klasses, self.types, parameter_type)
-                    query = {'condition': prompt, "datatype": type_, "class": parameter_type}
+                    klass = self.parameter_types[prompt.split(" ")[-1]]
+                    query = {'condition': prompt, "datatype": type_, "class": klass}
                     if prompt not in already_evaluated:
                         final_queries[action].append(query)
                     already_evaluated.add(prompt)

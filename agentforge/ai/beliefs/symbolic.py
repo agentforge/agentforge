@@ -137,7 +137,7 @@ class SymbolicMemory:
             # None is a specific type of failure for strings
             if len(results) == 0:
                 return False, []
-            if len(results) > 0 and (results[0] == "Neither" or results[0] == "None"):
+            if len(results) > 0 and (results[0] == "Neither" or results[0].lower() == "none"):
                 return False, [None]
             for subject in results:
                 subject = subject.replace(" ", "-").strip() # If any spaces are involved they will break PDDL

@@ -48,5 +48,8 @@
     "training-scheduled": "Signifies that a schedule for training a cannabis plant to grow in a particular manner has been set.",
     "topping-scheduled": "Marks that a schedule for topping a cannabis plant to encourage bushier growth has been set.",
     "has-photoperiod-genetics": "Specifies that a cannabis plant has genetics that make it sensitive to light cycles, affecting its growth and flowering stages.",
-    "has-autoflower-genetics": "Indicates that a cannabis plant has autoflowering genetics, meaning it will automatically transition to the flowering stage after a set period."
+    "has-autoflower-genetics": "Indicates that a cannabis plant has autoflowering genetics, meaning it will automatically transition to the flowering stage after a set period.",
+    "cured": "Indicates that a harvested cannabis plant has been cured, a process to improve the quality of the buds.",
+    "dryed": "Shows that a harvested cannabis plant has been dried, a necessary step before curing or usage.",
+    "cleaned": "Indicates that the tools and growing area at a given location have been cleaned, usually to prevent the spread of pests and diseases."
 }

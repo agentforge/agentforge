@@ -5,6 +5,7 @@ from agentforge.utils import Parser
 from agentforge.utils import AbortController, logger
 from bson.objectid import ObjectId
 from copy import deepcopy
+from jinja2 import Template
 
 """
     Context Class - Shared State for Agent Subroutines
@@ -139,6 +140,14 @@ class Context:
                 messages.append(message['content'])
         return " ".join(messages)
 
+    def format_template(self, prompt_template, **kwargs):
+        logger.info("FORMAT_TEMPLATE")
+        logger.info(kwargs)
+        # Find all placeholders in the prompt_template
+        template = Template(prompt_template)
+        rendered_str = template.render(kwargs)
+        return rendered_str
+
     ### Helper function to get entire formatted prompt
     def get_formatted(self):
         prompt_template = self.get('model.prompt_config.prompt_template')
@@ -170,7 +179,8 @@ class Context:
         #     f"mem: {memory}"
         # )
 
-        return self.parser.format_template(
+
+        return self.format_template(
             prompt_template,
             name=agentname,
             instruction=instruction,
@@ -202,7 +212,7 @@ class Context:
                     content = file.read()
                     prompts_dict[filename] = content
         return prompts_dict
-    
+
     def process_prompt(self, prompt: str, values: Dict) -> str:
         for k,v in values.items():
             prompt = prompt.replace(f"<|{k}|>", str(v))

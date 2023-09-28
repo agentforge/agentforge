@@ -6,6 +6,7 @@
     "growing ?cannabis-plant",
     "flowering ?cannabis-plant",
     "harvested ?cannabis-plant",
+    "dryed ?cannabis-plant",
     "cured ?cannabis-plant",
     "cleaned ?location"
   ],

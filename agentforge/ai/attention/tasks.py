@@ -253,8 +253,11 @@ class TaskManager:
     def save_state(self, user_name: str, triplets: List[dict]) -> Optional[Any]:
         for triplet in [i for i in triplets if i['type'] == 'init']:
             val = triplet['val']
-            predicate, obj = val.replace("(", "").replace(")", "").split(" ")
-            self.state_management.create_triplet(user_name, predicate, obj)
+            predicates = val.replace("(", "").replace(")", "").split(" ")
+            predicate = predicates[0]
+            objs = predicates[1:]
+            for obj in objs:
+                self.state_management.create_triplet(user_name, predicate, obj)
 
     def save(self, task: Task) -> None:
         if task:
