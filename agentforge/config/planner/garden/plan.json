@@ -2,7 +2,7 @@
   "name": "garden",
   "goals": [
     "prepared ?location",
-    "planted ?cannabis-plant",
+    "planted ?cannabis-plant ?location",
     "growing ?cannabis-plant",
     "flowering ?cannabis-plant",
     "harvested ?cannabis-plant",

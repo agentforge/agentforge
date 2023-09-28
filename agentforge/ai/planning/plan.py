@@ -55,6 +55,8 @@ class Plan:
         logger.info(f"GOAL {goal}")
         queries = self.gather(goal, user_name)
         logger.info(f"{queries=}")
+        if len(queries) == 0:
+            return context
         list(map(task.push, queries)) # efficiently push queries to the task
         logger.info(f"{task=}")
         self.task_management.save(task)
@@ -111,11 +113,13 @@ class Plan:
             z = ZeroShotClassifier()
             prompt = context.prompts["boolean.plan-complete.prompt"]
             z_val = z.classify(prompt, ["Yes", "No"], {"user_input": user_input}, context)
+            logger.info(f"YAASIFYING: {z_val}")
             if z_val == "Yes":
                 plan = self.pddl.execute(plan, context)
                 task.push_complete(plan)
                 task.iterate_stage_and_flush()
                 user_done = True
+                self.task_management.save(task)
                 ## Move the plan to the next stage and trace graph to create new queries.
                 if task.stage >= len(self.goals):
                     ## If the next stage does not exist, congragulate the user! Job well done
@@ -123,46 +127,49 @@ class Plan:
                     # TODO: save and return here
                 else:
                     # create new quer
+                    logger.info("CREATE NEW QUERIES FOR NEXT STAGE")
                     context = self.init_queries(task, context)
-                logger.info(f"{task=}")
-                # self.task_management.save(task)
-                return context
+                    # # If we have some newly staged queries we can return
+                    # if not task.is_empty_queue() or not task.is_empty_active():
+                    #     return context
             else:
                 # stream_string('channel', "<PLAN-ACTIVE>", end_token=" ")
                 context.set("plan", plan['plan_nl'])
 
+        logger.info(f"CHECKING TASK STATE")
         # Sample these after plan management
         empty_queue = task.is_empty_queue()
         empty_active = task.is_empty_active()
         empty_complete = task.is_empty_complete()
+        plan = task.get_active_plan()
         logger.info(f"empty_queue: {empty_queue}, empty_active: {empty_active}, plan: {plan}, empty_complete: {empty_complete}")
 
         # GATHER NEW QUERIES FOR THIS STATE
         # if task in progress but no queries, generate them and create the PDDL Plan callback
         # Triggers when we have no actions queued/active and we are either at an end-stage
         # point initiated by the user/agent or 
-        if empty_queue and empty_active and ((user_done and agent_done) or empty_complete):
+        if task.is_empty_queue() and task.is_empty_active() and ((user_done and agent_done) or task.is_empty_complete()):
             logger.info("GATHERING NEW QUERIES")
             context = self.init_queries(task, context)
 
         # QUERY USER: Activate a query if we have none active
-        elif not empty_queue and empty_active:
+        if not task.is_empty_queue() and task.is_empty_active():
             logger.info("ACTIVATING QUERY")
             context = self.init_query(task, context)
 
         # PLAN: Not a new instance/stage and no queries, we're at planning time
-        elif empty_queue and empty_active and not plan:
+        if task.is_empty_queue() and task.is_empty_active() and not task.get_active_plan():
             logger.info("PLANNING")
             ## Queries complete, let's execute the plan
-            finalize_reponse = "I have all the info I need, let me finalize the current plan."
+            # finalize_reponse = "I have all the info I need, let me finalize the current plan."
 
             goal = self.goals[task.stage]
-            problem_data = self.pddl.create_pddl_problem_state(task.actions["complete"], goal)
+            problem_data = self.pddl.create_pddl_problem_state(task, goal)
             logger.info(problem_data)
             logger.info("Creating PDDL Plan")
 
             # TODO: Make channel user specific
-            stream_string('channel', finalize_reponse, end_token=" ")
+            # stream_string('channel', finalize_reponse, end_token=" ")
 
             best_plan, best_cost = self.planner.execute(context.get_model_input(), task, problem_data)
 

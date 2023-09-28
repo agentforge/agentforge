@@ -92,7 +92,7 @@
     (:action sow
       :parameters (?location - location ?cannabis-plant - cannabis-plant)
       :precondition (and (dug ?location) (has-seeds ?cannabis-plant))
-      :effect (and (growing ?cannabis-plant) (planted ?cannabis-plant ?location)))
+      :effect (and (planted ?cannabis-plant ?location)))
 
     (:action sprout
       :parameters (?cannabis-plant  - cannabis-plant ?location - location)
@@ -106,7 +106,7 @@
 
     (:action transition-to-flowering
       :parameters (?cannabis-plant  - cannabis-plant ?location - location)
-      :precondition (and (growing ?cannabis-plant) (alive ?cannabis-plant))
+      :precondition (and (growing ?cannabis-plant) (planted ?cannabis-plant ?location) (matured ?cannabis-plant))
       :effect (flowering ?cannabis-plant))
 
     (:action harvest

@@ -519,7 +519,7 @@ class PDDLGraph:
         # for each action we need to determine if the effect
         # has already occurred. If so no need to continue with
         # this action -- works in DAG
-        logger.info(f"EVAL ACTION {action}")
+        logger.info(f" {action}")
         for effect in self.actions[action]["positive_effects"]:
             valid = self.state_manager.check(self.user_name, effect)
             if valid is not None:
@@ -616,7 +616,7 @@ class PDDLGraph:
         if not cont:
             return
         for predecessor in self.G.predecessors(self.root_element(node)):
-            edge = (predecessor, node)
+            edge = [predecessor]
             self.eval_edge(objects, edge)
             self.trace_graph(objects, predecessor, visited_nodes)
 
@@ -760,10 +760,24 @@ class PDDLGraph:
 
                     # also ignore OR singletons, should be capture by OR boolean prompt
                     # print(prompt.split(" ")[0])
-                    or_cond = prompt.split(" ")[0]in self.or_labels
+                    or_cond = prompt.split(" ")[0] in self.or_labels
                     if or_cond and " OR " not in prompt:
                         logger.info(f"IGNORE OR SINGLETON {prompt}")
                         continue
+
+                    # final check to ensure we aren't asking known questions
+                    if " OR " not in prompt and self.state_manager.check(self.user_name, prompt.split(" ")[0]):
+                        logger.info(f"IGNORE KNOWN QUESTION {prompt}")
+                        continue
+
+                    # hack for ORs
+                    if " OR " in prompt:
+                        vals = prompt.split(" OR ")
+                        invalid = False
+                        for t in vals:
+                            invalid = (self.state_manager.check(self.user_name, t.split(" ")[0]) is not None) or invalid
+                        if invalid:
+                            continue
 
                     parameter_type = self.parameter_types[prompt.split(" ")[-1]]
                     type_ = self.lookup_type(self.type_klasses, self.types, parameter_type)
@@ -825,9 +839,9 @@ class PDDL:
     """
     # We need to iterate through the responses and create the PDDL problem
     """
-    def create_pddl_problem_state(self, queries: List[Dict], goal: str) -> List[Dict]:
+    def create_pddl_problem_state(self, task, goal: str) -> List[Dict]:
         self.variables = defaultdict(list)
-
+        queries = task.actions["complete"]
         # Add all queried objects and init states
         fragments = []
         for query in queries:
@@ -874,6 +888,20 @@ class PDDL:
         for _, obj_type in self.pddl_graph.parameter_types.items():
             fragments.append(PDDLFragment(type="object", objects=[obj_type], instances=[obj_type]))
 
+        # Add known state and init from previous plans
+        existing_state = []
+        for action in task.history:
+            if action['metatype'] == "plan":
+                existing_fragments = action['state']
+                for fragment in existing_fragments:
+                    if fragment['type'] != "goal":
+                        existing_state.append(fragment)
+                    # if fragment['type'] == "init":
+                    #     # fragments.append(PDDLFragment(type="init", predicate=fragment['val'], instances=fragment['instances']))
+                    # if fragment['type'] == "object":
+                    #     fragments.append(PDDLFragment(type="object", objects=[fragment['val']], instances=fragment['instances']))
+
+        logger.info(f"{existing_state=}")
         # LAST add the goal statement
         # logger.info(f"{self.variables=}")
         goal_data = goal.split(" ")
@@ -890,6 +918,10 @@ class PDDL:
         state = []
         for i in fragments + goal_arr:
             state.extend(i.init_pddl_problem_fragment())
+        logger.info(f"{state=}")   
+        for j in existing_state:
+            state.extend([j])
+        logger.info(f"{state=}")
         return state
 
 def test():

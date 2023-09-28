@@ -82,6 +82,10 @@ class PlanningController:
             if val not in pddl_context[effect["type"]]:
                 pddl_context[effect["type"]].append(val)
 
+        ### Now that we have the PDDL context we can fill in the plan template
+        logger.info("PDDL Context")
+        logger.info(pddl_context)
+
         plan_template = plan_template.replace("{object}", "\n".join(pddl_context["object"]))
         plan_template = plan_template.replace("{init}", "\n".join(pddl_context["init"]))
         plan_template = plan_template.replace("{goal}", "\n".join(pddl_context["goal"]))
