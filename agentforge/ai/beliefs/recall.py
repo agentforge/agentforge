@@ -8,7 +8,6 @@ class Recall:
         pass
     
     def execute(self, context: Context) -> Dict[str, Any]:
-        print(context.pretty_print("input"))
         memories = context.memory.recall(
             context.get('input.user_id'),
             context.get('model.persona.name'),

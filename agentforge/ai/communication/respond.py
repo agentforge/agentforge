@@ -38,7 +38,7 @@ class Respond:
 
         # add 'User:' and 'Assistant:' type stopping criteria
         gen_config["stopping_criteria_string"] = f"{username},{agentname}"
-
+        logger.info(f"GENERATING RESPONSE")
         response = self.service.call(input)
 
         if response is not None and "choices" in response:

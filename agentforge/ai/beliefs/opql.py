@@ -61,7 +61,6 @@ class OPQLMemory:
 
     def get(self, entity_name, relation, k=5, threshold=.90):
         if entity_name in self.svalues:
-            print(self.svalues.index(entity_name))
             idx = self.svalues.index(entity_name)
             return [(self.keys[idx], self.ovalues[idx], 1.0)]
 

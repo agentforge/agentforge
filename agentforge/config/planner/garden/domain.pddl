@@ -30,7 +30,7 @@
       (growing-location-fertilized ?location - location)
       (mulch-available ?mulch - mulch)
       (water-container-available ?water-can - water-container)
-      (has-indoor-pot-available ?location - location)
+      (has-indoor-preference ?location - location)
       (empty ?water-can - water-container)
       (dry ?location - location)
       (unplanted ?location - location)
@@ -44,7 +44,7 @@
       (has-clones ?cannabis-plant - cannabis-plant)
       (choose-strain ?strain - strain)
       (topped ?cannabis-plant - cannabis-plant ?location - location)
-      (has-outdoor-plot-available ?location - location)
+      (has-outdoor-preference ?location - location)
       (harvested ?cannabis-plant - cannabis-plant)
       (cured ?cannabis-plant - cannabis-plant)
       (dryed ?cannabis-plant - cannabis-plant)
@@ -69,7 +69,7 @@
 
     (:action prepare
       :parameters (?location - location ?digging-tool - tool ?cannabis-plant - cannabis-plant ?strain - strain ?fertilizer - fertilizer)
-      :precondition (and (choose-strain ?strain) (or (has-seeds ?cannabis-plant) (has-clones ?cannabis-plant)) (or (has-outdoor-plot-available ?location) (has-indoor-pot-available ?location)) (or (has-autoflower-genetics ?cannabis-plant) (has-photoperiod-genetics ?cannabis-plant)) (has-shovel-available ?digging-tool) (fertilizer-available ?fertilizer))
+      :precondition (and (choose-strain ?strain) (or (has-seeds ?cannabis-plant) (has-clones ?cannabis-plant)) (or (has-outdoor-preference ?location) (has-indoor-preference ?location)) (or (has-autoflower-genetics ?cannabis-plant) (has-photoperiod-genetics ?cannabis-plant)) (has-shovel-available ?digging-tool) (fertilizer-available ?fertilizer))
       :effect (prepared ?location))
 
     (:action plant-it

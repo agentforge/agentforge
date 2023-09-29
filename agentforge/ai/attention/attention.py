@@ -45,7 +45,6 @@ class Attention:
         # Marking the query as satisfied
         for idx, q in enumerate(attention_doc["queries"]):
             if q["query"] == query["query"]:
-                print("That's satisfaction baby")
                 attention_doc["satisfied"][idx] = True
                 attention_doc["queries"][idx]["results"] = results
                 break

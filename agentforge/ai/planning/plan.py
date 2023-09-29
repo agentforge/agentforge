@@ -165,8 +165,8 @@ class Plan:
             context = self.init_query(task, context)
 
         # PLAN: Not a new instance/stage and no queries, we're at planning time
-        task = context.get("task") # update task
-        if task.is_empty_active() and not plan:
+        if plan is None and context.get("query") is None:
+            task = context.get("task") # update task
             logger.info("PLANNING")
             ## Queries complete, let's execute the plan
             finalize_reponse = "I have all the info I need, let me finalize the current plan."
@@ -190,7 +190,7 @@ class Plan:
             actions = {}
             with open(f"{dir_name}/{self.domain}/{filename}", 'r') as f:
                 actions = json.load(f)
-            
+
             plan_nl = self.plan_to_language(best_plan, context.get_model_input(), actions)
 
             task.active = True
@@ -207,6 +207,7 @@ class Plan:
             self.task_management.save(task)
             self.task_management.save_state(context.get('input.user_name'), problem_data)
             context.set("response", plan_nl)
+            context.set("task", task)
             return context
         return context
 

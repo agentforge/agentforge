@@ -5,6 +5,7 @@ from agentforge.ai.beliefs.memory import Memory
 from agentforge.ai.agents.statemachine import StateMachine
 from agentforge.ai.agents.context import Context
 import threading, json, os
+from agentforge.utils import logger
 
 def load(root_directory):
     json_list = []
@@ -48,8 +49,11 @@ class SimpleAgent:
         # add task routines to context
         self.context.task_routines = self.task_routines #add to context for reference in routines
 
-        state_machine = StateMachine(self.routine.subroutines, self.task_routines)
-        threading.Thread(target=state_machine.run, args=(self.context,)).start()
+        try:
+            state_machine = StateMachine(self.routine.subroutines, self.task_routines)
+            threading.Thread(target=state_machine.run, args=(self.context,)).start()
+        except Exception as e:
+            logger.info(f"Error starting thread: {str(e)}")
         return True
     
     def abort(self):
