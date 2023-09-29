@@ -52,7 +52,7 @@ class Task(BaseModel):
 
         task_dict = self.to_dict()
         pretty_string = json.dumps(task_dict, indent=4, default=datetime_serializer)
-        print(pretty_string)
+        return pretty_string
 
     # helpers for dict like access
     def __setitem__(self, key, value):
@@ -68,7 +68,7 @@ class Task(BaseModel):
     Runs the task routine specified by the task name
     """
     def run(self, context: Context) -> None:
-        context.task_routines[self.name].run(context)
+        return context.task_routines[self.name].run(context)
 
     def is_empty_queue(self) -> bool:
         return len(self.actions['queue']) == 0

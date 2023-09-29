@@ -94,7 +94,7 @@ class Intent:
 
         if active_task is not None:
             context.set("task", active_task)
-            active_task.run(context)
+            context = active_task.run(context)
             return context
 
         # else let's see if the user is requesting a task
@@ -104,5 +104,5 @@ class Intent:
             return context
         else:
             context.set("task", task)
-            task.run(context)
+            context = task.run(context)
             return context

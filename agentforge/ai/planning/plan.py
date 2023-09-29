@@ -145,7 +145,7 @@ class Plan:
         empty_complete = task.is_empty_complete()
         plan = task.get_active_plan()
         logger.info(f"empty_queue: {empty_queue}, empty_active: {empty_active}, plan: {plan}, empty_complete: {empty_complete}")
-
+        logger.info(f"task: {task.pretty_print()}")
         # GATHER NEW QUERIES FOR THIS STATE
         # if task in progress but no queries, generate them and create the PDDL Plan callback
         # Triggers when we have no actions queued/active and we are either at an end-stage
