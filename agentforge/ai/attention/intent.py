@@ -99,7 +99,7 @@ class Intent:
 
         # else let's see if the user is requesting a task
         task = self.text_intent(context, user_id, agent_id)
-        if task is None:    
+        if task is None:
             # just bante'r, no tasks here!
             return context
         else:

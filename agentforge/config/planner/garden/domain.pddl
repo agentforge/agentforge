@@ -67,6 +67,14 @@
       (has-autoflower-genetics ?cannabis-plant - cannabis-plant)
     )
 
+    (:action get-shovel
+      :parameters (?digging-tool - tool)
+      :effect (has-shovel-available ?digging-tool))
+
+    (:action get-fertilizer
+      :parameters (?fertilizer - fertilizer)
+      :effect (fertilizer-available ?fertilizer))
+
     (:action prepare
       :parameters (?location - location ?digging-tool - tool ?cannabis-plant - cannabis-plant ?strain - strain ?fertilizer - fertilizer)
       :precondition (and (choose-strain ?strain) (or (has-seeds ?cannabis-plant) (has-clones ?cannabis-plant)) (or (has-outdoor-preference ?location) (has-indoor-preference ?location)) (or (has-autoflower-genetics ?cannabis-plant) (has-photoperiod-genetics ?cannabis-plant)) (has-shovel-available ?digging-tool) (fertilizer-available ?fertilizer))
@@ -181,6 +189,11 @@
       :parameters (?outdoor-plot - outdoor-plot ?cannabis-plant  - cannabis-plant)
       :precondition (and (weeds ?outdoor-plot) (growing ?cannabis-plant) (planted ?cannabis-plant ?outdoor-plot))
       :effect (not (weeds ?outdoor-plot)))
+
+    (:action clean
+      :parameters (?location - location ?cannabis-plant  - cannabis-plant)
+      :precondition (harvested ?cannabis-plant)
+      :effect (cleaned ?location))
 
     (:action cover
       :parameters (?cannabis-plant  - cannabis-plant ?outdoor-plot - outdoor-plot)

@@ -143,7 +143,6 @@ class Plan:
         empty_queue = task.is_empty_queue()
         empty_active = task.is_empty_active()
         empty_complete = task.is_empty_complete()
-        plan = task.get_active_plan()
         logger.info(f"empty_queue: {empty_queue}, empty_active: {empty_active}, plan: {plan}, empty_complete: {empty_complete}")
         logger.info(f"task: {task.pretty_print()}")
         # GATHER NEW QUERIES FOR THIS STATE
@@ -206,7 +205,8 @@ class Plan:
             task.activate_plan()
             self.task_management.save(task)
             self.task_management.save_state(context.get('input.user_name'), problem_data)
-            context.set("response", plan_nl)
+            context.set("plan", plan_nl)
+            context.set("new_plan", True)
             context.set("task", task)
             return context
         return context
@@ -219,6 +219,7 @@ class Plan:
             "model_config": input_config['model_config'],
             "streaming_override": streaming_override,
         }
+
         response = self.llm.call(input_)
         result_text = response['choices'][0]['text']
         result_text = result_text.replace(input_['prompt'], "")
@@ -245,6 +246,7 @@ class Plan:
 
         logger.info("plan_to_language")
         logger.info(prompt)
+        input_['streaming_override'] = False # sets streaming to False
         res = self.query(prompt, input_, extract_parens=False, streaming_override=True).strip() + "\n"
         return res
     

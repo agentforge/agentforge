@@ -150,12 +150,13 @@ class Context:
 
     ### Helper function to get entire formatted prompt
     def get_formatted(self):
-        prompt_template = self.get('model.prompt_config.prompt_template')
+        prompt_template = self.prompts[self.get('model.prompt_config.prompt_template')]
         biography = self.get('model.persona.biography')
         memory = self.get('recall')
         if memory is not None and memory.strip() == "":
             memory = None
-        plan = self.get('plan')
+        plan = self.get('plan', None)
+        new_plan = self.get('new_plan', None)
         instruction = self.get('prompt')
         username = self.get('input.user_name', "Human")
         agentname = self.get('model.persona.display_name', "Agent")
@@ -188,6 +189,7 @@ class Context:
             memory=memory,
             human=username,
             plan=plan,
+            new_plan=new_plan,
             query=query,
             message_history=message_history,
             ack=ack,

@@ -22,5 +22,7 @@
     "add-biocontrol": "Applies biological controls to an infested, growing, and planted cannabis plant. The plant is no longer considered 'infested'.",
     "remove-weeds": "Removes weeds from an outdoor plot where a cannabis plant is growing and planted. The plot is no longer considered to have 'weeds'.",
     "cover": "Covers an outdoor plot experiencing freezing conditions to protect a growing cannabis plant. The plot's status changes to 'covered'.",
-    "add-support-structure": "Adds a support structure to a growing cannabis plant. The plant's status changes to 'supported'."
+    "add-support-structure": "Adds a support structure to a growing cannabis plant. The plant's status changes to 'supported'.",
+    "get-shovel": "Purchase or borrow a good quality spade or similar tool to loosen and dig soil.",
+    "get-fertilizer": "Acquire a fertilizer that is high in nitrogen, such as 10-10-10 and another for flowering that is high in phosphorus, such as 5-11-5."
 }
