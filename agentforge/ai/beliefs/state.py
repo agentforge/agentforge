@@ -6,36 +6,37 @@ from uuid import uuid4
 
 class Node(BaseModel):
     name: str
-    metadata: dict = {}
 
 class Edge(BaseModel):
     relationship: str
-    metadata: dict = {}
 
 class Triplet(BaseModel):
     id: str = str(uuid4())
     src_node: Node
     dst_node: Node
     edge: Edge
+    metadata: dict = {}
+    mode: str # let's us filter out triplets based on domain
     timestamp: datetime = datetime.utcnow()
 
 class StateManager:
-    def __init__(self):
+    def __init__(self, mode="knowledge"):
         self.db = interface_interactor.get_interface("db")
+        self.mode = mode
 
-    def create_triplet(self, node1_str: str, rel: str, node2_str: str) -> Optional[Any]:
+    def create_triplet(self, node1_str: str, rel: str, node2_str: str, metadata: Dict = {}) -> Optional[Any]:
         # Create a triplet
         node1 = Node(name=node1_str)
         node2 = Node(name=node2_str)
         edge = Edge(relationship=rel)
-        triplet = Triplet(src_node=node1, edge=edge, dst_node=node2)
+        triplet = Triplet(src_node=node1, edge=edge, dst_node=node2, mode=self.mode, metadata=metadata)
         try:
             # Validate the Triplet model
             validated_triplet = Triplet(**triplet.dict())
         except ValidationError as e:
             print(f"Validation Error: {e}")
             return None
-        
+
         # Check if the triplet already exists
         existing_triplet = self.get_triplet(
             validated_triplet.src_node.name, 
@@ -46,7 +47,7 @@ class StateManager:
         if existing_triplet:
             print(f"A triplet with src: {validated_triplet.src_node.name}, relationship: {validated_triplet.edge.relationship}, and dst: {validated_triplet.dst_node.name} already exists.")
             return None
-        
+
         return self.db.create("state",  str(uuid4()), validated_triplet.dict())
 
     def get_triplet(self, src_name: str, relationship: str, dst_name: str) -> Optional[Triplet]:
@@ -79,6 +80,11 @@ class StateManager:
 
         # Return the first match from the list
         return Triplet(**data_list[0])
+    
+    def get_all(self, filter) -> List[Triplet]:
+        data_cursor = self.db.get_many("state", filter=filter)
+        data_list = list(data_cursor)
+        return [Triplet(**data) for data in data_list]
 
     def aggregate(self, pipeline: List[Dict[str, Any]]) -> Optional[Any]:
         return self.db.aggregate("state", pipeline)

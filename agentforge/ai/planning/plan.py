@@ -164,6 +164,7 @@ class Plan:
             context = self.init_query(task, context)
 
         # PLAN: Not a new instance/stage and no queries, we're at planning time
+        logger.info(f"SHOULD I PLAN? {plan is None} and {context.get('query') is None}")
         if plan is None and context.get("query") is None:
             task = context.get("task") # update task
             logger.info("PLANNING")
@@ -171,7 +172,7 @@ class Plan:
             finalize_reponse = "I have all the info I need, let me finalize the current plan."
 
             goal = self.goals[task.stage]
-            problem_data = self.pddl.create_pddl_problem_state(task, goal)
+            problem_data = self.pddl.create_pddl_problem_state(task, goal, context)
             logger.info(problem_data)
             logger.info("Creating PDDL Plan")
 

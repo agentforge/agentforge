@@ -112,7 +112,7 @@ class PDDLGraphModel(BaseModel):
 class PDDLGraph:
     def __init__(self, domain_file: str, problem_file: str, primary_key: str):
         self.db = interface_interactor.get_interface("db")
-        self.state_manager = StateManager()
+        self.state_manager = StateManager(primary_key)
 
         # Dynamically initialize attributes based on the Pydantic model
         for field in PDDLGraphModel.__annotations__.keys():
@@ -135,7 +135,7 @@ class PDDLGraph:
             
             # Populate  the object variables dynamically
             for field, value in pddl_graph_model.dict().items():
-                logger.info(f"setattr({field}, {value})")
+                # logger.info(f"setattr({field}, {value})")
                 setattr(self, field, value)
 
     def serialize_to_json_and_db(self) -> None:
@@ -181,12 +181,8 @@ class PDDLGraph:
 
     def generate_all_prompts(self, preconditions):
         prompts = defaultdict(list)
-        # logger.info("generate_all_prompts")
         for action_name, precondition in preconditions.items():
-            # logger.info(f"{action_name=}")
             queries = self.process_precondition(precondition)
-            # logger.info(f"{len(queries)}")
-            # logger.info(f"{queries}")
             for query in queries:
                 prompts[action_name].append(query)
         return prompts
@@ -194,7 +190,6 @@ class PDDLGraph:
     # Function to convert a predicate dictionary into a string representation
     def predicate_to_str(self, predicate):
         if isinstance(predicate, dict):
-            # return predicate.keys()[0]
             predicate_str = " ".join([" ".join([k]) for k in predicate])
             vars = " ".join([" ".join(predicate[k]) for k in predicate])
         return predicate_str, vars
@@ -216,10 +211,8 @@ class PDDLGraph:
                     precond_str = "not " + precond if negate else precond
                     G.add_edge(precond_str, action, label="precondition", variables=variables)
                     dot.edge(precond_str, action, color="blue")
-                    # addtl_links[key] = precond
                     if previous_precond:
                         G.add_edge(previous_precond, precond_str, label="OR")
-                        # G.add_edge(precond_str, previous_precond, label="OR")
                         dot.edge(previous_precond, precond_str, color="orange", label="OR")
                     return precond_str
         else:
@@ -481,19 +474,16 @@ class PDDLGraph:
 
     # Updated function to run on a root node
     def run_node(self, objects, node):
-        logger.info(f"RUNING {node}")
         action = [i for i in self.G.successors(node)]
-        # logger.info(f"{node=}")
-        # logger.info(f"{action=}")
         variables = self.extract_last_variable_from_expression(node)
         for variable in variables:
             if node not in objects[variable]:
-                logger.info(f"ADDING {node}")
+                # logger.info(f"ADDING {node}")
                 objects[variable].append(node)
 
     # Updated function to run on a root edge
     def run_edge(self, objects, edge):
-        logger.info(f"RUNING EDGE {edge}")
+        # logger.info(f"RUNING EDGE {edge}")
         # logger.info(f"[EDGE] {edge}")
         action = [i for i in self.G.successors(self.root_element(edge))]
         # logger.info(f"EDGE ACTION: {action}")
@@ -502,7 +492,7 @@ class PDDLGraph:
         for variable in variables:
             for splitvar in variable.split(" "):
                 val = list(set(objects[splitvar]).union(set(valid_actions)))
-                logger.info(f"ADDING {val}")
+                # logger.info(f"ADDING {val}")
                 objects[splitvar] = val
 
     # if this node has been evaluated -- action
@@ -520,7 +510,7 @@ class PDDLGraph:
         # for each action we need to determine if the effect
         # has already occurred. If so no need to continue with
         # this action -- works in DAG
-        logger.info(f" {action}")
+        # logger.info(f" {action}")
         for effect in self.actions[action]["positive_effects"]:
             valid = self.state_manager.check(self.user_name, effect)
             if valid is not None:
@@ -528,45 +518,45 @@ class PDDLGraph:
 
     def eval_predicate(self, predicate):
         # If there are no predecessors or all predecessors are already evaluated
-        logger.info(f"checking pred {predicate}")
-        logger.info(len(list(self.G.predecessors(self.root_element(predicate)))) == 0)
+        # logger.info(f"checking pred {predicate}")
+        # logger.info(len(list(self.G.predecessors(self.root_element(predicate)))) == 0)
         if len(list(self.G.predecessors(self.root_element(predicate)))) == 0:
             return True
         # check knowledge base for node
         valid = self.state_manager.check(self.user_name, predicate)
-        logger.info(f"valid {valid} -- checked for {self.user_name}")
+        # logger.info(f"valid {valid} -- checked for {self.user_name}")
         return valid is not None
 
     def process_checklist(self, tuple_list, checklist):
-        logger.info(f"PROCESSING CHECKLIST {checklist}")
+        # logger.info(f"PROCESSING CHECKLIST {checklist}")
         all_vals = deepcopy(checklist)
         for var in all_vals:
-            logger.info(f"CHECKING {var=}")
+            # logger.info(f"CHECKING {var=}")
             # Step 1: Find the tuple containing 'var'
             for tup in tuple_list:
-                logger.info(f"CHECKING {tup=}")
+                # logger.info(f"CHECKING {tup=}")
                 if var in tup:
                     # Step 2: Check if all elements of the tuple are in the checklist
                     if all(x in checklist for x in tup):
-                        logger.info(f"ALL AVAILABLE {all(x in checklist for x in tup)}")
-                        logger.info(f"{tup=}")
-                        logger.info(f"{checklist=}")
+                        # logger.info(f"ALL AVAILABLE {all(x in checklist for x in tup)}")
+                        # logger.info(f"{tup=}")
+                        # logger.info(f"{checklist=}")
                         continue  # All elements found, return the original checklist
                     else:
                         # Step 3: Remove 'var' from checklist if any element is not in the checklist
-                        logger.info(f"REMOVING {var}")
+                        # logger.info(f"REMOVING {var}")
                         checklist.remove(var)
         return checklist
 
     # Updated function to evaluate a node 
     def eval_node(self, objects, node):
-        logger.info(f"EVAL NODE {node}")
+        # logger.info(f"EVAL NODE {node}")
         predecessors = list(self.G.predecessors(self.root_element(node)))
         predecessors_evaled = [p for p in predecessors if not self.evaluate(p)]
         predecessors_evaled = self.process_checklist(self.or_tuples, predecessors_evaled)
 
         # If no predessors or all predessors are already evaluated
-        logger.info("predecessors_evaled")
+        # logger.info("predecessors_evaled")
         logger.info(predecessors_evaled)
         if not predecessors_evaled:
             self.run_node(objects, node)
@@ -575,9 +565,9 @@ class PDDLGraph:
 
     # Updated function to evaluate an edge
     def eval_edge(self, objects, edges):
-        logger.info(f"EDGES: {edges}")
+        # logger.info(f"EDGES: {edges}")
         for edge in edges:
-            logger.info(f"EVAL EDGE {edge}")
+            # logger.info(f"EVAL EDGE {edge}")
             predecessors = list(self.G.predecessors(self.root_element(edge)))
             predecessors_evaled = [p for p in predecessors if not self.evaluate(p)]
             predecessors_evaled = self.process_checklist(self.or_tuples, predecessors_evaled)
@@ -589,8 +579,8 @@ class PDDLGraph:
                     return True
                 
             # If no predessors or all predessors are already evaluated
-            logger.info("predecessors_evaled")
-            logger.info(predecessors_evaled)
+            # logger.info("predecessors_evaled")
+            # logger.info(predecessors_evaled)
             if not predecessors_evaled:
                 self.run_edge(objects, edge)
             return True
@@ -598,13 +588,7 @@ class PDDLGraph:
     # Function to trace the PDDL graph (unchanged)
     def trace_pddl_graph(self, objects, root_node):
         visited_nodes = set()
-        logger.info("objects bevore trace")
-        print(objects)
         self.trace_graph(objects, root_node, visited_nodes)
-        logger.info("objects after trace")
-        logger.info(json.dumps(objects, indent=4))
-        for obj, action_list in objects.items():
-            logger.info(obj.split(" "))
         # Convert the sets to lists before returning
         return {key: list(value) for key, value in objects.items()}
 
@@ -649,7 +633,7 @@ class PDDLGraph:
         domprob = DomainProblem(self.domain_file, self.problem_file)
 
         self.worldobjects = domprob.worldobjects()
-        logger.info(self.worldobjects)
+        # logger.info(self.worldobjects)
         # Extracting all actions (operators)
         self.actions = {}
         # print(domprob.ground_operator('prepare'))
@@ -674,7 +658,7 @@ class PDDLGraph:
 
         # Test the further adjusted extract_types function with the given PDDL file
         # self.types = self.extract_types(self.domain_file)
-        print(f"{os.getenv('PLANNER_DIRECTORY')} -- {self.domain}")
+        # print(f"{os.getenv('PLANNER_DIRECTORY')} -- {self.domain}")
         file_path = os.path.join(os.getenv('PLANNER_DIRECTORY'), self.domain, "types.json")
         with open(file_path, 'r') as json_file:
             self.types = json.load(json_file)
@@ -703,8 +687,6 @@ class PDDLGraph:
             for item in k:
                 self.attributes[item].append(v)
 
-        # logger.info("ATTRIBUTES...")
-        # logger.info(self.attributes)
         self.visualize_graph(self.dot)
         self.updated_dt = datetime.utcnow()
         self.serialize_to_json_and_db()
@@ -721,11 +703,9 @@ class PDDLGraph:
         self.setup_graph()
 
         labels = nx.get_edge_attributes(self.G, 'label')
-        logger.info(labels)
+        # logger.info(labels)
         self.or_labels = [item for k, v in labels.items() if v == "OR" for item in k]
         self.or_tuples = [k for k, v in labels.items() if v == "OR"]
-        logger.info(f"{self.or_labels=}")
-        logger.info(f"{self.or_tuples=}")
         # Trace the graph starting from "growing ?seedling"
         objects = self.trace_pddl_graph(self.objects, seed)
 
@@ -734,15 +714,12 @@ class PDDLGraph:
 
         # Generate the prompts
         prompts = self.generate_all_prompts(self.preconditions)
-        logger.info("PROMPTPS FOR SEEDDDD")
-        logger.info(json.dumps(prompts, indent=4))
+        # logger.info("PROMPTPS FOR SEEDDDD")
+        # logger.info(json.dumps(prompts, indent=4))
 
         # Print the prompts for the "prepare" action as examples
         # for prompt in prompts["prepare"]:
         #     print(prompt)
-
-        logger.info("parameter_types")
-        logger.info(self.parameter_types)
 
         already_evaluated = set()
         final_queries = defaultdict(list)
@@ -766,12 +743,12 @@ class PDDLGraph:
                     # print(prompt.split(" ")[0])
                     or_cond = prompt.split(" ")[0] in self.or_labels
                     if or_cond and " OR " not in prompt:
-                        logger.info(f"IGNORE OR SINGLETON {prompt}")
+                        # logger.info(f"IGNORE OR SINGLETON {prompt}")
                         continue
 
                     # final check to ensure we aren't asking known questions
                     if " OR " not in prompt and self.state_manager.check(self.user_name, prompt.split(" ")[0]):
-                        logger.info(f"IGNORE KNOWN QUESTION {prompt}")
+                        # logger.info(f"IGNORE KNOWN QUESTION {prompt}")
                         continue
 
                     # hack for ORs
@@ -811,8 +788,13 @@ class PDDL:
             vals = val['val'].replace("(", "").replace(")", "").split(" ")
             predicate = vals[0]
             instances = vals[1:]
-            for i in instances:
-                self.pddl_graph.state_manager.create_triplet(context.get('input.user_name'), predicate, i)
+            for instance in instances:
+                self.pddl_graph.state_manager.create_triplet(
+                    context.get('input.user_name'),
+                    predicate,
+                    instance,
+                    metadata=val,
+                )
         return plan
 
     """
@@ -829,7 +811,7 @@ class PDDL:
                 object_status[klass] = obj
         domprob = DomainProblem(self.pddl_graph.domain_file, self.pddl_graph.problem_file)
         actions = plan.split("\n")
-        logger.info(f"{object_status=}")
+        # logger.info(f"{object_status=}")
         effect_list = []
         # For each valid action we need to get the effects
         for action in actions:
@@ -849,7 +831,7 @@ class PDDL:
     """
     # We need to iterate through the responses and create the PDDL problem
     """
-    def create_pddl_problem_state(self, task, goal: str) -> List[Dict]:
+    def create_pddl_problem_state(self, task, goal: str, context) -> List[Dict]:
         self.variables = defaultdict(list)
         queries = task.actions["complete"]
         # Add all queried objects and init states
@@ -910,8 +892,13 @@ class PDDL:
                     #     # fragments.append(PDDLFragment(type="init", predicate=fragment['val'], instances=fragment['instances']))
                     # if fragment['type'] == "object":
                     #     fragments.append(PDDLFragment(type="object", objects=[fragment['val']], instances=fragment['instances']))
+        
+        # Grab information based information from the goal
+        filter = {"src_node": {"name": context.get('input.user_name')}, "mode": self.pddl_graph.domain}
+        for i in self.pddl_graph.state_manager.get_all(filter):
+            existing_state.append(i.metadata)
 
-        logger.info(f"{existing_state=}")
+        # logger.info(f"{existing_state=}")
         # LAST add the goal statement
         # logger.info(f"{self.variables=}")
         goal_data = goal.split(" ")
@@ -928,10 +915,10 @@ class PDDL:
         state = []
         for i in fragments + goal_arr:
             state.extend(i.init_pddl_problem_fragment())
-        logger.info(f"{state=}")   
+        # logger.info(f"{state=}")   
         for j in existing_state:
             state.extend([j])
-        logger.info(f"{state=}")
+        # logger.info(f"{state=}")
         return state
 
 def test():
