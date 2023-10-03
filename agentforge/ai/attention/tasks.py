@@ -78,6 +78,9 @@ class Task(BaseModel):
 
     def is_empty_complete(self) -> bool:
         return len(self.actions['complete']) == 0
+    
+    def deactivate(self):
+        self.active = False
 
     ### Tasks consist of stages, each with a series of actions to reach a goal
     ### on plan. Intermediate stages allow us to complete plans that may required
@@ -199,10 +202,10 @@ Tasks are stored in the database and are associated with a user_id and session_i
 Tasks also manage their attention and actions/queries/plans to the user.
 """
 class TaskManager:
-    def __init__(self) -> None:
+    def __init__(self, domain: str = None) -> None:
         self.db = interface_interactor.get_interface("db")
         self.collection = 'tasks'
-        self.state_management = StateManager()
+        self.state_management = StateManager(domain)
 
     """
         Inits a Task from a context, task id, and active state.

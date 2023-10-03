@@ -78,6 +78,8 @@ class PlanningController:
             "object": [],
         }
         for effect in problem_data:
+            if "val" not in effect:
+                raise ValueError(f"Effect does not have a value {effect}")
             val = effect["val"]
             if val not in pddl_context[effect["type"]]:
                 pddl_context[effect["type"]].append(val)

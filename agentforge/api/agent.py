@@ -39,13 +39,11 @@ if not is_wordnet_downloaded(nltk.data.path):
 def hello() -> AgentResponse:
     return AgentResponse(data={"response": "Hello world"})
 
-
 @router.get("/v1/abort", operation_id="abort", dependencies=[Depends(get_api_key)])
 def abort() -> AgentResponse:
     agent = agent_interactor.get_agent()
     agent.abort()
     return AgentResponse(data={"response": "aborted"})
-
 
 @router.post('/v1/completions', operation_id="createChatCompletion") #, dependencies=[Depends(get_api_key)])
 async def agent(request: Request) -> AgentResponse:

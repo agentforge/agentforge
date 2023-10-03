@@ -20,7 +20,7 @@ class Triplet(BaseModel):
     timestamp: datetime = datetime.utcnow()
 
 class StateManager:
-    def __init__(self, mode="knowledge"):
+    def __init__(self, mode: str = "knowledge"):
         self.db = interface_interactor.get_interface("db")
         self.mode = mode
 

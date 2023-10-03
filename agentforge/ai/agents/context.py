@@ -6,6 +6,7 @@ from agentforge.utils import AbortController, logger
 from bson.objectid import ObjectId
 from copy import deepcopy
 from jinja2 import Template
+from datetime import datetime
 
 """
     Context Class - Shared State for Agent Subroutines
@@ -27,6 +28,7 @@ class Context:
         self.prompts = self.read_prompts()
         self.abort_controller = AbortController()
         self._id = uuid.uuid4()
+        self.created_dt = datetime.utcnow()
         for k,v in init.items():
             self.set(k, v)
 
@@ -39,6 +41,7 @@ class Context:
         data = {
             "context_data": ctx,
             "prompts": self.prompts,
+            "created_dt": self.created_dt,
         }
 
         # Insert to the DB
@@ -146,6 +149,8 @@ class Context:
         # Find all placeholders in the prompt_template
         template = Template(prompt_template)
         rendered_str = template.render(kwargs)
+        logger.info("INPUT")
+        logger.info(rendered_str)
         return rendered_str
 
     ### Helper function to get entire formatted prompt

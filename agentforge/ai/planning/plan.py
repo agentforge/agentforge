@@ -18,7 +18,7 @@ class Plan:
     def __init__(self, domain: str, goals: List[str]):
         self.llm = interface_interactor.get_interface("llm")
         self.planner = PlanningController(domain)
-        self.task_management = TaskManager()
+        self.task_management = TaskManager(domain)
         self.domain = domain
         self.goals = goals
         domain_file = self.planner.config.domain_pddl_file_path
@@ -35,7 +35,6 @@ class Plan:
         seeds = self.pddl_graph.get_seed_queries(goal, user_name)
         goal_data = goal.split(" ")
         goal = goal_data[0] # split the goal into the goal and the object, 1st is always predicate
-
         logger.info(f"{seeds=}")
         queries = []
         for action_name, seed_list in seeds.items():
@@ -66,6 +65,7 @@ class Plan:
     def init_query(self, task, context):
         query = task.activate_query()
         logger.info(f"INIT QUERY {query}")
+        self.goal_predicate = query['goal']
         if query is not None:
             if 'text' in query:
                 response = query['text']
@@ -120,12 +120,15 @@ class Plan:
                 task.push_complete(plan)
                 task.iterate_stage_and_flush()
                 user_done = True
-                self.task_management.save(task)
+                plan = None # plan is complete clear it out
                 ## Move the plan to the next stage and trace graph to create new queries.
                 if task.stage >= len(self.goals):
+                    task.deactivate()
                     ## If the next stage does not exist, congragulate the user! Job well done
                     stream_string('channel', f"You've done it! You've completed the {task.name} plan.", end_token=" ")
                     # TODO: save and return here
+                    self.task_management.save(task)
+                    return
                 else:
                     # create new quer
                     logger.info("CREATE NEW QUERIES FOR NEXT STAGE")
@@ -133,6 +136,7 @@ class Plan:
                     # # If we have some newly staged queries we can return
                     # if not task.is_empty_queue() or not task.is_empty_active():
                     #     return context
+                self.task_management.save(task)
             else:
                 # stream_string('channel', "<PLAN-ACTIVE>", end_token=" ")
                 logger.info("PLAN NOT COMPLETE")
@@ -209,7 +213,10 @@ class Plan:
             context.set("plan", plan_nl)
             context.set("new_plan", True)
             context.set("task", task)
-            return context
+
+        if self.goal_predicate:
+            context.set("goal", self.goal_predicate)
+
         return context
 
     def query(self, prompt_text, input_config, extract_parens=True, streaming_override=False):
@@ -247,8 +254,7 @@ class Plan:
 
         logger.info("plan_to_language")
         logger.info(prompt)
-        input_['streaming_override'] = False # sets streaming to False
-        res = self.query(prompt, input_, extract_parens=False, streaming_override=True).strip() + "\n"
+        res = self.query(prompt, input_, extract_parens=False, streaming_override=False).strip() + "\n"
         return res
     
     def extract_action_keys(self, plan):

@@ -896,7 +896,8 @@ class PDDL:
         # Grab information based information from the goal
         filter = {"src_node": {"name": context.get('input.user_name')}, "mode": self.pddl_graph.domain}
         for i in self.pddl_graph.state_manager.get_all(filter):
-            existing_state.append(i.metadata)
+            if "val" in i.metadata:
+                existing_state.append(i.metadata)
 
         # logger.info(f"{existing_state=}")
         # LAST add the goal statement
