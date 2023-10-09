@@ -101,14 +101,14 @@ services:
               device_ids: ['1']
               capabilities: [gpu]
 
-  vqa:
+ vqa:
     image: vqa
     ipc: host
     restart: always
     networks:
       main-net:
         aliases:
-          - vqa
+          - vqa2
     volumes:
       - cache-volume:/app/cache
     deploy:
