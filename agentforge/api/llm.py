@@ -16,7 +16,7 @@ class CompletionsResponse(BaseModel):
    choices: List[TextResponse]
 
 # Given the following text request generate a wav file and return to the client
-@app.post("/v1/completions", operation_id="createLanguageModelCompletion")
+@app.post("/completions", operation_id="createLanguageModelCompletion")
 async def output(request: Request) -> CompletionsResponse:
    payload = await request.json()
    try:

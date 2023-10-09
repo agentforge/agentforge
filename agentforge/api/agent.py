@@ -39,24 +39,24 @@ if not is_wordnet_downloaded(nltk.data.path):
 def hello() -> AgentResponse:
     return AgentResponse(data={"response": "Hello world"})
 
-@router.get("/v1/abort", operation_id="abort", dependencies=[Depends(get_api_key)])
+@router.get("/abort", operation_id="abort", dependencies=[Depends(get_api_key)])
 def abort() -> AgentResponse:
     agent = agent_interactor.get_agent()
     agent.abort()
     return AgentResponse(data={"response": "aborted"})
 
-@router.post('/v1/completions', operation_id="createChatCompletion") #, dependencies=[Depends(get_api_key)])
+@router.post('/completions', operation_id="createChatCompletion") #, dependencies=[Depends(get_api_key)])
 async def agent(request: Request) -> AgentResponse:
     ## Parse Data --  from web acceptuseChat JSON, from client we need to pull ModelConfig
     ## and add add the prompt and user_id to the data
     data = await request.json()
     ## First check API key for legitimacy
-    valid_token = verify_token_exists(data)
-    if valid_token is None:
-        return {"error": "Invalid Token."}
+    # valid_token = verify_token_exists(data)
+    # if valid_token is None:
+    #     return {"error": "Invalid Token."}
 
     # TODO: Bail on this response properly
-    data['user_id'] = valid_token['user_id']
+    data['user_id'] = "test" #valid_token['user_id']
 
     ## TODO: Verify auth, rate limiter, etc -- should be handled by validation layer
     if 'id' not in data:
@@ -142,7 +142,7 @@ async def agent(request: Request) -> AgentResponse:
         return AgentResponse(data=output)
 
 ### Streaming for old Forge
-@router.get("/stream/{channel}")
+@router.get("/completions/stream/{channel}")
 def stream(channel: str):
     id = 5
     async def event_generator():
