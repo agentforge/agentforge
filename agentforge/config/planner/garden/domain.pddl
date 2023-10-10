@@ -25,13 +25,12 @@
       (matured ?cannabis-plant  - cannabis-plant)
       (alive ?cannabis-plant  - cannabis-plant)
       (growing ?cannabis-plant  - cannabis-plant)
-      (digging-tool-available ?digging-tool - tool)
+      (has-shovel-available ?digging-tool - tool)
       (fertilizer-available ?fertilizer - fertilizer)
       (growing-location-fertilized ?location - location)
       (mulch-available ?mulch - mulch)
       (water-container-available ?water-can - water-container)
-      (indoor-pot-available ?location - location)
-      (has-indoor-preference ?cannabis-plant - cannabis-plant)
+      (has-indoor-preference ?location - location)
       (empty ?water-can - water-container)
       (dry ?location - location)
       (unplanted ?location - location)
@@ -43,11 +42,13 @@
       (amended ?location - location)
       (has-seeds ?cannabis-plant - cannabis-plant)
       (has-clones ?cannabis-plant - cannabis-plant)
-      (strain-chosen ?strain - strain)
+      (choose-strain ?strain - strain)
       (topped ?cannabis-plant - cannabis-plant ?location - location)
-      (outdoor-plot-available ?location - location)
-      (has-outdoor-preference ?cannabis-plant - cannabis-plant)
+      (has-outdoor-preference ?location - location)
       (harvested ?cannabis-plant - cannabis-plant)
+      (cured ?cannabis-plant - cannabis-plant)
+      (dryed ?cannabis-plant - cannabis-plant)
+      (cleaned ?location - location)
       (pesticide-available ?pesticide - pesticide)
       (pruning-tool-available ?pruning-tool - tool)
       (pruned ?cannabis-plant - cannabis-plant)
@@ -56,38 +57,32 @@
       (covered ?outdoor-plot - outdoor-plot)
       (support-structure-available ?structure)
       (supported ?cannabis-plant - cannabis-plant)
+      (watering-scheduled ?cannabis-plant - cannabis-plant)
+      (fertilizer-scheduled ?cannabis-plant - cannabis-plant)
+      (pest-control-scheduled ?cannabis-plant - cannabis-plant)
+      (thinning-scheduled ?cannabis-plant - cannabis-plant)
+      (training-scheduled ?cannabis-plant - cannabis-plant)
+      (topping-scheduled ?cannabis-plant - cannabis-plant)
+      (has-photoperiod-genetics ?cannabis-plant - cannabis-plant)
+      (has-autoflower-genetics ?cannabis-plant - cannabis-plant)
     )
+
+    (:action get-shovel
+      :parameters (?digging-tool - tool)
+      :effect (has-shovel-available ?digging-tool))
 
     (:action get-fertilizer
       :parameters (?fertilizer - fertilizer)
       :effect (fertilizer-available ?fertilizer))
 
-    (:action get-digging-tool
-      :parameters (?digging-tool - tool)
-      :effect (digging-tool-available ?digging-tool))
-
-    (:action prep-outdoor-plot
-      :parameters (?location - location ?cannabis-plant  - cannabis-plant)
-      :precondition (has-outdoor-preference ?cannabis-plant)
-      :effect (outdoor-plot-available ?location))
-
-    (:action get-indoor-pots
-      :parameters (?location - location ?cannabis-plant  - cannabis-plant)
-      :precondition (has-indoor-preference ?cannabis-plant)
-      :effect (indoor-pot-available ?location))
-
-    (:action choose-strain
-      :parameters (?strain - strain)
-      :effect (strain-chosen ?strain))
-
     (:action prepare
       :parameters (?location - location ?digging-tool - tool ?cannabis-plant - cannabis-plant ?strain - strain ?fertilizer - fertilizer)
-      :precondition (and (strain-chosen ?strain) (or (has-seeds ?cannabis-plant) (has-clones ?cannabis-plant)) (or (outdoor-plot-available ?location) (indoor-pot-available ?location)) (digging-tool-available ?digging-tool) (fertilizer-available ?fertilizer))
+      :precondition (and (choose-strain ?strain) (or (has-seeds ?cannabis-plant) (has-clones ?cannabis-plant)) (or (has-outdoor-preference ?location) (has-indoor-preference ?location)) (or (has-autoflower-genetics ?cannabis-plant) (has-photoperiod-genetics ?cannabis-plant)) (has-shovel-available ?digging-tool) (fertilizer-available ?fertilizer))
       :effect (prepared ?location))
 
     (:action plant-it
       :parameters (?location - location ?cannabis-plant - cannabis-plant)
-      :precondition (and (or (has-seeds ?cannabis-plant) (has-clones ?cannabis-plant)) (prepared ?location))
+      :precondition (and (has-clones ?cannabis-plant) (prepared ?location))
       :effect (and (planted ?cannabis-plant ?location) (growing ?cannabis-plant)))
 
     (:action fill-watering-can
@@ -108,7 +103,7 @@
     (:action sow
       :parameters (?location - location ?cannabis-plant - cannabis-plant)
       :precondition (and (dug ?location) (has-seeds ?cannabis-plant))
-      :effect (and (growing ?cannabis-plant) (planted ?cannabis-plant ?location)))
+      :effect (and (planted ?cannabis-plant ?location)))
 
     (:action sprout
       :parameters (?cannabis-plant  - cannabis-plant ?location - location)
@@ -122,7 +117,7 @@
 
     (:action transition-to-flowering
       :parameters (?cannabis-plant  - cannabis-plant ?location - location)
-      :precondition (and (growing ?cannabis-plant) (alive ?cannabis-plant))
+      :precondition (and (growing ?cannabis-plant) (planted ?cannabis-plant ?location) (matured ?cannabis-plant))
       :effect (flowering ?cannabis-plant))
 
     (:action harvest
@@ -133,7 +128,12 @@
     (:action dry-buds
       :parameters (?cannabis-plant  - cannabis-plant ?curing-container - curing-container )
       :precondition (harvested ?cannabis-plant)
-      :effect(and (plant-drying ?cannabis-plant) (plant-in-curing-container ?cannabis-plant ?curing-container)))
+      :effect(and (dryed ?cannabis-plant) (plant-in-curing-container ?cannabis-plant ?curing-container)))
+
+    (:action cure-buds
+      :parameters (?cannabis-plant  - cannabis-plant ?curing-container - curing-container )
+      :precondition (harvested ?cannabis-plant)
+      :effect(and (cured ?cannabis-plant) (plant-in-curing-container ?cannabis-plant ?curing-container)))
 
     (:action water
       :parameters (?cannabis-plant  - cannabis-plant ?water-can - water-container ?location - location)
@@ -147,7 +147,7 @@
 
     (:action dig-soil
       :parameters (?location - location ?digging-tool - tool)
-      :precondition (and (prepared ?location) (not (dug ?location)) (digging-tool-available ?digging-tool))
+      :precondition (and (prepared ?location) (has-shovel-available ?digging-tool))
       :effect (dug ?location))
 
     (:action amend-soil
@@ -189,6 +189,11 @@
       :parameters (?outdoor-plot - outdoor-plot ?cannabis-plant  - cannabis-plant)
       :precondition (and (weeds ?outdoor-plot) (growing ?cannabis-plant) (planted ?cannabis-plant ?outdoor-plot))
       :effect (not (weeds ?outdoor-plot)))
+
+    (:action clean
+      :parameters (?location - location ?cannabis-plant  - cannabis-plant)
+      :precondition (harvested ?cannabis-plant)
+      :effect (cleaned ?location))
 
     (:action cover
       :parameters (?cannabis-plant  - cannabis-plant ?outdoor-plot - outdoor-plot)

@@ -18,7 +18,6 @@ import pickle
     Input: query_str - string with OR conditions "seed-availabel ?plant OR clone-avail ?plant"
     Output: string with comma separated conditions "seed availabel, clone avail"
 """
-RELATION_PROMPT =  """### Instruction: Come up with a descriptive verb based on the input output pair, such as 'is a part of' or 'has chosen strain' for instance. Respond with a single verb. ### Input: Input: {{question}} Output: {{response}} ### Response: Verb:"""
 
 def get_multi(query_str):
     # Step 1: Remove any string starting with '?'
@@ -96,7 +95,8 @@ class SymbolicMemory:
             self.__dict__.update(deserialized)
 
     def get_relation(self, query, result, context):
-        relation = self.zeroshot.classify(RELATION_PROMPT, [], {"question": query['text'], "response": result}, context)
+        relation_prompt = context.prompts[f"string.relation.prompt"]
+        relation = self.zeroshot.classify(relation_prompt, [], {"question": query['text'], "response": result}, context)
         if relation is None:
             return " related to "
 
@@ -137,21 +137,21 @@ class SymbolicMemory:
             # None is a specific type of failure for strings
             if len(results) == 0:
                 return False, []
-            if len(results) > 0 and (results[0] == "Neither" or results[0] == "None"):
+            if len(results) > 0 and (results[0] == "Neither" or results[0].lower() == "none"):
                 return False, [None]
             for subject in results:
                 subject = subject.replace(" ", "-").strip() # If any spaces are involved they will break PDDL
                 logger.info(f"[SYMBOLIC] {subject}")
-                self.create_predicate(user_name, relation, subject) # TODO: Need to pull user name
+                # self.create_predicate(user_name, relation, subject) # TODO: Need to pull user name
             return True, results
 
         # For Boolean the results are True, False, or None. Subject is capture in query context.
         elif query['datatype'] == "boolean":
             if results[0].lower() in  ["true", "yes", "1"]:
-                self.create_predicate(user_name, relation, object_singular) # TODO: Need to pull user name
+                # self.create_predicate(user_name, relation, object_singular) # TODO: Need to pull user name
                 return True, [True]
             elif results[0].lower() in  ["false", "no", "0"]:
-                self.create_negation(user_name, relation, object_singular) # TODO: Need to pull user name
+                # self.create_negation(user_name, relation, object_singular) # TODO: Need to pull user name
                 return True, [False]
             else:
                 return False, [None]
@@ -165,7 +165,7 @@ class SymbolicMemory:
                 else:
                     num_value = w2n.word_to_num(results[0].lower())
                 # Create the predicate with the numeric value
-                self.create_predicate(user_name, relation, object_singular, num_value)  # TODO: Need to define amounts
+                # self.create_predicate(user_name, relation, object_singular, num_value)  # TODO: Need to define amounts
                 return True, results
             except ValueError:
                 # If conversion to integer fails

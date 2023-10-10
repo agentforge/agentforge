@@ -12,11 +12,8 @@ class VectorStoreMemory:
 
   # Does a similarity search to recall memories associated with this prompt
   def recall(self, prompt, filter={}, **kwargs):
-    print(f"searching for {prompt}")
     filter["memory"] = True
     docs = self.vectorstore.search(prompt, n=2, filter=filter, **kwargs)
-    print("LONG-TERM MEMORY")
-    print(docs)
     result = ""
     for doc in docs:
         result += doc.page_content

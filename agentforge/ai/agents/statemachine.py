@@ -1,7 +1,6 @@
 import threading
 from typing import Dict, Any, List, Protocol, Optional, Callable
 from agentforge.ai.routines.routine import Routine
-from agentforge.exceptions import BreakRoutineException
 from agentforge.utils import logger
 from queue import Queue
 
@@ -14,27 +13,14 @@ class Node:
     def run(self, context: Dict[str, Any], tasks: Dict[str, Routine]) -> Dict[str, Any]:
         for dependency in self.dependencies:
             dependency.finished.wait()  # Wait until the dependency has finished
-            print(dependency, " finished..")
-        try:
-            print("EXECUTING NODE", self.execute)
-            logger.info("[NODE]")
-            logger.info(context)
-            logger.info("[/NODE]")
-            context = self.execute(context)
-            logger.info("[NODE]")
-            logger.info(context)
-            logger.info("[/NODE]")
 
-        except BreakRoutineException as interruption:
-            routine = tasks[str(interruption)]
-            context = StateMachine(routine.subroutines, tasks).run(context)
+        context = self.execute(context)
 
         self.finished.set()  # Signal that this node has finished
         return context
 
     def reset(self):
         self.finished.clear()  # Reset the finished event
-
 
 class StateMachine:
     def __init__(self, nodes: List[Node], tasks: Dict[str, Routine]):
@@ -43,7 +29,11 @@ class StateMachine:
 
     def run(self, context: Dict[str, Any]) -> Dict[str, Any]:
         for node in self.nodes:
-            threading.Thread(target=node.run, args=(context, self.tasks)).start()
+            try:
+                threading.Thread(target=node.run, args=(context, self.tasks)).start()
+            except Exception as e:
+                logger.info(f"Error starting thread: {str(e)}")
+
         for node in self.nodes:
             node.finished.wait()  # Wait until the node has finished
         self.reset()  # Reset the nodes when all have finished

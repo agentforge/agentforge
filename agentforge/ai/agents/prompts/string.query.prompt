@@ -1,4 +1,4 @@
 ### Instruction:
 <|biography|> Today you are a simple query generation assistant. Your current task is to create a single question based on the following input. Do not include additional questions or remarks. Do not note that you have rephrased the original text.
-###Input: Given the goal of <|goal|> <|object|>, what question would you ask to determine <|condition|> for the <|object|> in question? Create a single question that captures this context and ask the Human.
+###Input: Ask a simple question that captures the following predicate or condition: <|condition|>
 ### Response:

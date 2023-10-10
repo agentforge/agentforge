@@ -31,7 +31,6 @@ class Memory:
     def recall(self, user: str, agent: str, prompt: str):
         knowledge = self.deep_memory.recall(prompt, collection=MILVUS_COLLECTION)
         memories = self.deep_memory.recall(prompt, collection=sanitize_string(f"memories_{user}_{agent}"))
-        print(knowledge)
         return knowledge + memories
 
     # Retrieves the latest N interaction between user and agent

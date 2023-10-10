@@ -1,7 +1,6 @@
 from typing import Any, Dict
 from typing import Any, Tuple
 from agentforge.interfaces import interface_interactor
-from agentforge.exceptions import BreakRoutineException
 from agentforge.ai.attention.tasks import TaskManager
 from agentforge.utils.stream import stream_string
 from agentforge.ai.agents.context import Context
@@ -23,7 +22,6 @@ class Intent:
             user_query,
             collection="tasks"
         )
-        print(results)
         if len(results) > 0:
             return results[0]
         return None, 0.0
@@ -54,7 +52,6 @@ class Intent:
         # Threshold for similarity - determine if task intent exists
         threshold = 0.6
         task_intent_exists = similarity >= threshold and 'name' in document.metadata
-        print("time to plan? ", task_intent_exists)
         
         # The user is bantering with us - let us respond
         if not task_intent_exists:
@@ -69,13 +66,11 @@ class Intent:
 
             # Create corresponding attention for this task
             # If the predicate memory attention does not exist, feed plan queries into the current attention
-            print("[PLAN] Creating new Attention to Plan")
 
             response = "Okay let's formulate a plan."
             stream_string('channel', response, end_token=" ")
             return new_task
         else:
-            print("need to ask queries about existing task?")
             tasks = self.task_management.get_tasks(user_id, session_id, task_name)
             response = "Do you want to talk about\n"
             for task in tasks:
@@ -86,7 +81,6 @@ class Intent:
         
 
     def execute(self, context: Context) -> Dict[str, Any]:
-        print('[INTENT]')
         user_input = context.get('instruction')
 
         # z_val = z.classify("### Instruction: Does this mean the user wants to initiate a new garden plan? Respond with Yes or No. ### Input: {{user_input}} ### Response: ", ["Yes", "No"], {"user_input": user_input}, context)
@@ -97,21 +91,18 @@ class Intent:
 
         # if we are in an active task, attend to it
         active_task = self.task_management.active_task(user_id, agent_id)
-        print('[ACTIVE_TASK] ', active_task)
 
         if active_task is not None:
-            print("[INTENT] active task:", active_task.name)
             context.set("task", active_task)
-            active_task.run(context)
+            context = active_task.run(context)
             return context
 
         # else let's see if the user is requesting a task
         task = self.text_intent(context, user_id, agent_id)
-        print(f"[INTENT] task: {task}")
-        if task is None:    
+        if task is None:
             # just bante'r, no tasks here!
             return context
         else:
             context.set("task", task)
-            task.run(context)
+            context = task.run(context)
             return context

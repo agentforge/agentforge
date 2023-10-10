@@ -6,22 +6,19 @@ from agentforge.api.app import init_api
 from agentforge.utils import logger
 import traceback
 
+from agentforge.interfaces.vqa.resource import LocalVQA
+
 app = init_api()
-llm = resource_factory.get_resource("llm")
-
-class TextResponse(BaseModel):
-   text: str
-
-class CompletionsResponse(BaseModel):
-   choices: List[TextResponse]
+#vqa = resource_factory.get_resource("vqa")
+vqa = LocalVQA()
 
 # Given the following text request generate a wav file and return to the client
-@app.post("/completions", operation_id="createLanguageModelCompletion")
+@app.post("/v1/vqa", operation_id="vqa")
 async def output(request: Request) -> CompletionsResponse:
    payload = await request.json()
    try:
-      response = await llm.generate(**payload)
+      response = await vqa.generate(**payload)
    except:
       response = "An error has occurred. Please try again later."
       traceback.print_exc()
-   return CompletionsResponse(choices=[TextResponse(text=response)])
+   return response

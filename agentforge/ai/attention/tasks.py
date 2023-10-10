@@ -3,6 +3,7 @@ from datetime import datetime
 from typing import Any, Dict, Optional, List, Callable
 from agentforge.interfaces import interface_interactor
 from agentforge.ai.beliefs.symbolic import SymbolicMemory
+from agentforge.ai.beliefs.state import StateManager
 from pydantic import BaseModel, Field, root_validator
 from datetime import datetime
 from agentforge.ai.agents.context import Context
@@ -51,7 +52,7 @@ class Task(BaseModel):
 
         task_dict = self.to_dict()
         pretty_string = json.dumps(task_dict, indent=4, default=datetime_serializer)
-        print(pretty_string)
+        return pretty_string
 
     # helpers for dict like access
     def __setitem__(self, key, value):
@@ -67,7 +68,7 @@ class Task(BaseModel):
     Runs the task routine specified by the task name
     """
     def run(self, context: Context) -> None:
-        context.task_routines[self.name].run(context)
+        return context.task_routines[self.name].run(context)
 
     def is_empty_queue(self) -> bool:
         return len(self.actions['queue']) == 0
@@ -77,6 +78,9 @@ class Task(BaseModel):
 
     def is_empty_complete(self) -> bool:
         return len(self.actions['complete']) == 0
+    
+    def deactivate(self):
+        self.active = False
 
     ### Tasks consist of stages, each with a series of actions to reach a goal
     ### on plan. Intermediate stages allow us to complete plans that may required
@@ -198,9 +202,10 @@ Tasks are stored in the database and are associated with a user_id and session_i
 Tasks also manage their attention and actions/queries/plans to the user.
 """
 class TaskManager:
-    def __init__(self) -> None:
+    def __init__(self, domain: str = None) -> None:
         self.db = interface_interactor.get_interface("db")
         self.collection = 'tasks'
+        self.state_management = StateManager(domain)
 
     """
         Inits a Task from a context, task id, and active state.
@@ -224,6 +229,12 @@ class TaskManager:
             'active': active
         }
         return Task.from_dict(task_data)
+    
+    def get_by_id(self, key: str) -> Optional[Any]:
+        task = self.db.get(self.collection, key)
+        if task:
+            return Task.from_dict(task)
+        return None
 
     """
     Input: user_id, session_id, name
@@ -241,6 +252,15 @@ class TaskManager:
     """
     def count(self, user_id: str, session_id: str, name: str) -> Optional[Any]:
         return self.db.count(self.collection, {"user_id": user_id, "session_id": session_id, "name": name})
+
+    def save_state(self, user_name: str, triplets: List[dict]) -> Optional[Any]:
+        for triplet in [i for i in triplets if i['type'] == 'init']:
+            val = triplet['val']
+            predicates = val.replace("(", "").replace(")", "").split(" ")
+            predicate = predicates[0]
+            objs = predicates[1:]
+            for obj in objs:
+                self.state_management.create_triplet(user_name, predicate, obj)
 
     def save(self, task: Task) -> None:
         if task:

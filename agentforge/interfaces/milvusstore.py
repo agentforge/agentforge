@@ -2,6 +2,7 @@ from typing import Any, List
 from langchain.vectorstores import Milvus
 from agentforge.adapters import VectorStoreProtocol
 from langchain.embeddings import HuggingFaceEmbeddings
+from agentforge.utils import logger
 
 class MilvusVectorStore(VectorStoreProtocol):
    def __init__(self, model_name: str, collection: str, reset: bool):
@@ -12,8 +13,6 @@ class MilvusVectorStore(VectorStoreProtocol):
       self.init_store_connection(collection, force=True)
 
    def init_store_connection(self, collection: str, force: bool = False):
-      print("[MilvusVectorStore] ", self.collection != collection)
-      print("[MilvusVectorStore][collection] ", collection)
       if self.collection != collection or force:
          connection_args = {
             "host": "milvus",
@@ -52,7 +51,7 @@ class MilvusVectorStore(VectorStoreProtocol):
          docs = self.milvus_store.similarity_search(query, n)
       except ValueError as e:
          # Vectorstore is empty
-         print(e)
+         logger.info(e)
          docs = []
       return docs
    
@@ -62,7 +61,7 @@ class MilvusVectorStore(VectorStoreProtocol):
       try:
          docs = self.milvus_store.similarity_search_with_score(query=query, k=k)
       except ValueError as e:
-         print(e)
+         logger.info(e)
          # Vectorstore is empty
          docs = []
       return docs
