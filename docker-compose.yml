@@ -108,7 +108,7 @@ services:
     networks:
       main-net:
         aliases:
-          - vqa2
+          - vqa
     volumes:
       - cache-volume:/app/cache
     deploy:
@@ -118,6 +118,8 @@ services:
             - driver: nvidia
               device_ids: ['1']
               capabilities: [gpu]
+    ports:
+      - "8000:8000"
 
   agent:
     image: agent
