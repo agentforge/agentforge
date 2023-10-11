@@ -101,7 +101,7 @@ services:
               device_ids: ['1']
               capabilities: [gpu]
 
- vqa:
+  vqa:
     image: vqa
     ipc: host
     restart: always
@@ -119,7 +119,7 @@ services:
               device_ids: ['1']
               capabilities: [gpu]
     ports:
-      - "8000:8000"
+      - "8080:3000"
 
   agent:
     image: agent
