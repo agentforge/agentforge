@@ -84,12 +84,14 @@ init(
     ),
     supertokens_config=SupertokensConfig(
         # https://try.supertokens.com is for demo purposes. Replace this with the address of your core instance (sign up on supertokens.com), or self host a core.
-        connection_uri="https://try.supertokens.com",
+        connection_uri="https://localhost:3567",
         # api_key=<API_KEY(if configured)>
     ),
     framework='fastapi',
     recipe_list=[
-        session.init(), # initializes session features
+        session.init(
+            expose_access_token_to_frontend_in_cookie_based_auth=True,
+        ),
         emailpassword.init()
     ],
     mode='wsgi' # use wsgi if you are running using gunicorn
