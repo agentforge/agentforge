@@ -59,7 +59,7 @@ class LocalLLM():
       return
     # Load the model
     self.switch_model(model_key, kwargs)
-    self.generator.set_models(self.model, self.tokenizer, self.text_streamer(False))
+    self.generator.set_models(self.model, self.tokenizer, self.text_streamer(False, ""))
 
   # Setup and return the text streamer
   def text_streamer(self, streaming, user_id):
