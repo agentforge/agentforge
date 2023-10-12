@@ -69,10 +69,11 @@ class TextStreamer(BaseStreamer):
         ```
     """
 
-    def __init__(self, tokenizer: "AutoTokenizer", skip_prompt: bool = False, **decode_kwargs):
+    def __init__(self, tokenizer: "AutoTokenizer", skip_prompt: bool = False, user_id: str = "", **decode_kwargs):
         self.tokenizer = tokenizer
         self.skip_prompt = skip_prompt
         self.decode_kwargs = decode_kwargs
+        self.user_id = user_id
 
         # variables used in the streaming process
         self.token_cache = []
@@ -147,6 +148,6 @@ class TextStreamer(BaseStreamer):
         print(text, flush=True, end="" if not stream_end else None)
         if text != "Human:" and text != "GreenSage:":
             # publish the message to the channel
-            self.redis_server.publish('channel', text)
+            self.redis_server.publish(f"streaming-{self.user_id}", text)
             if stream_end:
-                self.redis_server.publish('channel', '<|endoftext|>')
+                self.redis_server.publish(f"streaming-{self.user_id}", '<|endoftext|>')

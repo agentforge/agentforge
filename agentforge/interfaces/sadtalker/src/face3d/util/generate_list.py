@@ -1,5 +1,4 @@
-"""This script is to generate training list files for Deep3DFaceRecon_pytorch
-"""
+"""This script is to generate training list files for Deep3DFaceRecon_pytorch"""
 
 import os
 

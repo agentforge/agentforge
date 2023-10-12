@@ -62,14 +62,15 @@ class LocalLLM():
     self.generator.set_models(self.model, self.tokenizer, self.text_streamer(False))
 
   # Setup and return the text streamer
-  def text_streamer(self, streaming):
+  def text_streamer(self, streaming, user_id):
     if streaming == False:
       return None
-    return TextStreamer(self.tokenizer, skip_prompt=True)
+    return TextStreamer(self.tokenizer, skip_prompt=True, user_id=user_id)
 
   async def generate(self, prompt="", **kwargs):
     # setup the generator
     config = kwargs['generation_config']
+    user_id = kwargs['user_id']
     stream_override = kwargs["streaming_override"] if "streaming_override" in kwargs else True
     default_stream = True if kwargs['model_config'] and kwargs['model_config']["streaming"] else False
     streaming = stream_override and default_stream
@@ -89,7 +90,7 @@ class LocalLLM():
             prompt,
             self.loader.model, 
             self.loader.tokenizer,
-            self.text_streamer(streaming),
+            self.text_streamer(streaming, user_id),
             **kwargs
         )
     # Use default generator
@@ -98,11 +99,9 @@ class LocalLLM():
         self.loader.model,
         self.loader.tokenizer,
         self.loader.slow_tokenizer,
-        self.text_streamer(streaming),
+        self.text_streamer(streaming, user_id),
         **kwargs
     )
-    logger.info(f"[PROMPT] {prompt}")
-    logger.info(f"[output] {output}")
     return output
 
   def load_model(self, config):

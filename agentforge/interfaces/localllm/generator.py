@@ -39,7 +39,6 @@ class _SentinelTokenStoppingCriteria(StoppingCriteria):
                     continue
 
                 window = trimmed_sample[-sentinel_len:]
-                logger.info(f"{sentinel} == {window}")
                 if torch.all(torch.eq(sentinel, window)):
                     return True
 
