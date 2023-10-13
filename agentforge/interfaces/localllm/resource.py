@@ -70,7 +70,10 @@ class LocalLLM():
   async def generate(self, prompt="", **kwargs):
     # setup the generator
     config = kwargs['generation_config']
-    user_id = kwargs['user_id']
+    if 'user_id' in kwargs:
+      user_id = kwargs['user_id']
+    else:
+       user_id = "system" # default for classification, etc
     stream_override = kwargs["streaming_override"] if "streaming_override" in kwargs else True
     default_stream = True if kwargs['model_config'] and kwargs['model_config']["streaming"] else False
     streaming = stream_override and default_stream
