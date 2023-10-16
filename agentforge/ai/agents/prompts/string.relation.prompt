@@ -1,0 +1,1 @@
+### Instruction: Come up with a descriptive verb based on the input output pair, such as 'is a part of' or 'has chosen strain' for instance. Respond with a single verb. ### Input: Input: {{question}} Output: {{response}} ### Response: Verb:

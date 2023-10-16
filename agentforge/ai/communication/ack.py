@@ -25,10 +25,7 @@ class Acknowledge:
         # # if query exists and is a response, pop
         task = context.get("task")
         valid_response = False
-        # task.pretty_print()
         query = task.get_active_query()
-        logger.info("[ACTIVE QUERY]")
-        logger.info(query)
 
         if query is None:
             return context
@@ -48,7 +45,6 @@ class Acknowledge:
             # raise ValueError("query not none")
             # feed in to the OPQL
             query["response"] = context.get("instruction") # The user response comes in as a prompt
-            logger.info("[PLAN] Learning new information...")
              # TODO: Make channel user specific, make text plan specific
             # stream_string('channel', "One moment while I make a note.", end_token="\n\n")
             logger.info(query)

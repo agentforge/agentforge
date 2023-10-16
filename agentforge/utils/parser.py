@@ -5,7 +5,6 @@ from pygments.lexers import get_lexer_by_name
 from pygments.util import ClassNotFound
 from pygments.formatters import HtmlFormatter
 from pygments.lexers.special import TextLexer
-from jinja2 import Template
 
 PREFIXES = ["My response would be:", "My response is:", "### Response:", "<s>"]
 POSTFIXES = ['### Thought',
@@ -81,12 +80,6 @@ class Parser:
 
   def parse_prompt(self, text):
     return text.strip()
-
-  def format_template(self, prompt_template, **kwargs):
-      # Find all placeholders in the prompt_template
-      template = Template(prompt_template)
-      rendered_str = template.render(kwargs)
-      return rendered_str
 
   # Returns and AgentResponse object that 
   def parse_output(self, output):

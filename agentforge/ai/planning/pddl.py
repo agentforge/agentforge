@@ -1,11 +1,16 @@
+import os
 import networkx as nx
 from typing import Dict, List, Any
 from collections import defaultdict
 from pddlpy import DomainProblem
+from pddlpy.pddl import Atom
 from graphviz import Digraph
 import re, json
 from agentforge.utils import logger
 from agentforge.interfaces import interface_interactor
+from agentforge.ai.beliefs.state import StateManager
+from datetime import datetime
+from copy import deepcopy
 
 from pydantic import BaseModel, Field
 from typing import List, Optional, Dict
@@ -33,6 +38,19 @@ the Plan can be executed
 # TODO: Add a function to serialize/deserialize planning graphs to/from JSON
 # TODO: Simplify to use a cached version of the graphs
 # TODO: Alter eval node/edge functions to query knowledge base
+
+def set_to_list(s):
+    if len(s) == 0:
+        return []
+    
+    serialized_list = []
+    for item in s:
+        if isinstance(item, Atom):
+            serialized_list.append(str(item))
+        else:
+            serialized_list.append(item)
+            
+    return serialized_list
 
 class PDDLFragment(BaseModel):
     type: Optional[str] = Field(None)
@@ -77,11 +95,10 @@ class PDDLFragment(BaseModel):
                 "type": "object"
             } for obj, instance in vals]
 
-
 class PDDLGraphModel(BaseModel):
     domain_file: Optional[str] = ""
     problem_file: Optional[str] = ""
-    primary_key: Optional[str] = ""
+    domain: Optional[str] = ""
     parameter_types: Optional[Dict[str, Any]] = Field(default=None)
     types: Optional[Dict[str, Any]] = Field(default=None)
     attributes: Optional[Dict[str, Any]] = Field(default=None)
@@ -89,16 +106,20 @@ class PDDLGraphModel(BaseModel):
     actions: Optional[Dict[str, Any]] = Field(default=None)
     predicates: Optional[Dict[str, Any]] = Field(default=None)
     preconditions: Optional[Dict[str, Any]] = Field(default=None)
+    created_dt: Optional[datetime] = Field(default_factory=datetime.utcnow)
+    updated_dt: Optional[datetime] = Field(default=None)
+
 class PDDLGraph:
     def __init__(self, domain_file: str, problem_file: str, primary_key: str):
         self.db = interface_interactor.get_interface("db")
+        self.state_manager = StateManager(primary_key)
 
         # Dynamically initialize attributes based on the Pydantic model
         for field in PDDLGraphModel.__annotations__.keys():
             setattr(self, field, None if field != "types" else {})
 
         # Override defaults
-        self.primary_key = primary_key
+        self.domain = primary_key
         self.domain_file = domain_file
         self.problem_file = problem_file
 
@@ -106,14 +127,15 @@ class PDDLGraph:
 
     def deserialize_from_db(self) -> None:
         # Fetch the data from MongoDB based on the primary key
-        db_data = self.db.get("pddl", self.primary_key)
-        
+        db_data = self.db.get("pddl", self.domain)
+
         if db_data:
             # Use Pydantic for deserialization
             pddl_graph_model = PDDLGraphModel(**db_data)
             
-            # Populate the object variables dynamically
+            # Populate  the object variables dynamically
             for field, value in pddl_graph_model.dict().items():
+                # logger.info(f"setattr({field}, {value})")
                 setattr(self, field, value)
 
     def serialize_to_json_and_db(self) -> None:
@@ -129,14 +151,14 @@ class PDDLGraph:
         serialized_data = pddl_graph_model.dict()
 
         # Check if an entry with the same primary key already exists
-        existing_entry = self.db.get("pddl", self.primary_key)
+        existing_entry = self.db.get("pddl", self.domain)
 
         if existing_entry:
             # Update the existing entry
-            self.db.set("pddl", self.primary_key, serialized_data)
+            self.db.set("pddl", self.domain, serialized_data)
         else:
             # Create a new entry
-            self.db.create("pddl", self.primary_key, serialized_data)
+            self.db.create("pddl", self.domain, serialized_data)
 
     def loads(self, actions, predicates, effects):
         self.actions = actions
@@ -159,12 +181,8 @@ class PDDLGraph:
 
     def generate_all_prompts(self, preconditions):
         prompts = defaultdict(list)
-        logger.info("generate_all_prompts")
         for action_name, precondition in preconditions.items():
-            logger.info(f"{action_name=}")
             queries = self.process_precondition(precondition)
-            logger.info(f"{len(queries)}")
-            logger.info(f"{queries}")
             for query in queries:
                 prompts[action_name].append(query)
         return prompts
@@ -172,9 +190,6 @@ class PDDLGraph:
     # Function to convert a predicate dictionary into a string representation
     def predicate_to_str(self, predicate):
         if isinstance(predicate, dict):
-            if len(predicate.keys()) > 1:
-                logger.info("RED ALERT!!!!! ")
-            # return predicate.keys()[0]
             predicate_str = " ".join([" ".join([k]) for k in predicate])
             vars = " ".join([" ".join(predicate[k]) for k in predicate])
         return predicate_str, vars
@@ -196,7 +211,6 @@ class PDDLGraph:
                     precond_str = "not " + precond if negate else precond
                     G.add_edge(precond_str, action, label="precondition", variables=variables)
                     dot.edge(precond_str, action, color="blue")
-                    # addtl_links[key] = precond
                     if previous_precond:
                         G.add_edge(previous_precond, precond_str, label="OR")
                         dot.edge(previous_precond, precond_str, color="orange", label="OR")
@@ -239,10 +253,6 @@ class PDDLGraph:
             graph.add_node(name, **kwargs)
             dot.node(name, shape=shape, **graphviz_attrs)
 
-        def add_edge(graph, src, dst, color="black", label=""):
-            graph.add_edge(src, dst, color=color, label=label)
-            dot.edge(src, dst, color=color, label=label)
-
         # Function to extract types from action parameters
         def extract_types_from_parameters(parameters):
             for key, var_type in parameters.items():
@@ -253,14 +263,14 @@ class PDDLGraph:
             add_node(G, action, shape="box", parameters=detail["parameters"], label=action)
 
         for action, precond in preconditions.items():
-            logger.info(f"[PRECOND] {precond}")
+            # logger.info(f"[PRECOND] {precond}")
             self.add_preconditions(precond, action, G, dot)
 
         # Additional links for effects
         for action, effect in effects.items():
             self.add_effects(effect, action, G, dot)
 
-        logger.info(G.nodes(data=True))  # Attributes of all nodes
+        # logger.info(G.nodes(data=True))  # Attributes of all nodes
         return G, dot
 
     # Updated visualize_graph function with concise string conversion
@@ -326,10 +336,10 @@ class PDDLGraph:
         elif expr_str.startswith('(not'):
             return {'not': self.parse_expression(expr_str[5:-1].strip())}
         else:
-            logger.info("PARSE_EXPRESSION")
-            logger.info(expr_str)
+            # logger.info("PARSE_EXPRESSION")
+            # logger.info(expr_str)
             val = self.parse_predicate(expr_str[1:-1])
-            logger.info(val)
+            # logger.info(val)
             return val
 
     def extract_preconditions(self, file_name):
@@ -403,7 +413,7 @@ class PDDLGraph:
 
     def extract_predicates(self, file_name: str) -> Dict[str, str]:
         predicates = {}
-        
+
         # Read the content of the file
         with open(file_name, 'r') as file:
             content = file.read()
@@ -449,7 +459,7 @@ class PDDLGraph:
 
     # Function to extract the last variable from a string or dictionary expression
     def extract_last_variable_from_expression(self, expression):
-        logger.info("[EXTRACTING] " + expression)
+        # logger.info("[EXTRACTING] " + expression)
         if expression in self.attributes:
             return self.attributes[expression]
         else:
@@ -463,78 +473,137 @@ class PDDLGraph:
         return matches[-1] if matches else None
 
     # Updated function to run on a root node
-    def run_node(self, objects, graph, node):
-        action = [i for i in graph.successors(node)]
-        logger.info(f"{node=}")
-        logger.info(f"{action=}")
+    def run_node(self, objects, node):
+        action = [i for i in self.G.successors(node)]
         variables = self.extract_last_variable_from_expression(node)
         for variable in variables:
-            objects[variable].append({"successors": action, "variable": variable})
+            if node not in objects[variable]:
+                # logger.info(f"ADDING {node}")
+                objects[variable].append(node)
 
     # Updated function to run on a root edge
-    def run_edge(self, objects, graph, edges):
-        for edge in edges:
-            logger.info(f"[EDGE] {edge}")
-            action = [i for i in graph.successors(self.root_element(edge))]
-            logger.info(f"EDGE ACTION: {action}")
-            variables = self.extract_last_variable_from_expression(edge)
-            for variable in variables:
-                if variable:
-                    print(variable)
-                    if len(action[0].split(" ")) > 1:
-                        objects[variable].append({"predicate": action[0]})
+    def run_edge(self, objects, edge):
+        # logger.info(f"RUNING EDGE {edge}")
+        # logger.info(f"[EDGE] {edge}")
+        action = [i for i in self.G.successors(self.root_element(edge))]
+        # logger.info(f"EDGE ACTION: {action}")
+        valid_actions = [a for a in action if a in self.actions]
+        variables = self.extract_last_variable_from_expression(edge)
+        for variable in variables:
+            for splitvar in variable.split(" "):
+                val = list(set(objects[splitvar]).union(set(valid_actions)))
+                # logger.info(f"ADDING {val}")
+                objects[splitvar] = val
+
+    # if this node has been evaluated -- action
+    def evaluate(self, node):
+        is_action = node in self.actions
+        is_predicate = node in self.predicates
+        if is_predicate:
+            return self.eval_predicate(node)
+        if is_action:
+            return self.eval_action(node)
+        # check knowledge base for node
+        return False
+
+    def eval_action(self, action):
+        # for each action we need to determine if the effect
+        # has already occurred. If so no need to continue with
+        # this action -- works in DAG
+        # logger.info(f" {action}")
+        for effect in self.actions[action]["positive_effects"]:
+            valid = self.state_manager.check(self.user_name, effect)
+            if valid is not None:
+                return True
+
+    def eval_predicate(self, predicate):
+        # If there are no predecessors or all predecessors are already evaluated
+        # logger.info(f"checking pred {predicate}")
+        # logger.info(len(list(self.G.predecessors(self.root_element(predicate)))) == 0)
+        if len(list(self.G.predecessors(self.root_element(predicate)))) == 0:
+            return True
+        # check knowledge base for node
+        valid = self.state_manager.check(self.user_name, predicate)
+        # logger.info(f"valid {valid} -- checked for {self.user_name}")
+        return valid is not None
+
+    def process_checklist(self, tuple_list, checklist):
+        # logger.info(f"PROCESSING CHECKLIST {checklist}")
+        all_vals = deepcopy(checklist)
+        for var in all_vals:
+            # logger.info(f"CHECKING {var=}")
+            # Step 1: Find the tuple containing 'var'
+            for tup in tuple_list:
+                # logger.info(f"CHECKING {tup=}")
+                if var in tup:
+                    # Step 2: Check if all elements of the tuple are in the checklist
+                    if all(x in checklist for x in tup):
+                        # logger.info(f"ALL AVAILABLE {all(x in checklist for x in tup)}")
+                        # logger.info(f"{tup=}")
+                        # logger.info(f"{checklist=}")
+                        continue  # All elements found, return the original checklist
                     else:
-                        objects[variable].append({"action": action[0]})
+                        # Step 3: Remove 'var' from checklist if any element is not in the checklist
+                        # logger.info(f"REMOVING {var}")
+                        checklist.remove(var)
+        return checklist
 
-    # if this node has been evaluated/action run
-    def is_evaluated_node(self, node):
-        logger.info("EVAL NODE")
-        logger.info(f"{node}")
-        # check knowledge base for node
-        return False
+    # Updated function to evaluate a node 
+    def eval_node(self, objects, node):
+        # logger.info(f"EVAL NODE {node}")
+        predecessors = list(self.G.predecessors(self.root_element(node)))
+        predecessors_evaled = [p for p in predecessors if not self.evaluate(p)]
+        predecessors_evaled = self.process_checklist(self.or_tuples, predecessors_evaled)
 
-    # if this edge has been evaluated/action run
-    def is_evaluated_edge(self, edge):
-        logger.info("EVAL EDGE")
-        logger.info(f"{edge}")
-        # check knowledge base for node
-        return False
-
-    # Updated function to evaluate a node
-    def eval_node(self, objects, graph, node):
-        predecessors = list(graph.predecessors(self.root_element(node)))
-        predecessors_evaled = [p for p in predecessors if not self.is_evaluated_node(p)]
         # If no predessors or all predessors are already evaluated
+        # logger.info("predecessors_evaled")
+        logger.info(predecessors_evaled)
         if not predecessors_evaled:
-            self.run_node(objects, graph, node)
+            self.run_node(objects, node)
+            return False
         return True
 
     # Updated function to evaluate an edge
-    def eval_edge(self, objects, graph, edge):
-        predecessors = list(graph.predecessors(self.root_element(edge[0])))
-        predecessors_evaled = [p for p in predecessors if not self.is_evaluated_edge(p)]
-        # If no predessors or all predessors are already evaluated
-        if not predecessors_evaled:
-            self.run_edge(objects, graph, edge)
-        return True
+    def eval_edge(self, objects, edges):
+        # logger.info(f"EDGES: {edges}")
+        for edge in edges:
+            # logger.info(f"EVAL EDGE {edge}")
+            predecessors = list(self.G.predecessors(self.root_element(edge)))
+            predecessors_evaled = [p for p in predecessors if not self.evaluate(p)]
+            predecessors_evaled = self.process_checklist(self.or_tuples, predecessors_evaled)
+            
+            # checked if we already have this information
+            if edge in self.predicates:
+                checked = self.state_manager.check(self.user_name, edge)
+                if checked is not None:
+                    return True
+                
+            # If no predessors or all predessors are already evaluated
+            # logger.info("predecessors_evaled")
+            # logger.info(predecessors_evaled)
+            if not predecessors_evaled:
+                self.run_edge(objects, edge)
+            return True
 
     # Function to trace the PDDL graph (unchanged)
-    def trace_pddl_graph(self, objects, graph, root_node):
+    def trace_pddl_graph(self, objects, root_node):
         visited_nodes = set()
-        self.trace_graph(objects, graph, root_node, visited_nodes)
+        self.trace_graph(objects, root_node, visited_nodes)
         # Convert the sets to lists before returning
         return {key: list(value) for key, value in objects.items()}
 
     # Recursive function to trace the graph (unchanged)
-    def trace_graph(self, objects, graph, node, visited_nodes):
+    def trace_graph(self, objects, node, visited_nodes):
         if node in visited_nodes:
             return
         visited_nodes.add(node)
-        self.eval_node(objects, graph, node)
-        for predecessor in graph.predecessors(self.root_element(node)):
-            edge = (predecessor, node)
-            self.eval_edge(objects, graph, edge)
-            self.trace_graph(objects, graph, predecessor, visited_nodes)
+        cont = self.eval_node(objects, node)
+        if not cont:
+            return
+        for predecessor in self.G.predecessors(self.root_element(node)):
+            edge = [predecessor]
+            self.eval_edge(objects, edge)
+            self.trace_graph(objects, predecessor, visited_nodes)
 
     # Lookup type for this objeect, drilling down if necessary
     def lookup_type(self, type_klasses: List, types: Dict, key: str) -> str:
@@ -546,9 +615,13 @@ class PDDLGraph:
     """
         Iterates the entire graph and creates necessary state but does not traverse
         the graph to find the root nodes/edges
-    
     """
     def setup_graph(self):
+        # For production environments use the pre-loaded graph state
+        dev = os.getenv("ENV") == "dev" or os.getenv("ENV") == "test"
+        # if self.updated_dt is not None and not dev:
+        #     return
+
         # Dictionary to keep track of variable types
         self.parameter_types = {}
         self.type_klasses = ["boolean", "object", "numeric", "string", "array", "null"]
@@ -559,12 +632,19 @@ class PDDLGraph:
         # Extracting the information from the PDDL 2.1 files
         domprob = DomainProblem(self.domain_file, self.problem_file)
 
+        self.worldobjects = domprob.worldobjects()
+        # logger.info(self.worldobjects)
         # Extracting all actions (operators)
         self.actions = {}
+        # print(domprob.ground_operator('prepare'))
         for operator_name in domprob.operators():
             operator = domprob.domain.operators[operator_name]
             self.actions[operator_name] = {
                 "parameters": operator.variable_list,
+                "positive_preconditions": set_to_list(operator.precondition_pos),
+                "negative_preconditions": set_to_list(operator.precondition_neg),
+                "positive_effects": set_to_list(operator.effect_pos),
+                "negative_effects": set_to_list(operator.effect_neg),
                 # You can extract additional attributes of the operator here
             }
 
@@ -577,12 +657,16 @@ class PDDLGraph:
         self.preconditions = self.extract_preconditions(self.domain_file)
 
         # Test the further adjusted extract_types function with the given PDDL file
-        self.types = self.extract_types(self.domain_file)
+        # self.types = self.extract_types(self.domain_file)
+        # print(f"{os.getenv('PLANNER_DIRECTORY')} -- {self.domain}")
+        file_path = os.path.join(os.getenv('PLANNER_DIRECTORY'), self.domain, "types.json")
+        with open(file_path, 'r') as json_file:
+            self.types = json.load(json_file)
 
         # Printing the extracted information
-        print("Actions:")
-        for action_name, action_details in self.actions.items():
-            print(f"  {action_name}: {action_details}")
+        # print("Actions:")
+        # for action_name, action_details in self.actions.items():
+        #     print(f"  {action_name}: {action_details}")
 
         # print("\n\nPredicates:")
         # print(predicates)
@@ -590,12 +674,11 @@ class PDDLGraph:
         # print("\n\nEffects:")
         # print(effects)
 
-        logger.info("\n\nPreconditions:")
-        logger.info(json.dumps(self.preconditions))
+        # print("\n\nPreconditions:")
+        # print(json.dumps(self.preconditions, indent=2))
 
-        logger.info("\n\nTypes:")
-        logger.info(json.dumps(self.types))
-        self.types = self.types
+        # logger.info("\n\nTypes:")
+        # logger.info(json.dumps(self.types))
 
         self.G, self.dot = self.create_graph(self.actions, self.preconditions, self.effects)
         attributes = nx.get_edge_attributes(self.G, 'variables')
@@ -604,87 +687,157 @@ class PDDLGraph:
             for item in k:
                 self.attributes[item].append(v)
 
-        logger.info("ATTRIBUTES...")
-        logger.info(self.attributes)
         self.visualize_graph(self.dot)
+        self.updated_dt = datetime.utcnow()
         self.serialize_to_json_and_db()
 
     """
         Input seed: str
         Given a seed goal, identify nodes at the edge of the graph where we
         do not have information and need to query the environment or the user
-
     """
-
-    def get_seed_queries(self, seed: str):
+    def get_seed_queries(self, seed: str, user_name: str):
+        # set user_name for use in downstream functions
+        self.user_name = user_name
         # setup graph if needed
         self.setup_graph()
 
+        labels = nx.get_edge_attributes(self.G, 'label')
+        # logger.info(labels)
+        self.or_labels = [item for k, v in labels.items() if v == "OR" for item in k]
+        self.or_tuples = [k for k, v in labels.items() if v == "OR"]
         # Trace the graph starting from "growing ?seedling"
-        objects = self.trace_pddl_graph(self.objects, self.G, seed)
-        
-        logger.info(f"{objects=}")
-        logger.info(len(objects))
+        objects = self.trace_pddl_graph(self.objects, seed)
+
         # prompts = generate_all_prompts(actions, predicates, effects, preconditions)
         final_queries = {}
 
         # Generate the prompts
         prompts = self.generate_all_prompts(self.preconditions)
-        logger.info(prompts)
+        # logger.info("PROMPTPS FOR SEEDDDD")
+        # logger.info(json.dumps(prompts, indent=4))
 
         # Print the prompts for the "prepare" action as examples
-        for prompt in prompts["prepare"]:
-            print(prompt)
+        # for prompt in prompts["prepare"]:
+        #     print(prompt)
 
-        logger.info("parameter_types")
-        logger.info(self.parameter_types)
-
+        already_evaluated = set()
         final_queries = defaultdict(list)
-        def process_prompt(obj):
-            for action in action_list:
-                logger.info(action)
-                action_name = None
-                if "action" in action and action["action"] in self.actions:
-                    action_name = action["action"]
-                if action_name and action_name in prompts and action_name not in final_queries:
-                    for prompt in prompts[action_name]:
-                        parameter_type = self.parameter_types[prompt.split(" ")[-1]]
-                        type_ = self.lookup_type(self.type_klasses, self.types, parameter_type)
-                        query = {'condition': prompt, "datatype": type_, "class": parameter_type}
-                        final_queries[action_name].append(query)
-
+        # For each object/action list generate queries
         for obj, action_list in objects.items():
-            if len(obj.split(" ")) > 1:
-                for o in obj.split(" "):
-                    process_prompt(o)
-            else:
-                process_prompt(obj)
+            # for each action -- referenced by the object
 
-        logger.info("final_queries")
-        logger.info(final_queries)
+            for action in action_list:
+                # if we have already evaled this action or it is not in the prompts
+                if not (action and action in prompts):
+                    continue
+
+                for prompt in prompts[action]:
+                    # print(prompt.split(" ")[-1])
+
+                    # ignore root negation preconditions for now, and make sure the obj/prompt pair is valid
+                    if prompt[0:4] == "not " or obj not in prompt:
+                        continue
+
+                    # also ignore OR singletons, should be capture by OR boolean prompt
+                    # print(prompt.split(" ")[0])
+                    or_cond = prompt.split(" ")[0] in self.or_labels
+                    if or_cond and " OR " not in prompt:
+                        # logger.info(f"IGNORE OR SINGLETON {prompt}")
+                        continue
+
+                    # final check to ensure we aren't asking known questions
+                    if " OR " not in prompt and self.state_manager.check(self.user_name, prompt.split(" ")[0]):
+                        # logger.info(f"IGNORE KNOWN QUESTION {prompt}")
+                        continue
+
+                    # hack for ORs
+                    if " OR " in prompt:
+                        vals = prompt.split(" OR ")
+                        invalid = False
+                        for t in vals:
+                            invalid = (self.state_manager.check(self.user_name, t.split(" ")[0]) is not None) or invalid
+                        if invalid:
+                            continue
+                    
+                    type_ = "boolean"
+                    if " OR " in prompt:
+                        type_ = "string"
+                    else:
+                        parameter_type = prompt.split(" ")[0]
+                        type_ = self.lookup_type(self.type_klasses, self.types, parameter_type)
+
+                    klass = self.parameter_types[prompt.split(" ")[-1]]
+                    query = {'condition': prompt, "datatype": type_, "class": klass}
+                    if prompt not in already_evaluated:
+                        final_queries[action].append(query)
+                    already_evaluated.add(prompt)
+
         return final_queries
-
 
 class PDDL:
     def __init__(self, pddl_graph):
         self.pddl_graph = pddl_graph
     
+    def execute(self, plan, context):
+        effects_list = self.execute_plan(plan['plan'], plan['state'])
+        effects_list = [{'val': f"({eff})", 'type': 'init'} for eff in effects_list]
+        plan['state'] = plan['state'] + effects_list
+        # Store new effects in DB state
+        for val in effects_list:
+            vals = val['val'].replace("(", "").replace(")", "").split(" ")
+            predicate = vals[0]
+            instances = vals[1:]
+            for instance in instances:
+                self.pddl_graph.state_manager.create_triplet(
+                    context.get('input.user_name'),
+                    predicate,
+                    instance,
+                    metadata=val,
+                )
+        return plan
+
     """
         Executes the actions in the plan iteratively updating the state
+        -- using pddlpy
     """
-    def execute_plan(self, plan):
-        pass
+    def execute_plan(self, plan, state):
+        object_status = {}
+        for fragment in state:
+            if fragment['type'] == "object":
+                val = fragment['val'].replace("(", "").replace(")", "").split(" - ")
+                obj = val[0]
+                klass = val[1]
+                object_status[klass] = obj
+        domprob = DomainProblem(self.pddl_graph.domain_file, self.pddl_graph.problem_file)
+        actions = plan.split("\n")
+        # logger.info(f"{object_status=}")
+        effect_list = []
+        # For each valid action we need to get the effects
+        for action in actions:
+            action = action.replace("(", "").replace(")", "").strip()
+            if action == "":
+                continue
+            action_list = action.split(" ")
+            action = action_list[0]
+            variables = action_list[1:]
+            operator = domprob.domain.operators[action]
+            for effect in list(operator.effect_pos):
+                variables = [object_status[operator.variable_list[var]] for var in effect.predicate[1:]]
+                effect_str =  f"{effect.predicate[0]} {' '.join(variables)}"
+                effect_list.append(effect_str)
+        return effect_list
 
     """
     # We need to iterate through the responses and create the PDDL problem
     """
-    def create_pddl_problem_state(self, queries: List[Dict], goal: str) -> List[Dict]:
+    def create_pddl_problem_state(self, task, goal: str, context) -> List[Dict]:
         self.variables = defaultdict(list)
-
+        queries = task.actions["complete"]
         # Add all queried objects and init states
         fragments = []
         for query in queries:
-            logger.info(query)
+            # logger.info(query)
 
             # BOOLEAN CASE
             if query['datatype'] == "boolean" and len(query["results"]) > 0:
@@ -727,8 +880,28 @@ class PDDL:
         for _, obj_type in self.pddl_graph.parameter_types.items():
             fragments.append(PDDLFragment(type="object", objects=[obj_type], instances=[obj_type]))
 
+        # Add known state and init from previous plans
+        existing_state = []
+        for action in task.history:
+            if action['metatype'] == "plan":
+                existing_fragments = action['state']
+                for fragment in existing_fragments:
+                    if fragment['type'] != "goal":
+                        existing_state.append(fragment)
+                    # if fragment['type'] == "init":
+                    #     # fragments.append(PDDLFragment(type="init", predicate=fragment['val'], instances=fragment['instances']))
+                    # if fragment['type'] == "object":
+                    #     fragments.append(PDDLFragment(type="object", objects=[fragment['val']], instances=fragment['instances']))
+        
+        # Grab information based information from the goal
+        filter = {"src_node": {"name": context.get('input.user_name')}, "mode": self.pddl_graph.domain}
+        for i in self.pddl_graph.state_manager.get_all(filter):
+            if "val" in i.metadata:
+                existing_state.append(i.metadata)
+
+        # logger.info(f"{existing_state=}")
         # LAST add the goal statement
-        logger.info(f"{self.variables=}")
+        # logger.info(f"{self.variables=}")
         goal_data = goal.split(" ")
         objs = goal_data[1:]
         goal = goal_data[0]
@@ -740,4 +913,41 @@ class PDDL:
 
         obj = obj.replace("?", "") # TODO: add support for multi-predicate goals
         goal_arr = [PDDLFragment(type="goal", instances=instances, predicate=goal)]
-        return [i.init_pddl_problem_fragment() for i in fragments + goal_arr]
+        state = []
+        for i in fragments + goal_arr:
+            state.extend(i.init_pddl_problem_fragment())
+        # logger.info(f"{state=}")   
+        for j in existing_state:
+            state.extend([j])
+        # logger.info(f"{state=}")
+        return state
+
+def test():
+    domain_file = '/app/agentforge/agentforge/config/planner/garden/domain.pddl'
+    problem_file = '/app/agentforge/agentforge/config/planner/garden/test.pddl'
+    pddl_graph = PDDLGraph(domain_file, problem_file, "garden")
+    pddl = PDDL(pddl_graph)
+    queries = pddl_graph.get_seed_queries("growing ?cannabis-plant", "Frank")
+    print(json.dumps(queries))
+    domprob = DomainProblem(pddl_graph.domain_file, pddl_graph.problem_file)
+    for operator_name in domprob.operators():
+        print(domprob.domain.operators[operator_name])
+    
+    # plan_str = """
+    #     (prepare location digging-tool cannabis-plant og-kush fertilizer)
+    #     (germinate location cannabis-plant)
+    #     (plant-germinated location cannabis-plant)
+    # """
+    # inits = [
+    #     {
+    #         "val": "(has-seeds cannabis-plant)",
+    #         "type": "init"
+    #     }
+    # ]
+    # from agentforge.ai.attention.tasks import TaskManager
+    # t = TaskManager()
+    # task = t.get_by_id("3a75e88b-b85d-4234-89e5-936c97d39bfb")
+
+    # print(pddl.execute_plan(task.history[5]['plan'], task.history[5]['state']))
+    pddl_graph.get_seed_queries("growing ?cannabis-plant", "Frank")
+    return domprob

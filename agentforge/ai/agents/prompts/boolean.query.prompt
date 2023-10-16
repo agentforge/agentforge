@@ -1,4 +1,4 @@
 ### Instruction:
-<|biography|> Your current task is to create a question for the Human.
-Given the goal of <|goal|> <|object|>, what question would you ask to determine yes or no, a boolean, <|condition|> for the <|object|> ? The response from the Human will be a <|type|>.
+<|biography|> Your current task is to create a question.
+what question would you ask to determine yes or no, a boolean, <|condition|>? The response will be a <|type|>.
 ### Response:

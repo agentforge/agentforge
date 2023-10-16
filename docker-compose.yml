@@ -118,6 +118,8 @@ services:
             - driver: nvidia
               device_ids: ['1']
               capabilities: [gpu]
+    ports:
+      - "8080:3000"
 
   agent:
     image: agent

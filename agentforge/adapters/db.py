@@ -1,6 +1,6 @@
 # NoSQL specific code
 
-from typing import Any, Optional, Protocol, Dict
+from typing import Any, Optional, Protocol, Dict, List
 from agentforge.config import DbConfig
 
 class DB(Protocol):
@@ -24,4 +24,7 @@ class DB(Protocol):
         pass
 
     def get_many(self, collection: str, filter: Dict[str, Any]) -> Optional[Any]:
+        pass
+
+    def aggregate(self, collection: str, pipeline: List[Dict[str, Any]]) -> Optional[Any]:
         pass

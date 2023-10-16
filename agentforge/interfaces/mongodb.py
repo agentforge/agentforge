@@ -1,4 +1,4 @@
-from typing import Any, Optional, Protocol, Dict
+from typing import Any, Optional, Protocol, Dict, List
 from pymongo import MongoClient, errors
 from pymongo.cursor import Cursor
 from urllib.parse import quote_plus
@@ -117,7 +117,6 @@ class MongoDBKVStore(DB):
             logging.error(f'Get operation failed for filter {filter}: {str(e)}')
             raise
 
-
     def get_many(self, collection:str, filter: Dict[str, Any]) -> Cursor:
         self._check_connection()
         collection = self.db[collection]
@@ -127,3 +126,7 @@ class MongoDBKVStore(DB):
         except Exception as e:
             logging.error(f'Get operation failed for filter {filter}: {str(e)}')
             raise
+
+    def aggregate(self, collection: str, pipeline: List[Dict[str, Any]]) -> Optional[Any]:
+        col = self.db[collection]
+        return list(col.aggregate(pipeline))

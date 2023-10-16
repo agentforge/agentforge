@@ -22,6 +22,7 @@ def extract_classification(val):
         r'[\s\S]*?Final Answer: ([\-a-zA-Z0-9, _]+)\s*(</s>)?',
         r'[\s\S]*?Final Output: ([\-a-zA-Z0-9, _]+)\s*</s>',
         r'[\s\S]*?Response: \[(\"?)([a-zA-Z0-9\s]+)(\"?)\]\s*(</s>)?',
+        r'[\s\S]*?[a-zA-Z0-9\s]+: \[?\"?([a-zA-Z0-9\s]+)\"?\]?\s*(</s>)?'
         # r'[\s\S]*?Final ([\-a-zA-Z0-9, _]+): ([\-a-zA-Z0-9, _]+)</s>',
     ]
     for p in patterns:

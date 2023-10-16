@@ -44,5 +44,15 @@
 ### Response: None
 
 ### Instruction: Classify the text into a yes or no boolean, or None if the question is not answered. Only respond with "True" "False" or "None"
+### Input: Yea I got some nitrogen ferts
+### Thought Process:
+1. Identify response: "Yea I got some nitrogen ferts".
+2. Response indicates a true statement.
+3. Classify as True.
+4. Output is True; aligns with instructions.
+### Response: True
+
+
+### Instruction: Classify the text into a yes or no boolean, or None if the question is not answered. Only respond with "True" "False" or "None"
 ### Input: {response}
 ### Thought Process:

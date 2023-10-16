@@ -2,6 +2,7 @@ from typing import Any, Dict
 from agentforge.interfaces import interface_interactor
 from agentforge.ai.agents.context import Context
 from copy import deepcopy
+from agentforge.utils import logger
 
 """
   Query: Generates a query for the user to respond to and any other query reasoning
@@ -38,7 +39,6 @@ class Query:
         input['model_config']['streaming'] = streaming
         input['generation_config']['max_new_tokens'] = 512
         input['prompt'] = context.process_prompt(prompt, data)
-        
 
         conditions = data['condition'].split(" OR ") #conditions can be split by OR
         predicates = {}
@@ -51,12 +51,14 @@ class Query:
         query['predicates'] = predicates
 
         query['text'] = self.llm.call(input)["choices"][0]["text"].replace(input['prompt'], "")
-        query['text'] = query['text'].split("\n")[0] # Only take the first line
+        logger.info("TEXT")
+        logger.info(query['text'])
 
         # Clean output text -- # TODO: move these to a shared context function
         for tok in ['eos_token', 'bos_token', 'prefix', 'postfix']:
             if tok in context.get('model.model_config'):
                 query['text'] = query['text'].replace(context.get('model.model_config')[tok], "")
-        query['text'] = query['text'].strip()
+
+        query['text'] = query['text'].strip().split("\n")[0] # Only take the first line -- usually garbage after that here
         context.set("query", query['text'])
         return query

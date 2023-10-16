@@ -42,3 +42,5 @@ aioredis
 asyncio
 passlib
 jinja2
+flair
+supertokens-python

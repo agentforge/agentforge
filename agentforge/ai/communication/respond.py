@@ -16,6 +16,7 @@ class Respond:
     def execute(self, context: Dict[str, Any]) -> Dict[str, Any]:
         ### Another subroutine gotchu dawg, bail
         if context.has_key("response"):
+            logger.info("Response already exists, skipping response generation")
             return context
 
         formatted = context.get_formatted()
@@ -37,7 +38,7 @@ class Respond:
 
         # add 'User:' and 'Assistant:' type stopping criteria
         gen_config["stopping_criteria_string"] = f"{username},{agentname}"
-
+        logger.info(f"GENERATING RESPONSE")
         response = self.service.call(input)
 
         if response is not None and "choices" in response:

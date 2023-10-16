@@ -5,6 +5,8 @@ from agentforge.utils import Parser
 from agentforge.utils import AbortController, logger
 from bson.objectid import ObjectId
 from copy import deepcopy
+from jinja2 import Template
+from datetime import datetime
 
 """
     Context Class - Shared State for Agent Subroutines
@@ -26,6 +28,7 @@ class Context:
         self.prompts = self.read_prompts()
         self.abort_controller = AbortController()
         self._id = uuid.uuid4()
+        self.created_dt = datetime.utcnow()
         for k,v in init.items():
             self.set(k, v)
 
@@ -38,6 +41,7 @@ class Context:
         data = {
             "context_data": ctx,
             "prompts": self.prompts,
+            "created_dt": self.created_dt,
         }
 
         # Insert to the DB
@@ -139,14 +143,25 @@ class Context:
                 messages.append(message['content'])
         return " ".join(messages)
 
+    def format_template(self, prompt_template, **kwargs):
+        logger.info("FORMAT_TEMPLATE")
+        logger.info(kwargs)
+        # Find all placeholders in the prompt_template
+        template = Template(prompt_template)
+        rendered_str = template.render(kwargs)
+        logger.info("INPUT")
+        logger.info(rendered_str)
+        return rendered_str
+
     ### Helper function to get entire formatted prompt
     def get_formatted(self):
-        prompt_template = self.get('model.prompt_config.prompt_template')
+        prompt_template = self.prompts[self.get('model.prompt_config.prompt_template')]
         biography = self.get('model.persona.biography')
         memory = self.get('recall')
         if memory is not None and memory.strip() == "":
             memory = None
-        plan = self.get('plan')
+        plan = self.get('plan', None)
+        new_plan = self.get('new_plan', None)
         instruction = self.get('prompt')
         username = self.get('input.user_name', "Human")
         agentname = self.get('model.persona.display_name', "Agent")
@@ -170,7 +185,8 @@ class Context:
         #     f"mem: {memory}"
         # )
 
-        return self.parser.format_template(
+
+        return self.format_template(
             prompt_template,
             name=agentname,
             instruction=instruction,
@@ -178,6 +194,7 @@ class Context:
             memory=memory,
             human=username,
             plan=plan,
+            new_plan=new_plan,
             query=query,
             message_history=message_history,
             ack=ack,
@@ -202,7 +219,7 @@ class Context:
                     content = file.read()
                     prompts_dict[filename] = content
         return prompts_dict
-    
+
     def process_prompt(self, prompt: str, values: Dict) -> str:
         for k,v in values.items():
             prompt = prompt.replace(f"<|{k}|>", str(v))
