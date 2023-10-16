@@ -11,6 +11,10 @@ from aioredis import Redis
 import traceback, json
 from agentforge.utils import logger
 from agentforge.utils.parser import Parser
+from supertokens_python.recipe.session.asyncio import get_session
+from supertokens_python.recipe.session.framework.fastapi import verify_session
+from supertokens_python.recipe.session import SessionContainer
+from fastapi import Depends
 
 # Setup Agent
 agent = agent_interactor.create_agent()
@@ -46,8 +50,16 @@ def abort() -> AgentResponse:
     return AgentResponse(data={"response": "aborted"})
 
 @router.post('/completions', operation_id="createChatCompletion") #, dependencies=[Depends(get_api_key)])
-async def agent(request: Request) -> AgentResponse:
+async def agent(request: Request, session: SessionContainer = Depends(verify_session())) -> AgentResponse:
     ## Parse Data --  from web acceptuseChat JSON, from client we need to pull ModelConfig
+    session = await get_session(request)
+
+    if session is None:
+        raise Exception("User session not found.")
+
+    user_id = session.get_user_id()
+
+    print(f"userId {user_id}")
     ## and add add the prompt and user_id to the data
     data = await request.json()
     ## First check API key for legitimacy
@@ -56,15 +68,18 @@ async def agent(request: Request) -> AgentResponse:
     #     return {"error": "Invalid Token."}
 
     # TODO: Bail on this response properly
-    data['user_id'] = "test" #valid_token['user_id']
+    data['user_id'] = user_id #valid_token['user_id']
+    data['user_name'] = 'test' #valid_token['user_id']
 
     ## TODO: Verify auth, rate limiter, etc -- should be handled by validation layer
     if 'id' not in data:
         return {"error": "No model profile specified."}
+    
+    logger.info(data)
 
     # TODO: To make this faster we should ideally cache these models, gonna be a lot of reads and few writes here
     model_profiles = ModelProfile()
-    logger.info(data)
+
     if 'model_id' in data:
         model_profile = model_profiles.get(data['model_id'])
     else:
@@ -79,7 +94,7 @@ async def agent(request: Request) -> AgentResponse:
             redis = Redis.from_url('redis://redis:6379/0')
             async with redis.client() as client:
                 pubsub = client.pubsub()
-                await pubsub.subscribe('channel')
+                await pubsub.subscribe(f"streaming-{user_id}")
                 id_counter = 0  # Initialize an ID counter
                 while True:
                     message = await pubsub.get_message()

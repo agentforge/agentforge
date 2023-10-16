@@ -21,6 +21,7 @@ from supertokens_python import get_all_cors_headers
 from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python import init, InputAppInfo, SupertokensConfig
 from supertokens_python.recipe import emailpassword, session
+from supertokens_python.recipe import dashboard
 
 from typing import Dict, Deque
 from collections import deque
@@ -84,13 +85,16 @@ init(
     ),
     supertokens_config=SupertokensConfig(
         # https://try.supertokens.com is for demo purposes. Replace this with the address of your core instance (sign up on supertokens.com), or self host a core.
-        connection_uri="https://try.supertokens.com",
+        connection_uri="http://supertokens:3567",
         # api_key=<API_KEY(if configured)>
     ),
     framework='fastapi',
     recipe_list=[
-        session.init(), # initializes session features
-        emailpassword.init()
+        session.init(
+            expose_access_token_to_frontend_in_cookie_based_auth=True,
+        ),
+        emailpassword.init(),
+        dashboard.init(),
     ],
     mode='wsgi' # use wsgi if you are running using gunicorn
 )
