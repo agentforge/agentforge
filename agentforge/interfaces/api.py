@@ -26,3 +26,9 @@ class W2LService(APIService):
     super().__init__()
     self.url = os.getenv('W2L_URL')
     self.service = "w2l"
+
+class VQAService(APIService):
+  def __init__(self):
+    super().__init__()
+    self.url = os.getenv('VQA_URL')
+    self.service = "vqa"
