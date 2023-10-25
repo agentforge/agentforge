@@ -22,7 +22,7 @@ class MilvusVectorStore(VectorStoreProtocol):
             embedding_function = self.embdeddings, 
             collection_name = collection,
             connection_args = connection_args,
-            # drop_old = self.reset,
+            drop_old = self.reset,
          )
          # Default search params when one is not provided.
          self.milvus_store.default_search_params = {

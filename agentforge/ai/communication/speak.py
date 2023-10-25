@@ -13,7 +13,7 @@ class Speak:
         self.pubsub = self.redis_store.pubsub()
 
     def event_generator(self, context: Dict[str, Any], av_type: str):
-        self.pubsub.subscribe('channel') # TODO: Make user specific for multi-user
+        self.pubsub.subscribe(f"streaming-{context.get('input.user_id')}") # TODO: Make user specific for multi-user
         while True:
             message = self.pubsub.get_message(ignore_subscribe_messages=True)
             if message:
@@ -21,7 +21,7 @@ class Speak:
                 should_break = self.parse_av_stream(data, context, av_type)
                 if should_break:
                     self.redis_store.publish(av_type, '<|endofvideo|>')
-                    self.pubsub.unsubscribe('channel')
+                    self.pubsub.unsubscribe(f"streaming-{context.get('input.user_id')}")
                     break
             else:
                 time.sleep(0.1) # TODO: make this backoff

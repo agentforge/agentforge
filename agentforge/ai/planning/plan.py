@@ -125,7 +125,7 @@ class Plan:
                 if task.stage >= len(self.goals):
                     task.deactivate()
                     ## If the next stage does not exist, congragulate the user! Job well done
-                    stream_string('channel', f"You've done it! You've completed the {task.name} plan.", end_token=" ")
+                    stream_string(f"streaming-{context.get('input.user_id')}", f"You've done it! You've completed the {task.name} plan.", end_token=" ")
                     # TODO: save and return here
                     self.task_management.save(task)
                     return
@@ -138,7 +138,6 @@ class Plan:
                     #     return context
                 self.task_management.save(task)
             else:
-                # stream_string('channel', "<PLAN-ACTIVE>", end_token=" ")
                 logger.info("PLAN NOT COMPLETE")
                 context.set("plan", plan['plan_nl'])
 
@@ -181,7 +180,7 @@ class Plan:
             logger.info("Creating PDDL Plan")
 
             # TODO: Make channel user specific
-            stream_string('channel', finalize_reponse, end_token=" ")
+            stream_string(f"streaming-{context.get('input.user_id')}", finalize_reponse, end_token=" ")
 
             best_plan, best_cost = self.planner.execute(context.get_model_input(), task, problem_data)
 

@@ -34,7 +34,7 @@ class MongoDBKVStore(DB):
             raise
 
     # Explicitly create document with key
-    def create(self, collection:str, key: str, data: Dict[str, Any]) -> Dict[str, Any]:
+    def create(self, collection:str, key: str = uuid.uuid4(), data: Dict[str, Any] = {}) -> Dict[str, Any]:
         self._check_connection()
         collection = self.db[collection]
         try:

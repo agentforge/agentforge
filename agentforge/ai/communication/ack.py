@@ -14,7 +14,6 @@ class Acknowledge:
         self.symbolic_memory = SymbolicMemory()
         self.zeroshot = ZeroShotClassifier()
 
-
     def execute(self, context: Dict[str, Any]) -> Dict[str, Any]:
         user_id = context.get('input.user_id')
         session_id = context.get('input.model_id')
