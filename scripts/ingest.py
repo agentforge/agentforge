@@ -40,7 +40,9 @@ interface_interactor.create_vectorstore()
 vector_store = interface_interactor.get_interface("vectorstore")
 
 # Add texts and metadata from each JSON file to the VectorStore
+total_texts = []
+total_meta = []
 for content in json_contents:
-    texts = [content['pageContent']]
-    metadata = {key: value for key, value in content.items() if key != 'pageContent'}
-    vector_store.add_texts(texts, [metadata], collection=milvus_collection)
+    total_texts.append(content['pageContent'])
+    total_meta.append({key: value for key, value in content.items() if key != 'pageContent'})
+vector_store.add_texts(total_texts, total_meta, collection=milvus_collection)

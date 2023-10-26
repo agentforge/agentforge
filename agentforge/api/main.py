@@ -81,7 +81,8 @@ init(
     app_info=InputAppInfo(
         app_name="GreenSage",
         api_domain="https://mite-inspired-snipe.ngrok-free.app",
-        website_domain="https://08d6f5767742.ngrok.app",
+        website_domain="https://agentforge-client.vercel.app/",
+        # website_domain="https://08d6f5767742.ngrok.app",
         api_base_path="/api/auth",
         website_base_path="/auth"
     ),
@@ -135,9 +136,24 @@ async def custom_exception_handler(request: Request, exc: Exception):
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "https://08d6f5767742.ngrok.app"
+        "https://08d6f5767742.ngrok.app",
+        "https://agentforge-client.vercel.app",
+        "https://greensage.app"
     ],
     allow_credentials=True,
-    allow_methods=["GET", "PUT", "POST", "DELETE", "OPTIONS", "PATCH"],
-    allow_headers=["Content-Type"] + get_all_cors_headers(),
+    allow_methods=["*"],
+    allow_headers=["*"] + get_all_cors_headers(),
 )
+
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    to_print = {
+        "method": request.method,
+        "url": request.url._url,
+        "headers": dict(request.headers),
+        # ... add other fields as needed
+    }
+    logger.info(f"{to_print}")
+    response = await call_next(request)
+    logger.info(f"Response: {response.status_code}")
+    return response

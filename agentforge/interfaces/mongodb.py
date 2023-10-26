@@ -34,10 +34,12 @@ class MongoDBKVStore(DB):
             raise
 
     # Explicitly create document with key
-    def create(self, collection:str, key: str = uuid.uuid4(), data: Dict[str, Any] = {}) -> Dict[str, Any]:
+    def create(self, collection:str, key: str ="", data: Dict[str, Any] = {}) -> Dict[str, Any]:
         self._check_connection()
         collection = self.db[collection]
         try:
+            if key == "":
+                 key = str(uuid.uuid4())
             if collection.find_one({"id": key}):
                 logging.error(f'Create operation failed for key {key}: record already exists.')
                 raise ValueError(f'A record with key {key} already exists.')

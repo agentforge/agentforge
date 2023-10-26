@@ -44,6 +44,7 @@ def override_emailpassword_functions(original_implementation: RecipeInterface) -
     ):
         # Pre sign-in logic: Fetch user from DB
         existing_user = db.get_many("users", {'email': email})
+        print(existing_user)
         if not existing_user:
           raise HTTPException(status_code=401, detail="User not found.")
 
