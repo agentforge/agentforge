@@ -58,6 +58,9 @@ class InterfaceFactory:
         elif service_type == "w2l":
             W2LService = getattr(importlib.import_module('agentforge.interfaces.api'), 'W2LService')
             self.__interfaces["w2l"] = W2LService()
+        elif service_type == "vqa":
+            W2LService = getattr(importlib.import_module('agentforge.interfaces.api'), 'VQAService')
+            self.__interfaces["vqa"] = VQAService()
         else:
             raise Exception(f"Service {service_type} does not exist")
 

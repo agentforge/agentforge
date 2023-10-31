@@ -1,6 +1,7 @@
 import os
 from typing import List, Dict
 from agentforge.interfaces import interface_interactor
+from agentforge.utils import logger
 
 ### Memory accesses underlying long-term and working memory
 ### This abstract class allows us to access a singular memory instance
@@ -22,13 +23,23 @@ class Memory:
 
     # Saves the latest interaction between user and agent
     def remember(self, user: str, agent: str, prompt: str, response: str):
+        # cleanup
+        user = user.replace(" ", "_")
+        user = user.replace("-", "_")
+
         self.working_memory.remember(user, agent, prompt, response)
 
         ### Deep memory deprecated for now -- using preloaded vectorstore DB
-        # self.deep_memory.remember(user, agent, prompt, response, collection=sanitize_string(f"memories_{user}_{agent}"))
+        logger.info(f"Remembering memories_{user}_{agent}: {prompt} - {response}")
+        self.deep_memory.remember(user, agent, prompt, response, collection=sanitize_string(f"memories_{user}_{agent}"))
 
     # Recall relevant memories from this agent based on this prompt
     def recall(self, user: str, agent: str, prompt: str):
+        # cleanup
+        user = user.replace(" ", "_")
+        user = user.replace("-", "_")
+
+        logger.info(f"Recalling memories_{user}_{agent}")
         knowledge = self.deep_memory.recall(prompt, collection=MILVUS_COLLECTION)
         memories = self.deep_memory.recall(prompt, collection=sanitize_string(f"memories_{user}_{agent}"))
         return knowledge + memories

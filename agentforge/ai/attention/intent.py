@@ -68,14 +68,14 @@ class Intent:
             # If the predicate memory attention does not exist, feed plan queries into the current attention
 
             response = "Okay let's formulate a plan."
-            stream_string('channel', response, end_token=" ")
+            stream_string(f"streaming-{context.get('input.user_id')}", response, end_token=" ")
             return new_task
         else:
             tasks = self.task_management.get_tasks(user_id, session_id, task_name)
             response = "Do you want to talk about\n"
             for task in tasks:
                 response += f"{task['name']}\n"
-            stream_string('channel', response, end_token=" ")
+            stream_string(f"streaming-{context.get('input.user_id')}", response, end_token=" ")
             # TODO: Make channel user specific, make text plan specific  
             return tasks[0]
         

@@ -8,6 +8,7 @@ from agentforge.api.model_profiles import router as model_profiles_router
 from agentforge.api.agent import router as agent_router
 from agentforge.api.auth import router as token_router
 from agentforge.api.user import router as user_router
+from agentforge.api.subscription import router as subscription_router
 from agentforge.api.app import init_api
 from agentforge.utils import logger
 from agentforge.interfaces import interface_interactor
@@ -21,6 +22,8 @@ from supertokens_python import get_all_cors_headers
 from supertokens_python.framework.fastapi import get_middleware
 from supertokens_python import init, InputAppInfo, SupertokensConfig
 from supertokens_python.recipe import emailpassword, session
+from supertokens_python.recipe import dashboard
+from agentforge.api.supertokens import override_emailpassword_functions
 
 from typing import Dict, Deque
 from collections import deque
@@ -78,19 +81,27 @@ init(
     app_info=InputAppInfo(
         app_name="GreenSage",
         api_domain="https://mite-inspired-snipe.ngrok-free.app",
-        website_domain="https://08d6f5767742.ngrok.app",
+        website_domain="https://agentforge-client.vercel.app/",
+        # website_domain="https://08d6f5767742.ngrok.app",
         api_base_path="/api/auth",
         website_base_path="/auth"
     ),
     supertokens_config=SupertokensConfig(
         # https://try.supertokens.com is for demo purposes. Replace this with the address of your core instance (sign up on supertokens.com), or self host a core.
-        connection_uri="https://try.supertokens.com",
+        connection_uri="http://supertokens:3567",
         # api_key=<API_KEY(if configured)>
     ),
     framework='fastapi',
     recipe_list=[
-        session.init(), # initializes session features
-        emailpassword.init()
+        session.init(
+            expose_access_token_to_frontend_in_cookie_based_auth=True,
+        ),
+        emailpassword.init(
+            override=emailpassword.InputOverrideConfig(
+                functions=override_emailpassword_functions
+            ),
+        ),
+        dashboard.init(),
     ],
     mode='wsgi' # use wsgi if you are running using gunicorn
 )
@@ -106,6 +117,7 @@ app.include_router(model_profiles_router, prefix="/v1/model-profiles", tags=["mo
 app.include_router(user_router, prefix="/v1/user", tags=["users"])
 app.include_router(token_router, prefix="/v1/access", tags=["tokens"])
 app.include_router(agent_router, prefix="/v1", tags=["agent_forge"])
+app.include_router(subscription_router, prefix="/v1", tags=["subscription"])
 
 @app.on_event("startup")
 def startup_event():
@@ -124,9 +136,24 @@ async def custom_exception_handler(request: Request, exc: Exception):
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "https://08d6f5767742.ngrok.app"
+        "https://08d6f5767742.ngrok.app",
+        "https://agentforge-client.vercel.app",
+        "https://greensage.app"
     ],
     allow_credentials=True,
-    allow_methods=["GET", "PUT", "POST", "DELETE", "OPTIONS", "PATCH"],
-    allow_headers=["Content-Type"] + get_all_cors_headers(),
+    allow_methods=["*"],
+    allow_headers=["*"] + get_all_cors_headers(),
 )
+
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    to_print = {
+        "method": request.method,
+        "url": request.url._url,
+        "headers": dict(request.headers),
+        # ... add other fields as needed
+    }
+    logger.info(f"{to_print}")
+    response = await call_next(request)
+    logger.info(f"Response: {response.status_code}")
+    return response
