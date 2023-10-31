@@ -47,6 +47,24 @@ services:
               device_ids: ['0']
               capabilities: [gpu]
 
+  vqa2:
+    image: vqatest
+    ipc: host
+    restart: always
+    networks:
+      main-net:
+        aliases:
+          - vqa2
+    volumes:
+      - cache-volume:/app/cache
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ['1']
+              capabilities: [gpu]
+
   falcontune:
     image: falcontune
     ipc: host
@@ -115,6 +133,36 @@ services:
           - agent
     volumes:
       - cache-volume:/app/cache
+
+  agent_dev:
+    image: agent
+    environment:
+      - CONFIG_DIR=""
+    ports:
+      - "3005:3005"
+    ipc: host
+    restart: always
+    networks:
+      main-net:
+        aliases:
+          - agent_dev
+    volumes:
+      - cache-volume:/app/cache
+
+  vllm:
+    image: nvcr.io/nvidia/pytorch:22.12-py3
+    deploy:
+      resources:
+        reservations:
+          devices:
+          - driver: nvidia
+            count: 1
+            capabilities: [gpu]
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=1
+    ipc: host
+    stdin_open: true
+    tty: true
 
   web:
     image: web
@@ -218,7 +266,7 @@ services:
     ports:
       - 5432:5432
     networks:
-      - login_network
+      - main-net
     restart: unless-stopped
     healthcheck:
       test: ['CMD', 'pg_isready', '-U', 'supertokens_user', '-d', 'supertokens']
@@ -234,9 +282,11 @@ services:
     ports:
       - 3567:3567
     environment:
-      POSTGRESQL_CONNECTION_URI: "postgresql://supertokens_user:thisBeOurPostgresPassward0453@db:5432/supertokens"
+      POSTGRESQL_CONNECTION_URI: "postgresql://supertokens_user:thisBeOurPostgresPassward0453@logindb:5432/supertokens"
     networks:
-      - login_network
+      main-net:
+        aliases:
+          - supertokens
     restart: unless-stopped
     healthcheck:
       test: >
@@ -247,7 +297,6 @@ services:
 
 networks:
   main-net:
-  login_network:
     driver: bridge
 
 volumes:
