@@ -3,6 +3,7 @@ import deeplake
 deeplake.__version__ = '3.6.2'
 
 # main.py
+import os
 from fastapi import Request, FastAPI
 from agentforge.api.model_profiles import router as model_profiles_router
 from agentforge.api.agent import router as agent_router
@@ -76,13 +77,17 @@ from agentforge.interfaces import interface_interactor
 app = init_api()
 app.add_middleware(get_middleware())
 
+api_domain = os.getenv("API_DOMAIN")
+website_domain = os.getenv("WEBSITE_DOMAIN")
+
 # Supertokens
 init(
     app_info=InputAppInfo(
         app_name="GreenSage",
-        api_domain="https://mite-inspired-snipe.ngrok-free.app",
-        website_domain="https://agentforge-client.vercel.app/",
-        # website_domain="https://08d6f5767742.ngrok.app",
+        # api_domain="https://mite-inspired-snipe.ngrok-free.app",
+        api_domain=api_domain,
+        # website_domain="https://agentforge-client.vercel.app/",
+        website_domain=website_domain,
         api_base_path="/api/auth",
         website_base_path="/auth"
     ),
@@ -136,7 +141,7 @@ async def custom_exception_handler(request: Request, exc: Exception):
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "https://08d6f5767742.ngrok.app",
+        website_domain,
         "https://agentforge-client.vercel.app",
         "https://greensage.app"
     ],
