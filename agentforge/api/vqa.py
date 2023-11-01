@@ -9,8 +9,8 @@ from transformers.generation import GenerationConfig
 
 import traceback
 
-router = APIRouter()
-#app = init_api()
+#router = APIRouter()
+app = init_api()
 #vqa = resource_factory.get_resource("vqa")
 
 class VQARequest(BaseModel):
@@ -29,24 +29,26 @@ model = AutoModelForCausalLM.from_pretrained("Qwen/Qwen-VL-Chat-Int4", device_ma
 #   {'text': 'What is this?'},
 #])
 
-# Given the following text request generate a wav file and return to the client
-@router.post('/vqa', operation_id="vqaQuery")
-# @app.post("/v1/vqa", operation_id="vqaQuery")
-# async def output(request: Request) -> TextResponse:
-#     payload = await request.json()
-    
-#     if 'url' in payload and 'question' in payload:
-#         url = payload['url']
-#         question = payload['question']
-#         try:
-#             query = tokenizer.from_list_format([
-#                 {'image': url},
-#                 {'text': question},
-#             ])
-#             response, history = model.chat(tokenizer, query=query, history=None)
-#         except Exception as e:
-#             response = f"An error has occurred: {str(e)}"
-#     else:
-#         response = "Invalid payload format. Make sure 'url' and 'question' are provided."
+@app.get("/", operation_id="helloWorld")
+def hello() -> AgentResponse:
+    return AgentResponse(data={"response": "Hello world"})
 
-#     return TextResponse(text=response)
+@app.post("/v1/vqa", operation_id="vqaQuery")
+async def output(request: Request) -> TextResponse:
+    payload = await request.json()
+    
+    if 'url' in payload and 'question' in payload:
+        url = payload['url']
+        question = payload['question']
+        try:
+            query = tokenizer.from_list_format([
+                {'image': url},
+                {'text': question},
+            ])
+            response, history = model.chat(tokenizer, query=query, history=None)
+        except Exception as e:
+            response = f"An error has occurred: {str(e)}"
+    else:
+        response = "Invalid payload format. Make sure 'url' and 'question' are provided."
+
+    return TextResponse(text=response)

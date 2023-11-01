@@ -45,7 +45,7 @@ class ResourceFactory:
     def create_vqa_resource(self, config: dict = {}) -> None:
         vqa_type = os.getenv("VQA_TYPE")
         # Instantiate the correct VQA resource based on vqa_type
-        if vqa_type == "local":
+        if vqa_type == "vqa":
             VQA = getattr(importlib.import_module('agentforge.interfaces.vqa.resource'), 'VQA')
             self.__resources["vqa"] = VQA(config)
         else:
