@@ -9,6 +9,9 @@ from transformers.generation import GenerationConfig
 
 import traceback
 
+class AgentResponse(BaseModel):
+  data: dict
+
 router = APIRouter()
 #app = init_api()
 #vqa = resource_factory.get_resource("vqa")
@@ -29,8 +32,10 @@ model = AutoModelForCausalLM.from_pretrained("Qwen/Qwen-VL-Chat-Int4", device_ma
 #   {'text': 'What is this?'},
 #])
 
-# Given the following text request generate a wav file and return to the client
-@router.post('/vqa', operation_id="vqaQuery")
+@router.get("/", operation_id="helloWorld")
+def hello() -> AgentResponse:
+    return AgentResponse(data={"response": "Hello world"})
+#@router.post('/vqa', operation_id="vqaQuery")
 # @app.post("/v1/vqa", operation_id="vqaQuery")
 # async def output(request: Request) -> TextResponse:
 #     payload = await request.json()
