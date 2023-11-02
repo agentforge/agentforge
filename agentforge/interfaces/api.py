@@ -4,6 +4,8 @@ from agentforge.adapters import APIService
 from agentforge.interfaces.vllm_client import post_http_request, get_streaming_response, clear_line, get_response
 from agentforge.utils import logger
 from agentforge.config import RedisConfig
+from fastapi import HTTPException
+from typing import Dict, Any
 
 class vLLMService(APIService):
   def __init__(self):
@@ -89,7 +91,20 @@ class W2LService(APIService):
     self.service = "w2l"
 
 class VQAService(APIService):
-  def __init__(self):
-    super().__init__()
-    self.url = os.getenv('VQA_URL')
-    self.service = "vqa"
+    def __init__(self):
+        super().__init__()
+        self.url = os.getenv('VQA_URL')
+        self.service = "vqa"
+
+    def process(self, img_bytes: bytes, prompt: str) -> Dict[str, Any]:
+        form_data = {
+            'img': ('image.jpg', img_bytes, 'image/jpeg'),
+            'prompt': prompt
+        }
+
+        try:
+            response_data = self.call(form_data)
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e))
+        
+        return response_data
