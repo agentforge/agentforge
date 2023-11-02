@@ -11,6 +11,7 @@ if RESOURCE == "AGENT":
     interface_interactor.create_vectorstore()
     interface_interactor.create_working_memory()
     interface_interactor.create_keygenerator() # requires kvstore
-    interface_interactor.create_service("llm")
+    # interface_interactor.create_service("llm")
+    interface_interactor.create_service("vllm")
     interface_interactor.create_service("tts")
     interface_interactor.create_service("w2l")

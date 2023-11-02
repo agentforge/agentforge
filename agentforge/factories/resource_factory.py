@@ -14,6 +14,9 @@ class ResourceFactory:
         if llm_type == "local":
             LocalLLM = getattr(importlib.import_module('agentforge.interfaces.localllm.resource'), 'LocalLLM')
             self.__resources["llm"] = LocalLLM(config)
+        if llm_type == "vllm":
+            vllm = getattr(importlib.import_module('agentforge.interfaces.vllm.resource'), 'vLLMResource')
+            self.__resources["llm"] = vllm(config)
         else:
             raise ValueError(f"Invalid LLM type: {llm_type}")
 

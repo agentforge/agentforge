@@ -9,7 +9,7 @@ class MilvusVectorStore(VectorStoreProtocol):
       encode_kwargs = {'normalize_embeddings': True}
       self.embdeddings = HuggingFaceEmbeddings(model_name=model_name, encode_kwargs=encode_kwargs)
       self.reset = reset
-      self.collection = None
+      self.collection = "fallback"
       # self.init_store_connection(collection, force=True)
 
    def init_store_connection(self, collection: str, force: bool = False):

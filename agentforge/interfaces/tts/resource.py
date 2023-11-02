@@ -13,6 +13,7 @@ class TextToSpeech():
     self.tts_custom = TTS(model_name="tts_models/multilingual/multi-dataset/your_tts", progress_bar=False, gpu=True)
 
   def synthesizer(self, text, filename, speaker_wav=None, speaker_idx=0):
+    text = text.replace("*", "")
     if speaker_wav is not None and text != '':
       self.tts_custom.tts_to_file(text=normalize_transcription(text), file_path=filename, speaker_wav=speaker_wav, language="en")
     else:
