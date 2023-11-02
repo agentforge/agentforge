@@ -25,6 +25,7 @@ from supertokens_python import init, InputAppInfo, SupertokensConfig
 from supertokens_python.recipe import emailpassword, session
 from supertokens_python.recipe import dashboard
 from agentforge.api.supertokens import override_emailpassword_functions
+from supertokens_python.ingredients.emaildelivery.types import EmailDeliveryConfig, SMTPSettingsFrom, SMTPSettings
 
 from typing import Dict, Deque
 from collections import deque
@@ -77,6 +78,17 @@ from agentforge.interfaces import interface_interactor
 app = init_api()
 app.add_middleware(get_middleware())
 
+smtp_settings = SMTPSettings(
+    host="smtp.sendgrid.net",
+    port=465,
+    from_=SMTPSettingsFrom(
+        name="GreenSage",
+        email="noreply@greensage.app"
+    ),
+    password="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",
+    secure=True,
+    username="apikey"
+)
 api_domain = os.getenv("API_DOMAIN")
 website_domain = os.getenv("WEBSITE_DOMAIN")
 
@@ -84,10 +96,10 @@ website_domain = os.getenv("WEBSITE_DOMAIN")
 init(
     app_info=InputAppInfo(
         app_name="GreenSage",
-        # api_domain="https://mite-inspired-snipe.ngrok-free.app",
-        api_domain=api_domain,
-        # website_domain="https://agentforge-client.vercel.app/",
-        website_domain=website_domain,
+        api_domain="https://mite-inspired-snipe.ngrok-free.app",
+        # api_domain=api_domain,
+        website_domain="https://greensage.app/",
+        # website_domain=website_domain,
         api_base_path="/api/auth",
         website_base_path="/auth"
     ),
@@ -105,6 +117,11 @@ init(
             override=emailpassword.InputOverrideConfig(
                 functions=override_emailpassword_functions
             ),
+            email_delivery=EmailDeliveryConfig(
+                service=emailpassword.SMTPService(
+                    smtp_settings=smtp_settings
+                )
+            )
         ),
         dashboard.init(),
     ],
