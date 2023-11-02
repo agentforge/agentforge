@@ -35,7 +35,7 @@ def post_http_request(api_url: str,
         "repetition_penalty": repetition_penalty,
         "top_p": top_p,
         "top_k": top_k,
-        # "stop": stop,
+        "stop": stop,
     }
     response = requests.post(api_url, headers=headers, json=pload, stream=True)
     return response

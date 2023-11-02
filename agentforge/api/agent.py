@@ -14,6 +14,7 @@ from agentforge.utils.parser import Parser
 from supertokens_python.recipe.session.asyncio import get_session
 from supertokens_python.recipe.session.framework.fastapi import verify_session
 from supertokens_python.recipe.session import SessionContainer
+from supertokens_python.recipe.emailpassword.asyncio import get_user_by_id
 from fastapi import Depends
 
 # Setup Agent
@@ -59,6 +60,12 @@ async def agent(request: Request, session: SessionContainer = Depends(verify_ses
 
     user_id = session.get_user_id()
 
+    user_id = session.get_user_id()
+
+    # You can learn more about the `User` object over here https://github.com/supertokens/core-driver-interface/wiki
+    user = await get_user_by_id(user_id)
+    user_name = user.email.split("@")[0]
+
     print(f"userId {user_id}")
     ## and add add the prompt and user_id to the data
     data = await request.json()
@@ -69,7 +76,7 @@ async def agent(request: Request, session: SessionContainer = Depends(verify_ses
 
     # TODO: Bail on this response properly
     data['user_id'] = user_id #valid_token['user_id']
-    data['user_name'] = 'test' #valid_token['user_id']
+    data['user_name'] = user_name
 
     ## TODO: Verify auth, rate limiter, etc -- should be handled by validation layer
     if 'id' not in data:

@@ -27,18 +27,17 @@ class Respond:
 
         gen_config = deepcopy(context.get('model.generation_config'))
         context.set("prompt", formatted)
+        username = context.get("input.user_name") + ":"
+        agentname = context.get("model.persona.display_name") + ":"
+
+        # add 'User:' and 'Assistant:' type stopping criteria
+        gen_config["stopping_criteria_string"] = f"{username},{agentname}"
         input = {
             "prompt": formatted,
             "generation_config": gen_config,
             "model_config": context.get('model.model_config'),
             "user_id": context.get("input.user_id"),
         }
-
-        username = context.get("input.user_name") + ":"
-        agentname = context.get("model.persona.display_name") + ":"
-
-        # add 'User:' and 'Assistant:' type stopping criteria
-        gen_config["stopping_criteria_string"] = f"{username},{agentname}"
         response = self.service.call(input)
 
         if response is not None and "choices" in response:

@@ -13,8 +13,18 @@ class vLLMService(APIService):
     self.redis_config = RedisConfig.from_env()
 
   def call(self, form_data):
-    self.user_id = user_id = form_data['user_id']
-    self.redis_server = redis.StrictRedis(host=self.redis_config.host, port=self.redis_config.port, db=self.redis_config.db)
+    print(form_data)
+    stream = form_data['model_config']['streaming']
+    if 'user_id' in form_data:
+      user_id = form_data['user_id']
+    else:
+      user_id = None
+    if 'stopping_criteria_string' in form_data['generation_config']:
+      stop = form_data['generation_config']['stopping_criteria_string'].split(",")
+    else:
+      stop = []
+    if user_id is not None and stream:
+      redis_server = redis.StrictRedis(host=self.redis_config.host, port=self.redis_config.port, db=self.redis_config.db)
     response = post_http_request(
       self.url,
       form_data['prompt'],
@@ -23,34 +33,34 @@ class vLLMService(APIService):
       form_data['generation_config']['repetition_penalty'],
       form_data['generation_config']['top_p'],
       form_data['generation_config']['top_k'],
-      [], # stopping strings
+      stop, # stopping strings
       form_data['model_config']['streaming']
     )
 
     num_printed_lines = 0
     cur_seen = form_data['prompt']
     output = ""
-    if form_data['model_config']['streaming']:
+    if stream:
       for h in get_streaming_response(response):
-        clear_line(num_printed_lines)
         num_printed_lines = 0
         for i, line in enumerate(h):
             num_printed_lines += 1
             # print(line)
             new_tokens = line.replace(cur_seen, "")
             output += new_tokens
-            self.redis_server.publish(f"streaming-{self.user_id}", new_tokens)
+            if user_id is not None:
+              redis_server.publish(f"streaming-{user_id}", new_tokens)
             cur_seen = line
-            print(f"Beam candidate {i}: {line!r}", flush=True)
+            # print(f"Beam candidate {i}: {line!r}", flush=True)
 
     else:
       output = get_response(response)
-      for i, line in enumerate(output):
-          print(f"Beam candidate {i}: {line!r}", flush=True)
+      output = output[0].replace(form_data['prompt'], "")
 
-    self.redis_server.publish(f"streaming-{self.user_id}", '<|endoftext|>')
-    self.redis_server.close()
-    return {'text': [output]}
+    if user_id is not None and stream:
+      redis_server.publish(f"streaming-{user_id}", '<|endoftext|>')
+      redis_server.close()
+    return {'choices': [{'text': output}]} #OAI output format
 
 ### TODO: Create mock test fixtures for each service and return when config is set to test
 class LLMService(APIService):
