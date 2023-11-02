@@ -10,7 +10,6 @@ import traceback
 
 vqa = resource_factory.get_resource("vqa")
 app = init_api()
-
 class VQARequest(BaseModel):
    url: str
    question: str
