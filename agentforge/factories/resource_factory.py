@@ -45,12 +45,12 @@ class ResourceFactory:
         else:
             raise ValueError(f"Invalid W2L type: {w2l_type}")
 
-    def create_vqa_resource(self, config: dict = {}) -> None:
+    def create_vqa_resource(self) -> None:
         vqa_type = os.getenv("VQA_TYPE")
         # Instantiate the correct VQA resource based on vqa_type
         if vqa_type == "vqa":
             LocalVQA = getattr(importlib.import_module('agentforge.interfaces.vqa.resource'), 'LocalVQA')
-            self.__resources["vqa"] = LocalVQA(config)
+            self.__resources["vqa"] = LocalVQA()
         else:
             raise ValueError(f"Invalid VQA type: {vqa_type}")
 
