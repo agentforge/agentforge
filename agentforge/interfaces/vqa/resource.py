@@ -1,7 +1,6 @@
 ### Imports ###
 import gc, os
 import torch
-from agentforge.config import Config
 import logging
 from dotenv import load_dotenv
 import asyncio
@@ -12,11 +11,7 @@ import torch, uuid
 DST_PATH = os.getenv('DST_PATH', './')
 
 class LocalVQA():
-  def __init__(self,  config: dict = None) -> None:
-    self.config = {} if config == None else config
-    self.model_key = self.config['model_config']['model_name'] if 'model_config' in self.config else None
-    self.multi_gpu = False # TODO: Reenable
-
+  def __init__(self) -> None:
     self.tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen-VL-Chat-Int4", trust_remote_code=True)
     self.model = AutoModelForCausalLM.from_pretrained("Qwen/Qwen-VL-Chat-Int4", device_map="cuda", trust_remote_code=True).eval()
     self.device = "cuda"

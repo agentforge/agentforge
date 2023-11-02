@@ -19,4 +19,4 @@ if RESOURCE == "TTS":
 if RESOURCE == "W2L":
     resource_factory.create_w2l_resource()
 if RESOURCE == "VQA":
-    resource_factory.create_vqa_resource({})
+    resource_factory.create_vqa_resource()
