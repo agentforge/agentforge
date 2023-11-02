@@ -220,6 +220,11 @@ On the Wav2Lip container:
 PYTHONPATH="/app/agentforge/" uvicorn w2l:app --reload --host=0.0.0.0 --port=3000
 ```
 
+On the VQA container:
+```
+PYTHONPATH="/app/agentforge/" uvicorn vqa:app --reload --host=0.0.0.0 --port=3000
+```
+
 VLLM
 ```
 python -m vllm.entrypoints.api_server \

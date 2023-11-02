@@ -119,6 +119,26 @@ services:
               device_ids: ['1']
               capabilities: [gpu]
 
+ vqa:
+    image: vqa
+    ipc: host
+    restart: always
+    networks:
+      main-net:
+        aliases:
+          - vqa2
+    volumes:
+      - cache-volume:/app/cache
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ['1']
+              capabilities: [gpu]
+    ports:
+      - "8080:3000"
+
   agent:
     image: agent
     environment:
