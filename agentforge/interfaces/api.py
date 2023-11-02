@@ -21,6 +21,7 @@ class vLLMService(APIService):
       user_id = None
     if 'stopping_criteria_string' in form_data['generation_config']:
       stop = form_data['generation_config']['stopping_criteria_string'].split(",")
+      stop.append("###")
     else:
       stop = []
     if user_id is not None and stream:
