@@ -44,7 +44,7 @@ services:
         reservations:
           devices:
             - driver: nvidia
-              device_ids: ['0']
+              device_ids: ['1']
               capabilities: [gpu]
 
   vqa2:
@@ -150,7 +150,7 @@ services:
       - cache-volume:/app/cache
 
   vllm:
-    image: nvcr.io/nvidia/pytorch:22.12-py3
+    image: vllm
     deploy:
       resources:
         reservations:
@@ -160,6 +160,10 @@ services:
             capabilities: [gpu]
     environment:
       - NVIDIA_VISIBLE_DEVICES=1
+    networks:
+      main-net:
+        aliases:
+          - vllm
     ipc: host
     stdin_open: true
     tty: true
