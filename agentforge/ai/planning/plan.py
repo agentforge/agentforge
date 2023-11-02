@@ -88,6 +88,8 @@ class Plan:
         session_id = context.get('input.model_id')
         key = f"{user_id}:{session_id}:{self.domain}"
 
+        return context ### DISABLE PLANNING FOR NOW
+
         ## TODO: CHECK BELIEFS
         ## Check if a plan already exists and there is no other queries in progress
         ## If this is the case we enquire if the user wants to browse other plans or

@@ -50,7 +50,7 @@ def abort() -> AgentResponse:
     return AgentResponse(data={"response": "aborted"})
 
 @router.post('/completions', operation_id="createChatCompletion") #, dependencies=[Depends(get_api_key)])
-async def agent(request: Request, session: SessionContainer = Depends(verify_session())) -> AgentResponse:
+async def agent(request: Request) -> AgentResponse:
     ## Parse Data --  from web acceptuseChat JSON, from client we need to pull ModelConfig
     session = await get_session(request)
 
