@@ -4,11 +4,12 @@ from typing import List
 from agentforge.factories import resource_factory
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from transformers.generation import GenerationConfig
+from agentforge.api.app import init_api
 
 import traceback
 
-router = APIRouter()
 vqa = resource_factory.get_resource("vqa")
+app = init_api()
 
 class VQARequest(BaseModel):
    url: str
@@ -24,7 +25,7 @@ class TextResponse(BaseModel):
 #   {'text': 'What is this?'},
 #])
 
-@router.post("/vqa", operation_id="vqaQuery")
+@app.post("/v1/generate", operation_id="vqaQuery")
 async def generate_endpoint(request: Request, img: UploadFile, prompt: str = ""):
     payload = await request.json()
     data = await request.form()
