@@ -219,3 +219,11 @@ On the Wav2Lip container:
 ```
 PYTHONPATH="/app/agentforge/" uvicorn w2l:app --reload --host=0.0.0.0 --port=3000
 ```
+
+VLLM
+```
+python -m vllm.entrypoints.api_server \
+--model TheBloke/Speechless-Llama2-Hermes-Orca-Platypus-WizardLM-13B-AWQ \
+--quantization awq \
+--max-num-batched-tokens 4096
+```

@@ -14,6 +14,9 @@ class ResourceFactory:
         if llm_type == "local":
             LocalLLM = getattr(importlib.import_module('agentforge.interfaces.localllm.resource'), 'LocalLLM')
             self.__resources["llm"] = LocalLLM(config)
+        if llm_type == "vllm":
+            vllm = getattr(importlib.import_module('agentforge.interfaces.vllm.resource'), 'vLLMResource')
+            self.__resources["llm"] = vllm(config)
         else:
             raise ValueError(f"Invalid LLM type: {llm_type}")
 
@@ -46,8 +49,8 @@ class ResourceFactory:
         vqa_type = os.getenv("VQA_TYPE")
         # Instantiate the correct VQA resource based on vqa_type
         if vqa_type == "vqa":
-            VQA = getattr(importlib.import_module('agentforge.interfaces.vqa.resource'), 'VQA')
-            self.__resources["vqa"] = VQA(config)
+            LocalVQA = getattr(importlib.import_module('agentforge.interfaces.vqa.resource'), 'LocalVQA')
+            self.__resources["vqa"] = LocalVQA(config)
         else:
             raise ValueError(f"Invalid VQA type: {vqa_type}")
 

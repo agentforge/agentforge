@@ -18,3 +18,5 @@ if RESOURCE == "TTS":
     resource_factory.create_tts_resource()
 if RESOURCE == "W2L":
     resource_factory.create_w2l_resource()
+if RESOURCE == "VQA":
+    resource_factory.create_vqa_resource({})

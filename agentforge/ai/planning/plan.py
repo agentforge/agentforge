@@ -125,7 +125,7 @@ class Plan:
                 if task.stage >= len(self.goals):
                     task.deactivate()
                     ## If the next stage does not exist, congragulate the user! Job well done
-                    stream_string('channel', f"You've done it! You've completed the {task.name} plan.", end_token=" ")
+                    stream_string(f"streaming-{context.get('input.user_id')}", f"You've done it! You've completed the {task.name} plan.", end_token=" ")
                     # TODO: save and return here
                     self.task_management.save(task)
                     return
@@ -138,7 +138,6 @@ class Plan:
                     #     return context
                 self.task_management.save(task)
             else:
-                # stream_string('channel', "<PLAN-ACTIVE>", end_token=" ")
                 logger.info("PLAN NOT COMPLETE")
                 context.set("plan", plan['plan_nl'])
 
@@ -147,8 +146,8 @@ class Plan:
         empty_queue = task.is_empty_queue()
         empty_active = task.is_empty_active()
         empty_complete = task.is_empty_complete()
-        logger.info(f"empty_queue: {empty_queue}, empty_active: {empty_active}, plan: {plan}, empty_complete: {empty_complete}")
-        logger.info(f"task: {task.pretty_print()}")
+        # logger.info(f"empty_queue: {empty_queue}, empty_active: {empty_active}, plan: {plan}, empty_complete: {empty_complete}")
+        # logger.info(f"task: {task.pretty_print()}")
         # GATHER NEW QUERIES FOR THIS STATE
         # if task in progress but no queries, generate them and create the PDDL Plan callback
         # Triggers when we have no actions queued/active and we are either at an end-stage
@@ -173,7 +172,7 @@ class Plan:
             task = context.get("task") # update task
             logger.info("PLANNING")
             ## Queries complete, let's execute the plan
-            finalize_reponse = "I have all the info I need, let me finalize the current plan."
+            # finalize_reponse = "I have all the info I need, let me finalize the current plan."
 
             goal = self.goals[task.stage]
             problem_data = self.pddl.create_pddl_problem_state(task, goal, context)
@@ -181,7 +180,7 @@ class Plan:
             logger.info("Creating PDDL Plan")
 
             # TODO: Make channel user specific
-            stream_string('channel', finalize_reponse, end_token=" ")
+            # stream_string(f"streaming-{context.get('input.user_id')}", finalize_reponse, end_token=" ")
 
             best_plan, best_cost = self.planner.execute(context.get_model_input(), task, problem_data)
 

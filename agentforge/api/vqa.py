@@ -1,17 +1,14 @@
-from fastapi import APIRouter, Request, Depends, status, HTTPException
+from fastapi import APIRouter, Request, UploadFile, Depends, status, HTTPException
 from pydantic import BaseModel
 from typing import List
 from agentforge.factories import resource_factory
-#from agentforge.api.app import init_api
-
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from transformers.generation import GenerationConfig
 
 import traceback
 
-#router = APIRouter()
-app = init_api()
-#vqa = resource_factory.get_resource("vqa")
+router = APIRouter()
+vqa = resource_factory.get_resource("vqa")
 
 class VQARequest(BaseModel):
    url: str
@@ -20,8 +17,6 @@ class VQARequest(BaseModel):
 class TextResponse(BaseModel):
    text: str
 
-tokenizer = AutoTokenizer.from_pretrained("Qwen/Qwen-VL-Chat-Int4", trust_remote_code=True)
-model = AutoModelForCausalLM.from_pretrained("Qwen/Qwen-VL-Chat-Int4", device_map="cuda", trust_remote_code=True).eval()
 #model.generation_config = GenerationConfig.from_pretrained("Qwen/Qwen-VL-Chat", trust_remote_code=True)
 
 #query = tokenizer.from_list_format([
@@ -29,23 +24,24 @@ model = AutoModelForCausalLM.from_pretrained("Qwen/Qwen-VL-Chat-Int4", device_ma
 #   {'text': 'What is this?'},
 #])
 
-@app.get("/", operation_id="helloWorld")
-def hello() -> AgentResponse:
-    return AgentResponse(data={"response": "Hello world"})
-
-@app.post("/v1/vqa", operation_id="vqaQuery")
-async def output(request: Request) -> TextResponse:
+@router.post("/vqa", operation_id="vqaQuery")
+async def generate_endpoint(request: Request, img: UploadFile, prompt: str = ""):
     payload = await request.json()
-    
+    data = await request.form()
+    img_bytes = await img.read()
+
     if 'url' in payload and 'question' in payload:
         url = payload['url']
         question = payload['question']
         try:
-            query = tokenizer.from_list_format([
-                {'image': url},
-                {'text': question},
-            ])
-            response, history = model.chat(tokenizer, query=query, history=None)
+            response = await vqa.generate(img_bytes, prompt)
+
+            # query = tokenizer.from_list_format([
+            #     {'image': url},
+            #     {'text': question},
+            # ])
+            # response, history = model.chat(tokenizer, query=query, history=None)
+
         except Exception as e:
             response = f"An error has occurred: {str(e)}"
     else:
