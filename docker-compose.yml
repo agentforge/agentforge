@@ -47,24 +47,6 @@ services:
               device_ids: ['1']
               capabilities: [gpu]
 
-  vqa2:
-    image: vqatest
-    ipc: host
-    restart: always
-    networks:
-      main-net:
-        aliases:
-          - vqa2
-    volumes:
-      - cache-volume:/app/cache
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              device_ids: ['1']
-              capabilities: [gpu]
-
   falcontune:
     image: falcontune
     ipc: host
@@ -119,16 +101,18 @@ services:
               device_ids: ['1']
               capabilities: [gpu]
 
- vqa:
-    image: vqa
+  vqa:
+    image: llm
     ipc: host
     restart: always
     networks:
       main-net:
         aliases:
-          - vqa2
+          - vqa
     volumes:
       - cache-volume:/app/cache
+    environment:
+      - RESOURCE=VQA
     deploy:
       resources:
         reservations:
