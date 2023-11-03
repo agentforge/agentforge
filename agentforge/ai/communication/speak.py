@@ -54,12 +54,12 @@ class Speak:
     def execute(self, context: Dict[str, Any]) -> Dict[str, Any]:
         self.buffer = ""
         self.sequence_number = 0
-        ### Synchronous example
+        ### Synchronous example disabled for now TODO: Update for non-streaming
 
-        if context.get('model.model_config.speech') and context.has_key('response'):
-            wav_response = self.tts.call({'response': context['response'], 'persona': context['model_profile']['persona']})
-            if wav_response is not None:
-                context['audio'] = {"audio_response": wav_response["filename"], "type": "audio/wav"}
+        # if context.get('model.model_config.speech') and context.has_key('response'):
+        #     wav_response = self.tts.call({'response': context.get('response'), 'persona': context.get('model_profile.persona')})
+        #     if wav_response is not None:
+        #         context.set('audio', {"audio_response": wav_response["filename"], "type": "audio/wav"})
 
         if context.get('model.model_config.video') and context.get('model.model_config.streaming'):
             threading.Thread(target=self.event_generator, args=(context, 'video')).start()

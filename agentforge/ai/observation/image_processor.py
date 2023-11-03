@@ -11,13 +11,12 @@ class ImageProcessor:
     def __init__(self):
         self.vqa_service = VQAService()
 
-    def execute(self, context: Context) -> Dict[str, Any]:
-        if not context.has_key('input.img'):
+    def execute(self, context: Context) -> Dict[str, Any]:        
+        if not 'img' in context.get('input.messages')[-1]:
             return context
 
-        img = context.get('input.img')
-        prompt = context.get('input.prompt')
-        img_bytes = img.file.read()  # Synchronous read
+        img_bytes = context.get('input.messages')[-1]['img']
+        prompt = context.get('input.messages')[-1]['content']
 
         try:
             response_data = self.vqa_service.process(prompt, img_bytes)
@@ -27,6 +26,5 @@ class ImageProcessor:
         text_response = response_data.get('text')
         if text_response is None:
             raise HTTPException(status_code=500, detail="Unexpected response format from VQA service")
-
-        context.set('response', text_response)  # Set the response in the context
+        context.set('image_response', text_response)  # Set the response in the context
         return context

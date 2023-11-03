@@ -1,5 +1,5 @@
 import json, uuid, os
-from typing import Dict
+from typing import Dict, Any
 from agentforge.interfaces import interface_interactor
 from agentforge.utils import Parser
 from agentforge.utils import AbortController, logger
@@ -7,6 +7,7 @@ from bson.objectid import ObjectId
 from copy import deepcopy
 from jinja2 import Template
 from datetime import datetime
+import threading
 
 """
     Context Class - Shared State for Agent Subroutines
@@ -29,8 +30,13 @@ class Context:
         self.abort_controller = AbortController()
         self._id = uuid.uuid4()
         self.created_dt = datetime.utcnow()
+        self.lock = threading.Lock()  # Add a threading lock
         for k,v in init.items():
             self.set(k, v)
+
+    def update(self, new_data: Dict) -> None:
+        with self.lock:  # Acquire lock before updating
+            self.context_data.update(new_data)
 
     def save(self):
         collection = "context"
@@ -79,15 +85,16 @@ class Context:
     # as a delimiter and then recursively fetch the value
     # from the nested dictionary structure.
     def get(self, key: str, default: str = None):
-        keys = key.split('.')
-        value = self.context_data
-        for k in keys:
-            value = value.get(k, None)
-            if value is None:
-                if default is not None:
-                    return default
-                return None
-        return value
+        with self.lock:  # Acquire lock before accessing
+            keys = key.split('.')
+            value = self.context_data
+            for k in keys:
+                value = value.get(k, None)
+                if value is None:
+                    if default is not None:
+                        return default
+                    return None
+            return value
 
     # In the set method, we split the key using the dot
     # as a delimiter and then recursively set the value
@@ -126,13 +133,11 @@ class Context:
         raise TypeError(f"Object of type {obj.__class__.__name__} is not JSON serializable")
 
     def has_key(self, key: str) -> bool:
-        keys = key.split('.')
-        value = self.context_data
-        for k in keys:
-            value = value.get(k, None)
-            if value is None:
-                return False
-        return False
+        value = self.context_data.get(key, None)
+        if value is None:
+            return False
+        else:
+            return True
     
     def get_messages(self, prefix="", postfix=""):
         messages = []
@@ -168,6 +173,7 @@ class Context:
         query = self.get('query', None)
         message_history = self.get_messages(prefix=f"\n{username}: ", postfix=f"\n{agentname}:")
         ack = self.get('ack', None) # if response was an acknowledgement, we want to drop it
+        image_response = self.get('image_response', None)
 
         ### VALIDATE FORMATTED TEMPLATE
         # formatted_template cannot be greater than the context window size of the model (and is preferably less)
@@ -195,6 +201,7 @@ class Context:
             human=username,
             plan=plan,
             new_plan=new_plan,
+            image_response=image_response,
             query=query,
             message_history=message_history,
             ack=ack,

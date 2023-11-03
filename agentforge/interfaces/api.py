@@ -15,7 +15,6 @@ class vLLMService(APIService):
     self.redis_config = RedisConfig.from_env()
 
   def call(self, form_data):
-    print(form_data)
     stream = form_data['model_config']['streaming']
     if 'user_id' in form_data:
       user_id = form_data['user_id']
@@ -47,13 +46,11 @@ class vLLMService(APIService):
         num_printed_lines = 0
         for i, line in enumerate(h):
             num_printed_lines += 1
-            # print(line)
             new_tokens = line.replace(cur_seen, "")
             output += new_tokens
             if user_id is not None:
               redis_server.publish(f"streaming-{user_id}", new_tokens)
             cur_seen = line
-            # print(f"Beam candidate {i}: {line!r}", flush=True)
 
     else:
       output = get_response(response)
@@ -96,9 +93,9 @@ class VQAService(APIService):
         self.url = os.getenv('VQA_URL')
         self.service = "vqa"
 
-    def process(self, img_bytes: bytes, prompt: str) -> Dict[str, Any]:
+    def process(self,  prompt: str, img_bytes: bytes) -> Dict[str, Any]:
         form_data = {
-            'img': ('image.jpg', img_bytes, 'image/jpeg'),
+            'img': img_bytes,
             'prompt': prompt
         }
 

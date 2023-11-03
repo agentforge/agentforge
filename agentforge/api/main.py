@@ -96,10 +96,10 @@ website_domain = os.getenv("WEBSITE_DOMAIN")
 init(
     app_info=InputAppInfo(
         app_name="GreenSage",
-        api_domain="https://mite-inspired-snipe.ngrok-free.app",
-        # api_domain=api_domain,
-        website_domain="https://greensage.app/",
-        # website_domain=website_domain,
+        # api_domain="https://mite-inspired-snipe.ngrok-free.app",
+        api_domain=api_domain,
+        # website_domain="https://greensage.app/",
+        website_domain=website_domain,
         api_base_path="/api/auth",
         website_base_path="/auth"
     ),
