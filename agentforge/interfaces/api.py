@@ -21,7 +21,7 @@ class vLLMService(APIService):
     else:
       user_id = None
     if 'stopping_criteria_string' in form_data['generation_config']:
-      stop = form_data['generation_config']['stopping_criteria_string'].split(",")
+      stop = form_data['generation_config']['stopping_criteria_string'].split(",") + [form_data['user_id']] + ["###"]
     else:
       stop = []
     if user_id is not None and stream:
@@ -39,14 +39,14 @@ class vLLMService(APIService):
     )
 
     num_printed_lines = 0
-    cur_seen = form_data['prompt']
+    cur_seen = str(form_data['prompt'])
     output = ""
     if stream:
       for h in get_streaming_response(response):
         num_printed_lines = 0
         for i, line in enumerate(h):
             num_printed_lines += 1
-            new_tokens = line.replace(cur_seen, "")
+            new_tokens = line.replace(cur_seen, "").replace(form_data['prompt'], "")
             output += new_tokens
             if user_id is not None:
               redis_server.publish(f"streaming-{user_id}", new_tokens)
@@ -59,6 +59,9 @@ class vLLMService(APIService):
     if user_id is not None and stream:
       redis_server.publish(f"streaming-{user_id}", '<|endoftext|>')
       redis_server.close()
+
+    logger.info("Response from vLLM:")
+    logger.info(output)
     return {'choices': [{'text': output}]} #OAI output format
 
 ### TODO: Create mock test fixtures for each service and return when config is set to test
