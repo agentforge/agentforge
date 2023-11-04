@@ -44,24 +44,6 @@ services:
         reservations:
           devices:
             - driver: nvidia
-              device_ids: ['0']
-              capabilities: [gpu]
-
-  vqa2:
-    image: vqatest
-    ipc: host
-    restart: always
-    networks:
-      main-net:
-        aliases:
-          - vqa2
-    volumes:
-      - cache-volume:/app/cache
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
               device_ids: ['1']
               capabilities: [gpu]
 
@@ -119,16 +101,18 @@ services:
               device_ids: ['1']
               capabilities: [gpu]
 
- vqa:
-    image: vqa
+  vqa:
+    image: llm
     ipc: host
     restart: always
     networks:
       main-net:
         aliases:
-          - vqa2
+          - vqa
     volumes:
       - cache-volume:/app/cache
+    environment:
+      - RESOURCE=VQA
     deploy:
       resources:
         reservations:
@@ -170,7 +154,7 @@ services:
       - cache-volume:/app/cache
 
   vllm:
-    image: nvcr.io/nvidia/pytorch:22.12-py3
+    image: vllm
     deploy:
       resources:
         reservations:
@@ -180,6 +164,10 @@ services:
             capabilities: [gpu]
     environment:
       - NVIDIA_VISIBLE_DEVICES=1
+    networks:
+      main-net:
+        aliases:
+          - vllm
     ipc: host
     stdin_open: true
     tty: true
