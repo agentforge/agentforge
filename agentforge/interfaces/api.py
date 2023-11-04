@@ -49,6 +49,7 @@ class vLLMService(APIService):
             new_tokens = line.replace(cur_seen, "").replace(form_data['prompt'], "")
             output += new_tokens
             if user_id is not None:
+              logger.info(f"STREAM: {new_tokens}")
               redis_server.publish(f"streaming-{user_id}", new_tokens)
             cur_seen = line
 

@@ -201,7 +201,7 @@ class MongoMemory:
     self.ai_prefix = ai_prefix
 
   # Saves a response from another individual to short-term memory
-  def remember(self, user_name: str, user: str, agent: str, prompt: str, response: str):
+  def remember(self, user_name: str, user_id: str, agent: str, prompt: str, response: str):
     # Do not save empty interactions
     if prompt.strip() == "":
       return

@@ -18,4 +18,8 @@ async def websocket_endpoint(websocket: WebSocket):
         except Exception as e:
             logger.info(f"Error processing chunk: {str(e)}")
             response = ""
-        await websocket.send_text(response)
+        try:
+            await websocket.send_text(response)
+        except Exception as e:
+            logger.info(f"Error sending response: {str(e)}")
+            break
