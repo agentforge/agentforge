@@ -27,6 +27,7 @@ class Remember:
         context.memory.working_memory.setup_memory(user_name, agent, user, session_id)
 
         context.memory.remember(
+            context.get('input.user_name'),
             context.get('input.user_id'),
             context.get('model.persona.name'),
             context.get('instruction'),

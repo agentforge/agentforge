@@ -45,3 +45,4 @@ jinja2
 flair
 supertokens-python
 python-multipart
+websockets
