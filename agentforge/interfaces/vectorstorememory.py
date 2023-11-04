@@ -20,13 +20,13 @@ class VectorStoreMemory:
     return result
 
   # Async method using threading for memorization -- need app for Flask context
-  def remember(self, user: str, agent: str, prompt: str, response: str, **kwargs):
+  def remember(self, user_name: str, user_id: str, agent: str, prompt: str, response: str, **kwargs):
     # Do not save empty interactions
     if prompt.strip() == "":
       return
-    interaction = f"""{user}: {prompt}\n{agent}: {response}"""
+    interaction = f"""{user_name}: {prompt}\n{agent}: {response}"""
     if self.vectorstore is not None:
-        metadata = {"user": user, "agent": agent, "memory": True}
+        metadata = {"user_name": user_name, "user_id": user_id, "agent": agent, "memory": True}
         self.add_texts(interaction, metadata, **kwargs)
 
   # TODO: Return a summarization of the session history parsed via summarization model if available

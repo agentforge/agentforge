@@ -51,7 +51,7 @@ def abort() -> AgentResponse:
     return AgentResponse(data={"response": "aborted"})
 
 @router.post('/completions', operation_id="createChatCompletion") #, dependencies=[Depends(get_api_key)])
-async def agent(request: Request, img: UploadFile = None, session: SessionContainer = Depends(verify_session())) -> AgentResponse:
+async def agent(request: Request, session: SessionContainer = Depends(verify_session())) -> AgentResponse:
     ## Parse Data --  from web acceptuseChat JSON, from client we need to pull ModelConfig
     session = await get_session(request)
 
@@ -77,9 +77,6 @@ async def agent(request: Request, img: UploadFile = None, session: SessionContai
     # TODO: Bail on this response properly
     data['user_id'] = user_id #valid_token['user_id']
     data['user_name'] = user_name
-
-    if img is not None:
-        data['img'] = await img.read()
 
     ## TODO: Verify auth, rate limiter, etc -- should be handled by validation layer
     if 'id' not in data:

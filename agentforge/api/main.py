@@ -4,11 +4,12 @@ deeplake.__version__ = '3.6.2'
 
 # main.py
 import os
-from fastapi import Request, FastAPI
+from fastapi import Request, WebSocket
 from agentforge.api.model_profiles import router as model_profiles_router
 from agentforge.api.agent import router as agent_router
 from agentforge.api.auth import router as token_router
 from agentforge.api.user import router as user_router
+from agentforge.api.ws import router as ws_router
 from agentforge.api.subscription import router as subscription_router
 from agentforge.api.app import init_api
 from agentforge.utils import logger
@@ -68,9 +69,6 @@ class RateLimiterMiddleware(BaseHTTPMiddleware):
         response = await call_next(request)
         return response
 
-### TODO: limit to dev/test environment
-from agentforge.interfaces import interface_interactor
-
 # db = interface_interactor.get_interface("db")
 # d = DomainBuilder(db)
 # d.upload_documents_from_folder('garden', '/app/agentforge/agentforge/config/configs/planner/domains/garden', 'p_example')
@@ -96,10 +94,10 @@ website_domain = os.getenv("WEBSITE_DOMAIN")
 init(
     app_info=InputAppInfo(
         app_name="GreenSage",
-        api_domain="https://mite-inspired-snipe.ngrok-free.app",
-        # api_domain=api_domain,
-        website_domain="https://greensage.app/",
-        # website_domain=website_domain,
+        # api_domain="https://mite-inspired-snipe.ngrok-free.app",
+        api_domain=api_domain,
+        # website_domain="https://greensage.app/",
+        website_domain=website_domain,
         api_base_path="/api/auth",
         website_base_path="/auth"
     ),
@@ -140,6 +138,7 @@ app.include_router(user_router, prefix="/v1/user", tags=["users"])
 app.include_router(token_router, prefix="/v1/access", tags=["tokens"])
 app.include_router(agent_router, prefix="/v1", tags=["agent_forge"])
 app.include_router(subscription_router, prefix="/v1", tags=["subscription"])
+app.include_router(ws_router, prefix="/v1", tags=["ws"])
 
 @app.on_event("startup")
 def startup_event():

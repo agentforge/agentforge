@@ -18,18 +18,14 @@ class TtsResponse(BaseModel):
 @app.post("/v1/tts", operation_id="createAudioResponse")
 async def text_to_speech(request: Request) -> TtsResponse:
   # Get the text and filename from the request
-  print("lfg")
   try:
     data = await request.json()
-    print(data)
     prompt = data["response"]
     avatar = data["persona"]
-    print(avatar)
     id = uuid.uuid4()
     filename = f"/app/cache/wav/out-{id}.wav" # TODO: This is not scalable we need to establish a different filename per request
     speaker_wav = os.environ.get('DST_PATH') + avatar["speaker_wav"] if "speaker_wav" in avatar else None
     speaker_idx = avatar["speaker_idx"] if "speaker_idx" in avatar else 0
-    print(prompt, filename, speaker_wav, speaker_idx)
     # Enqueue a job in the TTS pipeline
     filename = tts.synthesizer(
       prompt,

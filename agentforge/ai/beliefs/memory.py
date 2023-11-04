@@ -22,16 +22,16 @@ class Memory:
         self.postfix = postfix
 
     # Saves the latest interaction between user and agent
-    def remember(self, user: str, agent: str, prompt: str, response: str):
+    def remember(self, user_name: str, user_id: str, agent: str, prompt: str, response: str):
         # cleanup
         user = user.replace(" ", "_")
         user = user.replace("-", "_")
 
-        self.working_memory.remember(user, agent, prompt, response)
+        self.working_memory.remember(user_name, user_id, agent, prompt, response)
 
         ### Deep memory deprecated for now -- using preloaded vectorstore DB
-        logger.info(f"Remembering memories_{user}_{agent}: {prompt} - {response}")
-        self.deep_memory.remember(user, agent, prompt, response, collection=sanitize_string(f"memories_{user}_{agent}"))
+        logger.info(f"Remembering memories_{user_id}_{agent}: {prompt} - {response}")
+        self.deep_memory.remember(user_name, agent, prompt, response, collection=sanitize_string(f"memories_{user_id}_{agent}"))
 
     # Recall relevant memories from this agent based on this prompt
     def recall(self, user: str, agent: str, prompt: str):

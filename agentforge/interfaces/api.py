@@ -4,6 +4,8 @@ from agentforge.adapters import APIService
 from agentforge.interfaces.vllm_client import post_http_request, get_streaming_response, clear_line, get_response
 from agentforge.utils import logger
 from agentforge.config import RedisConfig
+from fastapi import HTTPException
+from typing import Dict, Any
 
 class vLLMService(APIService):
   def __init__(self):
@@ -13,15 +15,13 @@ class vLLMService(APIService):
     self.redis_config = RedisConfig.from_env()
 
   def call(self, form_data):
-    print(form_data)
     stream = form_data['model_config']['streaming']
     if 'user_id' in form_data:
       user_id = form_data['user_id']
     else:
       user_id = None
     if 'stopping_criteria_string' in form_data['generation_config']:
-      stop = form_data['generation_config']['stopping_criteria_string'].split(",")
-      stop.append("###")
+      stop = form_data['generation_config']['stopping_criteria_string'].split(",") + [form_data['user_id']] + ["###"]
     else:
       stop = []
     if user_id is not None and stream:
@@ -39,20 +39,18 @@ class vLLMService(APIService):
     )
 
     num_printed_lines = 0
-    cur_seen = form_data['prompt']
+    cur_seen = str(form_data['prompt'])
     output = ""
     if stream:
       for h in get_streaming_response(response):
         num_printed_lines = 0
         for i, line in enumerate(h):
             num_printed_lines += 1
-            # print(line)
-            new_tokens = line.replace(cur_seen, "")
+            new_tokens = line.replace(cur_seen, "").replace(form_data['prompt'], "")
             output += new_tokens
             if user_id is not None:
               redis_server.publish(f"streaming-{user_id}", new_tokens)
             cur_seen = line
-            # print(f"Beam candidate {i}: {line!r}", flush=True)
 
     else:
       output = get_response(response)
@@ -61,6 +59,9 @@ class vLLMService(APIService):
     if user_id is not None and stream:
       redis_server.publish(f"streaming-{user_id}", '<|endoftext|>')
       redis_server.close()
+
+    logger.info("Response from vLLM:")
+    logger.info(output)
     return {'choices': [{'text': output}]} #OAI output format
 
 ### TODO: Create mock test fixtures for each service and return when config is set to test
@@ -90,7 +91,20 @@ class W2LService(APIService):
     self.service = "w2l"
 
 class VQAService(APIService):
-  def __init__(self):
-    super().__init__()
-    self.url = os.getenv('VQA_URL')
-    self.service = "vqa"
+    def __init__(self):
+        super().__init__()
+        self.url = os.getenv('VQA_URL')
+        self.service = "vqa"
+
+    def process(self,  prompt: str, img_bytes: bytes) -> Dict[str, Any]:
+        form_data = {
+            'img': img_bytes,
+            'prompt': prompt
+        }
+
+        try:
+            response_data = self.call(form_data)
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e))
+        
+        return response_data

@@ -33,7 +33,6 @@ async def lipsync(request: Request) -> lipsyncResponse:
     data = await request.json()
 
     wav_file = data["audio_response"]
-    print(f"{wav_file=}")
     # avatar = data["persona"]
 
     # Interpret the wav file
@@ -43,7 +42,6 @@ async def lipsync(request: Request) -> lipsyncResponse:
       "audio": wav_file,
       "outfile": f"/app/cache/lipsyncs/lipsync-{uuid.uuid4()}.mp4"
     }
-    print(wav_file)
     response = w2l.run(opts)
 
     # Return the text in the response
