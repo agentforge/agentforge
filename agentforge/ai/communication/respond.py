@@ -37,6 +37,7 @@ class Respond:
             "generation_config": gen_config,
             "model_config": context.get('model.model_config'),
             "user_id": context.get("input.user_id"),
+            "user_name": context.get("input.user_name"),
         }
         response = self.service.call(input)
 

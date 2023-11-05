@@ -47,6 +47,9 @@ class vLLMService(APIService):
         for i, line in enumerate(h):
             num_printed_lines += 1
             new_tokens = line.replace(cur_seen, "").replace(form_data['prompt'], "")
+            # This is a fix for the output being doubled TODO: create a buffer so we can remove username also
+            if new_tokens + form_data['user_name'] == output:
+              break
             output += new_tokens
             if user_id is not None:
               logger.info(f"STREAM: {new_tokens}")
