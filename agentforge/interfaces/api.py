@@ -52,7 +52,7 @@ class vLLMService(APIService):
               break
             output += new_tokens
             if user_id is not None:
-              logger.info(f"STREAM: {new_tokens}")
+              # logger.info(f"STREAM: {new_tokens}")
               redis_server.publish(f"streaming-{user_id}", new_tokens)
             cur_seen = line
 
