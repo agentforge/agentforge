@@ -95,7 +95,7 @@ class VadWhisper:
             elapsed_samples = int(sr * elapsed_time_seconds)
 
             # Extract the last `elapsed_samples` from the wav tensor
-            # wav = wav[:, -elapsed_samples:]            
+            wav = wav[:, -elapsed_samples:]            
 
         self.previous_timestamp = current_timestamp  # Update the previous timestamp
         
@@ -134,10 +134,10 @@ class VadWhisper:
             # print(f"Padded wav shape: {padded_wav.shape}")
 
             # # Create a path for the output file
-            output_path = f"./test-{current_timestamp}.wav"
+            # output_path = f"./test-{current_timestamp}.wav"
 
             # # Save the tensor as a .wav file
-            torchaudio.save(output_path, wav, sr)
+            # torchaudio.save(output_path, wav, sr)
 
             wav = wav.squeeze(0)  # Squeeze the tensor to remove the first dimension
             input_features = self.processor(wav, sampling_rate=16000, return_tensors="pt").input_features
