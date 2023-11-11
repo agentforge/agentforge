@@ -11,7 +11,7 @@ class Respond:
     def __init__(self):
         self.task_management = TaskManager()
         self.service = interface_interactor.get_interface("llm")
-        self.service = interface_interactor.get_interface("tokenizer")
+        self.tokenizer = interface_interactor.get_interface("tokenizer")
         self.parser = Parser()
 
     def execute(self, context: Dict[str, Any]) -> Dict[str, Any]:
@@ -21,6 +21,10 @@ class Respond:
             return context
 
         formatted = context.get_formatted()
+        token_count = self.tokenizer.call({'prompt': formatted})
+        if int(token_count) > int(context.get('model.model_config.max_tokens')):
+            context.set("response", "Token count exceeds max_new_tokens, skipping response generation")
+            return context
 
         for tok in ['eos_token', 'bos_token', 'prefix', 'postfix']:
             if context.has_key(f"model.model_config.{tok}"):
