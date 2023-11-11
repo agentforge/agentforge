@@ -3,11 +3,10 @@ ENV RESOURCE=LLM
 
 RUN pip install peft einops
 RUN pip install 'accelerate @ git+https://github.com/huggingface/accelerate.git'
-RUN pip install flash-attn==1.0.3.post0
-RUN pip install triton==2.0.0.dev20221202
-RUN pip install torch==1.13.1
+RUN pip install flash-attn
+RUN pip install triton
+RUN pip install torch
 RUN pip install xformers
-RUN CT_CUBLAS=1 pip install ctransformers --no-binary ctransformers
 # Expose port 3000
 
 WORKDIR /app/agentforge/agentforge/api
