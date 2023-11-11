@@ -3,7 +3,6 @@ import time, threading, json, logging
 from transformers import GenerationConfig, StoppingCriteriaList, StoppingCriteria
 import numpy as np
 from typing import Optional, TypedDict, NamedTuple, List, Dict, Callable
-from agentforge.config import Config
 
 def convert_to_serializable(obj):
     if isinstance(obj, StopOnTokens):

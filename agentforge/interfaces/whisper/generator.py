@@ -1,5 +1,4 @@
 from transformers import AutoProcessor, AutoModelForSpeechSeq2Seq
-from agentforge.config import Config
 import torchaudio
 import torch
 from transformers import Wav2Vec2Processor, Wav2Vec2ForCTC
