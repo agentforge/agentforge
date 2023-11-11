@@ -73,7 +73,7 @@ class vLLMService(APIService):
 
                 # output += ' '.join(new_tokens) + ' '  # Reconstruct the original string from tokens
                 if user_id is not None and new_tokens != "":
-                    logger.info(f"STREAM: {new_tokens}")
+                    # logger.info(f"STREAM: {new_tokens}")
                     redis_server.publish(f"streaming-{user_id}", new_tokens)
                 cur_seen = line
 

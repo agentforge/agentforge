@@ -27,10 +27,8 @@ class Respond:
         response = self.tokenizer.call({'prompt': formatted})
         token_cnt = int(response['text'])
         max_tokens = int(context.get('model.model_config.max_tokens'))
-        logger.info(f"Token count: {token_cnt}")
         if token_cnt > max_tokens:
             message_cnt = len(context.get('input.messages'))
-            logger.info(f"Token count: {token_cnt}")
             while token_cnt > max_tokens and message_cnt > 0:
                 formatted = context.get_formatted(message_cnt-1)
                 response = self.tokenizer.call({'prompt': formatted})
