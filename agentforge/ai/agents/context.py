@@ -1,4 +1,4 @@
-import json, uuid, os
+import json, uuid, os, re
 from typing import Dict, Any
 from agentforge.interfaces import interface_interactor
 from agentforge.utils import Parser
@@ -140,14 +140,22 @@ class Context:
         else:
             return True
     
-    def get_messages(self, prefix="", postfix=""):
+    def get_messages(self, prefix="", postfix="", n=None):
         messages = []
-        for message in self.get('input.messages')[:-1]:
+        input_messages = self.get('input.messages')
+
+        # If n is provided and valid, slice the input_messages to get the last n items
+        if n is not None and n > 0:
+            input_messages = input_messages[-n:]
+
+        for message in input_messages[:-1]:
             if message['role'] == 'user':
                 messages.append(f"{prefix}{message['content']}{postfix}")
             elif message['role'] == 'assistant':
                 messages.append(message['content'])
+
         return " ".join(messages)
+
 
     def format_template(self, prompt_template, **kwargs):
         logger.info("FORMAT_TEMPLATE")
@@ -160,7 +168,7 @@ class Context:
         return rendered_str
 
     ### Helper function to get entire formatted prompt
-    def get_formatted(self):
+    def get_formatted(self, messages_cnt: int = 3, use_memory: str = True, knowledge: bool = True):
         prompt_template = self.prompts[self.get('model.prompt_config.prompt_template')]
         biography = self.get('model.persona.biography')
         memory = self.get('recall')
@@ -172,11 +180,22 @@ class Context:
         username = self.get('input.user_name', "Human")
         agentname = self.get('model.persona.display_name', "Agent")
         query = self.get('query', None)
-        message_history = self.get_messages(prefix=f"\n{username}: ", postfix=f"\n{agentname}:")
+        message_history = self.get_messages(prefix=f"\n{username}: ", postfix=f"\n{agentname}:", n=messages_cnt)
+        if memory is not None:
+            message_history.replace(memory, "") # remove memory from message history so no duplicates
         ack = self.get('ack', None) # if response was an acknowledgement, we want to drop it
         image_response = self.get('image_response', None)
         knowledge = self.get('knowledge', None)
+        summary = self.get('summary', None)
         voice = self.get('model.model_config.speech', False)
+        addtl_knowledge = self.get('additional_knowledge', None)
+
+        if not use_memory:
+            memory = None
+            message_history = self.get_messages(prefix=f"\n{username}: ", postfix=f"\n{agentname}:", n=2)
+        
+        if not knowledge:
+            knowledge = None
 
         ### VALIDATE FORMATTED TEMPLATE
         # formatted_template cannot be greater than the context window size of the model (and is preferably less)
@@ -194,8 +213,7 @@ class Context:
         #     f"mem: {memory}"
         # )
 
-
-        return self.format_template(
+        formatted = self.format_template(
             prompt_template,
             name=agentname,
             instruction=instruction,
@@ -208,10 +226,14 @@ class Context:
             knowledge=knowledge,
             query=query,
             message_history=message_history,
+            summary=summary,
             voice=voice,
+            addtl_knowledge=addtl_knowledge,
             ack=ack,
             # current_date=datetime.now().strftime("%Y-%m-%d"),
         )
+        return re.sub(r'\n+', '\n', formatted)
+
     
     def get_model_input(self):
         return {
