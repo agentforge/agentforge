@@ -11,6 +11,7 @@ class Respond:
     def __init__(self):
         self.task_management = TaskManager()
         self.service = interface_interactor.get_interface("llm")
+        self.service = interface_interactor.get_interface("tokenizer")
         self.parser = Parser()
 
     def execute(self, context: Dict[str, Any]) -> Dict[str, Any]:
@@ -27,6 +28,7 @@ class Respond:
 
         gen_config = deepcopy(context.get('model.generation_config'))
         context.set("prompt", formatted)
+
         username = context.get("input.user_name") + ":"
         agentname = context.get("model.persona.display_name") + ":"
 

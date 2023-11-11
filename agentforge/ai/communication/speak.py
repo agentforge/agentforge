@@ -3,6 +3,7 @@ from agentforge.interfaces import interface_interactor
 import base64
 import asyncio
 import re, os, json, time, threading
+from agentforge.utils import logger
 
 ### COMMUNICATION: Handles conversion of text to speech
 class Speak:
@@ -37,11 +38,14 @@ class Speak:
             wav_response = self.tts.call({'response': self.buffer, 'persona': context.get('model.persona')})
             if os.path.isfile(wav_response['filename']):
                 if av_type == 'video':
-                    lip_sync_file = self.w2l.call({'persona': context.get('model.persona'), 'audio_response': wav_response['filename']})
-                    with open(lip_sync_file['filename'], 'rb') as fh:
-                        encoded_string = base64.b64encode(fh.read()).decode()
-                        data = {'data': encoded_string, "id": str(context._id)}
-                        self.redis_store.publish('video', json.dumps(data))
+                    try:
+                        lip_sync_file = self.w2l.call({'persona': context.get('model.persona'), 'audio_response': wav_response['filename']})
+                        with open(lip_sync_file['filename'], 'rb') as fh:
+                            encoded_string = base64.b64encode(fh.read()).decode()
+                            data = {'data': encoded_string, "id": str(context._id)}
+                            self.redis_store.publish('video', json.dumps(data))
+                    except:
+                        logger.error("Lip sync service failed")
                 else:
                     with open(wav_response['filename'], 'rb') as fh:
                         encoded_string = base64.b64encode(fh.read()).decode()

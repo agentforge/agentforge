@@ -158,6 +158,9 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         website_domain,
+        "https://agentforge.ngrok.dev",
+        "https://agentforge-client-git-dev-agentforge-dev.vercel.app",
+        "https://agentforge-client-4y81f0wsy-agentforge-dev.vercel.app"
         "https://agentforge-client.vercel.app",
         "https://greensage.app"
     ],

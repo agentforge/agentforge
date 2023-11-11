@@ -8,6 +8,7 @@ from copy import deepcopy
 from jinja2 import Template
 from datetime import datetime
 import threading
+from datetime import datetime
 
 """
     Context Class - Shared State for Agent Subroutines
@@ -174,6 +175,8 @@ class Context:
         message_history = self.get_messages(prefix=f"\n{username}: ", postfix=f"\n{agentname}:")
         ack = self.get('ack', None) # if response was an acknowledgement, we want to drop it
         image_response = self.get('image_response', None)
+        knowledge = self.get('knowledge', None)
+        voice = self.get('model.model_config.speech', False)
 
         ### VALIDATE FORMATTED TEMPLATE
         # formatted_template cannot be greater than the context window size of the model (and is preferably less)
@@ -202,9 +205,12 @@ class Context:
             plan=plan,
             new_plan=new_plan,
             image_response=image_response,
+            knowledge=knowledge,
             query=query,
             message_history=message_history,
+            voice=voice,
             ack=ack,
+            # current_date=datetime.now().strftime("%Y-%m-%d"),
         )
     
     def get_model_input(self):

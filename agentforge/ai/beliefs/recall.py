@@ -11,7 +11,12 @@ class Recall:
         memories = context.memory.recall(
             context.get('input.user_id'),
             context.get('model.persona.name'),
-            context.get('prompt')
+            context.get('instruction')
+        )
+        knowledge = context.memory.knowledge(
+            context.get('input.user_id'),
+            context.get('model.persona.name'),
+            context.get('instruction')
         )
         # working = context.memory.session_history(
         #     context.get('input.user_id'),
@@ -19,8 +24,10 @@ class Recall:
         #     context.get('input.id'),
         #     n=4
         # )
-        logger.info("RECALLING")
+        logger.info(f"RECALLING {context.get('instruction')}")
         # logger.info(working)
         memories = memories.strip()
+        knowledge = knowledge.strip()
         context.set('recall', memories)
+        context.set('knowledge', knowledge)
         return context

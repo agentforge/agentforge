@@ -1,5 +1,6 @@
 from agentforge.adapters import VectorStoreProtocol
 import threading, datetime
+from agentforge.utils import logger
 
 ### LongTermMemory makes use of the VectorStoreProtocol to store and retrieve memories
 ### uses a similarity function to access memories and methodsSaves to forget
@@ -12,11 +13,13 @@ class VectorStoreMemory:
 
   # Does a similarity search to recall memories associated with this prompt
   def recall(self, prompt, filter={}, **kwargs):
-    filter["memory"] = True
-    docs = self.vectorstore.search(prompt, n=2, filter=filter, **kwargs)
+    docs = self.vectorstore.search_with_score(prompt, n=2, filter=filter, **kwargs)
+    logger.info(f"Recalled {len(docs)} memories")
+    logger.info(docs)
     result = ""
     for doc in docs:
-        result += doc.page_content
+        if doc[1] > 0.40:
+          result += doc[0].page_content
     return result
 
   # Async method using threading for memorization -- need app for Flask context

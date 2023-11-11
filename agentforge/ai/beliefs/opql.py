@@ -15,10 +15,14 @@ class OPQLMemory:
         self.svalues = []
         self.ovalues = []
         self.triplets = []
-        self.tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
-
-        self.model = BertModel.from_pretrained('bert-base-uncased')
         self.fuzzy_weight = .5
+        self.model = None
+        self.tokenizer = None
+
+    def startup(self):
+        if self.model == None:
+            self.tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+            self.model = BertModel.from_pretrained('bert-base-uncased')
    
     def serialize(self) -> dict:
         # Convert the object to a dictionary
@@ -43,6 +47,7 @@ class OPQLMemory:
         return obj
 
     def set(self, obj, relation, subj):
+        self.startup()
         entity_inputs = self.tokenizer(obj, return_tensors="pt")
         entity_outputs = self.model(**entity_inputs)
         entity_embedding = entity_outputs.last_hidden_state.mean(dim=1)
@@ -60,6 +65,7 @@ class OPQLMemory:
         self.triplets.append((obj, relation, subj))
 
     def get(self, entity_name, relation, k=5, threshold=.90):
+        self.startup()
         if entity_name in self.svalues:
             idx = self.svalues.index(entity_name)
             return [(self.keys[idx], self.ovalues[idx], 1.0)]

@@ -89,7 +89,7 @@ class VadWhisper:
         if self.previous_timestamp is not None:
             # Convert the elapsed time from microseconds to seconds
             elapsed_time_seconds = current_timestamp - self.previous_timestamp
-            
+
             print(elapsed_time_seconds)
             # Calculate the number of samples that corresponds to the elapsed time
             elapsed_samples = int(sr * elapsed_time_seconds)

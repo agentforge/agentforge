@@ -35,15 +35,26 @@ class Memory:
         self.deep_memory.remember(user_name, user_id, agent, prompt, response, collection=sanitize_string(f"memories_{user_id}_{agent}"))
 
     # Recall relevant memories from this agent based on this prompt
+    # These are memories between the agent and the user specifically
     def recall(self, user: str, agent: str, prompt: str):
+        # cleanup
+        user = user.replace(" ", "_")
+        user = user.replace("-", "_")
+        filt = {'memory': True}
+        logger.info(f"Recalling memories_{user}_{agent}")
+        memories = self.deep_memory.recall(prompt, filter=filt, collection=sanitize_string(f"memories_{user}_{agent}"))
+        return memories
+
+    # This method recalls knowledge from the general knowledge store
+    # These are not meant to be memories but are taken as facts
+    def knowledge(self, user: str, agent: str, prompt: str):
         # cleanup
         user = user.replace(" ", "_")
         user = user.replace("-", "_")
 
         logger.info(f"Recalling memories_{user}_{agent}")
         knowledge = self.deep_memory.recall(prompt, collection=MILVUS_COLLECTION)
-        memories = self.deep_memory.recall(prompt, collection=sanitize_string(f"memories_{user}_{agent}"))
-        return knowledge + memories
+        return knowledge
 
     # Retrieves the latest N interaction between user and agent
     def session_history(self, user: str, agent: str, session_id: str, n: int = 5):

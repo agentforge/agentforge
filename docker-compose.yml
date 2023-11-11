@@ -47,6 +47,24 @@ services:
               device_ids: ['1']
               capabilities: [gpu]
 
+  tokenizer:
+    image: llm
+    ipc: host
+    restart: always
+    networks:
+      main-net:
+        aliases:
+          - tokenizer
+    volumes:
+      - cache-volume:/app/cache
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ['1']
+              capabilities: [gpu]
+
   falcontune:
     image: falcontune
     ipc: host

@@ -21,7 +21,7 @@ class vLLMService(APIService):
     else:
       user_id = None
     if 'stopping_criteria_string' in form_data['generation_config']:
-      stop = form_data['generation_config']['stopping_criteria_string'].split(",") + [form_data['user_id']] + ["###"]
+      stop = form_data['generation_config']['stopping_criteria_string'].split(",") + [form_data['user_id']] + ["###"] + ['.## '] + ['## GreenSage']
     else:
       stop = []
     if user_id is not None and stream:
@@ -55,7 +55,6 @@ class vLLMService(APIService):
               # logger.info(f"STREAM: {new_tokens}")
               redis_server.publish(f"streaming-{user_id}", new_tokens)
             cur_seen = line
-
     else:
       output = get_response(response)
       output = output[0].replace(form_data['prompt'], "")
@@ -93,6 +92,12 @@ class W2LService(APIService):
     super().__init__()
     self.url = os.getenv('W2L_URL')
     self.service = "w2l"
+
+class TokenizerService(APIService):
+  def __init__(self):
+    super().__init__()
+    self.url = os.getenv('TOKENIZER_URL')
+    self.service = "tokenizer"
 
 class VQAService(APIService):
     def __init__(self):

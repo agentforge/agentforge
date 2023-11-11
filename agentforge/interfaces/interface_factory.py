@@ -61,6 +61,9 @@ class InterfaceFactory:
         elif service_type == "vllm":
             vLLMService = getattr(importlib.import_module('agentforge.interfaces.api'), 'vLLMService')
             self.__interfaces["llm"] = vLLMService()
+        elif service_type == "tokenizer":
+            TokenizerService = getattr(importlib.import_module('agentforge.interfaces.api'), 'TokenizerService')
+            self.__interfaces["tokenizer"] = TokenizerService()
         # elif service_type == "vqa":
         #     W2LService = getattr(importlib.import_module('agentforge.interfaces.api'), 'VQAService')
         #     self.__interfaces["vqa"] = VQAService()

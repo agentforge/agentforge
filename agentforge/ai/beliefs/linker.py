@@ -4,15 +4,21 @@ from transformers import pipeline
 ### TODO: Needs some work to evaluate results and improve them
 class EntityLinker:
     def __init__(self):
-        self.nlp = pipeline("ner", model="dbmdz/bert-large-cased-finetuned-conll03-english", aggregation_strategy="simple")
+        self.nlp = None
+
+    def startup(self):
+        if self.nlp == None:
+            self.nlp = pipeline("ner", model="dbmdz/bert-large-cased-finetuned-conll03-english", aggregation_strategy="simple")
 
     def link_entities(self, text):
+        self.startup()
         ner_results = self.nlp(text)
         merged_entities = [(entity_group['word'], entity_group['entity_group'])
                            for entity_group in ner_results]
         return merged_entities
     
     def link_relations(self, text):
+        self.startup()
         entities = self.link_entities(text)
         # replace first two entities in the text with special tokens
         if len(entities) >= 2:
