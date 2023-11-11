@@ -6,7 +6,6 @@
 ### Imports ###
 import gc, os
 import torch
-from agentforge.config import Config
 import logging
 from .generator import LocalGenerator
 from .loader import LocalLoader
