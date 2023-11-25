@@ -3,7 +3,6 @@ FROM huggingface/transformers-pytorch-deepspeed-latest-gpu-push-ci
 
 # Set the working directory to /app
 RUN mkdir -p /app/agentforge
-COPY . /app/agentforge/
 ENV PYTHONPATH "${PYTHONPATH}:/app/agentforge"
 
 RUN apt-get update
@@ -20,6 +19,7 @@ RUN pip install --upgrade pip
 RUN pip install Cython
 RUN apt-get install libpython3.9-dev
 
+COPY . /app/agentforge/
 WORKDIR /app/agentforge/agentforge/
 RUN mkdir /app/agentforge/logs/
 RUN pip install -r /app/agentforge/requirements.txt

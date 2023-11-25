@@ -5,7 +5,7 @@ from agentforge.factories import resource_factory
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from transformers.generation import GenerationConfig
 from agentforge.api.app import init_api
-
+import base64
 import traceback
 
 vqa = resource_factory.get_resource("vqa")
@@ -18,15 +18,20 @@ class TextResponse(BaseModel):
    text: str
 
 @app.post("/v1/generate", operation_id="vqaQuery")
-async def generate_endpoint(request: Request, img: UploadFile):
-    payload = await request.json()
-    img_bytes = await img.read()
-    prompt = payload['prompt'] if 'prompt' in payload else ""
-
+async def generate_endpoint(request: Request):
     try:
-        response = await vqa.generate(img_bytes, prompt)
+        payload = await request.json()
+        img_data = payload.get('img', '')
+        prompt = payload.get('prompt', '')
+
+        if img_data:
+            img_base64 = img_data.split(",")[-1]
+            img_bytes = base64.b64decode(img_base64)
+            response = await vqa.generate(img_bytes, prompt)
+        else:
+            response = "No 'img' field found in the message."
 
     except Exception as e:
         response = f"An error has occurred: {str(e)}"
-
+        print(traceback.format_exc())
     return TextResponse(text=response)
