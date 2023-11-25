@@ -14,6 +14,33 @@ stripe.api_key = os.environ.get("STRIPE_SECRET_KEY")
 
 from typing import List, Dict, Any
 
+class UserEmail(BaseModel):
+    email: str
+
+router = APIRouter()
+
+db_config = DbConfig.from_env()
+db = DB(db_config)  # Initialize your DB class here
+
+def update_stripe_info(user_id, session_id):
+    # Retrieve the checkout session from Stripe
+    session = stripe.checkout.Session.retrieve(session_id)
+    
+    # Assuming 'user_id' is the ObjectId of the user document you want to update
+    # You can update only the fields that have changed or the entire stripe object
+    update_fields = {
+        'stripe': session, # This replaces the entire stripe field with the new session object
+        # To update individual fields within the stripe object, use dot notation:
+        # 'stripe.plan_status': 'new_plan_status',
+        # 'stripe.other_field': 'new_value',
+    }
+    
+    # Update the user's document in the database
+    result = db.set("users", user_id, update_fields)
+
+    return result.modified_count  # Returns the number of documents modified
+
+
 # Function to retrieve the payment methods and append them to user_obj
 def append_payment_methods_to_user(user_obj: Dict[str, Any], customer_id: str) -> None:
     try:
@@ -41,34 +68,55 @@ def append_payment_methods_to_user(user_obj: Dict[str, Any], customer_id: str) -
         # Handle error
         print(f"An error occurred: {e}")
 
-class UserEmail(BaseModel):
-    email: str
-
-router = APIRouter()
-
-db_config = DbConfig.from_env()
-db = DB(db_config)  # Initialize your DB class here
-
-@router.post("/get-subscription")
-async def check_subscription(request: Request):
+async def get_user(request: Request, filter: Dict[str, Any] = {}):
     logger.info(request)
     session = await get_session(request)
 
     if session is None:
         raise HTTPException(status_code=401, detail="User session not found.")
-    
-    # obj with cleaned data to be sent back to user
-    user_obj = {}
 
     user_id = session.get_user_id()
-    cursor = db.get_many("users", {'supertokens_id': user_id, "stripe.payment_status": "paid"})  # This returns a Cursor
+    filter['supertokens_id'] = user_id
+    cursor = db.get_many("users", filter)  # This returns a Cursor
     user_data_list = list(cursor)  # Convert Cursor to list of dictionaries
 
     if not user_data_list:
-        return {"message": "user not found/has not paid", "active": False, "status": 200}
+        raise HTTPException(status_code=401, detail="user not found/has not paid")
 
     # raw user data private to the server
-    user_data = user_data_list[0]  # Get the first item (should only be one)
+    return user_data_list[0]  # Get the first item (should only be one)
+
+### STRIPE API ###
+### Cancel the user's subscription without delaying until the end of the billing period
+@router.post('/cancel-subscription')
+async def cancel_subscription(request: Request):
+    user_data = await get_user(request, {"stripe.payment_status": "paid"})
+
+    # Fetch the user's subscription from the database.
+    # This is a placeholder for your database call:
+    subscription_id = user_data['stripe']['subscription']
+    try:
+        stripe.Subscription.delete(subscription_id)
+        print(user_data['id'])
+        print(user_data['stripe']['id'])
+        mod_cnt = update_stripe_info(user_data['id'], user_data['stripe']['id'])
+        print(mod_cnt)
+        if mod_cnt == 0:
+            logger.info(f"Failed to update stripe info for session_id {user_data['stripe']['id']}")
+            return {'success': True, 'message': "Something went wrong."}
+        return {'success': True}
+    except stripe.error.StripeError as e:
+        # Handle the error
+        return {'success': False, 'message': str(e)}
+
+### Get the Subscription for the user if one such exists
+@router.post("/get-subscription")
+async def check_subscription(request: Request):
+    user_data = await get_user(request, {"stripe.payment_status": "paid"})
+
+    # obj with cleaned data to be sent back to user
+    user_obj = {}
+
     user_email = user_data.get("email")
     print(user_email)
 
@@ -106,11 +154,12 @@ async def check_subscription(request: Request):
                 "name": latest_subscription.plan.product.name,
                 # Add any other product details you need here
             },
+            "session_id": user_data["stripe"]["id"],
             "cost": '{:.2f}'.format(user_data["stripe"]["amount_total"] / 100),
             "invoices": invoices_final,
             # Include other relevant subscription details here
         }
     else:
-        return {"message": "No active subscriptions found", "active": False, "status": 200}
+        return {"message": "No active subscriptions found", "active": False, "user": user_obj, "status": 200}
 
     return {"message": "subscription active", "active": True, "user": user_obj, "status": 200}
