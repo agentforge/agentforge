@@ -7,10 +7,10 @@ import os
 from fastapi import Request, WebSocket
 from agentforge.api.model_profiles import router as model_profiles_router
 from agentforge.api.agent import router as agent_router
-from agentforge.api.auth import router as token_router
 from agentforge.api.user import router as user_router
 from agentforge.api.ws import router as ws_router
 from agentforge.api.subscription import router as subscription_router
+from agentforge.api.supertokens import override_functions
 from agentforge.api.app import init_api
 from agentforge.utils import logger
 from agentforge.interfaces import interface_interactor
@@ -110,6 +110,9 @@ init(
     recipe_list=[
         session.init(
             expose_access_token_to_frontend_in_cookie_based_auth=True,
+            override=session.InputOverrideConfig(
+                functions=override_functions
+            )
         ),
         emailpassword.init(
             override=emailpassword.InputOverrideConfig(
@@ -135,7 +138,6 @@ app.add_middleware(
 
 app.include_router(model_profiles_router, prefix="/v1/model-profiles", tags=["model_profiles"])
 app.include_router(user_router, prefix="/v1/user", tags=["users"])
-app.include_router(token_router, prefix="/v1/access", tags=["tokens"])
 app.include_router(agent_router, prefix="/v1", tags=["agent_forge"])
 app.include_router(subscription_router, prefix="/v1", tags=["subscription"])
 app.include_router(ws_router, prefix="/v1", tags=["ws"])

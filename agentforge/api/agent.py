@@ -5,7 +5,6 @@ from agentforge.interfaces import interface_interactor
 from base64 import b64encode
 from agentforge.ai import agent_interactor
 from agentforge.interfaces.model_profile import ModelProfile
-from agentforge.api.auth import get_api_key, verify_token_exists
 import asyncio, uuid
 from aioredis import Redis
 import traceback, json
@@ -40,17 +39,17 @@ def is_wordnet_downloaded(nltk_data_path):
 if not is_wordnet_downloaded(nltk.data.path):
     nltk.download('wordnet')
 
-@router.get("/", operation_id="helloWorld", dependencies=[Depends(get_api_key)])
+@router.get("/", operation_id="helloWorld")
 def hello() -> AgentResponse:
     return AgentResponse(data={"response": "Hello world"})
 
-@router.get("/abort", operation_id="abort", dependencies=[Depends(get_api_key)])
+@router.get("/abort", operation_id="abort")
 def abort() -> AgentResponse:
     agent = agent_interactor.get_agent()
     agent.abort()
     return AgentResponse(data={"response": "aborted"})
 
-@router.post('/completions', operation_id="createChatCompletion") #, dependencies=[Depends(get_api_key)])
+@router.post('/completions', operation_id="createChatCompletion")
 async def agent(request: Request, session: SessionContainer = Depends(verify_session())) -> AgentResponse:
     ## Parse Data --  from web acceptuseChat JSON, from client we need to pull ModelConfig
     session = await get_session(request)

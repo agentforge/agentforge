@@ -13,7 +13,12 @@ RUN apt-get install -y libstdc++6-7-dbg ffmpeg git openssh-client tig
 
 # RUN rm /usr/lib/x86_64-linux-gnu/libstdc++.so.6 && ln -s /opt/conda/x86_64-conda-linux-gnu/lib/libstdc++.so.6.0.30 /usr/lib/x86_64-linux-gnu/libstdc++.so.6
 
+RUN apt install python3.9
+RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.9 1
+RUN update-alternatives --config python3
 RUN pip install --upgrade pip
+RUN pip install Cython
+RUN apt-get install libpython3.9-dev
 
 WORKDIR /app/agentforge/agentforge/
 RUN mkdir /app/agentforge/logs/
