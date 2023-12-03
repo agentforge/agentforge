@@ -202,12 +202,12 @@ To run the FastAPI server(s) from inside the container:
 
 On the Agent container:
 ```
-API_DOMAIN="https://mite-inspired-snipe.ngrok-free.app" WEBSITE_DOMAIN="https://agentforge.ngrok.dev" PYTHONPATH="/app/agentforge/" uvicorn main:app --reload --host=0.0.0.0 --port=3005
+API_DOMAIN="https://mite-inspired-snipe.ngrok-free.app" WEBSITE_DOMAIN="https://greensage.app" PYTHONPATH="/app/agentforge/" uvicorn main:app --reload --host=0.0.0.0 --port=3000
 ```
 
 Dev:
 ```
-API_DOMAIN="https://api.agentforge.ai.ngrok-free.app" WEBSITE_DOMAIN="https://greensage.app" PYTHONPATH="/app/agentforge/" uvicorn main:app --reload --host=0.0.0.0 --port=3000
+API_DOMAIN="https://api.agentforge.ai.ngrok-free.app" WEBSITE_DOMAIN="https://agentforge.ngrok.dev" PYTHONPATH="/app/agentforge/" uvicorn main:app --reload --host=0.0.0.0 --port=3005
 ```
 
 On the LLM container:

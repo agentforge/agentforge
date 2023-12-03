@@ -59,14 +59,14 @@ class vLLMService(APIService):
                 if len(buffer) >= 4:
                     buffer_token = buffer.popleft()
 
-                if len(buffer) >= 4:
+                if len(buffer) >= 4 and 'user_name' in form_data:
                   if ' '.join(buffer).endswith('/n ' + form_data['user_name']):
                     break
                 
-                if new_tokens + form_data['agent_name'] == output:
+                if 'agent_name' in form_data and new_tokens + form_data['agent_name'] == output:
                   break
 
-                if new_tokens + form_data['user_name'] == output:
+                if 'user_name' in form_data and new_tokens + form_data['user_name'] == output:
                   break
 
                 output += new_tokens

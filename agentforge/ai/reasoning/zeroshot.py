@@ -20,11 +20,13 @@ class ZeroShotClassifier:
     def extract_classification(self, test):
         # No sequence bias
         if len(self.klasses) == 0:
-            p = r'<s>\s*([\-a-zA-Z0-9, _]+)\s*(</s>)?'
+            # p = r'<s>\s*([\-a-zA-Z0-9, _]+)\s*(</s>)?'
+            p = r'([\-a-zA-Z0-9, _]+)?'
             return self.test(p, test)
 
         for klass in self.klasses:
-            p = r'<s>\s*{klass}\s*(</s>)?'
+            # p = r'<s>\s*{klass}\s*(</s>)?'
+            p = r'{klass}?'
             p = p.replace("{klass}", klass)
             logger.info("[TESTING]")
             logger.info(p)

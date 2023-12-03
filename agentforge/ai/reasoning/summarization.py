@@ -22,8 +22,10 @@ class Summarizer:
         model_config = deepcopy(context.get('model.model_config'))
         username = context.get('input.user_name', "Human")
         agentname = context.get('model.persona.display_name', "Agent")
-        conversation = context.get_messages(prefix=f"\n{username}: ", postfix=f"\n{agentname}:")
-        logger.info(f"Conversation: {conversation}")
+        conversation, msg_cnt = context.get_messages(prefix=f"\n{username}: ", postfix=f"\n{agentname}:")
+        if msg_cnt == 0:
+            return context
+        logger.info(f"Conversation {msg_cnt}: {conversation}")
         formatted = self.format_convo(conversation)
         response = self.tokenizer.call({'prompt': formatted})
         token_cnt = int(response['text'])
@@ -32,7 +34,7 @@ class Summarizer:
         logger.info(f"Token count: {token_cnt}")
         if token_cnt > max_tokens:
             while token_cnt > max_tokens:
-                conversation = context.get_messages(prefix=f"\n{username}: ", postfix=f"\n{agentname}:", n=message_cnt-1)
+                conversation, msg_cnt = context.get_messages(prefix=f"\n{username}: ", postfix=f"\n{agentname}:", n=message_cnt-1)
                 formatted = self.format_convo(conversation)
                 response = self.tokenizer.call({'prompt': formatted})
                 token_cnt = int(response['text'])
