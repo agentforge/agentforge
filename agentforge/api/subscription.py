@@ -132,6 +132,10 @@ async def check_subscription(request: Request):
     user_obj["email"] = user_email
     user_obj["name"] = customer.name
     user_obj["postal_code"] = customer.address.postal_code
+    if "role" in user_data and user_data["role"] == "admin":
+        user_obj["role"] = "admin"
+    else:
+        user_obj["role"] = "user"
 
     invoices = stripe.Invoice.list(customer=customer_id, limit=3)
     invoices_final = [{
@@ -157,8 +161,14 @@ async def check_subscription(request: Request):
             "session_id": user_data["stripe"]["id"],
             "cost": '{:.2f}'.format(user_data["stripe"]["amount_total"] / 100),
             "invoices": invoices_final,
+            "cancel_at_period_end": latest_subscription.cancel_at_period_end,
             # Include other relevant subscription details here
         }
+        
+        # update expiry in DB if needed:
+        if user_obj["expires_at"] != latest_subscription.current_period_end:
+            user_obj["expires_at"] = latest_subscription.current_period_end
+            db.set("users", user_data["id"], {"stripe.expires_at": latest_subscription.current_period_end})
     else:
         return {"message": "No active subscriptions found", "active": False, "user": user_obj, "status": 200}
 
