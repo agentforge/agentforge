@@ -14,6 +14,7 @@ class Node:
         for dependency in self.dependencies:
             dependency.finished.wait()  # Wait until the dependency has finished
 
+        logger.info(f"Running Node: {self.execute.__name__}")
         context = self.execute(context)
 
         self.finished.set()  # Signal that this node has finished

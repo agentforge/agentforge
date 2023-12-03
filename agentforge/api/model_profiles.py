@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Request
 from pydantic import BaseModel
 from agentforge.interfaces.model_profile import ModelProfile
-from agentforge.api.auth import get_api_key
 
 router = APIRouter()
 

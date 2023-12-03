@@ -69,11 +69,12 @@ class MongoDBKVStore(DB):
         collection = self.db[collection]
         try:
             data["id"] = key  # add the key to the data dict
-            collection.update_one({"id": key}, {"$set": data}, upsert=True)
-            logging.info(f'Successfully set value for key {key}.')
+            ret = collection.update_one({"id": key}, {"$set": data}, upsert=True)
+            # logging.info(f'Successfully set value for key {key}.')
         except Exception as e:
             logging.error(f'Set operation failed for keyChange the following  {key}: {str(e)}')
             raise
+        return ret
 
     def copy(self, src_collection: str, dest_collection: str, key: str, new_key: Optional[str] = None) -> None:
         self._check_connection()

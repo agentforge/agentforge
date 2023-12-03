@@ -6,6 +6,7 @@ from agentforge.utils import logger
 from agentforge.config import RedisConfig
 from fastapi import HTTPException
 from typing import Dict, Any
+from collections import deque
 
 class vLLMService(APIService):
   def __init__(self):
@@ -21,7 +22,7 @@ class vLLMService(APIService):
     else:
       user_id = None
     if 'stopping_criteria_string' in form_data['generation_config']:
-      stop = form_data['generation_config']['stopping_criteria_string'].split(",") + [form_data['user_id']] + ["###"] + ['.## '] + ['## GreenSage']
+      stop = form_data['generation_config']['stopping_criteria_string'].split(",") + [form_data['user_id'], "###", '.## ', '## GreenSage', 'Your memories:', 'Summary:']
     else:
       stop = []
     if user_id is not None and stream:
@@ -42,19 +43,41 @@ class vLLMService(APIService):
     cur_seen = str(form_data['prompt'])
     output = ""
     if stream:
-      for h in get_streaming_response(response):
-        num_printed_lines = 0
-        for i, line in enumerate(h):
-            num_printed_lines += 1
-            new_tokens = line.replace(cur_seen, "").replace(form_data['prompt'], "")
-            # This is a fix for the output being doubled TODO: create a buffer so we can remove username also
-            if new_tokens + form_data['user_name'] == output:
-              break
-            output += new_tokens
-            if user_id is not None:
-              # logger.info(f"STREAM: {new_tokens}")
-              redis_server.publish(f"streaming-{user_id}", new_tokens)
-            cur_seen = line
+        buffer = deque(maxlen=5)  # Initialize a buffer with a maximum length of 4
+        output = ""
+        buffer_token = None
+        for h in get_streaming_response(response):
+            num_printed_lines = 0
+            for i, line in enumerate(h):
+                num_printed_lines += 1
+                new_tokens = line.replace(cur_seen, "").replace(form_data['prompt'], "")
+
+                # Update the buffer with new tokens
+                buffer.extend(new_tokens)
+
+                # Append the oldest token in the buffer to the output
+                if len(buffer) >= 4:
+                    buffer_token = buffer.popleft()
+
+                if len(buffer) >= 4:
+                  if ' '.join(buffer).endswith('/n ' + form_data['user_name']):
+                    break
+                
+                if new_tokens + form_data['agent_name'] == output:
+                  break
+
+                if new_tokens + form_data['user_name'] == output:
+                  break
+
+                output += new_tokens
+
+                # output += ' '.join(new_tokens) + ' '  # Reconstruct the original string from tokens
+                if user_id is not None and new_tokens != "":
+                    # logger.info(f"STREAM: {new_tokens}")
+                    redis_server.publish(f"streaming-{user_id}", new_tokens)
+                cur_seen = line
+
+        output = output.strip()  # Remove trailing spaces
     else:
       output = get_response(response)
       output = output[0].replace(form_data['prompt'], "")

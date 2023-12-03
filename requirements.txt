@@ -47,3 +47,8 @@ supertokens-python
 python-multipart
 websockets
 nemo_toolkit[all]
+word2number
+pddlpy
+torchaudio
+pymilvus
+stripe

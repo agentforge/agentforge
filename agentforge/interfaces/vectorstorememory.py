@@ -13,7 +13,8 @@ class VectorStoreMemory:
 
   # Does a similarity search to recall memories associated with this prompt
   def recall(self, prompt, filter={}, **kwargs):
-    docs = self.vectorstore.search_with_score(prompt, n=2, filter=filter, **kwargs)
+    n = kwargs["n"] if "n" in kwargs else 2
+    docs = self.vectorstore.search_with_score(prompt, filter=filter, **kwargs)
     logger.info(f"Recalled {len(docs)} memories")
     logger.info(docs)
     result = ""
