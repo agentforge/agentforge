@@ -3,7 +3,6 @@ FROM huggingface/transformers-pytorch-deepspeed-latest-gpu-push-ci
 
 # Set the working directory to /app
 RUN mkdir -p /app/agentforge
-COPY . /app/agentforge/
 ENV PYTHONPATH "${PYTHONPATH}:/app/agentforge"
 
 RUN apt-get update
@@ -15,6 +14,7 @@ RUN apt-get install -y libstdc++6-7-dbg ffmpeg git openssh-client tig
 
 RUN pip install --upgrade pip
 
+COPY . /app/agentforge/
 WORKDIR /app/agentforge/agentforge/
 RUN mkdir /app/agentforge/logs/
 RUN pip install -r /app/agentforge/requirements.txt

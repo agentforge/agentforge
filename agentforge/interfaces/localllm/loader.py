@@ -1,7 +1,6 @@
 import torch, logging, importlib
 from agentforge.utils import dynamic_import
-from transformers import AutoModelForCausalLM, AutoTokenizer, AutoConfig, GPTNeoXTokenizerFast
-from ctransformers import AutoModelForCausalLM as cAutoModelForCausalLM
+from transformers import AutoConfig
 from agentforge.utils import logger
 import importlib
 
@@ -10,8 +9,6 @@ def import_transformer_model_class(class_name):
     if class_name == "XgenTokenizer":
         transformers_module = importlib.import_module("agentforge.interfaces.localllm.lib.xgentokenizer")
         return getattr(transformers_module, class_name)
-    elif class_name == "cAutoModelForCausalLM":
-        return cAutoModelForCausalLM    
     try:
         transformers_module = importlib.import_module("transformers")
         return getattr(transformers_module, class_name)
