@@ -91,7 +91,7 @@ class Context:
             value = self.context_data
             for k in keys:
                 value = value.get(k, None)
-                if value is None:
+                if value is None or value == {} or value == [] or value == "":
                     if default is not None:
                         return default
                     return None
