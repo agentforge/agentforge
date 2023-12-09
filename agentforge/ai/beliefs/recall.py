@@ -10,11 +10,13 @@ class Recall:
     
     def execute(self, context: Context) -> Dict[str, Any]:
         msgs, msg_cnt = context.get_messages(prefix="", postfix="", n=2)
-        memories = context.memory.recall(
-            context.get('input.user_id'),
-            context.get('model.persona.name'),
-            msgs,
-        )
+        # memories = context.memory.recall(
+        #     context.get('input.user_id'),
+        #     context.get('model.persona.name'),
+        #     msgs,
+        # )
+        # context.set('recall', memories)
+
         knowledge = context.memory.knowledge(
             context.get('input.user_id'),
             context.get('model.persona.name'),
@@ -22,20 +24,21 @@ class Recall:
             collection='knowledge',
             n=1
         )
+        context.set('knowledge', knowledge)
 
         ### GREENSAGE SPECIFIC
-        z_val = self.z.classify("### Instruction: Is the user asking for a cannabis strain recommendation? Respond with Yes or No. ### Input: {{user_input}} ### Response: ", ["Yes", "No"], {"user_input": context.get('instruction')}, context)
-        logger.info(f"STRAIN QUESTION: {z_val}")
-        if z_val == "Yes":
-            extra_data = context.memory.knowledge(
-                context.get('input.user_id'),
-                context.get('model.persona.name'),
-                context.get('instruction'),
-                collection='strains',
-                n=5
-            )
-        else:
-            extra_data = None
+        # z_val = self.z.classify("### Instruction: Is the user asking for a cannabis strain recommendation? Respond with Yes or No. ### Input: {user_input} ### Response: ", ["Yes", "No"], {"user_input": context.get('instruction')}, context)
+        # logger.info(f"STRAIN QUESTION: {z_val}")
+        # if z_val == "Yes":
+
+        extra_data = context.memory.knowledge(
+            context.get('input.user_id'),
+            context.get('model.persona.name'),
+            context.get('instruction'),
+            collection='strains',
+            n=5
+        )
+        context.set('additional_knowledge', extra_data)
 
         # working = context.memory.session_history(
         #     context.get('input.user_id'),
@@ -44,7 +47,4 @@ class Recall:
         #     n=4
         # )
         logger.info(f"RECALLING {context.get('instruction')}")
-        context.set('recall', memories)
-        context.set('knowledge', knowledge)
-        context.set('additional_knowledge', extra_data)
         return context

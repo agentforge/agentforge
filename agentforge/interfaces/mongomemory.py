@@ -218,5 +218,5 @@ class MongoMemory:
           postfix_val = f" {postfix}" if obj.__class__.__name__ == "HumanMessage" else ""
           return total_prefix + obj.content + postfix_val
       # TODO: Need a more robust way to ensure we don't hit token limit for prompt
-      hist = "".join(list(map(lambda obj: get_content(obj), mem[-n:])))
+      hist = " ".join(list(map(lambda obj: get_content(obj), mem[-n:])))
       return hist

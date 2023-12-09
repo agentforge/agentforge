@@ -92,8 +92,8 @@ if __name__ == "__main__":
         try:
             # Print current prompt and estimated token count
             token_count = estimate_token_count(prompt)
-            print(f"\nCurrent Prompt: {prompt!r}")
-            print(f"Estimated Token Count: {token_count}")
+            logger.info(f"\nCurrent Prompt: {prompt!r}")
+            logger.info(f"Estimated Token Count: {token_count}")
 
             # Make API request
             response = post_http_request(

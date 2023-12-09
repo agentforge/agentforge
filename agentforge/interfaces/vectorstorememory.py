@@ -17,11 +17,11 @@ class VectorStoreMemory:
     docs = self.vectorstore.search_with_score(prompt, filter=filter, **kwargs)
     logger.info(f"Recalled {len(docs)} memories")
     logger.info(docs)
-    result = ""
+    result = []
     for doc in docs:
         if doc[1] > 0.40:
-          result += doc[0].page_content
-    return result
+          result.append(doc[0].page_content)
+    return " ".join(result)
 
   # Async method using threading for memorization -- need app for Flask context
   def remember(self, user_name: str, user_id: str, agent: str, prompt: str, response: str, **kwargs):
