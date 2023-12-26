@@ -69,7 +69,12 @@ export default function Landing_demo() {
             <div className="font-mono text-center text-black dark:text-white text-3xl mt-[32px]">LLM</div>
           </div>
           <div className="justify-self-center min-w-[208px] max-w-[330px]">
-            <Image alt="Low poly face" src="/homepage/AvatarHead_face_front.png" width={ 330 } height={ 406 }/>
+            {theme === 'light' ? (
+              <Image alt="Low poly face" src="/homepage/light_AvatarHead_face_front.png" width={ 330 } height={ 406 }/>
+              ) : (
+                <Image alt="Low poly face" src="/homepage/AvatarHead_face_front.png" width={ 330 } height={ 406 }/>
+              )
+            }
             <div className="font-mono text-center text-black dark:text-white text-3xl mt-[44px]">Multi-modal agent</div>
           </div>
           <div className="justify-self-end min-w-[208px] max-w-[330px]">
@@ -90,15 +95,30 @@ export default function Landing_demo() {
         <div className={"flex md:hidden justify-self-left z-10 w-full min-w-[717px] mt-[48px] px-[32px]"}>
           <div className="grid grid-cols-3 gap-[24px]">
             <div className="justify-self-start min-w-[208px] max-w-[330px]">
-              <Image alt="Stack of LLMs" src="/homepage/LLM_stack.svg" width={ 330 } height={ 406 }/>
+              {theme === 'light' ? (
+                <Image alt="Stack of LLMs" src="/homepage/light_LLM_stack.svg" width={ 330 } height={ 406 }/>
+              ) : (
+                <Image alt="Stack of LLMs" src="/homepage/LLM_stack.svg" width={ 330 } height={ 406 }/>
+                )
+              }
               <div className="font-mono text-center text-black dark:text-white text-xl mt-[24px]">LLM</div>
             </div>
             <div className="justify-self-center min-w-[208px] max-w-[330px]">
-              <Image alt="Low poly face" src="/homepage/AvatarHead_face_front.png" width={ 330 } height={ 406 }/>
+              {theme === 'light' ? (
+              <Image alt="Low poly face" src="/homepage/light_AvatarHead_face_front.png" width={ 330 } height={ 406 }/>
+              ) : (
+                <Image alt="Low poly face" src="/homepage/AvatarHead_face_front.png" width={ 330 } height={ 406 }/>
+              )
+              }
               <div className="font-mono text-center text-black dark:text-white text-xl mt-[32px]">Multi-modal agent</div>
             </div>
             <div className="justify-self-end min-w-[208px] max-w-[330px]">
-              <Image alt="config JSON" src="/homepage/AgentForge_config.svg" width={ 330 } height={ 406 }/>
+              {theme === 'light' ? (
+                <Image alt="config JSON" src="/homepage/light_AgentForge_config.svg" width={ 330 } height={ 406 }/>
+              ) : (
+                <Image alt="config JSON" src="/homepage/AgentForge_config.svg" width={ 330 } height={ 406 }/>
+                )
+              }
               <div className="font-mono text-center text-black dark:text-white text-xl mt-[32px]">AgentForge</div>
             </div>
           </div>
@@ -108,13 +128,13 @@ export default function Landing_demo() {
       
       
       <div id="sec-cognition" className={"flex justify-self-center z-10 w-full max-w-[1120px] mt-[72px] md:mt-[176px] px-[32px] md:px-0"}>
-          <div className={"font-mono text-center md:text-left text-black dark:text-zinc-400 text-sm md:text-lg w-full"}>
+          <div className={"font-mono text-center md:text-left text-zinc-500 dark:text-zinc-400 text-sm md:text-lg w-full"}>
           AUTONOMOUS ONLINE AGENTS AS A PLATFORM FOR
           </div>
       </div>
 
       <div className={"flex justify-self-center z-10 w-full max-w-[1120px] mt-[8px] md:mt-[16px] px-[32px] md:px-0"}>
-          <div className={"font-mono text-center md:text-left text-black dark:text-white font-[300] text-2xl md:text-4xl w-full"}>
+          <div className={"font-mono text-center md:text-left text-zinc-900 dark:text-zinc-50 font-[300] text-2xl md:text-4xl w-full"}>
           Cognition Engine
           </div>
       </div>
@@ -135,15 +155,21 @@ export default function Landing_demo() {
             <div className="font-mono text-center text-black dark:text-white text-3xl mt-[32px]"> </div>
           </div>
           <div className="justify-self-center max-w-[208px]">
-            <Image alt="Avatar facing left" src="/homepage/Avatarhead_face_left.png" width={ 208 } height={ 406 }/>
+            {theme === 'light' ? (
+                <Image alt="Avatar facing left" src="/homepage/light_Avatarhead_face_left.png" width={ 208 } height={ 406 }/>
+                ) : (
+                <Image alt="Avatar facing left" src="/homepage/Avatarhead_face_left.png" width={ 208 } height={ 406 }/>
+                )
+            }
             <div className="font-mono text-center text-black dark:text-white text-3xl mt-[32px]">Agent</div>
           </div>
           <div className="col-span-2 justify-self-end max-w-[436px]">
             {theme === 'light' ? (
-              <Image alt="Conversation text bubbles" src="/homepage/light_Cognition.svg" width={ 436 } height={ 406 }/>
-            ) : (
-              <Image alt="Conversation text bubbles" src="/homepage/Cognition.svg" width={ 436 } height={ 406 }/>
-            )}
+              <Image alt="Abstract cognition" src="/homepage/light_Cognition.svg" width={ 436 } height={ 406 }/>
+              ) : (
+                <Image alt="Abstract cognition" src="/homepage/Cognition.svg" width={ 436 } height={ 406 }/>
+              )
+            }
             <div className="font-mono text-center text-black dark:text-white text-3xl mt-[32px]">Cognition</div>
           </div>
         </div>
@@ -152,20 +178,25 @@ export default function Landing_demo() {
 
       {/* Section - 1-col Cognition engine - Mobile */}
       <div className="flex md:hidden grid grid-cols-1 justify-self-center z-10 w-full max-w-[1120px] mt-[8px] md:mt-[16px] px-[32px] md:px-0">
-          <Image alt="Abstract cognition" src="/homepage/Cognition.svg" className="justify-self-center" width={ 436 } height={ 406 }/>
+            {theme === 'light' ? (
+              <Image alt="Abstract cognition" src="/homepage/light_Cognition.svg" width={ 436 } height={ 406 }/>
+              ) : (
+                <Image alt="Abstract cognition" src="/homepage/Cognition.svg" width={ 436 } height={ 406 }/>
+              )
+            }
           {/*<div className="font-mono text-center text-white text-xl mt-[24px]"> </div>*/}
       </div>
       {/* End of Section - 1-col Cognition engine - Mobile */}
 
       
       <div id="sec-projects" className={"flex justify-self-center z-10 w-full max-w-[1120px] mt-[72px] md:mt-[176px] px-[32px] md:px-0"}>
-          <div className={"font-mono text-center md:text-left text-black dark:text-zinc-400 text-sm md:text-lg w-full"}>
+          <div className={"font-mono text-center md:text-left text-zinc-500 dark:text-zinc-400 text-sm md:text-lg w-full"}>
           A SNEAK PEEK OF OUR
           </div>
       </div>
 
       <div className={"flex justify-self-center z-10 w-full max-w-[1120px] mt-[8px] md:mt-[16px] px-[32px] md:px-0"}>
-          <div className={"font-mono text-center md:text-left text-black dark:text-white font-[300] text-2xl md:text-4xl w-full"}>
+          <div className={"font-mono text-center md:text-left text-zinc-900 dark:text-zinc-50 font-[300] text-2xl md:text-4xl w-full"}>
           Projects
           </div>
       </div>
@@ -174,7 +205,7 @@ export default function Landing_demo() {
       <div className={"hidden lg:flex justify-self-center z-10 w-full max-w-[1120px] mt-[64px] px-0"}>
         <div className={"grid grid-cols-3 gap-[40px]"}>
           <div className={"col-span-2 grid grid-cols-2 gap-[20px] justify-self-start" +  
-                          "min-w-[750px] rounded-[8px] border-2 border-black dark:border-zinc-600 " + 
+                          "min-w-[750px] rounded-[8px] border-2 border-zinc-300 dark:border-zinc-600 " + 
                           "shadow-[0_12px_50px_-9px_rgba(255, 255, 255, 0.48)] " + 
                           "p-[64px] pb-[48px]"}
             >
@@ -204,7 +235,7 @@ export default function Landing_demo() {
           </div>
 
           <div className={"justify-self-end min-w-[330px] grid grid-cols-1 gap-[32px]"}>
-            <div className={"rounded-[8px] border-2 border-black dark:border-zinc-600 p-[32px]"}>
+            <div className={"rounded-[8px] border-2 border-zinc-300 dark:border-zinc-600 p-[32px] bg-white dark:bg-black"}>
               <div className={"font-mono text-left text-black dark:text-white text-5xl w-full"}>
                 Caretaker
               </div>
@@ -212,7 +243,7 @@ export default function Landing_demo() {
                 An always on agent with capabilities, TBA
               </div>
             </div>
-            <div className={"rounded-[8px] border-2 border-black dark:border-zinc-600 p-[32px]"}>
+            <div className={"rounded-[8px] border-2 border-zinc-300 dark:border-zinc-600 p-[32px] bg-white dark:bg-black"}>
               <div className={"font-mono text-left text-black dark:text-white text-5xl w-full"}>
                 The Forge
               </div>
