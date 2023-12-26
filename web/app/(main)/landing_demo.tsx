@@ -17,7 +17,7 @@ export default function Landing_demo() {
   return (
     <>
       <div className={"flex justify-self-center z-10 w-full max-w-[912px] pt-[144px] md:pt-[264px] px-[32px] md:px-0"}>
-          <div className={"font-mono text-center text-black dark:text-white font-bold text-3xl md:text-7xl w-full"}>
+          <div className={"font-mono text-center text-zinc-900 dark:text-zinc-50 font-bold text-3xl md:text-7xl w-full"}>
             MULTI-MODAL AGENT
             INFRASTRUCTURE <br />
             FOR EVERYONE
@@ -25,7 +25,7 @@ export default function Landing_demo() {
       </div>
 
       <div className={"flex justify-self-center z-10 w-full max-w-[912px] mt-[24px] md:mt-[64px] px-[32px] md:px-0"}>
-          <div className={"font-mono text-center text-black dark:text-white text-sm md:text-lg w-full"}>
+          <div className={"font-mono text-center text-zinc-800 dark:text-zinc-50 text-sm md:text-lg w-full"}>
             Large language models provide a new probabilistic inference platform for building the next generation of agent applications
             <br/>AgentForge makes it easy
           </div>
@@ -33,19 +33,19 @@ export default function Landing_demo() {
 
 
       <div id="sec-vision" className={"flex justify-self-center z-10 w-full max-w-[1120px] mt-[72px] md:mt-[176px] px-[32px] md:px-0"}>
-          <div className={"font-mono text-center md:text-left text-black dark:text-zinc-400 text-sm md:text-lg w-full"}>
+          <div className={"font-mono text-center md:text-left text-zinc-500 dark:text-zinc-400 text-sm md:text-lg w-full"}>
           WE ARE BUILDING INFRASTRUCTURE AT THE INTERSECTION BETWEEN
           </div>
       </div>
 
       <div className={"hidden md:flex justify-self-center z-10 w-full max-w-[1120px] mt-[8px] md:mt-[16px] px-[32px] md:px-0"}>
-          <div className={"font-mono text-left text-black dark:text-white font-[300] md:text-4xl w-full"}>
+          <div className={"font-mono text-left text-zinc-900 dark:text-zinc-50 font-[300] md:text-4xl w-full"}>
           Human Cognition • Artificial Intelligence
           </div>
       </div>
 
       <div className={"flex md:hidden justify-self-center z-10 w-full max-w-[1120px] mt-[8px] md:mt-[16px] px-[32px] md:px-0"}>
-          <div className={"font-mono text-center text-black dark:text-white font-[300] text-2xl w-full"}>
+          <div className={"font-mono text-center text-zinc-900 dark:text-zinc-50 font-[300] text-2xl w-full"}>
           Human Cognition<br />•<br />Artificial Intelligence
           </div>
       </div>
