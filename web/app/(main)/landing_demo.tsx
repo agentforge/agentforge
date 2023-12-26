@@ -204,50 +204,60 @@ export default function Landing_demo() {
       {/* Section - 3-col Projects - Desktop */}
       <div className={"hidden lg:flex justify-self-center z-10 w-full max-w-[1120px] mt-[64px] px-0"}>
         <div className={"grid grid-cols-3 gap-[40px]"}>
-          <div className={"col-span-2 grid grid-cols-2 gap-[20px] justify-self-start" +  
+          <div className={"col-span-2 gap-[20px] justify-self-start" +  
                           "min-w-[750px] rounded-[8px] border-2 border-zinc-300 dark:border-zinc-600 " + 
-                          "shadow-[0_12px_50px_-9px_rgba(255, 255, 255, 0.48)] " + 
-                          "p-[64px] pb-[48px]"}
+
+                          /*"shadow-[0_25px_50px_rgba(8, 51 , 8, 0.40)] " + */
+                          /*"shadow-xl " +*/
+                          "drop-shadow-[0_25px_32px_rgba(8,51,8,0.4)] " + 
+                          "dark:drop-shadow-[0_25px_32px_rgba(199,237,40,0.24)] " + 
+                          
+                          "p-[64px] pb-[48px] " + 
+                          "bg-contain bg-center " }
+
+               style={{background: "linear-gradient(30deg, rgba(0, 0, 0, 0.79), rgba(20, 53, 8, 0.88)), " 
+                                  + "url(" + "/homepage/GS_card_bg.jpg" + ");"}}
             >
             <div>
-              <div className={"font-mono text-left text-black dark:text-white text-5xl w-full"}>
-                Almanac
+              {/*
+              <div className={"font-mono text-left text-white text-5xl w-full"}>
+                GreenSage
               </div>
-              <div className={"font-mono text-left text-black dark:text-white text-lg w-full pt-[36px]"}>
-                An on-demand virtual assistant which guides end-users with planning activities requiring specialized knowledge
+            */}
+              <Image alt="greensage with avatar" src="/homepage/GS_card_title.svg" width={ 451 } height={ 72 }/>
+              <div className={"font-mono text-left text-white text-lg w-full pt-[36px]"}>
+                Provides smart assistance for budtenders and commercial cannabis establishments. 
+                Greensage seamlessly integrates into the daily operations of cannabis dispensary and provides a simple natural language interface 
+                to access its vast database.
               </div>
-              <div className={"font-mono text-left text-black dark:text-white text-lg w-full pt-[36px]"}>
-                For Small Businesses and startups to provide technical support at scale
+              <div className={"font-mono text-left text-white text-lg w-full pt-[36px]"}>
+                For homegrowers, it simplifies the journey from seed to harvest
               </div>
-            </div>
-            <div>
-              <video autoPlay muted loop className={"w-full rounded-[16px] border-2 border-black dark:border-zinc-600"}>         
-                  <source src="/homepage/almanac_idle_loop.mp4" type="video/mp4"/>       
-              </video>
               <button
                 className={"w-full mt-[24px] font-mono rounded-[4px] p-[10px] px-4 " + 
-                            "text-base font-medium text-white bg-black dark:text-black dark:bg-white transition-all hover:bg-white/60"}
+                            "text-base font-medium text-black bg-white transition-all hover:bg-zinc/500"}
                 onClick={() => router.push('/demo')}
               >
-                Chat with Gardener-Almanac
+                Open greensage.app
               </button>
             </div>
+            
           </div>
 
           <div className={"justify-self-end min-w-[330px] grid grid-cols-1 gap-[32px]"}>
             <div className={"rounded-[8px] border-2 border-zinc-300 dark:border-zinc-600 p-[32px] bg-white dark:bg-black"}>
-              <div className={"font-mono text-left text-black dark:text-white text-5xl w-full"}>
+              <div className={"font-mono text-left text-zinc-800 dark:text-zinc-100 text-5xl w-full"}>
                 Caretaker
               </div>
-              <div className={"font-mono text-left text-black dark:text-white text-lg w-full pt-[36px]"}>
+              <div className={"font-mono text-left text-zinc-900 dark:text-zinc-50 text-lg w-full pt-[36px]"}>
                 An always on agent with capabilities, TBA
               </div>
             </div>
             <div className={"rounded-[8px] border-2 border-zinc-300 dark:border-zinc-600 p-[32px] bg-white dark:bg-black"}>
-              <div className={"font-mono text-left text-black dark:text-white text-5xl w-full"}>
+              <div className={"font-mono text-left text-800 dark:text-zinc-100 text-5xl w-full"}>
                 The Forge
               </div>
-              <div className={"font-mono text-left text-black dark:text-white text-lg w-full pt-[36px]"}>
+              <div className={"font-mono text-left text-zinc-900 dark:text-zinc-50 text-lg w-full pt-[36px]"}>
                 No-code GUI for agent-avatar creation, training and deployment, TBA
               </div>
             </div>
