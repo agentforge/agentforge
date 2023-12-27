@@ -7,6 +7,7 @@ import UserDropdown from "./user-dropdown";
 import { Session } from "next-auth";
 import { useRouter } from 'next/navigation'
 import { Fragment, useState } from 'react'
+import { useTheme } from "next-themes";
 
 
 export default function Navbar_demo() {
@@ -15,6 +16,7 @@ export default function Navbar_demo() {
   const router = useRouter();
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const { theme } = useTheme();
 
 
   return (
@@ -27,14 +29,26 @@ export default function Navbar_demo() {
         <div className="hidden md:flex w-[1120px] mx-5 flex h-16 max-w-screen-xl items-center justify-between xl:mx-auto ">
           {/*Logotype - left algined*/}
           <Link href="/" className="flex items-center font-display text-2xl text-black dark:text-white">
-            <Image
+          {theme === 'light' ? (
+              <Image
+              src="/light_agentforge-logo.svg"
+              alt="AgentForge logo"
+              width="28"
+              height="28"
+              className="mr-2 rounded-sm"
+
+              ></Image>
+              ) : (
+              <Image
               src="/agentforge-logo.svg"
               alt="AgentForge logo"
               width="28"
               height="28"
               className="mr-2 rounded-sm"
-              style={{color: "#fff", fill: "#fff"}}
-            ></Image>
+
+              ></Image>  
+              )
+          }
             <p>AgentForge</p>
           </Link>
 
@@ -70,15 +84,25 @@ export default function Navbar_demo() {
             </div>
           </div>
 
+          <div className="hidden md:flex md:gap-x-[48px] md:pt-[8px]">
+            <div className="relative">
+              <button type="button" className="flex items-center gap-x-1 font-mono text-lg font-medium leading-6 text-black dark:text-white" 
+                      onClick={() => router.push('#sec-team')}
+              >
+                Team
+              </button>
+            </div>
+          </div>
+
           {/*DEMO button - right algined*/}
-          <div className="md:visible">
+          {/*<div className="md:visible">
               <button
                 className="font-mono rounded-[4px] border-2 border-black dark:border-white p-1.5 px-4 text-base text-black dark:text-white transition-all hover:bg-white/50"
                 onClick={() => router.push('/demo')}
               >
                 DEMO
               </button>
-          </div>
+          </div>*/}
         </div> {/* End of: Header - desktop */}
 
 
@@ -87,25 +111,34 @@ export default function Navbar_demo() {
         {/* Header - mobile */}
         <div className="mx-5 flex h-16 max-w-screen-xl items-center justify-between xl:mx-auto md:hidden">
           {/*DEMO button - left algined*/}
-            <div className="md:hidden">
+            {/*<div className="md:hidden">
               <button
                 className="font-mono rounded-[4px] border-2 border-black dark:border-white p-1.5 px-4 text-sm text-black dark:text-white transition-all hover:bg-white/50"
                 onClick={() => router.push('/demo')}>
                 DEMO
               </button>
-            </div>
+             </div>*/}
 
-
+          {/* TODO: Bugged, re-write the central alignment*/}
           {/*Logotype - center algined*/}
-          <Link href="/" className="flex items-center font-display text-2xl -ml-[36px]">
+          <Link href="/" className="flex items-center font-display text-2xl -ml-[36px]"> {/*36px*/}
+          {theme === 'light' ? (
+            <Image
+              src="/light_agentforge-logo.svg"
+              alt="AgentForge logo"
+              width="28"
+              height="28"
+              className="rounded-sm"
+            ></Image>
+            ) : (
             <Image
               src="/agentforge-logo.svg"
               alt="AgentForge logo"
               width="28"
               height="28"
               className="rounded-sm"
-              style={{color: "#fff", fill: "#fff"}}
             ></Image>
+            )}
           </Link>
 
           
@@ -114,7 +147,7 @@ export default function Navbar_demo() {
             {mobileMenuOpen ? (
               <div className="md:hidden" role="dialog" aria-modal="true">
                 <div className="fixed inset-0 z-50"></div>
-                  <div className="fixed inset-y-0 right-0 z-50 w-full overflow-y-auto h-[240px] bg-white/60 backdrop-blur-sm px-6 py-6 sm:max-w-sm sm:ring-1 sm:ring-gray-900/10 rounded-b-lg">
+                  <div className="fixed inset-y-0 right-0 z-50 w-full overflow-y-auto h-[272px] bg-white/60 backdrop-blur-sm px-6 py-6 sm:max-w-sm sm:ring-1 sm:ring-gray-900/10 rounded-b-lg">
                     <div className="flex items-center justify-between  pt-[12px]">
                       <a href="#" className="-m-1.5 p-1.5">
                         <span className="sr-only"> </span>
@@ -133,7 +166,7 @@ export default function Navbar_demo() {
                           <div className="-mx-3">
                             <button type="button" className={"flex w-full items-center justify-between rounded-lg " + 
                                                               "py-2 pl-3 pr-3.5 font-mono text-base font-semibold " + 
-                                                              "leading-7 text-black dark:text-white hover:bg-gray-50"} 
+                                                              "leading-7 text-black  hover:bg-gray-50"} 
                                     aria-controls="disclosure-1" aria-expanded="false"
                                     onClick={() => {router.push('#sec-vision'); setMobileMenuOpen(false);}}
                             >
@@ -141,7 +174,7 @@ export default function Navbar_demo() {
                             </button>
                             <button type="button" className={"flex w-full items-center justify-between rounded-lg " + 
                                                               "py-2 pl-3 pr-3.5 text-base font-mono font-semibold " + 
-                                                              "leading-7 text-black dark:text-white hover:bg-gray-50"} 
+                                                              "leading-7 text-black  hover:bg-gray-50"} 
                                     aria-controls="disclosure-1" aria-expanded="false"
                                     onClick={() => {router.push('#sec-cognition'); setMobileMenuOpen(false);}}
                             >
@@ -149,11 +182,19 @@ export default function Navbar_demo() {
                             </button>
                             <button type="button" className={"flex w-full items-center justify-between rounded-lg " + 
                                                               "py-2 pl-3 pr-3.5 text-base font-mono font-semibold " + 
-                                                              "leading-7 text-black dark:text-white hover:bg-gray-50"} 
+                                                              "leading-7 text-black  hover:bg-gray-50"} 
                                     aria-controls="disclosure-1" aria-expanded="false"
                                     onClick={() => {router.push('#sec-projects'); setMobileMenuOpen(false);}}
                             >
                               Projects
+                            </button>
+                            <button type="button" className={"flex w-full items-center justify-between rounded-lg " + 
+                                                              "py-2 pl-3 pr-3.5 text-base font-mono font-semibold " + 
+                                                              "leading-7 text-black  hover:bg-gray-50"} 
+                                    aria-controls="disclosure-1" aria-expanded="false"
+                                    onClick={() => {router.push('#sec-team'); setMobileMenuOpen(false);}}
+                            >
+                              Team
                             </button>
                           
                           </div>

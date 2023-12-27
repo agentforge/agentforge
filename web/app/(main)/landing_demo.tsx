@@ -340,7 +340,7 @@ export default function Landing_demo() {
       {/* End of Section - 1-col Projects - Mobile */}
 
       
-      <div id="sec-projects" className={"flex justify-self-center z-10 w-full max-w-[1120px] mt-[72px] md:mt-[176px] px-[32px] md:px-0"}>
+      <div id="sec-team" className={"flex justify-self-center z-10 w-full max-w-[1120px] mt-[72px] md:mt-[176px] px-[32px] md:px-0"}>
           <div className={"font-mono text-center text-zinc-500 dark:text-zinc-400 text-sm md:text-lg w-full"}>
           THE HUMANS BEHIND THE AGENTS
           </div>
