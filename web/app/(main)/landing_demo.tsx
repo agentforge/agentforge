@@ -338,6 +338,132 @@ export default function Landing_demo() {
           </div>
       </div>
       {/* End of Section - 1-col Projects - Mobile */}
+
+      
+      <div id="sec-projects" className={"flex justify-self-center z-10 w-full max-w-[1120px] mt-[72px] md:mt-[176px] px-[32px] md:px-0"}>
+          <div className={"font-mono text-center text-zinc-500 dark:text-zinc-400 text-sm md:text-lg w-full"}>
+          THE HUMANS BEHIND THE AGENTS
+          </div>
+      </div>
+
+      <div className={"flex justify-self-center z-10 w-full max-w-[1120px] mt-[8px] md:mt-[16px] px-[32px] md:px-0"}>
+          <div className={"font-mono text-center text-zinc-900 dark:text-zinc-50 font-[300] text-2xl md:text-4xl w-full"}>
+          Team
+          </div>
+      </div>
+
+      {/* Section - 3-col Team - Desktop */}
+      {/*<div className={"hidden lg:flex justify-self-center z-10 w-full max-w-[872px] mt-[134px] px-0"}>*/}
+      <div className={"flex-auto justify-self-center z-10 md:w-full w-80 max-w-[872px] md:mt-[134px] mt-[34px] px-0"}>
+        <div className={"grid grid-cols-3 lg:gap-[124px] gap-[28px]"}>
+          
+          <div className={"col-span-1 justify-self-center"}  
+            >
+            <div>
+              <div className={"rounded-full border-2 border-zinc-300 dark:border-zinc-600 "}
+                    style={{overflow: 'hidden'}}>
+                <Image alt="Frank headshot" src="/homepage/team_Frank.png" width={ 208 } height={ 208 }/>
+              </div>
+              <div className={"font-mono text-center text-zinc-700 dark:text-zinc-100 lg:text-3xl md:text-xl text-base w-full pt-[24px]"}>
+                Frank
+              </div>
+            </div>
+
+            <div>
+              <div className={"rounded-full border-2 border-zinc-300 dark:border-zinc-600 mt-[76px]"}
+                    style={{overflow: 'hidden'}}>
+                <Image alt="Chelsea headshot" src="/homepage/team_Chelsea.png" width={ 208 } height={ 208 }/>
+              </div>
+              <div className={"font-mono text-center text-zinc-700 dark:text-zinc-100 lg:text-3xl md:text-xl text-base w-full pt-[24px]"}>
+                Chelsea
+              </div>
+            </div>
+
+            <div>
+              <div className={"rounded-full border-2 border-zinc-300 dark:border-zinc-600 mt-[76px]"}
+                    style={{overflow: 'hidden'}}>
+                <Image alt="Saul headshot" src="/homepage/team_Saul.png" width={ 208 } height={ 208 }/>
+              </div>
+              <div className={"font-mono text-center text-zinc-700 dark:text-zinc-100 lg:text-3xl md:text-xl text-base w-full pt-[24px]"}>
+                Saul
+              </div>
+            </div>
+            
+          </div>
+
+
+          <div className={"col-span-1 justify-self-center"}  
+            >
+            <div>
+              <div className={"rounded-full border-2 border-zinc-300 dark:border-zinc-600 "}
+                    style={{overflow: 'hidden'}}>
+                <Image alt="Oly headshot" src="/homepage/team_Oly.png" width={ 208 } height={ 208 }/>
+              </div>
+              <div className={"font-mono text-center text-zinc-700 dark:text-zinc-100 lg:text-3xl md:text-xl text-base w-full pt-[24px]"}>
+                Oly
+              </div>
+            </div>
+
+            <div>
+              <div className={"rounded-full border-2 border-zinc-300 dark:border-zinc-600 mt-[76px]"}
+                    style={{overflow: 'hidden'}}>
+                <Image alt="Sara headshot" src="/homepage/team_Sara.png" width={ 208 } height={ 208 }/>
+              </div>
+              <div className={"font-mono text-center text-zinc-700 dark:text-zinc-100 lg:text-3xl md:text-xl text-base w-full pt-[24px]"}>
+                Sara
+              </div>
+            </div>
+
+            <div>
+              <div className={"rounded-full border-2 border-zinc-300 dark:border-zinc-600 mt-[76px]"}
+                    style={{overflow: 'hidden'}}>
+                <Image alt="Avin headshot" src="/homepage/team_Avin.png" width={ 208 } height={ 208 }/>
+              </div>
+              <div className={"font-mono text-center text-zinc-700 dark:text-zinc-100 lg:text-3xl md:text-xl text-base w-full pt-[24px]"}>
+                Avin
+              </div>
+            </div>
+            
+          </div>
+
+
+          <div className={"col-span-1 justify-self-center"}  
+            >
+            <div>
+              <div className={"rounded-full border-2 border-zinc-300 dark:border-zinc-600 "}
+                    style={{overflow: 'hidden'}}>
+                <Image alt="Jackson headshot" src="/homepage/team_Jackson.png" width={ 208 } height={ 208 }/>
+              </div>
+              <div className={"font-mono text-center text-zinc-700 dark:text-zinc-100 lg:text-3xl md:text-xl text-base w-full pt-[24px]"}>
+                Jackson
+              </div>
+            </div>
+
+            <div>
+              <div className={"rounded-full border-2 border-zinc-300 dark:border-zinc-600 mt-[76px]"}
+                    style={{overflow: 'hidden'}}>
+                <Image alt="Anthony headshot" src="/homepage/team_Anthony.png" width={ 208 } height={ 208 }/>
+              </div>
+              <div className={"font-mono text-center text-zinc-700 dark:text-zinc-100 lg:text-3xl md:text-xl text-base w-full pt-[24px]"}>
+                Anthony
+              </div>
+            </div>
+
+            <div>
+              <div className={"rounded-full border-2 border-zinc-300 dark:border-zinc-600 mt-[76px]"}
+                    style={{overflow: 'hidden'}}>
+                <Image alt="Deeptish headshot" src="/homepage/team_Deeptish.png" width={ 208 } height={ 208 }/>
+              </div>
+              <div className={"font-mono text-center text-zinc-700 dark:text-zinc-100 lg:text-3xl md:text-xl text-base w-full pt-[24px]"}>
+                Deeptish
+              </div>
+            </div>
+            
+          </div>
+        </div>
+      </div>
+      {/* End of Section - 3-col Team - Desktop */}
+
       
       <div className="fixed bottom-0 right-0 mb-4 mr-4 z-50">
         <ModeToggle />
