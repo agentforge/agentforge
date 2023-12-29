@@ -106,24 +106,12 @@ export default function Navbar_demo() {
 
           {/* TODO: Bugged, re-write the central alignment*/}
           {/*Logotype - center algined*/}
-          <Link href="/" className="flex items-center font-display text-2xl -ml-[36px]"> {/*36px*/}
+          <Link href="/" className="flex items-center font-display text-2xl "> {/*-ml-[36px]*/}
           {theme === 'light' ? (
-            <Image
-              src="/light_agentforge-logo.svg"
-              alt="AgentForge logo"
-              width="28"
-              height="28"
-              className="rounded-sm"
-            ></Image>
-            ) : (
-            <Image
-              src="/agentforge-logo.svg"
-              alt="AgentForge logo"
-              width="28"
-              height="28"
-              className="rounded-sm"
-            ></Image>
-            )}
+              <Image alt="AgentForge logo" src="/light_agentforge-logo.svg" width={28} height={28} className="mr-2"></Image>
+          ) : (
+              <Image alt="AgentForge logo" src="/agentforge-logo.svg" width={28} height={28} className="mr-2"></Image>
+          )}
           </Link>
 
           

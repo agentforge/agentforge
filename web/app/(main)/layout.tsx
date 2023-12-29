@@ -31,8 +31,7 @@ export default function RootLayout({
               <Nav_demo />
             </div>
           </Suspense>
-          {/* <main className="flex min-h-screen w-full flex-col items-center justify-center py-32"> */}
-          
+            {/* <main className="flex min-h-screen w-full flex-col items-center justify-center py-32"> */}
             {children}
         </ThemeProvider>
         {/* </main> */}
