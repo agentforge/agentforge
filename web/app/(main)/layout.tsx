@@ -22,17 +22,18 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={cx(sfPro.variable, inter.variable)}>
-        <div className="fixed h-screen w-full bg-white dark:bg-black" />
-        <Suspense fallback="...">
-          {/* @ts-expect-error Server Component */}
-          {/*<Nav />*/}
-          <div className="flex justify-center">
-            <Nav_demo />
-          </div>
-        </Suspense>
-        {/* <main className="flex min-h-screen w-full flex-col items-center justify-center py-32"> */}
+        <div className="fixed h-screen w-full bg-zinc-100 dark:bg-black" />
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          {children}
+          <Suspense fallback="...">
+            {/* @ts-expect-error Server Component */}
+            {/*<Nav />*/}
+            <div className="flex justify-center">
+              <Nav_demo />
+            </div>
+          </Suspense>
+          {/* <main className="flex min-h-screen w-full flex-col items-center justify-center py-32"> */}
+          
+            {children}
         </ThemeProvider>
         {/* </main> */}
         <Analytics />

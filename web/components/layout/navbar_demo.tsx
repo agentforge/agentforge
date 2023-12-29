@@ -26,30 +26,15 @@ export default function Navbar_demo() {
         className={"fixed pt-[16px] md:pt-[64px] pb-[16px] md:pb-[24px] w-screen backdrop-blur-xl z-30"}
       >
         {/* Header - desktop */}
-        <div className="hidden md:flex w-[1120px] mx-5 flex h-16 max-w-screen-xl items-center justify-between xl:mx-auto ">
+        <div className="hidden md:flex w-[1120px] mx-5 flex-auto h-16 max-w-screen-xl items-center justify-between xl:mx-auto ">
           {/*Logotype - left algined*/}
-          <Link href="/" className="flex items-center font-display text-2xl text-black dark:text-white">
+          <Link href="/" className="flex items-center font-display text-2xl text-black dark:text-white fill-black dark:fill-white"> 
           {theme === 'light' ? (
-              <Image
-              src="/light_agentforge-logo.svg"
-              alt="AgentForge logo"
-              width="28"
-              height="28"
-              className="mr-2 rounded-sm"
-
-              ></Image>
-              ) : (
-              <Image
-              src="/agentforge-logo.svg"
-              alt="AgentForge logo"
-              width="28"
-              height="28"
-              className="mr-2 rounded-sm"
-
-              ></Image>  
-              )
-          }
-            <p>AgentForge</p>
+              <Image alt="AgentForge logo" src="/light_agentforge-logo.svg" width={28} height={28} className="mr-2"></Image>
+          ) : (
+              <Image alt="AgentForge logo" src="/agentforge-logo.svg" width={28} height={28} className="mr-2"></Image>
+          )}
+            <p><b>AgentForge</b></p>
           </Link>
 
           {/* Nav menu - full sized */}
