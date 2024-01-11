@@ -141,6 +141,7 @@ app.include_router(user_router, prefix="/v1/user", tags=["users"])
 app.include_router(agent_router, prefix="/v1", tags=["agent_forge"])
 app.include_router(subscription_router, prefix="/v1", tags=["subscription"])
 app.include_router(ws_router, prefix="/v1", tags=["ws"])
+app.include_router(events_router, prefix="/events", tags=["events"])
 
 @app.on_event("startup")
 def startup_event():
@@ -183,3 +184,5 @@ async def log_requests(request: Request, call_next):
     response = await call_next(request)
     logger.info(f"Response: {response.status_code}")
     return response
+
+# Initialize celery, import instance from utils/celery/celery.py

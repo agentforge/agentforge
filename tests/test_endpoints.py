@@ -2,6 +2,8 @@
 import requests
 import os
 import pytest
+from httpx import AsyncClient
+from main import app
 
 # Define the URL of the API
 API_URL = "http://localhost:3000"
@@ -96,6 +98,93 @@ def test_reset():
     # Assert that the response contains True
     assert len(response.json()["success"]) == True
 
+@pytest.fixture
+def client():
+    return AsyncClient(app=app, base_url=API_URL)
+
+async def test_create_schedule(client):
+    response = await client.post(
+        "/v1/create-schedule",
+        json={"event_name": "Test Event", "interval": 60, "validation_logic": "test_logic"},
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert "message" in data
+    assert "id" in data
+
+async def test_create_schedule_invalid_input(client):
+    response = await client.post("/v1/create-schedule", json={})
+    assert response.status_code == 400
+
+async def test_delete_schedule(client):
+    # Create a schedule to test deletion
+    create_response = await client.post(
+        "/v1/create-schedule",
+        json={"event_name": "Test Event", "interval": 60, "validation_logic": "test_logic"},
+    )
+    schedule_id = create_response.json()["id"]
+
+    # Now, test deletion
+    response = await client.delete(f"/v1/delete-schedule/{schedule_id}")
+    assert response.status_code == 200
+    data = response.json()
+    assert "message" in data
+
+async def test_delete_schedule_invalid_id(client):
+    response = await client.delete("/v1/delete-schedule/invalid_id")
+    assert response.status_code == 422
+
+async def test_delete_schedule_not_found(client):
+    response = await client.delete("/v1/delete-schedule/6064aef63d6b67669e836912")
+    assert response.status_code == 404
+
+async def test_view_schedule(client):
+    response = await client.get("/v1/view-schedule")
+    assert response.status_code == 200
+    data = response.json()
+    assert "schedules" in data
+
+async def test_update_schedule(client):
+    # Create a schedule to test updating
+    create_response = await client.post(
+        "/v1/create-schedule",
+        json={"event_name": "Test Event", "interval": 60, "validation_logic": "test_logic"},
+    )
+    schedule_id = create_response.json()["id"]
+
+    # Now, test updating
+    response = await client.put(
+        f"/v1/update-schedule/{schedule_id}",
+        json={"interval": 120, "validation_logic": "updated_logic"},
+    )
+    assert response.status_code == 200
+    data = response.json()
+    assert "message" in data
+
+async def test_update_schedule_invalid_id(client):
+    response = await client.put("/v1/update-schedule/invalid_id", json={})
+    assert response.status_code == 422
+
+async def test_update_schedule_not_found(client):
+    response = await client.put(
+        "/v1/update-schedule/6064aef63d6b67669e836912",
+        json={"interval": 120, "validation_logic": "updated_logic"},
+    )
+    assert response.status_code == 404
+
+async def test_subscribe_schedule(client):
+    response = await client.post("/v1/subscribe-schedule")
+    assert response.status_code == 200
+    data = response.json()
+    assert "message" in data
+
+async def test_unsubscribe_schedule(client):
+    response = await client.post("/v1/unsubscribe-schedule")
+    assert response.status_code == 200
+    data = response.json()
+    assert "message" in data
+
+# TO DO: Register Notifications Test
 
 # Run the tests
 if __name__ == "__main__":
