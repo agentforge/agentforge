@@ -31,8 +31,6 @@ self.addEventListener('push', (event) => {
   };
 
   event.waitUntil(self.registration.showNotification(eventData, options));
-
-  //self.registration.showNotification(eventData.title || 'Default Title', options);
 });
 
 self.addEventListener('notificationclick', (event) => {

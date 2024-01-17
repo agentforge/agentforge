@@ -7,7 +7,6 @@ import {
   NotificationBell,
   INotificationBellProps,
 } from "@novu/notification-center";
-import { Novu } from "@novu/node";
 import { useEffect, useState } from 'react';
 import {
   AlertDialog,
@@ -89,7 +88,7 @@ export default function Home() {
   
       const result = await response.json();
       //Debugging
-      console.log('Created Schedule:', result);
+      //console.log('Created Schedule:', result);
     } catch (error) {
       console.error('API Error:', error);
     }
@@ -248,6 +247,7 @@ export default function Home() {
     return buffer;
   }
   
+  // Private key for push subscription
   const publicApplicationServerKey = "BPZjhYmoa74hrffBOS0flp3Sk_EcLuSFFww7iJ8HNFZe6JVx6tshoBQKT4GOZOxgBq81qqLAjEu9JKBwamCEELY";
 
   const sendSubscriptionToServer = async (subscription: PushSubscription) => {
@@ -260,7 +260,8 @@ export default function Home() {
         },
         body: JSON.stringify(subscription),
       });
-      console.log('response: ', response)
+      //debugging
+      //console.log('response: ', response)
       if (!response.ok) {
         console.error('Failed to send subscription to the server');
       }
@@ -269,46 +270,90 @@ export default function Home() {
     }
   };
 
-  async function unregisterServiceWorker() {
-    if ('serviceWorker' in navigator) {
-      try {
-        const swRegistration = await navigator.serviceWorker.ready;
-        await swRegistration.unregister();
-        console.log('Service Worker successfully unregistered');
+// Function to unregister the service worker and unsubscribe from push notifications
+const unSubscribeNotifications = async () => {
+  if (typeof window !== 'undefined') { // Check if running on the client-side
+    try {
+      // Get the existing service worker registration
+      const registration = await navigator.serviceWorker.ready;
 
-        if (Notification.permission === 'granted') {
-          try {
-            const permission = Notification.requestPermission();
-            console.log(`Notification permission requested: ${permission}`);
-          } catch (err) {
-            console.error('Error occurred attempting to request Notification permission:', err);
-          }
-        }
-      } catch (err) {
-        console.error('Error occurred attempting to unregister Service Worker:', err);
+      // Retrieve the push subscription
+      const subscription = await registration.pushManager.getSubscription();
+      //debugging
+      //console.log(subscription)
+
+      if (!subscription) {
+        console.log('No push manager subscription found');
       }
+
+      // Unsubscribe from push notifications
+      const successful = await subscription?.unsubscribe();
+      console.log('push manager unsubscribe success', successful);
+
+      // Unregister the service worker
+      await registration.unregister();
+      console.log('Service Worker unregistered successfully');
+
+      // Handle service removal or any other logic here
+      try {
+        // Assuming you have an API endpoint for removing subscriptions
+        const response = await fetch('http://localhost:8000/events/v1/unsubscribe-notifications', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(subscription),
+        });
+
+        if (response.ok) {
+          localStorage.setItem('hasUnsubscribed', 'true');
+          alert('You unsubscribed successfully!');
+          return true;
+        } else {
+          console.error('Failed to remove subscription from the server');
+          return false;
+        }
+      } catch (error) {
+        console.error('Error while removing subscription:', error);
+        return false;
+      }
+    } catch (error) {
+      // Handle registration errors
+      console.error('Service Worker registration failed:', error);
+      return false;
     }
   }
+};
 
-  async function registerServiceWorker() {
+async function registerServiceWorker() {
   if ('serviceWorker' in navigator) {
     try {
-      const registration = await navigator.serviceWorker.register('/service-worker.js');
-      console.log('Service Worker registered with scope:', registration.scope);
+      // Check if a service worker is already registered
+      const registration = await navigator.serviceWorker.getRegistration();
+
+      if (!!registration) {
+        console.log('Service worker is already registered:', registration);
+        return;
+      }
+
+      // If no service worker is registered, proceed with registration
+      const newRegistration = await navigator.serviceWorker.register('/service-worker.js');
+      console.log('Service Worker registered with scope:', newRegistration.scope);
 
       await navigator.serviceWorker.ready;
       console.log('Service worker is active');
 
       if ('PushManager' in window) {
-        const existingSubscription = await registration.pushManager.getSubscription();
-        
+        const existingSubscription = await newRegistration.pushManager.getSubscription();
+
         if (!existingSubscription) {
-          const newSubscription = await registration.pushManager.subscribe({
+          const newSubscription = await newRegistration.pushManager.subscribe({
             userVisibleOnly: true,
             applicationServerKey: publicApplicationServerKey,
           });
-
-          console.log('Received push subscription:', JSON.stringify(newSubscription));
+          
+          //debugging
+          //console.log('Received push subscription:', JSON.stringify(newSubscription));
           await sendSubscriptionToServer(newSubscription);
         } else {
           console.log('Subscription already exists:', JSON.stringify(existingSubscription));
@@ -323,6 +368,7 @@ export default function Home() {
     console.warn('Service Worker is not supported in this browser.');
   }
 }
+
 
 function registerNotificationPermissions() {
   if (Notification.permission === 'default') {
@@ -496,14 +542,14 @@ function registerNotificationPermissions() {
     </div>
 
       {/* Notification Buttons */}
-      {/* <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
         <Button onClick={() => registerNotificationPermissions()}>
           register notifications
         </Button>
-        <Button onClick={() => unregisterServiceWorker()}>
+        <Button onClick={() => unSubscribeNotifications()}>
           unregister notifications
         </Button>
-      </div> */}
+      </div>
       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
       <ModeToggle />
       </div>
