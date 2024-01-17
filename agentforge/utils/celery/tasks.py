@@ -1,24 +1,20 @@
 import asyncio
 import json
 from bson import ObjectId
-#from celery import Celery
 from celery.utils.log import get_task_logger
-#from celery import CeleryConfig
+from celery.signals import task_prerun, task_postrun
 from datetime import datetime, timedelta
-from socketio import AsyncServer
 from pymongo import MongoClient
 from celery_config import celery_app
 from pywebpush import webpush, WebPushException
-from novu.config import NovuConfig
+
 from novu.api import EventApi
 
-# to start task worker:
-# celery -A tasks worker --loglevel=info 
-
-NovuConfig().configure("https://api.novu.co", "f9c8bc10975f2e9148a82aa87b8891db")
+# TO DO: Store in env var or config file
+novu_url = "https://api.novu.co"
+novu_api_key = "f9c8bc10975f2e9148a82aa87b8891db"
 
 logger = get_task_logger(__name__)
-sio = AsyncServer(cors_allowed_origins="*")
 
 # Connect to MongoDB
 mongo_client = MongoClient("mongodb://localhost:27017")
@@ -28,7 +24,6 @@ users_collection = db["users"]
 
 # Function to query MongoDB for due events
 def query_due_events_from_mongodb():
-    #from events import schedule_collection
     try:
         current_time = datetime.utcnow()
 
@@ -38,18 +33,28 @@ def query_due_events_from_mongodb():
             "interval": {"$exists": True},  # Only events with interval defined
             "$expr": {
                 "$lte": [
-                    "$last_execution_time",  # Adjust the field name if needed
-                    # {"$subtract": [current_time, {"$multiply": ["$interval", 24 * 60 * 60 * 1000]}]}  # Convert days to milliseconds
-                    {"$subtract": [current_time, {"$multiply": ["$interval", 60 * 1000]}]} # minutes - use this for testing
+                    "$last_execution_time",
+                    {"$subtract": [current_time, {"$multiply": ["$interval", 60 * 1000]}]}
                 ]
             }
         })
 
-        return list(due_and_subscribed_events)
+        due_events_list = list(due_and_subscribed_events)
+        print("Due Events List:", due_events_list)
+
+        # Update last_execution_time for each due event
+        for due_event in due_events_list:
+            # Update the last_execution_time to the current time
+            schedule_collection.update_one(
+                {"_id": due_event["_id"]},
+                {"$set": {"last_execution_time": current_time}}
+            )
+
+        return due_events_list
 
     except Exception as e:
         # Log the error or handle it as needed
-        print(f"Error in query_due_events_from_mongodb: {str(e)}")
+        logger.error(f"Error in query_and_update_due_events_from_mongodb: {str(e)}")
         return []
 
 # Function to retrieve event details from MongoDB
@@ -69,7 +74,7 @@ def get_event_from_mongodb(event_id):
 
     except Exception as e:
         # Log the error or handle it as needed
-        print(f"Error in get_event_from_mongodb: {str(e)}")
+        logger.error(f"Error in get_event_from_mongodb: {str(e)}")
         raise  # Re-raise the exception to propagate it to the caller
 
 # Function to send a notification
@@ -96,30 +101,20 @@ async def send_notification(event):
                 }
             }
             logger.info(f"formatted_subscription: {str(formatted_subscription)}")
-
-            # create push notification object to send to pwa
-            # push_message = {
-            #     "event": "notification",
-            #     "user_id": user_id,
-            #     "eventName": event.get("event_name"),
-            # }
-            # logger.info(f"push_message: {str(push_message)}")
-
-            # NOVU
-            # EventApi().trigger(
+            
+            # NOVU event notification
+            # novu = EventApi(novu_url, novu_api_key).trigger(
             #     name="schedule",  # The trigger ID of the workflow. It can be found on the workflow page.
-            #     recipients="123456789",
-            #     payload={"Hello, World"},  # Your Novu payload goes here
+            #     recipients="123456789", # subscriber (user) ID
+            #     payload={"tenant.data": str(event)}, # notification payload
             # )
-
-            push_data = { "message": "hello, world" }
-            json_data = json.dumps(push_data)
+            # logger.info(f"novu event sending: {str(novu)}")
 
             try:
-                # Send the push message using pywebpush
+                # Send the push message using pywebpush     TO DO: Fix payload
                 webpush(
                     subscription_info=formatted_subscription,
-                    data="Hello, world",
+                    data={"Hello, World"},
                     vapid_private_key='v19NCEd4-9zM6XaexzGBHResKkgmDWbniZgo6vY7Lvw', # TO DO: store key in env var or .pem
                     vapid_claims={
                         "sub": "mailto:your@email.com",
@@ -133,8 +128,8 @@ async def send_notification(event):
 
     except Exception as e:
         # Log the error or handle it as needed
-        print(f"Error in send_notification: {str(e)}")
-        raise  # Re-raise the exception to propagate it to the caller
+        logger.error(f"send_notification: {str(e)}")
+        raise  # Re-raise the exception to propagate it to the caller  
 
 # master scheduler celery task runs every minute and checks db for due events
 @celery_app.task(name="master_scheduler")
@@ -154,7 +149,6 @@ def master_scheduler():
     except Exception as e:
         logger.error(f"Error in master_scheduler: {str(e)}")
         # Handle the exception as needed
-        return 0  # Return 0 in case of an error
     
 # execute event celery task is called by master scheduler for due events        
 @celery_app.task(name="execute_event")
@@ -164,10 +158,10 @@ def execute_event(event_id):
 
         # Perform event-specific logic
         event = get_event_from_mongodb(event_id)
+        print(f"event: {str(event)}")
 
         # Optionally send a notification
         asyncio.run(send_notification(event))
-        logger.info(f"Calling send_notification")
 
     except Exception as e:
         logger.error(f"Error in execute_event for event {event_id}: {str(e)}")

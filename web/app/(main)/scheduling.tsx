@@ -1,7 +1,6 @@
 'use client'
-import { ModeToggle } from '@/components/mode-toggle'
+import { ModeToggle } from '@/components/ui/mode-toggle'
 import { Button } from '@/components/ui/button'
-import Image from 'next/image'
 import {
   NovuProvider,
   PopoverNotificationCenter,
@@ -22,6 +21,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Input } from '@/components/ui/input'; 
+import DOMPurify from 'dompurify';
 
 export default function Home() {
   const [createEventName, setcreateEventName] = useState('');
@@ -37,7 +37,6 @@ export default function Home() {
     _id: string;
     event_name: string;
     interval: number;
-    validation_logic: string;
     subscribe?: number;
   }
 
@@ -45,7 +44,8 @@ export default function Home() {
 
   const validateEventName = (eventName: string): boolean => {
     // Check if the input is not empty and has a reasonable length
-    return eventName.trim() !== '' && eventName.length <= 50;
+    const sanitizedEventName = DOMPurify.sanitize(eventName);
+    return sanitizedEventName.trim() !== '' && sanitizedEventName.length <= 50;
   };
 
   const normalizeEventName = (eventName: string): string => {
@@ -119,6 +119,12 @@ export default function Home() {
 
   const handleDeleteSchedule = async () => {
     try {
+      if (!validateEventName(deleteEventName)) {
+        console.error('Invalid event name');
+        // Optionally, display an error message to the user
+        return;
+      }
+
       const payload = {
         event_name: normalizeEventName(deleteEventName),
       }
@@ -142,6 +148,12 @@ export default function Home() {
 
   const handleUpdateSchedule = async () => {
     try {
+      if (!validateEventName(updateEventName)) {
+        console.error('Invalid event name');
+        // Optionally, display an error message to the user
+        return;
+      }
+
       const payload = {
         event_name: normalizeEventName(updateEventName),
         interval: updateIntervalValue
@@ -166,6 +178,12 @@ export default function Home() {
 
   const handleSubscribeSchedule = async () => {
     try {
+      if (!validateEventName(subscribeEventName)) {
+        console.error('Invalid event name');
+        // Optionally, display an error message to the user
+        return;
+      }
+
       const payload = {
         event_name: normalizeEventName(subscribeEventName),
       }
@@ -188,6 +206,12 @@ export default function Home() {
 
   const handleUnSubscribeSchedule = async () => {
     try {
+      if (!validateEventName(unsubscribeEventName)) {
+        console.error('Invalid event name');
+        // Optionally, display an error message to the user
+        return;
+      }
+
       const payload = {
         event_name: normalizeEventName(unsubscribeEventName),
       }
@@ -266,56 +290,62 @@ export default function Home() {
     }
   }
 
-  const registerServiceWorker = async () => {
-    if ('serviceWorker' in navigator) {
-      try {
-        const registration = await navigator.serviceWorker.register('/service-worker.js');
-        console.log('Service Worker registered with scope:', registration.scope);
-        
-        await navigator.serviceWorker.ready; // Wait for the service worker to become active
-        console.log('Service worker is active')
+  async function registerServiceWorker() {
+  if ('serviceWorker' in navigator) {
+    try {
+      const registration = await navigator.serviceWorker.register('/service-worker.js');
+      console.log('Service Worker registered with scope:', registration.scope);
 
-        // Check if pushManager is supported
-        if ('PushManager' in window) {
-          // Get the push subscription
-          const subscription = await registration.pushManager.subscribe({
+      await navigator.serviceWorker.ready;
+      console.log('Service worker is active');
+
+      if ('PushManager' in window) {
+        const existingSubscription = await registration.pushManager.getSubscription();
+        
+        if (!existingSubscription) {
+          const newSubscription = await registration.pushManager.subscribe({
             userVisibleOnly: true,
             applicationServerKey: publicApplicationServerKey,
           });
-  
-          console.log("Received push subscription: ", JSON.stringify(subscription));
-  
-          // Send the subscription to the server
-          await sendSubscriptionToServer(subscription);
-        } else {
-          console.warn('Push notifications are not supported in this browser.');
-        }
-      } catch (error) {
-        console.error('Service Worker registration failed:', error);
-      }
-    } else {
-      console.warn('Service Worker is not supported in this browser.');
-    }
-  };  
 
-  function registerNotificationPermissions() {
-    if (Notification.permission === 'default') {
-      Notification.requestPermission().then((permission) => {
-        if (permission === 'granted') {
-          console.log('Notification permission granted');
-          registerServiceWorker();
+          console.log('Received push subscription:', JSON.stringify(newSubscription));
+          await sendSubscriptionToServer(newSubscription);
         } else {
-          console.warn('Notification permission denied');
+          console.log('Subscription already exists:', JSON.stringify(existingSubscription));
         }
-      });
-    } else if (Notification.permission === 'granted') {
-      console.warn('Notification permission already granted');
-    } else {
-      console.warn('Service Worker registration skipped because notifications are not allowed or Service Worker is not supported.');
+      } else {
+        console.warn('Push notifications are not supported in this browser.');
+      }
+    } catch (error) {
+      console.error('Service Worker registration failed:', error);
     }
+  } else {
+    console.warn('Service Worker is not supported in this browser.');
   }
+}
+
+function registerNotificationPermissions() {
+  if (Notification.permission === 'default') {
+    Notification.requestPermission().then((permission) => {
+      if (permission === 'granted') {
+        console.log('Notification permission granted');
+        registerServiceWorker();
+      } else {
+        console.warn('Notification permission denied');
+      }
+    });
+  } else if (Notification.permission === 'granted') {
+    console.log('Notification permission already granted');
+    registerServiceWorker();
+  } else {
+    console.warn('Service Worker registration skipped because notifications are not allowed or Service Worker is not supported.');
+  }
+}
 
   useEffect(() => {
+    // asks user permission to display push notifications,
+    // then checks for and registers service-worker and
+    // PushManager
     registerNotificationPermissions();
   }, []);
 
@@ -340,8 +370,12 @@ export default function Home() {
 
       <NovuProvider
       //Subscriber ID is in NOVU subscribers dashboard
-        subscriberId={process.env.NOVU_SUB_ID || ''}
-        applicationIdentifier={process.env.NOVU_APP_ID || ''}
+      // TO DO: Store sub ID and app ID in env var
+      
+      //subscriberId={process.env.NOVU_SUB_ID || ''}
+        subscriberId='123456789'
+      //applicationIdentifier={process.env.NOVU_APP_ID || ''}
+        applicationIdentifier='H8H2BBYuflb8'
       >
         <PopoverNotificationCenter colorScheme={'light'}>
           {({ unseenCount }) => (

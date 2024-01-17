@@ -16,11 +16,11 @@ self.addEventListener('push', (event) => {
   console.log('Received push event:', eventData);
 
   const options = {
-    body: eventData.message || 'No message included.',
+    body: event.data || 'No data included.',
     icon: '/path/to/icon.png',
     vibrate: [100, 50, 100],
     data: {
-      url: eventData.url || '/path/to/url',
+      url: event.url || '/path/to/url',
     },
     actions: [
       {
@@ -30,7 +30,9 @@ self.addEventListener('push', (event) => {
     ],
   };
 
-  self.registration.showNotification(eventData.title || 'Default Title', options);
+  event.waitUntil(self.registration.showNotification(eventData, options));
+
+  //self.registration.showNotification(eventData.title || 'Default Title', options);
 });
 
 self.addEventListener('notificationclick', (event) => {
@@ -44,30 +46,3 @@ function sendMessageToMainPage(message) {
     mainPageClient.postMessage(message);
   }
 }
-
-//import { Novu } from "@novu/node";
-
-//const novu = new Novu(process.env.NOVU_API_KEY || '');
-
-// interface NotificationData {
-//   notification: string;
-//   // Add other fields as needed based on your actual notification payload
-// }
-
-// const handleNotification = (data: NotificationData) => {
-
-//   // Perform actions based on the received notification
-//   try {
-//     novu.trigger("schedule", {
-//         to: {
-//           subscriberId: process.env.NOVU_SUB_ID || '',
-//         },
-//         payload: {
-//           description: "Test notification",
-//         },
-//       });
-//   console.log('Received notification: ', data.notification);
-// } catch (error) {
-//   console.log('Service Worker error: ', error);
-//     };
-// }

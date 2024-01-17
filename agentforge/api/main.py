@@ -9,6 +9,8 @@ from agentforge.api.model_profiles import router as model_profiles_router
 from agentforge.api.agent import router as agent_router
 from agentforge.api.user import router as user_router
 from agentforge.api.ws import router as ws_router
+from agentforge.api.sim import router as sim_router
+# from agentforge.api.events import router as events_router
 from agentforge.api.subscription import router as subscription_router
 from agentforge.api.supertokens import override_functions
 from agentforge.api.app import init_api
@@ -141,7 +143,8 @@ app.include_router(user_router, prefix="/v1/user", tags=["users"])
 app.include_router(agent_router, prefix="/v1", tags=["agent_forge"])
 app.include_router(subscription_router, prefix="/v1", tags=["subscription"])
 app.include_router(ws_router, prefix="/v1", tags=["ws"])
-app.include_router(events_router, prefix="/events", tags=["events"])
+app.include_router(sim_router, prefix="/v1", tags=["sim"])
+# app.include_router(events_router, prefix="/events", tags=["events"])
 
 @app.on_event("startup")
 def startup_event():
