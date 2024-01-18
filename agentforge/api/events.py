@@ -1,4 +1,3 @@
-#import logging
 from fastapi import APIRouter, Request, Depends, HTTPException
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
@@ -21,21 +20,22 @@ from supertokens_python.recipe.session.framework.fastapi import verify_session
 from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.recipe.emailpassword.asyncio import get_user_by_id
 
+from agentforge.adapters import DB
+from mongodb import MongoDBKVStore
+
+
 # TO DO: Store in env var or config file
 novu_url = "https://api.novu.co"
 novu_api_key = "f9c8bc10975f2e9148a82aa87b8891db"
-
 
 router = APIRouter()
 
 # TO DO: store in environment variable
 PUBLIC_APPLICATION_SERVER_KEY = "BPZjhYmoa74hrffBOS0flp3Sk_EcLuSFFww7iJ8HNFZe6JVx6tshoBQKT4GOZOxgBq81qqLAjEu9JKBwamCEELY"
 
-# connecting within each endpoint avoids connection pooling pausing due to celery forks
+# may need to instantiate mongo_client in each endpoint to avoid connection pooling pausing due to celery forks
 # should raise max pool connections, currently at default of 10
-def get_mongo_client():
-    # This function returns a new MongoDB client instance.
-    return MongoClient("mongodb://localhost:27017")
+mongo_client = MongoDBKVStore(DB)
 
 @router.post("/v1/create-schedule")
 def create_schedule(request: Request, session: SessionContainer = Depends(verify_session())):
@@ -68,20 +68,33 @@ def create_schedule(request: Request, session: SessionContainer = Depends(verify
             "last_execution_time": current_time
         }
 
-        with get_mongo_client() as mongo_client:
-            # Use the client to interact with the database
-            db = mongo_client["agentforge"]
-            schedule_collection = db["events"]
+        # Find the user based on user_id
+        user_document = mongo_client.get("users", key=user_id)
 
-            result = schedule_collection.insert_one(new_schedule)
-            new_schedule["_id"] = str(result.inserted_id) 
+        if user_document:
+            # Check if "events" field exists in the user document, if not, create it
+            if "events" not in user_document:
+                user_document["events"] = {}
 
-            # debugging
-            #logger.info("New Schedule: %s", new_schedule)
+            # Check if the event_name already exists for the user
+            if event_name in user_document["events"]:
+                raise HTTPException(status_code=400, detail="Event with the same name already exists for the user.")
+
+            # Insert the new schedule into the user's "events" field
+            user_document["events"][event_name] = new_schedule
+
+            # Use the MongoDBKVStore instance to update the user document
+            mongo_client.set("users", key=user_id, data=user_document)
 
             # Schedule the new event for execution using Celery
             master_scheduler.apply_async(countdown=data.interval * 60)  # Schedule in seconds
+
             return new_schedule
+        else:
+            raise HTTPException(status_code=404, detail="User not found.")
+
+    except HTTPException as http_exception:
+        raise http_exception
 
     except Exception as e:
         # Log other unexpected errors along with the traceback
@@ -103,17 +116,21 @@ def delete_schedule(request: Request, session: SessionContainer = Depends(verify
     if not event_name:
         raise HTTPException(status_code=400, detail="Invalid or missing event_name")
 
-    with get_mongo_client() as mongo_client:
-            db = mongo_client["agentforge"]
-            schedule_collection = db["events"]
-            
-            # Find and delete the scheduled event with the given event name
-            result = schedule_collection.delete_one({"event_name": event_name})
+    user_id = session.get_user_id()
 
-            if result.deleted_count == 1:
-                return {"message": f"Scheduled event with event name {event_name} deleted"}
-            else:
-                raise HTTPException(status_code=404, detail="Scheduled event not found")
+    # Find the user based on user_id
+    user_document = mongo_client.get("users", key=user_id)
+
+    if user_document and "events" in user_document:
+        # Check if the event_name exists for the user
+        if event_name in user_document["events"]:
+            # Use the MongoDBKVStore instance to delete the event from the user's "events" field
+            mongo_client.delete("users", key=user_id)
+            return {"message": f"Scheduled event with event name {event_name} deleted"}
+        else:
+            raise HTTPException(status_code=404, detail="Scheduled event not found")
+    else:
+        raise HTTPException(status_code=404, detail="User not found or user has no scheduled events.")
 
 @router.get("/v1/view-schedule")
 def view_schedule(session: SessionContainer = Depends(verify_session())):
@@ -122,25 +139,16 @@ def view_schedule(session: SessionContainer = Depends(verify_session())):
     if session is None:
         raise Exception("User session not found.")
 
-    try:
-        with get_mongo_client() as mongo_client:
-            db = mongo_client["agentforge"]
-            schedule_collection = db["events"]
+    user_id = session.get_user_id()
 
-            # Return the list of scheduled events from MongoDB
-            schedule_list = list(schedule_collection.find())
-            
-            # Convert ObjectId to string in the schedule_list
-            for schedule in schedule_list:
-                schedule["_id"] = str(schedule["_id"])
+    # Retrieve the user document from MongoDB using MongoDBKVStore
+    user_document = mongo_client.get("users", key=user_id)
 
-            json_content = json.dumps(jsonable_encoder(schedule_list), default=lambda x: str(x))
-            return JSONResponse(content=json_content)
-        
-    except Exception as e:
-        logger.error(f"Error in view_schedule: {str(e)}")
-        traceback.print_exc()
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+    if user_document and "events" in user_document:
+        json_content = json.dumps(jsonable_encoder(user_document["events"]), default=lambda x: str(x))
+        return JSONResponse(content=json_content)
+    else:
+        raise HTTPException(status_code=404, detail="User not found or user has no scheduled events.")
 
 # update an event
 @router.post("/v1/update-schedule/")
@@ -149,9 +157,9 @@ def update_schedule(request: Request, session: SessionContainer = Depends(verify
     
     if session is None:
         raise Exception("User session not found.")
-
+    
+    user_id = session.get_user_id()
     update_fields = {}
-
     data = await request.body()
 
     # Validate and sanitize event_name
@@ -171,32 +179,23 @@ def update_schedule(request: Request, session: SessionContainer = Depends(verify
     if interval:
         update_fields["interval"] = data.interval
 
-    with get_mongo_client() as mongo_client:
-            db = mongo_client["agentforge"]
-            schedule_collection = db["events"]
+     try:
+        # Update the scheduled event in the user's "events" field using MongoDBKVStore
+        result = mongo_client.set("users", key=user_id, data={"events": {event_name: update_fields}})
 
-            # Check if there are any fields to update
-            if update_fields:
-                # Find and update the scheduled event with the given ID in MongoDB
-                result = schedule_collection.update_one(
-                    {"event_name": event_name},
-                    {"$set": update_fields},
-                )
+        if result:
+            # only reschedule celery master if interval was changed
+            if "interval" in update_fields:
+                # Reschedule the event for execution using Celery
+                master_scheduler.apply_async(countdown=interval * 60)  # Schedule in seconds
 
-                if result.modified_count == 1:
-                    updated_schedule = schedule_collection.find_one({"event_name": event_name})
-
-                    # only reschedule celery master if interval was changed
-                    if "interval" in update_fields:
-                        # Reschedule the event for execution using Celery
-                        master_scheduler.apply_async(countdown=interval * 60)  # Schedule in seconds
-
-                    return updated_schedule
-                else:
-                    raise HTTPException(status_code=404, detail="Scheduled event not found")
-            else:
-                # If no fields to update, return a response indicating that nothing was updated
-                return {"message": "No fields to update"}
+            return {"message": "Scheduled event updated successfully"}
+        else:
+            raise HTTPException(status_code=404, detail="User not found or scheduled event not found")
+    except Exception as e:
+        logger.error(f"Error updating scheduled event: {str(e)}")
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail="Internal Server Error")
 
 # subscribe to an event
 @router.post("/v1/subscribe-schedule/")
@@ -206,32 +205,27 @@ def subscribe_schedule(request: Request, session: SessionContainer = Depends(ver
     if session is None:
         raise Exception("User session not found.")
 
+    user_id = session.get_user_id()
+
     data = await request.body()
 
     # Validate and sanitize event_name
     event_name = bleach.clean(data.get("event_name", ""), strip=True)
-
     if not event_name:
         raise HTTPException(status_code=400, detail="Invalid or missing event_name")
 
+    try:
+        # Update the 'subscribed' field for the scheduled event in the user's "events" field using MongoDBKVStore
+        result = mongo_client.set("users", key=user_id, data={"events": {event_name: {"subscribed": 1}}})
 
-    with get_mongo_client() as mongo_client:
-            db = mongo_client["agentforge"]
-            schedule_collection = db["events"]
-
-            # Find the scheduled event with the given event name
-            existing_schedule = schedule_collection.find_one({"event_name": event_name})
-
-            if existing_schedule:
-                # Update the 'subscribe' field to 1 for subscribe
-                schedule_collection.update_one(
-                    {"event_name": event_name},
-                    {"$set": {"subscribed": 1}}
-                )
-
-                return {"message": f"Scheduled event with event name {event_name} subscribed"}
-            else:
-                raise HTTPException(status_code=404, detail="Scheduled event not found")
+        if result:
+            return {"message": f"Scheduled event with event name {event_name} subscribed"}
+        else:
+            raise HTTPException(status_code=404, detail="User not found or scheduled event not found")
+    except Exception as e:
+        logger.error(f"Error subscribing to scheduled event: {str(e)}")
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail="Internal Server Error")
 
 # unsubscribe from event
 @router.post("/v1/unsubscribe-schedule/")
@@ -241,31 +235,28 @@ def unsubscribe_schedule(request: Request, session: SessionContainer = Depends(v
     if session is None:
         raise Exception("User session not found.")
 
+    user_id = session.get_user_id()
+
     data = await request.body()
 
     # Validate and sanitize event_name
     event_name = bleach.clean(data.get("event_name", ""), strip=True)
-
     if not event_name:
         raise HTTPException(status_code=400, detail="Invalid or missing event_name")
 
-    with get_mongo_client() as mongo_client:
-            db = mongo_client["agentforge"]
-            schedule_collection = db["events"]
+    try:
+        # Update the 'subscribed' field to 0 for the scheduled event in the user's "events" field using MongoDBKVStore
+        result = mongo_client.set("users", key=user_id, data={"events": {event_name: {"subscribed": 0}}})
 
-            # Find the scheduled event with the given event name
-            existing_schedule = schedule_collection.find_one({"event_name": event_name})
+        if result:
+            return {"message": f"Scheduled event with event name {event_name} unsubscribed"}
+        else:
+            raise HTTPException(status_code=404, detail="User not found or scheduled event not found")
+    except Exception as e:
+        logger.error(f"Error unsubscribing from scheduled event: {str(e)}")
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail="Internal Server Error")
 
-            if existing_schedule:
-                # Update the 'subscribe' field to 0 for unsubscribe
-                schedule_collection.update_one(
-                    {"event_name": event_name},
-                    {"$set": {"subscribed": 0}}
-                )
-
-                return {"message": f"Scheduled event with event name {event_name} unsubscribed"}
-            else:
-                raise HTTPException(status_code=404, detail="Scheduled event not found")
 
 class SubscriptionData(BaseModel):
     endpoint: str
@@ -281,51 +272,50 @@ def subscribe_notifications(request: Request, session: SessionContainer = Depend
     if session is None:
         raise Exception("User session not found.")
 
+    user_id = session.get_user_id()
+
     try:
+        data = await request.json()
+
         # Ensure the required fields are present in the request body
-        if not request.body.keys or not request.body.endpoint:
+        if not data.get("keys") or not data.get("endpoint"):
             raise HTTPException(status_code=400, detail="Incomplete push subscription data")
 
         # The domain of the endpoint is essentially the push service
         # The path of the endpoint is a client identifier information that 
         # helps the push service determine which client to push the notification to
         push_subscription = {
-            "user_id": '1',             # TO DO: use user identifier...supertokens?
-            "endpoint": request.body.endpoint,
+            "user_id": user_id,
+            "endpoint": data.get("endpoint"),
             "keys": {
-                "p256dh": request.body.keys.get("p256dh", ""),
-                "auth": request.body.keys.get("auth", "")
+                "p256dh": data.get("keys").get("p256dh", ""),
+                "auth": data.get("keys").get("auth", "")
             },
         }
-        
-        # debugging
-        #logger.info("push_subscription: %s", push_subscription)
 
-        with get_mongo_client() as mongo_client:
-            db = mongo_client["agentforge"]
-            users_collection = db["users"]
+        # Check if the user is already subscribed
+        existing_subscription = mongo_client.get("users", key=user_id)
 
-            # Check if the user is already subscribed               #TO DO: change user_id
-            existing_subscription = users_collection.find_one({"push_subscription.user_id": 1, "push_subscription.endpoint": data.endpoint})
+        if existing_subscription and existing_subscription.get("push_subscription", {}).get("endpoint") == data.get("endpoint"):
+            raise HTTPException(status_code=400, detail="User is already subscribed")
 
+        try:
+            # Create NOVU subscriber instance
+            novu_subscriber_id = random.random()  # TO DO: replace with supertokens ID
+            novu_subscriber = SubscriberDto(
+                subscriber_id=novu_subscriber_id,
+                email="abc@email.com",           # TO DO: replace with actual email? not sure if required
+                first_name="",                   # optional
+                last_name="",                    # optional
+                phone="",                        # optional
+                avatar=""                        # optional   
+            )
 
-            if existing_subscription:
-                raise HTTPException(status_code=400, detail="User is already subscribed")
-            
-            try:
-                # Create NOVU subscriber instance
-                novu_subscriber_id = random.random() # TO DO: replace with supertokens ID
-                novu_subscriber = SubscriberDto(
-                    subscriber_id=novu_subscriber_id,
-                    email="abc@email.com",           #TO DO: replace with actual email? not sure if required
-                    first_name="",                   # optional
-                    last_name="",                    # optional
-                    phone="",                        # optional
-                    avatar=""                        # optional   
-                )
-
-                # Insert the new subscription data into the database
-                result = users_collection.insert_one({
+            # Update the user's information with the new subscription data using MongoDBKVStore
+            result = mongo_client.set(
+                "users",
+                key=user_id,
+                data={
                     "novu_subscription": {
                         "id": novu_subscriber_id,
                         "email": novu_subscriber.email,
@@ -334,16 +324,17 @@ def subscribe_notifications(request: Request, session: SessionContainer = Depend
                     },
                     "push_subscription": push_subscription,
                     "created_at": datetime.utcnow()
-                })
+                }
+            )
 
-            except Exception as e:
-                error_message = f"Error creating NOVU subscriber and/or inserting subscription data: {str(e)}"
-                logger.error(error_message)
-                raise HTTPException(status_code=500, detail=error_message)
+        except Exception as e:
+            error_message = f"Error creating NOVU subscriber and/or inserting subscription data: {str(e)}"
+            logger.error(error_message)
+            raise HTTPException(status_code=500, detail=error_message)
 
-            if result.inserted_id:
-                # Send the PushSubscription object back to the client
-                return JSONResponse(content=push_subscription, status_code=201)
+        if result:
+            # Send the PushSubscription object back to the client
+            return JSONResponse(content=push_subscription, status_code=201)
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error: {str(e)}")
@@ -355,31 +346,33 @@ def unsubscribe_notifications(request: Request, session: SessionContainer = Depe
     if session is None:
         raise Exception("User session not found.")
 
+    user_id = session.get_user_id()
+
     try:
-        if not request.body.keys or not request.body.endpoint:
+        data = await request.json()
+
+        # Ensure the required fields are present in the request body
+        if not data.get("keys") or not data.get("endpoint"):
             raise HTTPException(status_code=400, detail="Incomplete push subscription data")
 
-        with get_mongo_client() as mongo_client:
-            db = mongo_client["agentforge"]
-            users_collection = db["users"]
+        # Check if the user is subscribed
+        existing_subscription = mongo_client.get("users", key=user_id)
 
-            # Check if the user is subscribed                 
-            existing_subscription = users_collection.find_one({"push_subscription.endpoint": request.body.endpoint})
-            if existing_subscription is None:
-                raise HTTPException(status_code=404, detail="User is not subscribed")
+        if existing_subscription and existing_subscription.get("push_subscription", {}).get("endpoint") != data.get("endpoint"):
+            raise HTTPException(status_code=404, detail="User is not subscribed")
 
-            try:
-                # Delete the subscription data from the database       
-                result = users_collection.delete_one({"push_subscription.endpoint": request.body.endpoint})
-            except Exception as e:
-                error_message = f"Error deleting subscription data: {str(e)}"
-                raise HTTPException(status_code=500, detail=error_message)
+        try:
+            # Delete the subscription data from the database using MongoDBKVStore
+            result = mongo_client.delete("users", key=user_id)
+        except Exception as e:
+            error_message = f"Error deleting subscription data: {str(e)}"
+            raise HTTPException(status_code=500, detail=error_message)
 
-            if result.deleted_count > 0:
-                # Successfully unsubscribed
-                return {"message": "Unsubscribed successfully"}
-            else:
-                raise HTTPException(status_code=500, detail="Failed to unsubscribe")
+        if result:
+            # Successfully unsubscribed
+            return {"message": "Unsubscribed successfully"}
+        else:
+            raise HTTPException(status_code=500, detail="Failed to unsubscribe")
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error: {str(e)}")
