@@ -13,11 +13,13 @@ galaxy = Galaxy()
 class GalaxyResponse(BaseModel):
    systems: Dict
 
+response = {}
+
 # Given the following text request generate a wav file and return to the client
 @router.post("/generate-galaxy", operation_id="generateGalaxy")
 async def output(request: Request) -> GalaxyResponse:
    # payload = await request.json()
-   
+
    # Generate a galaxy and return the information
-   response = await galaxy.generate(250)
+   response = await galaxy.generate(625)
    return GalaxyResponse(systems=response)

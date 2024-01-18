@@ -6,6 +6,7 @@ from agentforge.ai.worldmodel.lifeform import Lifeform
 from agentforge.ai.worldmodel.concept import Concept, normalize_rows, ensure_non_negative_and_normalize_row
 from agentforge.ai.worldmodel.biome import Biome
 from agentforge.ai.worldmodel.moon import Moon
+from scipy.spatial import KDTree
 
 class Galaxy:
     def __init__(self, metadata=None):
@@ -20,7 +21,9 @@ class Galaxy:
         # From the macro to the micro, we build the world model
         self.systems = []
         self.has_life = []
-        star_positions = self.generate_spiral_positions(num_systems)
+        print("generating star positions...")
+        star_positions, starfield_positions = self.generate_spiral_positions(num_systems, starfieldSystems=2100, core_systems_ratio=0.1, num_arms=4, checkDistance=True, r_spread=9500, core_radius=300, anim_steps=2500, noise_scale=100, tightness=3)
+        print("generating starfield positions...")
 
         self.galaxy_concepts = {"Milky Way": Concept("Milky Way", "Galaxy")}
         galaxy_names = list(self.galaxy_concepts.keys())
@@ -223,7 +226,7 @@ class Galaxy:
         # if invalid:
         #     print("Invalid floats found in systems")
         # # return {}
-        return {"systems": self.systems, "has_life": self.has_life}
+        return {"systems": self.systems, "has_life": self.has_life, "starfield_positions": starfield_positions.tolist()}
 
     # Perlin noise implementation
     def perlin_noise(self, size, scale=100, seed=None):
@@ -257,33 +260,32 @@ class Galaxy:
         lerp_bottom = lerp(bottom_left, bottom_right, fade_x)
         return lerp(lerp_bottom, lerp_top, fade_y)
 
-    # Function to update the positions of stars over time
-    def update_positions_with_random_speeds(self, star_positions, star_speeds, time_step):
-        new_positions = []
-        for pos, speed in zip(star_positions, star_speeds):
-            distance = np.sqrt(pos[0]**2 + pos[1]**2)
+    def update_positions_with_random_speeds(self, star_positions, star_speeds, time_step, repulsion_distance=5):
+        kd_tree = KDTree(star_positions)
+        new_positions = np.copy(star_positions)
+
+        for i, (pos, speed) in enumerate(zip(star_positions, star_speeds)):
+            # Repulsion force logic
+            distance, index = kd_tree.query(pos, k=2) 
+            if distance[1] < repulsion_distance: 
+                direction = pos - star_positions[index[1]]
+                direction /= np.linalg.norm(direction)
+                new_positions[i] += direction * speed * time_step
+
+            # Adjust angular speed based on dark matter effect
+            distance_from_center = np.sqrt(pos[0]**2 + pos[1]**2)
+            dark_matter_factor = 1 + np.exp(-distance_from_center / 2000)
             angle = np.arctan2(pos[1], pos[0])
-            angle += speed * time_step / (distance + 0.1)
-            new_x = distance * np.cos(angle)
-            new_y = distance * np.sin(angle)
-            new_positions.append([new_x, new_y])
-        return np.array(new_positions)
+            angle += (speed * dark_matter_factor) * time_step / (distance_from_center + 0.1)
+            new_x = distance_from_center * np.cos(angle)
+            new_y = distance_from_center * np.sin(angle)
+            new_positions[i][0] = new_x
+            new_positions[i][1] = new_y
 
-    # Animation update function
-    def animate_with_random_speeds(self, i, star_positions, star_speeds):
-        updated_positions = self.update_positions_with_random_speeds(star_positions, star_speeds, i)
-        return updated_positions
+        return new_positions
 
-    def generate_spiral_positions(self, num_systems, core_systems_ratio=0.2):
-        # Galaxy simulation parameters
-        num_stars = num_systems
-        num_arms = 8
-        r_spread = 7500
-        anim_steps = 2000
-        tightness = 2
-        noise_scale = 60
-        core_radius = 250  # Radius of the central cluster
-
+    def generate_spiral_positions(self, num_systems, starfieldSystems=100, core_systems_ratio=0.2, min_distance=5, checkDistance=True, num_arms = 4, r_spread = 5000, anim_steps = 1500, tightness = 2, noise_scale = 60, core_radius = 300):
+        num_systems += starfieldSystems
         # Determine the number of systems in the core and in the spiral arms
         num_core_systems = int(num_systems * core_systems_ratio)
         num_spiral_systems = num_systems - num_core_systems
@@ -292,32 +294,58 @@ class Galaxy:
         np.random.seed(0)
         star_positions = []
 
-        # Generate positions for the spiral arms
-        for i in range(num_spiral_systems):
-            arm_offset = 2 * np.pi * np.random.randint(num_arms) / num_arms
-            angle = tightness * np.sqrt(i / num_spiral_systems) + arm_offset
-            base_radius = (r_spread / num_arms) * np.sqrt(i / num_spiral_systems)
-            noise = self.perlin_noise(1, scale=noise_scale)[0, 0]
-            noisy_radius = base_radius * (1 + noise * 0.4)
-            x = noisy_radius * np.cos(angle)
-            y = noisy_radius * np.sin(angle)
-            star_positions.append([x, y])
+        # Function to generate a single star position using perlin noise and trigonometry
+        # to mimic a spiral arms pattern
+        def generate_star_position(is_core=False):
+            if is_core:
+                angle = np.random.uniform(0, 2 * np.pi)
+                radius = np.random.uniform(0, core_radius)
+            else:
+                arm_offset = 2 * np.pi * np.random.randint(num_arms) / num_arms
+                angle = tightness * np.sqrt(len(star_positions) / num_spiral_systems) + arm_offset
+                base_radius = (r_spread / num_arms) * np.sqrt(len(star_positions) / num_spiral_systems)
+                noise = self.perlin_noise(1, scale=noise_scale)[0, 0]
+                noisy_radius = base_radius * (1 + noise * 0.4)
+                radius = noisy_radius
 
-        # Generate positions for the central cluster
-        for _ in range(num_core_systems):
-            angle = np.random.uniform(0, 2 * np.pi)
-            radius = np.random.uniform(0, core_radius)
-            x = radius * np.cos(angle)
-            y = radius * np.sin(angle)
-            star_positions.append([x, y])
+            # Adding gravitational pull towards the center
+            # gravity_factor = 1 - np.exp(-radius / 3000)  # Adjust the denominator for effect strength
+            # radius *= (1 - gravity_factor)
+
+            z = np.random.uniform(-50, 50) * np.sqrt(len(star_positions) / num_spiral_systems)
+            
+            return radius * np.cos(angle), radius * np.sin(angle), z
+
+        # Initialize KDTree for efficient distance checking
+        kd_tree = KDTree(np.zeros((0, 3)))
+
+        # Generate positions for the spiral arms and the central cluster
+        for _ in range(num_systems):
+            num_attempts = 0
+            is_core = len(star_positions) >= num_spiral_systems
+            new_pos = generate_star_position(is_core)
+            if checkDistance and not num_systems > starfieldSystems:
+                while kd_tree.query([new_pos], k=1, distance_upper_bound=min_distance)[0][0] < min_distance and num_attempts < 100:
+                    new_pos = generate_star_position(is_core)
+            star_positions.append(new_pos)
+            if checkDistance and not num_systems > starfieldSystems:
+                kd_tree = KDTree(np.array(star_positions))  # Rebuild KDTree with new star position
 
         # Convert star_positions to a numpy array for easier handling
         star_positions = np.array(star_positions)
 
         # Initialize star speeds
-        star_speeds = np.random.uniform(0.00005, 0.00010, num_stars)
-
+        star_speeds = np.random.uniform(0.0008, 0.0010, num_systems)
+        print("evolving galaxy...")
         for i in range(anim_steps):
-            star_positions = self.animate_with_random_speeds(i, star_positions, star_speeds)
-        
-        return star_positions
+            star_positions = self.update_positions_with_random_speeds(star_positions, star_speeds, i, repulsion_distance=10)
+
+        starfield_indices = np.random.choice(len(star_positions), starfieldSystems, replace=False)
+        starfields = star_positions[starfield_indices]
+
+         # Create a mask to remove selected indices
+        mask = np.ones(len(star_positions), dtype=bool)
+        mask[starfield_indices] = False
+        star_positions = star_positions[mask]
+
+        return star_positions, starfields
