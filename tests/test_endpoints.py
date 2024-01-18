@@ -212,3 +212,19 @@ if __name__ == "__main__":
   test_chat()
   test_interpret()
   test_reset()
+  test_create_schedule()
+  test_create_schedule_invalid_input()
+  test_delete_schedule()
+  test_delete_schedule_invalid_id()
+  test_delete_schedule_not_found()
+  test_view_schedule()
+  test_update_schedule()
+  test_update_schedule_invalid_id()
+  test_update_schedule_not_found()
+  test_subscribe_schedule()
+  test_unsubscribe_schedule()
+  test_subscribe_notifications()
+  test_unsubscribe_notifications()
+
+
+

@@ -21,25 +21,12 @@ from supertokens_python.recipe.session.framework.fastapi import verify_session
 from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.recipe.emailpassword.asyncio import get_user_by_id
 
-#logger = logging.getLogger("uvicorn")
-
 # TO DO: Store in env var or config file
 novu_url = "https://api.novu.co"
 novu_api_key = "f9c8bc10975f2e9148a82aa87b8891db"
 
 
 router = APIRouter()
-
-# class ScheduleData(BaseModel):
-#     event_name: str
-#     interval: Optional[int] = None 
-#     notification_method: Optional[str] = None
-
-#     # validate and sanitize event_name
-#     @validator('event_name')
-#     def sanitize_event_name(cls, value):
-#         sanitized_value = bleach.clean(value, strip=True)
-#         return sanitized_value
 
 # TO DO: store in environment variable
 PUBLIC_APPLICATION_SERVER_KEY = "BPZjhYmoa74hrffBOS0flp3Sk_EcLuSFFww7iJ8HNFZe6JVx6tshoBQKT4GOZOxgBq81qqLAjEu9JKBwamCEELY"
@@ -49,17 +36,6 @@ PUBLIC_APPLICATION_SERVER_KEY = "BPZjhYmoa74hrffBOS0flp3Sk_EcLuSFFww7iJ8HNFZe6JV
 def get_mongo_client():
     # This function returns a new MongoDB client instance.
     return MongoClient("mongodb://localhost:27017")
-
-# Custom JSON encoder to handle ObjectId serialization
-# class CustomJSONEncoder(json.JSONEncoder):
-#     def default(self, obj):
-#         if isinstance(obj, ObjectId):
-#             return str(obj)
-#         return super().default(obj)
-
-# # Dependency to use the custom JSON encoder
-# def get_jsonable_encoder():
-#     return CustomJSONEncoder()
 
 @router.post("/v1/create-schedule")
 def create_schedule(request: Request, session: SessionContainer = Depends(verify_session())):
@@ -320,7 +296,6 @@ def subscribe_notifications(request: Request, session: SessionContainer = Depend
                 "p256dh": request.body.keys.get("p256dh", ""),
                 "auth": request.body.keys.get("auth", "")
             },
-            #"publicKey": PUBLIC_APPLICATION_SERVER_KEY 
         }
         
         # debugging
