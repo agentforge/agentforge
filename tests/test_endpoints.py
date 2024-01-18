@@ -105,7 +105,7 @@ def client():
 async def test_create_schedule(client):
     response = await client.post(
         "/v1/create-schedule",
-        json={"event_name": "Test Event", "interval": 60, "validation_logic": "test_logic"},
+        json={"event_name": "Test Event", "interval": 60},
     )
     assert response.status_code == 200
     data = response.json()
@@ -120,11 +120,11 @@ async def test_delete_schedule(client):
     # Create a schedule to test deletion
     create_response = await client.post(
         "/v1/create-schedule",
-        json={"event_name": "Test Event", "interval": 60, "validation_logic": "test_logic"},
+        json={"event_name": "Test Event", "interval": 60},
     )
     schedule_id = create_response.json()["id"]
 
-    # Now, test deletion
+    # test deletion
     response = await client.delete(f"/v1/delete-schedule/{schedule_id}")
     assert response.status_code == 200
     data = response.json()
@@ -148,11 +148,11 @@ async def test_update_schedule(client):
     # Create a schedule to test updating
     create_response = await client.post(
         "/v1/create-schedule",
-        json={"event_name": "Test Event", "interval": 60, "validation_logic": "test_logic"},
+        json={"event_name": "Test Event", "interval": 60},
     )
     schedule_id = create_response.json()["id"]
 
-    # Now, test updating
+    # test updating
     response = await client.put(
         f"/v1/update-schedule/{schedule_id}",
         json={"interval": 120, "validation_logic": "updated_logic"},
@@ -168,7 +168,7 @@ async def test_update_schedule_invalid_id(client):
 async def test_update_schedule_not_found(client):
     response = await client.put(
         "/v1/update-schedule/6064aef63d6b67669e836912",
-        json={"interval": 120, "validation_logic": "updated_logic"},
+        json={"interval": 120},
     )
     assert response.status_code == 404
 
@@ -184,7 +184,27 @@ async def test_unsubscribe_schedule(client):
     data = response.json()
     assert "message" in data
 
-# TO DO: Register Notifications Test
+def test_subscribe_notifications():
+    # Test when all required fields are present
+    response = client.post("/v1/subscribe-notifications", json={"endpoint": "test-endpoint", "keys": {"p256dh": "test-p256dh", "auth": "test-auth"}})
+    assert response.status_code == 201
+
+    # Test when request is missing required fields
+    response = client.post("/v1/subscribe-notifications", json={})
+    assert response.status_code == 400
+
+def test_unsubscribe_notifications():
+    # Test when subscription exists
+    response = client.post("/v1/unsubscribe-notifications", json={"endpoint": "test-endpoint"})
+    assert response.status_code == 200
+
+    # Test when subscription does not exist
+    response = client.post("/v1/unsubscribe-notifications", json={"endpoint": "nonexistent-endpoint"})
+    assert response.status_code == 404
+
+    # Test when request is missing required fields
+    response = client.post("/v1/unsubscribe-notifications", json={})
+    assert response.status_code == 400
 
 # Run the tests
 if __name__ == "__main__":

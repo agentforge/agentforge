@@ -183,7 +183,7 @@ def update_schedule(request: Request, session: SessionContainer = Depends(verify
     if not event_name:
         raise HTTPException(status_code=400, detail="Invalid or missing event_name")
 
-    # Additional validation for interval
+    # validate interval
     interval = data.get("interval", 0)
     if not isinstance(interval, int) or interval <= 0:
         raise HTTPException(status_code=400, detail="Invalid interval. Must be a positive integer.")
@@ -312,7 +312,7 @@ def subscribe_notifications(request: Request, session: SessionContainer = Depend
 
         # The domain of the endpoint is essentially the push service
         # The path of the endpoint is a client identifier information that 
-        # helps the push service determine exactly which client to push the notification to
+        # helps the push service determine which client to push the notification to
         push_subscription = {
             "user_id": '1',             # TO DO: use user identifier...supertokens?
             "endpoint": request.body.endpoint,
