@@ -37,7 +37,7 @@ PUBLIC_APPLICATION_SERVER_KEY = "BPZjhYmoa74hrffBOS0flp3Sk_EcLuSFFww7iJ8HNFZe6JV
 # should raise max pool connections, currently at default of 10
 mongo_client = MongoDBKVStore(DB)
 
-@router.post("/v1/create-schedule")
+@router.post("/create-schedule")
 def create_schedule(request: Request, session: SessionContainer = Depends(verify_session())):
     session = await get_session(request)
 
@@ -102,7 +102,7 @@ def create_schedule(request: Request, session: SessionContainer = Depends(verify
         traceback.print_exc()  # Print the traceback
         raise  # Re-raise the exception to maintain FastAPI's default behavior
 
-@router.post("/v1/delete-schedule/")
+@router.post("/delete-schedule")
 def delete_schedule(request: Request, session: SessionContainer = Depends(verify_session())):
     session = await get_session(request)
 
@@ -132,7 +132,7 @@ def delete_schedule(request: Request, session: SessionContainer = Depends(verify
     else:
         raise HTTPException(status_code=404, detail="User not found or user has no scheduled events.")
 
-@router.get("/v1/view-schedule")
+@router.get("/view-schedule")
 def view_schedule(session: SessionContainer = Depends(verify_session())):
     session = await get_session(request)
     
@@ -151,7 +151,7 @@ def view_schedule(session: SessionContainer = Depends(verify_session())):
         raise HTTPException(status_code=404, detail="User not found or user has no scheduled events.")
 
 # update an event
-@router.post("/v1/update-schedule/")
+@router.post("/update-schedule/")
 def update_schedule(request: Request, session: SessionContainer = Depends(verify_session())):
     session = await get_session(request)
     
@@ -198,7 +198,7 @@ def update_schedule(request: Request, session: SessionContainer = Depends(verify
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
 # subscribe to an event
-@router.post("/v1/subscribe-schedule/")
+@router.post("/subscribe-schedule/")
 def subscribe_schedule(request: Request, session: SessionContainer = Depends(verify_session())):
     session = await get_session(request)
     
@@ -228,7 +228,7 @@ def subscribe_schedule(request: Request, session: SessionContainer = Depends(ver
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
 # unsubscribe from event
-@router.post("/v1/unsubscribe-schedule/")
+@router.post("/unsubscribe-schedule/")
 def unsubscribe_schedule(request: Request, session: SessionContainer = Depends(verify_session())):
     session = await get_session(request)
     
@@ -265,7 +265,7 @@ class SubscriptionData(BaseModel):
 # hit when initially registering service worker,
 # stores push notification object and create NOVU 
 # subscriber
-@router.post("/v1/subscribe-notifications")
+@router.post("/subscribe-notifications")
 def subscribe_notifications(request: Request, session: SessionContainer = Depends(verify_session())):
     session = await get_session(request)
     
@@ -339,7 +339,7 @@ def subscribe_notifications(request: Request, session: SessionContainer = Depend
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error: {str(e)}")
     
-@router.post("/v1/unsubscribe-notifications")
+@router.post("/unsubscribe-notifications")
 def unsubscribe_notifications(request: Request, session: SessionContainer = Depends(verify_session())):
     session = await get_session(request)
     

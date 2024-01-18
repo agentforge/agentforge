@@ -20,6 +20,8 @@ RUN pip install bcrypt pymongo word2number
 RUN pip install inflect
 RUN pip install twilio 
 RUN pip3 install python-jose
+RUN pip install celery pytest-celery asyncio pywebpush
+RUN pip install novu bleach
 
 WORKDIR /app/agentforge/agentforge/api
 

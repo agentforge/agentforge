@@ -21,11 +21,6 @@ logger = get_task_logger(__name__)
 
 mongo_client = MongoDBKVStore(DB)
 
-# this approach avoids max pool pausing 
-#def get_mongo_client():
-    # This function returns a new MongoDB client instance.
-#    return MongoClient("mongodb://localhost:27017")
-
 # Function to query MongoDB for due events
 def get_due_events(session: SessionContainer = Depends(verify_session())):
     try:

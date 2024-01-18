@@ -34,6 +34,8 @@ from typing import Dict, Deque
 from collections import deque
 from datetime import datetime, timedelta
 
+from celery_config import celery_app
+
 class LoggingMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
         logger.info(f"Request: {request.method} {request.url}")
@@ -144,12 +146,18 @@ app.include_router(agent_router, prefix="/v1", tags=["agent_forge"])
 app.include_router(subscription_router, prefix="/v1", tags=["subscription"])
 app.include_router(ws_router, prefix="/v1", tags=["ws"])
 app.include_router(sim_router, prefix="/v1", tags=["sim"])
-# app.include_router(events_router, prefix="/events", tags=["events"])
+app.include_router(events_router, prefix="/v1/events", tags=["events"])
 
 @app.on_event("startup")
 def startup_event():
     print("[AGENTFORGE] Starting up...")
     app.state.redis = interface_interactor.create_redis_connection()
+    
+    # Start Celery Beat schedule
+    celery_app.worker_main(['beat', '--detach'])
+
+    # Start Celery task worker
+    celery_app.worker_main(['-A', 'main', 'worker', '--loglevel=info', '--concurrency=1'])
 
 @app.on_event("shutdown")
 def shutdown_event():
@@ -187,5 +195,3 @@ async def log_requests(request: Request, call_next):
     response = await call_next(request)
     logger.info(f"Response: {response.status_code}")
     return response
-
-# Initialize celery, import instance from utils/celery/celery.py

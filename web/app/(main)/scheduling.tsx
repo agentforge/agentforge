@@ -1,3 +1,4 @@
+/* eslint-disable react/no-unescaped-entities */
 'use client'
 import { ModeToggle } from '@/components/ui/mode-toggle'
 import { Button } from '@/components/ui/button'
@@ -7,20 +8,23 @@ import {
   NotificationBell,
   INotificationBellProps,
 } from "@novu/notification-center";
-import { useEffect, useState } from 'react';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
+import { SetStateAction, useEffect, useState } from 'react';
+// import {
+//   AlertDialog,
+//   AlertDialogAction,
+//   AlertDialogCancel,
+//   AlertDialogContent,
+//   AlertDialogDescription,
+//   AlertDialogFooter,
+//   AlertDialogHeader,
+//   AlertDialogTitle,
+//   AlertDialogTrigger,
+// } from "@/components/ui/alert-dialog";
 import { Input } from '@/components/ui/input'; 
 import DOMPurify from 'dompurify';
+import { doesSessionExist } from 'supertokens-auth-react/recipe/session';
+
+const FAST_API_BASE_URL = 'http://agentforge.ai'
 
 export default function Home() {
   const [createEventName, setcreateEventName] = useState('');
@@ -39,8 +43,6 @@ export default function Home() {
     subscribe?: number;
   }
 
-  const apiBaseUrl = 'http://localhost:8000/events'; // Replace with FastAPI backend URL
-
   const validateEventName = (eventName: string): boolean => {
     // Check if the input is not empty and has a reasonable length
     const sanitizedEventName = DOMPurify.sanitize(eventName);
@@ -58,7 +60,6 @@ export default function Home() {
       // Validate and normalize the event name
       if (!validateEventName(createEventName)) {
         console.error('Invalid event name');
-        // Optionally, display an error message to the user
         return;
       }
 
@@ -71,7 +72,7 @@ export default function Home() {
         interval: createIntervalValue,
       };
   
-      const response = await fetch('http://localhost:8000/events/v1/create-schedule', {
+      const response = await fetch(`${FAST_API_BASE_URL}/v1/create-schedule`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -80,7 +81,6 @@ export default function Home() {
       });
   
       if (!response.ok) {
-        // Handle non-successful responses
         const errorData = await response.json();
         console.error('API Error:', errorData.detail);
         throw new Error(`API Error: ${response.status} - ${response.statusText}`);
@@ -96,7 +96,7 @@ export default function Home() {
 
   const handleViewSchedule = async () => {
     try {
-      const response = await fetch('http://localhost:8000/events/v1/view-schedule', {
+      const response = await fetch(`${FAST_API_BASE_URL}/events/v1/view-schedule`, {
         method: 'GET',
         headers: {
           'Content-Type': 'application/json',
@@ -120,7 +120,6 @@ export default function Home() {
     try {
       if (!validateEventName(deleteEventName)) {
         console.error('Invalid event name');
-        // Optionally, display an error message to the user
         return;
       }
 
@@ -128,7 +127,7 @@ export default function Home() {
         event_name: normalizeEventName(deleteEventName),
       }
   
-      const response = await fetch(`${apiBaseUrl}/v1/delete-schedule`, {
+      const response = await fetch(`${FAST_API_BASE_URL}/v1/delete-schedule`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -149,7 +148,6 @@ export default function Home() {
     try {
       if (!validateEventName(updateEventName)) {
         console.error('Invalid event name');
-        // Optionally, display an error message to the user
         return;
       }
 
@@ -158,7 +156,7 @@ export default function Home() {
         interval: updateIntervalValue
       }
   
-      const response = await fetch(`${apiBaseUrl}/v1/update-schedule`, {
+      const response = await fetch(`${FAST_API_BASE_URL}/v1/update-schedule`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -179,14 +177,13 @@ export default function Home() {
     try {
       if (!validateEventName(subscribeEventName)) {
         console.error('Invalid event name');
-        // Optionally, display an error message to the user
         return;
       }
 
       const payload = {
         event_name: normalizeEventName(subscribeEventName),
       }
-      const response = await fetch(`${apiBaseUrl}/v1/subscribe-schedule`, {
+      const response = await fetch(`${FAST_API_BASE_URL}/v1/subscribe-schedule`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -207,14 +204,13 @@ export default function Home() {
     try {
       if (!validateEventName(unsubscribeEventName)) {
         console.error('Invalid event name');
-        // Optionally, display an error message to the user
         return;
       }
 
       const payload = {
         event_name: normalizeEventName(unsubscribeEventName),
       }
-      const response = await fetch(`${apiBaseUrl}/v1/unsubscribe-schedule`, {
+      const response = await fetch(`${FAST_API_BASE_URL}/v1/unsubscribe-schedule`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -253,7 +249,7 @@ export default function Home() {
   const sendSubscriptionToServer = async (subscription: PushSubscription) => {
     try {
       // Send the subscription details to server
-      const response = await fetch('http://localhost:8000/events/v1/subscribe-notifications', {
+      const response = await fetch(`${FAST_API_BASE_URL}/events/v1/subscribe-notifications`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -297,7 +293,7 @@ const unSubscribeNotifications = async () => {
       // Handle service removal or any other logic here
       try {
         // Assuming you have an API endpoint for removing subscriptions
-        const response = await fetch('http://localhost:8000/events/v1/unsubscribe-notifications', {
+        const response = await fetch(`${FAST_API_BASE_URL}/events/v1/unsubscribe-notifications`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -398,7 +394,7 @@ function registerNotificationPermissions() {
   
   return (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
-          <AlertDialog>
+        {/*}  <AlertDialog>
             <AlertDialogContent>
               <AlertDialogHeader>
                 <AlertDialogTitle>Enable notifications?</AlertDialogTitle>
@@ -413,7 +409,7 @@ function registerNotificationPermissions() {
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
-
+  */}
       <NovuProvider
       //Subscriber ID is in NOVU subscribers dashboard
       // TO DO: Store sub ID and app ID in env var
@@ -440,13 +436,13 @@ function registerNotificationPermissions() {
             type="text"
             placeholder="Event Name"
             value={createEventName}
-            onChange={(e) => setcreateEventName(e.target.value)}
+            onChange={(e: { target: { value: SetStateAction<string>; }; }) => setcreateEventName(e.target.value)}
           />
           <Input
             type="number"
             placeholder="Interval"
             value={createIntervalValue}
-            onChange={(e) => setcreateIntervalValue(parseInt(e.target.value))}
+            onChange={(e: { target: { value: string; }; }) => setcreateIntervalValue(parseInt(e.target.value))}
           />
           <Button onClick={handleCreateSchedule}>
             Create Schedule
@@ -459,17 +455,17 @@ function registerNotificationPermissions() {
             type="text"
             placeholder="Event Name"
             value={deleteEventName}
-            onChange={(e) => setdeleteEventName(normalizeEventName(e.target.value))}
+            onChange={(e: { target: { value: string; }; }) => setdeleteEventName(normalizeEventName(e.target.value))}
           />
           <Button onClick={handleDeleteSchedule}>
             Delete schedule
           </Button>
         </div>
 
-        {/* Display the schedule */}
+        {/* Display the schedule 
         <AlertDialog>
           <AlertDialogTrigger>
-            {/* View Schedule */}
+            {/* View Schedule 
             <Button onClick={handleViewSchedule}>
               View Schedule
             </Button>
@@ -493,20 +489,20 @@ function registerNotificationPermissions() {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
-        
+        */}
         {/* Update Schedule */}
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           <Input
             type="text"
             placeholder="Event Name"
             value={updateEventName}
-            onChange={(e) => setupdateEventName(e.target.value)}
+            onChange={(e: { target: { value: SetStateAction<string>; }; }) => setupdateEventName(e.target.value)}
           />
           <Input
             type="number"
             placeholder="Interval"
             value={updateIntervalValue}
-            onChange={(e) => setupdateIntervalValue(parseInt(e.target.value))}
+            onChange={(e: { target: { value: string; }; }) => setupdateIntervalValue(parseInt(e.target.value))}
           />
           <Button onClick={handleUpdateSchedule}>
             Update schedule
@@ -519,7 +515,7 @@ function registerNotificationPermissions() {
             type="text"
             placeholder="Event Name"
             value={subscribeEventName}
-            onChange={(e) => setsubscribeEventName(normalizeEventName(e.target.value))}
+            onChange={(e: { target: { value: string; }; }) => setsubscribeEventName(normalizeEventName(e.target.value))}
           />
           <Button onClick={handleSubscribeSchedule}>
             Subscribe schedule
@@ -532,7 +528,7 @@ function registerNotificationPermissions() {
             type="text"
             placeholder="Event Name"
             value={unsubscribeEventName}
-            onChange={(e) => setunsubscribeEventName(normalizeEventName(e.target.value))}
+            onChange={(e: { target: { value: string; }; }) => setunsubscribeEventName(normalizeEventName(e.target.value))}
           />
           <Button onClick={handleUnSubscribeSchedule}>
             Unsubscribe schedule

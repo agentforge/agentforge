@@ -1,4 +1,3 @@
-//notifications background service worker
 let mainPageClient;
 
 self.addEventListener('connect', (event) => {
