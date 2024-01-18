@@ -139,8 +139,36 @@ class Planet:
             "Moons": moons,
         }
 
+        gravity_info = self.estimate_planetary_characteristics(planet_info, planet_type)
+        planet_info.update(gravity_info)
+
         return planet_info, estimated_biomes, life_presence
 
+    def estimate_planetary_characteristics(self, planet_data, planet_type):
+        # Constants
+        EARTH_DENSITY = 5515  # kg/m^3
+        EARTH_RADIUS = 6371000  # meters
+        GRAVITATIONAL_CONSTANT = 6.67430e-11  # m^3 kg^-1 s^-2
+
+        # Adjustments based on core activity and orbital period
+        density_factor = 0.8 if planet_data["Core Activity"] > 0.5 else 0.5
+        orbital_radius_factor = planet_data["Orbital Period (year)"] / 1.0
+
+        # Calculate adjusted density and radius
+        density = self.densities.get(planet_type, EARTH_DENSITY) * density_factor
+        radius = EARTH_RADIUS * self.radius_factors.get(planet_type, 1.0) * orbital_radius_factor
+
+        # Estimate mass and gravity
+        volume = 4/3 * 3.14159 * radius**3
+        mass = density * volume
+        gravity = GRAVITATIONAL_CONSTANT * mass / radius**2
+
+        return {
+            "Estimated Density (kg/m^3)": density,
+            "Estimated Mass (kg)": mass,
+            "Relative Radius (compared to Earth)": radius / EARTH_RADIUS,
+            "Estimated Surface Gravity (m/s^2)": gravity
+        }
 
     def calculate_life_probability(self, distance_to_star, star_class, atmospheric_composition, magnetic_field_strength, geological_activity, chemical_composition, water_presence, orbital_stability, moon_presence, radiation_level, debug=False):
         """
@@ -928,4 +956,39 @@ class Planet:
         'oceanPlanet': 35,  # Planets covered by oceans, possibly Earth-like in magnetic field
         'venusLike': 0.005, # Venus-like, extremely weak magnetic field
         'icy': 2            # Ice-covered planets, weak magnetic field
+    }
+            # Density assumptions for different planet types (in kg/m^3)
+    densities = {
+        'terrestrial': 5500,
+        'superEarth': 7500,
+        'mercuryLike': 5427,
+        'marsLike': 3933,
+        'gasGiant': 1326,
+        'hotJupiter': 1326,
+        'neptunian': 1638,
+        'ringedPlanet': 687,
+        'miniNeptune': 2000,
+        'plutoLike': 2095,
+        'ceresLike': 2160,
+        'oceanPlanet': 3000,
+        'venusLike': 5243,
+        'icy': 2000
+    }
+
+    # Radius factor assumptions for different planet types
+    radius_factors = {
+        'terrestrial': 1.0,
+        'superEarth': 1.5,
+        'mercuryLike': 0.38,
+        'marsLike': 0.53,
+        'gasGiant': 11.2,
+        'hotJupiter': 11.2,
+        'neptunian': 3.9,
+        'ringedPlanet': 9.5,
+        'miniNeptune': 2.5,
+        'plutoLike': 0.18,
+        'ceresLike': 0.15,
+        'oceanPlanet': 1.7,
+        'venusLike': 0.95,
+        'icy': 0.6
     }

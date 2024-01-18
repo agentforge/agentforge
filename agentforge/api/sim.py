@@ -19,5 +19,5 @@ async def output(request: Request) -> GalaxyResponse:
    # payload = await request.json()
    
    # Generate a galaxy and return the information
-   response = await galaxy.generate()
+   response = await galaxy.generate(250)
    return GalaxyResponse(systems=response)

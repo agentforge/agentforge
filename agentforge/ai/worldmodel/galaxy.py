@@ -1,6 +1,5 @@
 import numpy as np
 import pandas as pd
-import math, time
 from agentforge.ai.worldmodel.star import Star
 from agentforge.ai.worldmodel.planet import Planet
 from agentforge.ai.worldmodel.lifeform import Lifeform
@@ -9,7 +8,6 @@ from agentforge.ai.worldmodel.biome import Biome
 from agentforge.ai.worldmodel.moon import Moon
 
 class Galaxy:
-
     def __init__(self, metadata=None):
         self.metadata = metadata if metadata is not None else {}
         self.star = Star()
@@ -18,10 +16,11 @@ class Galaxy:
         self.biome = Biome()
         self.moon = Moon()
 
-    async def generate(self):
+    async def generate(self, num_systems):
         # From the macro to the micro, we build the world model
         self.systems = []
         self.has_life = []
+        star_positions = self.generate_spiral_positions(num_systems)
 
         self.galaxy_concepts = {"Milky Way": Concept("Milky Way", "Galaxy")}
         galaxy_names = list(self.galaxy_concepts.keys())
@@ -96,7 +95,13 @@ class Galaxy:
         # print(gx_b_df)
         # print(gx_p_df)
         # print(gx_bl_df)
-        for x in range(610):
+        print("generating systems...")
+        for x in range(num_systems):
+            # Grab a random position from the list of positions
+            random_index = np.random.randint(len(star_positions))
+            star_position = star_positions[random_index].tolist()
+            # Remove the star at the selected index by slicing
+            star_positions = np.delete(star_positions, random_index, axis=0)
             # Sample a star type based on galaxy
             star_probabilities = normalized_gx_s_df.iloc[0]
             star_type = np.random.choice(star_names, p=star_probabilities)
@@ -119,6 +124,7 @@ class Galaxy:
 
             solar_system_info = {
                 "Star": star_type,
+                "Star Position": star_position,
                 "Star Information": self.star.star_concepts[star_type].metadata,
                 "Star Mass (kg)": star_mass_kg,
                 "Star Age (Gyr)": star_age_Gyr,
@@ -218,3 +224,100 @@ class Galaxy:
         #     print("Invalid floats found in systems")
         # # return {}
         return {"systems": self.systems, "has_life": self.has_life}
+
+    # Perlin noise implementation
+    def perlin_noise(self, size, scale=100, seed=None):
+        if seed:
+            np.random.seed(seed)
+        grid_x, grid_y = np.mgrid[0:scale:complex(0, size), 0:scale:complex(0, size)]
+        gradients = np.random.rand(scale, scale, 2) * 2 - 1
+        gradients /= np.linalg.norm(gradients, axis=2, keepdims=True)
+
+        dot_product = lambda x, y, gx, gy: gx * x + gy * y
+        dprod = np.vectorize(dot_product)
+
+        def lerp(a, b, t):
+            return a + t * (b - a)
+
+        def fade(t):
+            return 6 * t**5 - 15 * t**4 + 10 * t**3
+
+        distances_x = grid_x - grid_x.astype(int)
+        distances_y = grid_y - grid_y.astype(int)
+
+        fade_x = fade(distances_x)
+        fade_y = fade(distances_y)
+
+        top_right = dprod(distances_x-1, distances_y-1, gradients[grid_x.astype(int)+1, grid_y.astype(int)+1, 0], gradients[grid_x.astype(int)+1, grid_y.astype(int)+1, 1])
+        top_left = dprod(distances_x, distances_y-1, gradients[grid_x.astype(int), grid_y.astype(int)+1, 0], gradients[grid_x.astype(int), grid_y.astype(int)+1, 1])
+        bottom_right = dprod(distances_x-1, distances_y, gradients[grid_x.astype(int)+1, grid_y.astype(int), 0], gradients[grid_x.astype(int)+1, grid_y.astype(int), 1])
+        bottom_left = dprod(distances_x, distances_y, gradients[grid_x.astype(int), grid_y.astype(int), 0], gradients[grid_x.astype(int), grid_y.astype(int), 1])
+
+        lerp_top = lerp(top_left, top_right, fade_x)
+        lerp_bottom = lerp(bottom_left, bottom_right, fade_x)
+        return lerp(lerp_bottom, lerp_top, fade_y)
+
+    # Function to update the positions of stars over time
+    def update_positions_with_random_speeds(self, star_positions, star_speeds, time_step):
+        new_positions = []
+        for pos, speed in zip(star_positions, star_speeds):
+            distance = np.sqrt(pos[0]**2 + pos[1]**2)
+            angle = np.arctan2(pos[1], pos[0])
+            angle += speed * time_step / (distance + 0.1)
+            new_x = distance * np.cos(angle)
+            new_y = distance * np.sin(angle)
+            new_positions.append([new_x, new_y])
+        return np.array(new_positions)
+
+    # Animation update function
+    def animate_with_random_speeds(self, i, star_positions, star_speeds):
+        updated_positions = self.update_positions_with_random_speeds(star_positions, star_speeds, i)
+        return updated_positions
+
+    def generate_spiral_positions(self, num_systems, core_systems_ratio=0.2):
+        # Galaxy simulation parameters
+        num_stars = num_systems
+        num_arms = 8
+        r_spread = 7500
+        anim_steps = 2000
+        tightness = 2
+        noise_scale = 60
+        core_radius = 250  # Radius of the central cluster
+
+        # Determine the number of systems in the core and in the spiral arms
+        num_core_systems = int(num_systems * core_systems_ratio)
+        num_spiral_systems = num_systems - num_core_systems
+
+        # Generate star positions
+        np.random.seed(0)
+        star_positions = []
+
+        # Generate positions for the spiral arms
+        for i in range(num_spiral_systems):
+            arm_offset = 2 * np.pi * np.random.randint(num_arms) / num_arms
+            angle = tightness * np.sqrt(i / num_spiral_systems) + arm_offset
+            base_radius = (r_spread / num_arms) * np.sqrt(i / num_spiral_systems)
+            noise = self.perlin_noise(1, scale=noise_scale)[0, 0]
+            noisy_radius = base_radius * (1 + noise * 0.4)
+            x = noisy_radius * np.cos(angle)
+            y = noisy_radius * np.sin(angle)
+            star_positions.append([x, y])
+
+        # Generate positions for the central cluster
+        for _ in range(num_core_systems):
+            angle = np.random.uniform(0, 2 * np.pi)
+            radius = np.random.uniform(0, core_radius)
+            x = radius * np.cos(angle)
+            y = radius * np.sin(angle)
+            star_positions.append([x, y])
+
+        # Convert star_positions to a numpy array for easier handling
+        star_positions = np.array(star_positions)
+
+        # Initialize star speeds
+        star_speeds = np.random.uniform(0.00005, 0.00010, num_stars)
+
+        for i in range(anim_steps):
+            star_positions = self.animate_with_random_speeds(i, star_positions, star_speeds)
+        
+        return star_positions
