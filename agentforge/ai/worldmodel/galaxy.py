@@ -22,9 +22,8 @@ class Galaxy:
         self.systems = []
         self.has_life = []
         print("generating star positions...")
-        star_positions, starfield_positions = self.generate_spiral_positions(num_systems, starfieldSystems=2100, core_systems_ratio=0.1, num_arms=4, checkDistance=True, r_spread=9500, core_radius=300, anim_steps=2500, noise_scale=100, tightness=3)
+        star_positions, starfield_positions = self.generate_spiral_positions(num_systems, starfieldSystems=2100, core_systems_ratio=0.1, num_arms=6, checkDistance=True, r_spread=9500, core_radius=300, anim_steps=2500, noise_scale=100, tightness=3)
         print("generating starfield positions...")
-
         self.galaxy_concepts = {"Milky Way": Concept("Milky Way", "Galaxy")}
         galaxy_names = list(self.galaxy_concepts.keys())
         star_names = list(self.star.star_concepts.keys())
@@ -307,6 +306,9 @@ class Galaxy:
                 noise = self.perlin_noise(1, scale=noise_scale)[0, 0]
                 noisy_radius = base_radius * (1 + noise * 0.4)
                 radius = noisy_radius
+            
+            scaleFactor = 5
+            radius = radius * scaleFactor
 
             # Adding gravitational pull towards the center
             # gravity_factor = 1 - np.exp(-radius / 3000)  # Adjust the denominator for effect strength
@@ -335,7 +337,7 @@ class Galaxy:
         star_positions = np.array(star_positions)
 
         # Initialize star speeds
-        star_speeds = np.random.uniform(0.0008, 0.0010, num_systems)
+        star_speeds = np.random.uniform(0.0005, 0.0015, num_systems)
         print("evolving galaxy...")
         for i in range(anim_steps):
             star_positions = self.update_positions_with_random_speeds(star_positions, star_speeds, i, repulsion_distance=10)
