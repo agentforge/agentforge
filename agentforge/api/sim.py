@@ -16,25 +16,24 @@ class GalaxyResponse(BaseModel):
 
 response = {}
 
+# Modify the get_galaxy function to accept parameters
+async def get_galaxy(key: str, num_systems: int):
+   db = interface_interactor.get_interface("db")
+   collection = "galaxies"
+
+   existing_data = db.get(collection, key)
+   if existing_data:
+      existing_data.pop('_id', None)
+      logger.info(existing_data)
+      return GalaxyResponse(systems=existing_data)
+
+   response = await galaxy.generate_with_life(num_systems)
+   db.create(collection, key, response)
+
+   response.pop('_id', None)
+   return response
+
 @router.post("/generate-galaxy", operation_id="generateGalaxy")
-async def output(request: Request) -> GalaxyResponse:
-    # Access the database
-    db = interface_interactor.get_interface("db")
-
-    # Define collection and key for lookup
-    collection = "galaxies"
-    key = "milky_way" # TODO: Make this a parameter based on input data
-
-    # Check if galaxy data already exists
-    existing_data = db.get(collection, key)
-    if existing_data:
-         existing_data.pop('_id', None)  # Safely remove '_id' if it exists
-         return GalaxyResponse(systems=existing_data)
-
-    # If data doesn't exist, generate and save it
-    response = await galaxy.generate(625)
-
-    # Save generated data to the database
-    db.create(collection, key, response)
-
-    return GalaxyResponse(systems=response)
+async def output() -> GalaxyResponse:
+   response = await get_galaxy("milky_way", 625)
+   return GalaxyResponse(systems=response)
