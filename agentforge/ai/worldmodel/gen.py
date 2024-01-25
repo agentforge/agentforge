@@ -241,9 +241,7 @@ life_forms = {
     'Ammonia-Based': ['Cold-Tolerant Fauna', 'Cold-Tolerant Flora'],
     'Non-Solvent-Based': ['Gaseous', 'Plasma'],
     'Energy Beings': ['Electromagnetic', 'Quantum'],
-    'Artificial': ['Robotic', 'AI'],
     'Extremophiles': ['Radiation-Resistant', 'Pressure-Resistant', 'Temperature-Resistant'],
-    'Hybrid': ['Mixed-Traits Fauna', 'Mixed-Traits Flora']
 }
 
 skills = {

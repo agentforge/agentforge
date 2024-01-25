@@ -1,16 +1,18 @@
-import time
+import time, math
 import numpy as np
 import pandas as pd
 from agentforge.ai.worldmodel.star import Star
 from agentforge.ai.worldmodel.planet import Planet
 from agentforge.ai.worldmodel.lifeform import Lifeform
+from agentforge.ai.worldmodel.evolution import EvolutionarySimulation
 from agentforge.ai.worldmodel.concept import Concept, normalize_rows, ensure_non_negative_and_normalize_row
 from agentforge.ai.worldmodel.biome import Biome
 from agentforge.ai.worldmodel.moon import Moon
 from scipy.spatial import KDTree
-from agentforge.ai.worldmodel.designation import CelestialNamingSystem
+from agentforge.ai.worldmodel.designation import CelestialNamingSystem, star_designations
 from uuid import uuid4
 from agentforge.ai.worldmodel.simulation import StarSimulation
+from collections import defaultdict
 
 class Galaxy:
     def __init__(self, metadata=None):
@@ -24,50 +26,44 @@ class Galaxy:
         self.MAX_STAR_SPEED = 0.0015
         self.REPULSION_DISTANCE = 10
         self.NUM_SAMPLES = 100
+        self.GALACTIC_SCALE_FACTOR = 5.0
+        self.ALIEN_LIFE_PROBABILITY = 0.001
+        self.LIFE_PROBABILITY = 0.1
         self.star_simulation = StarSimulation(self.REPULSION_DISTANCE)
-        self.star_designations = [
-            'Kepler', 'Hubble', 'Galileo', 'Hawking', 'Sagan', 'Curie',
-            'Newton', 'Einstein', 'Copernicus', 'Herschel', 'Voyager', 'Cassini',
-            'Webb', 'Chandra', 'Spitzer', 'Planck', 'Fermi', 'Swift', 'Rosetta', 'Juno',
-            'Pioneer', 'Viking', 'Magellan', 'Tycho', 'Halley', 'Huygens', 'Ptolemy', 
-            'Brahe', 'Hipparchus', 'Messier', 'Leavitt', 'Tombaugh', 'Lowell', 'Hoyle',
-            'Shapley', 'Bell', 'Rubin', 'Mariner', 'Ulysses', 'Spirit', 'Opportunity',
-            'Curiosity', 'Perseverance', 'Ingenuity', 'Apollo', 'Gemini', 'Mercury',
-            'Soyuz', 'Vostok', 'New Horizons', 'Parker', 'Europa Clipper', 'Luna', 
-            'Zond', 'Venera', 'Nikola Tesla', 'da Vinci',
-            'Archimedes', 'Aristotle', 'Al-Biruni', 'Alhazen', 'Anaximander', 'Bacon',
-            'Braun', 'Bruno', 'Carson', 'Dawkins', 'Descartes', 'Drake', 'Edison', 
-            'Faraday', 'Feynman', 'Franklin', 'Galilei', 'Goodall', 'Heisenberg', 
-            'Hippocrates', 'Hopper', 'Jung', 'Kaku', 'Lamarck', 'Lavoisier', 'Lovelace',
-            'Mendel', 'Mendeleev', 'Michelson', 'Morley', 'Newton', 'Nightingale', 
-            'Noether', 'Oppenheimer', 'Pascal', 'Pasteur', 'Pauling', 'Pavlov', 'Payne',
-            'Penrose', 'Planck', 'Poincaré', 'Raman', 'Ramanujan', 'Rutherford', 
-            'Salk', 'Schrödinger', 'Skłodowska', 'Sommerfeld', 'Thomson', 
-            'Tyson', 'Venter', 'Watson', 'Watt', 'Wiener', 'Wolfram', 'Wright', 
-            'Yalow', 'Yeager', 'Zwicky', 'Arecibo', 'FAST', 'Green Bank', 'Lovelock', 
-            'SETI', 'TESS', 'VLA', 'VLBI', 'WISE', 'XMM-Newton', 'HD', 'PSR', 'WASP', 'KIC',
-            'LHS', 'TOI', 'GJ', 'TRAPPIST', 'OGLE', 'K2'
-        ]
+        self.star_designations = star_designations
         self.designation_counters = {key: np.random.randint(0, 999) for key in self.star_designations}
 
     async def generate_with_life(self, num_systems):
-        systems_dict = self.generate(100000)
-        num_dead_systems = num_systems - len(self.has_life)
-        dead_systems = np.random.choice(self.systems, num_dead_systems, replace=False).tolist()
+        simulated_systems = int(math.ceil(self.LIFE_PROBABILITY * num_systems) * (10000/14))
+        print("generating {} systems to sample life...".format(simulated_systems))
+        systems_dict = self.generate(simulated_systems)
+        solar_systems_w_life = len(self.has_life)
+        # Edge case, every solar system has life -- probably an error
+        if num_systems > solar_systems_w_life:
+            dead_systems = []
+        else:
+            num_dead_systems = num_systems - len(self.has_life)
+            dead_systems = np.random.choice(self.systems, num_dead_systems, replace=False).tolist()
         systems_to_return = dead_systems + systems_dict["has_life"]
-        print(len(systems_to_return))
-        print(len(systems_dict["has_life"]))
-        print(len(dead_systems))
-        return {"systems": dead_systems + systems_dict["has_life"], "starfield_positions": systems_dict["starfield_positions"]}
+        return {
+            "systems": systems_to_return,
+            "starfield_positions": systems_dict["starfield_positions"],
+            "lifeforms": systems_dict["lifeforms"],
+            "interstellar_civilizations": systems_dict["interstellar_civilizations"],
+        }
 
     def generate(self, num_systems):
         system_names = self.get_system_name(num_systems)
         # From the macro to the micro, we build the world model
         self.systems = []
         self.has_life = []
+        self.life_data = defaultdict(int)
+        self.all_life_forms = []
+        self.interstellar_civilizations = []
+
         print("generating star positions...")
         
-        star_positions, starfield_positions = self.generate_spiral_positions(num_systems, starfieldSystems=2200, core_systems_ratio=0.1, num_arms=6, checkDistance=True, r_spread=9500, core_radius=300, anim_steps=2500, noise_scale=100, tightness=3)
+        star_positions, starfield_positions = self.generate_spiral_positions(num_systems, starfieldSystems=2200, core_systems_ratio=0.1, num_arms=6, checkDistance=True, r_spread=9500, core_radius=300, anim_steps=10, noise_scale=100, tightness=3)
     
         kd_tree = KDTree(np.array(star_positions))  # Rebuild KDTree with new star positions
 
@@ -154,7 +150,7 @@ class Galaxy:
 
         # print(gx_bb_df)
         # print(gx_b_df)
-        # print(gx_p_df)
+        print(gx_p_df)
         # print(gx_bl_df)
         start_time = time.time()
         print("generating systems...")
@@ -180,6 +176,7 @@ class Galaxy:
             num_planets = self.planet.estimate_planet_count(star_mass_kg, disk_mass, star_age_Gyr, 1.0)
             name = system_names.pop()
             name_generator = CelestialNamingSystem(name)
+            star_id = str(uuid4())
             solar_system_info = {
                 "Name": name,
                 "Star": star_type,
@@ -190,18 +187,21 @@ class Galaxy:
                 "Number of Planets": num_planets,
                 "Disk Mass": disk_mass,
                 "Planets": [],
-                "uuid": str(uuid4())
+                "uuid": star_id
             }
 
             # Sample a planet type based on star type
             planet_probabilities = normalized_sx_p_df.iloc[star_index]
             for _ in range(num_planets):
-
                 planet_type = np.random.choice(planet_names, p=planet_probabilities)
                 planet_name = name_generator.get_next_name("planet")
                 # Find the index of the sampled planet type
                 planet_index = planet_names.index(planet_type)
                 planet_info, estimated_biomes, life_presence = self.planet.generate(planet_type, star_mass_kg, star_type)
+
+                # Small chance of alien lifeforms on strange new worlds
+                if not life_presence and np.random.rand() < self.ALIEN_LIFE_PROBABILITY and planet_type not in ['oceanPlanet', 'terrestrial', 'superEarth']:
+                    life_presence = True
 
                 # Create and set names for satellites
                 planet_info["Name"] = planet_name
@@ -211,28 +211,39 @@ class Galaxy:
 
                 for _ in range(estimated_biomes):
                     biome_type = np.random.choice(biome_names, p=normalized_px_b_df.iloc[planet_index])
-
                     biome_index = biome_names.index(biome_type)
-                    
+                    # origin_of_species = EvolutionarySimulation(planet_type, biome_type)
                     lifeforms = []
-                    
                     if life_presence:
-                        biological_probabilities = normalized_bx_b_df.iloc[biome_index]
-                        biological_type = np.random.choice(self.lifeform.life_form_categories, p=biological_probabilities)
+                        biome_quotient = self.biome.biome_biological_support[biome_type]['biological_diversity_quotient']
+                        biome_supported_species = math.ceil(biome_quotient * np.random.rand() * 1.0)
 
-                        biological_index = self.lifeform.life_form_categories.index(biological_type)
+                        # for _ in range(biome_supported_species):
+                        #     biological_probabilities = normalized_bx_b_df.iloc[biome_index]
+                        #     biological_type = np.random.choice(self.lifeform.life_form_categories, p=biological_probabilities)
 
-                        life_form_characteristic_probabilities = normalized_bx_lf_df.iloc[biological_index]
-                        adjusted_probabilities = ensure_non_negative_and_normalize_row(life_form_characteristic_probabilities)
-                        life_form_characteristic_list = list(set(np.random.choice(self.lifeform.life_form_characteristic_names, p=adjusted_probabilities, size=5)))
+                        #     biological_index = self.lifeform.life_form_categories.index(biological_type)
 
-                        bio_info = {
-                            "Biological": biological_type,
-                            "Biological Characteristics": self.lifeform.biologic_concepts[biological_type].metadata,
-                            "Life Form Characteristics": life_form_characteristic_list
-                        }
+                        #     life_form_characteristic_probabilities = normalized_bx_lf_df.iloc[biological_index]
+                        #     adjusted_probabilities = ensure_non_negative_and_normalize_row(life_form_characteristic_probabilities)
+                        #     life_form_characteristic_list = list(set(np.random.choice(self.lifeform.life_form_characteristic_names, p=adjusted_probabilities, size=5)))
 
-                        lifeforms.append(bio_info)
+                        #     final_evolutionary_stage = self.lifeform.roll_evolutionary_stage()
+
+                        #     bio_info = {
+                        #         "Biological": biological_type,
+                        #         "Biological Characteristics": self.lifeform.biologic_concepts[biological_type].metadata,
+                        #         "Life Form Attributes": life_form_characteristic_list,
+                        #         "Evolutionary Stage": final_evolutionary_stage,
+                        #         "Technological Milestone": self.lifeform.roll_technological_milestone(final_evolutionary_stage),
+                        #         "Genetic Profile": self.lifeform.sample_genetic_profile(biological_type),
+                        #         "system_uuid": star_id,
+                        #     }
+
+                        #     lifeforms.append(bio_info)
+                        #     self.all_life_forms.append(bio_info)
+                        #     if(final_evolutionary_stage == "Interstellar Civilization"):
+                        #         self.interstellar_civilizations.append(bio_info)
 
                     biome_info = {
                         "Biome Type": biome_type,
@@ -250,6 +261,7 @@ class Galaxy:
 
             if life_presence:
                 self.has_life.append(solar_system_info)
+                self.life_data[planet_type] += 1
 
         # Setup neighbors
         end_time = time.time()
@@ -266,8 +278,15 @@ class Galaxy:
                 }
                 system['Neighbors'].append(neighbor)
                 dist_idx += 1
-
-        return {"systems": self.systems, "has_life": self.has_life, "starfield_positions": starfield_positions.tolist()}
+        print(len(self.has_life))
+        print(self.life_data)
+        return {
+            "systems": self.systems,
+            "has_life": self.has_life,
+            "starfield_positions": starfield_positions.tolist(),
+            "lifeforms": self.all_life_forms,
+            "interstellar_civilizations": self.interstellar_civilizations,
+        }
 
     # Perlin noise implementation
     def perlin_noise(self, size, scale=100, seed=None):
@@ -324,77 +343,6 @@ class Galaxy:
             new_positions[i][1] = new_y
 
         return new_positions
-    
-    def monte_carlo_simulation(self, positions, speeds, time_step, anim_steps):
-        num_stars = len(positions)
-        final_positions = np.zeros_like(positions)
-
-        for _ in range(self.NUM_SAMPLES):
-            sample_positions = np.copy(positions)
-            sample_speeds = np.copy(speeds) + np.random.randn(num_stars) * 0.1  # Randomize speeds
-
-            for _ in range(anim_steps):
-                # Randomize dark matter effect
-                angles = np.arctan2(sample_positions[:, 1], sample_positions[:, 0])
-                distances = np.sqrt(np.sum(sample_positions ** 2, axis=1))
-                dark_matter_factor = 1 + np.exp(-distances / 2000) + np.random.randn(num_stars) * 0.1
-                angle_change = (sample_speeds * dark_matter_factor) * time_step / (distances + 0.1)
-                angles += angle_change
-                sample_positions[:, 0] = distances * np.cos(angles)
-                sample_positions[:, 1] = distances * np.sin(angles)
-
-                # Randomize repulsion forces
-                kd_tree = KDTree(sample_positions)
-                for i, pos in enumerate(sample_positions):
-                    distance, index = kd_tree.query(pos, k=2)
-                    if distance[1] < self.REPULSION_DISTANCE:
-                        direction = np.random.randn(2)  # Random direction
-                        magnitude = np.random.rand() * 2  # Random magnitude
-                        direction /= np.linalg.norm(direction)
-                        sample_positions[i] += direction * magnitude * time_step
-
-            final_positions += sample_positions
-
-        # Average the results of all samples
-        final_positions /= self.NUM_SAMPLES
-        return final_positions
-
-    
-    def compute_dark_matter_effect(self, positions, speeds, time_step, anim_steps):
-        # Initial angles and distances
-        angles = np.arctan2(positions[:, 1], positions[:, 0])
-        distances_from_center = np.sqrt(np.sum(positions ** 2, axis=1))
-        dark_matter_factors = 1 + np.exp(-distances_from_center / 2000)
-
-        # Approximating the total angle change over all steps
-        total_angle_change = (speeds * dark_matter_factors) * time_step * anim_steps / (distances_from_center + 0.1)
-        final_angles = angles + total_angle_change
-
-        # Updating positions based on the final angles
-        positions[:, 0] = distances_from_center * np.cos(final_angles)
-        positions[:, 1] = distances_from_center * np.sin(final_angles)
-
-        return positions
-
-    def apply_repulsion_forces(self, positions, speeds, time_step):
-        # Applying repulsion forces at the end
-        kd_tree = KDTree(positions)
-        for i, pos in enumerate(positions):
-            distance, index = kd_tree.query(pos, k=2)
-            if distance[1] < self.REPULSION_DISTANCE:
-                direction = pos - positions[index[1]]
-                norm = np.linalg.norm(direction)
-                if norm != 0:
-                    direction /= norm
-                    positions[i] += direction * speeds[i] * time_step
-
-        return positions
-
-    def update_positions_with_random_speeds(self, star_positions, star_speeds, time_step, anim_steps):
-        new_positions = np.copy(star_positions)
-        new_positions = self.compute_dark_matter_effect(new_positions, star_speeds, time_step, anim_steps)
-        new_positions = self.apply_repulsion_forces(new_positions, star_speeds, time_step)
-        return new_positions
 
     def get_system_name(self, num_names=1):
         # Random choice array to determine naming method
@@ -408,6 +356,24 @@ class Galaxy:
             names.append(name)
 
         return names
+    
+    def evolve_galaxy(self, star_positions, star_speeds, anim_steps):
+        print("evolving galaxy...")
+        start_time = time.time()
+
+        # MANY ATTEMPTS HERE TO OPTIMIZE THE SIMULATION, Matricies, probability distributions, etc.
+        # star_positions = self.monte_carlo_simulation(star_positions, star_speeds, 0.1, anim_steps)
+        # star_positions = self.update_positions_with_random_speeds(star_positions, star_speeds, 0.1, anim_steps)
+
+        # Slow but accurate
+        for i in range(anim_steps):
+            if(i % 10 == 0):
+                print(f"step {i} of {anim_steps}")
+            star_positions = self.update_positions_with_random_speeds_og(star_positions, star_speeds, i)
+        
+        end_time = time.time()
+        print(f"evolved galaxy in {end_time - start_time} seconds")
+        return star_positions
 
     def generate_spiral_positions(self, num_systems, starfieldSystems=100, core_systems_ratio=0.2, min_distance=5, checkDistance=True, num_arms = 4, r_spread = 5000, anim_steps = 1500, tightness = 2, noise_scale = 60, core_radius = 300):
         num_systems += starfieldSystems
@@ -464,24 +430,11 @@ class Galaxy:
 
         # Initialize star speeds
         star_speeds = np.random.uniform(self.MIN_STAR_SPEED, self.MAX_STAR_SPEED, num_systems)
-        print("evolving galaxy...")
-        start_time = time.time()
 
-        # MANY ATTEMPTS HERE TO OPTIMIZE THE SIMULATION, Matricies, probability distributions, etc.
-        # star_positions = self.monte_carlo_simulation(star_positions, star_speeds, 0.1, anim_steps)
-        # star_positions = self.update_positions_with_random_speeds(star_positions, star_speeds, 0.1, anim_steps)
-
-        # Slow but accurate
-        for i in range(anim_steps):
-            if(i % 10 == 0):
-                print(f"step {i} of {anim_steps}")
-            star_positions = self.update_positions_with_random_speeds_og(star_positions, star_speeds, i)
-        
-        end_time = time.time()
-        print(f"evolved galaxy in {end_time - start_time} seconds")
+        star_positions = self.evolve_galaxy(star_positions, star_speeds, anim_steps)
 
         # Scale galaxy up to 10000 light years
-        star_positions = star_positions * 5.0
+        star_positions = star_positions * self.GALACTIC_SCALE_FACTOR
         starfield_indices = np.random.choice(len(star_positions), starfieldSystems, replace=False)
         starfields = star_positions[starfield_indices]
 
