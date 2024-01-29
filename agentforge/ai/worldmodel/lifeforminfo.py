@@ -1,23 +1,120 @@
-# Simple Life Form Concepts are simplified
-simple_life_form_categories = {
-    "Single-celled organisms": {
-        "Archaea": "Unicellular organisms, similar to bacteria but with distinct molecular characteristics.",
-        "Bacteria": "Unicellular microorganisms with no nucleus.",
-        "Protozoa": "Diverse group of unicellular eukaryotic organisms, often motile.",
-        "Fungi": "Includes unicellular organisms like yeasts as well as simple multicellular forms like molds.",
-        "Algae": "Photosynthetic organisms, can be unicellular or simple multicellular.",
+
+# Speculative unicellular lifeforms for exoplanets, based on hypothesized environments
+exoplanet_lifeforms = {
+    "Silicon_Based": ["Silica-photosynthesizers", "Radiation-resistant Extremophiles"],
+    "Ammonia_Based": ["Ammonia-metabolizing Microbes"],
+    "Methane_Based": ["Methane-synthesizers", "Cryophilic Methanogens"],
+    "Acidic_Environment": ["Acid-resistant Microorganisms"],
+    "High_Pressure": ["Pressure-adapted Microbes"],
+}
+
+# More speciiic life form concepts -- to supply LLM prompts
+lifeform_genus_data = {
+    "Terrestrial": {
+        "Unicellular": {
+            "Bacteria": 1.0, 
+            "Archaea": 1.0,
+            "Protozoa": 1.0,
+            "Unicellular Fungi (e.g., Yeasts)": 1.0,
+            "Protists (e.g., Amoebas, Slime Molds)": 1.0,
+            "Choanoflagellates": 1.0,
+            "Ciliates (such as Paramecium)": 1.0,
+            "Flagellates (e.g., Euglena)": 1.0,
+        },
+        "Multicellular": {
+            "Fungi": 1.0,
+            "Molds": 1.0,
+            "Mildews": 1.0,
+            "Yeast": 1.0,
+            "Simple Annelids": 1.0,  
+        },
+        "Complex": {
+            "Mammals": 1.0,
+            "Birds": 1.0,
+            "Reptiles": 1.0,
+            "Amphibians": 1.0,
+            "Fish": 1.0,
+            "Coleoptera (Beetles)": 1.0,
+            "Lepidoptera (Butterflies and Moths)": 1.0,
+            "Hymenoptera (Bees, Wasps, Ants)": 1.0,
+            "Diptera (Flies)": 1.0,
+            "Hemiptera (True Bugs)": 1.0,
+            "Odonata (Dragonflies)": 1.0,
+            "Orthoptera (Grasshoppers)": 1.0,
+            "Araneae (Spiders)": 1.0,
+            "Gastropoda (Snails)": 1.0,
+            "Isoptera (Termites)": 1.0,
+            "Lagomorpha (Rabbits)": 1.0,
+            "Mantodea (Praying Mantises)": 1.0,
+            "Blattodea (Cockroaches)": 1.0,
+            "Myriapods": 1.0,
+            "Arachnids": 1.0,
+            "Arachnids": 1.0,
+            "Felines": 1.0,
+            "Canines": 1.0,
+            "Primates": 1.0,
+            "Rodents": 1.0,
+            "Bovines": 1.0,
+            "Equines": 1.0,
+            "Porcines": 1.0,
+            "Avians": 1.0,
+            "Annelids": 1.0,
+            "Mollusks": 1.0,
+        }
     },
-    'Multi-celled organisms': {
-        "Sponges (Porifera)": "Simplest multicellular animals, lacking true tissues and organs.",
-        "Coenocytic Organisms": "Multinucleate organisms with no cell walls, like slime molds.",
-        "Cnidarians": "Simple organisms with stinging cells",
-        "Flatworms": "Simple, flat organisms with no organs",
-        "Roundworms": "Simple, cylindrical organisms with no organs",
-        "Mollusks": "Simple organisms with soft bodies and shells",
-        "Annelids": "Simple organisms with segmented bodies",
-        "Arthropods": "Simple organisms with jointed legs and exoskeletons",
-        "Echinoderms": "Simple organisms with spiny skin",
-        "Chordates": "Simple organisms with spinal cords"
+    "Aquatic": {
+        "Unicellular": {
+            "Phytoplankton (e.g., Diatoms, Dinoflagellates)": 1.0,
+            "Green Algae (e.g., Chlamydomonas)": 1.0,
+            "Foraminifera": 1.0,
+        },
+        "Multicellular": {
+            "Sponges (Porifera)": 1.0,
+            "Coenocytic Organisms": 1.0,
+            "Cnidarians": 1.0,
+            "Flatworms": 1.0,
+            "Roundworms": 1.0,
+            "Mollusks": 1.0,
+            "Annelids": 1.0,
+            "Arthropods": 1.0,
+            "Echinoderms": 1.0,
+            "Chordates": 1.0,
+        },
+        "Complex": {
+            "Corals": 1.0,
+            "Sponges": 1.0,
+            "Algae": 1.0,
+            "Anemones": 1.0,
+            "Polychaetes": 1.0,
+            "Parrotfish": 1.0,
+            "Butterflyfish": 1.0,
+            "Octopuses": 1.0,
+            "Urchins": 1.0,
+            "Turtles": 1.0,
+            "Sharks": 1.0,
+            "Groupers": 1.0,
+            "Eels": 1.0,
+            "Barracudas": 1.0,
+            "Lionfish": 1.0,
+        }
+    },
+    "Flora": {
+        "Unicellular": {
+            "Green Algae (e.g., Chlorella, Volvox)": 1.0,
+            "Diatoms": 1.0,
+            "Cyanobacteria (e.g., Spirulina)": 1.0,
+        },
+        "Multicellular": {
+            "Bryophytes (Mosses, Liverworts, Hornworts)": 1.0,
+            "Ferns and Horsetails": 1.0,
+            "Gymnosperms (Conifers, Cycads)": 1.0,
+        },
+        "Complex": {
+            "Monocots (e.g., Grasses, Orchids)": 1.0,
+            "Dicots (e.g., Roses, Sunflowers)": 1.0,
+            "Woody Plants (Trees, Shrubs)": 1.0,
+            "Herbaceous Plants (Non-woody Plants)": 1.0,
+        }
     }
 }
 
@@ -115,7 +212,7 @@ complex_life_form_categories = {
                 "Viperfish": "Viperfish with sharp fangs"
             },
             "Coral Reefs": {
-                  "Corals": "Stony corals with symbiotic algae",
+                "Corals": "Stony corals with symbiotic algae",
                 "Sponges": "Reef-building sponges",
                 "Algae": "Calcium-depositing algae",
                 "Anemones": "Colonial anemones",

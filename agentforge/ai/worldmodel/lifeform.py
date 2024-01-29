@@ -14,7 +14,7 @@ class Lifeform:
         # Create concepts for each planet type
         self.biologic_concepts = {}
         for biologic_type in self.life_form_categories:
-            self.biologic_concepts[biologic_type] = Concept(biologic_type, "Biological")
+            self.biologic_concepts[biologic_type] = Concept(biologic_type, "Biological Type")
 
     def create_biological_matrix_row_normalization(self):
         """
@@ -51,9 +51,9 @@ class Lifeform:
             base = values["base"]
             std = values["std"]
             # Sampling from a normal distribution with the given base and standard deviation
-            genetic_profile[attribute] = round(np.random.normal(base, std), 2)
+            genetic_profile[attribute] = max(min(round(np.random.normal(base, std), 2), 100.0), 0.0)
         return genetic_profile
-
+    
     # Mapping lifeform category to life of lifeform attributes -- > output: values
     life_form_characteristics = {
         "Amorphous": {
@@ -93,8 +93,11 @@ class Lifeform:
             "Toxin Resistance": {"base": 10, "std": 5},
             "Toxin Production": {"base": 0, "std": 0},
             "Navigation Skills": {"base": 80, "std": 10},
+            "Offspring": {"base": 1, "std": 0},
         },
         "Aquatic": {
+            "Height": {"base": 50, "std": 20},  # Height in meters
+            "Mass": {"base": 50, "std": 20},  # Mass in kilograms
             "Intelligence": {"base": 50, "std": 15},  # Varies among species
             "Strength": {"base": 60, "std": 15},      # Swimming power
             "Dexterity": {"base": 50, "std": 20},     # Finesse in water movement
@@ -120,9 +123,23 @@ class Lifeform:
             "Social Structure": {"base": 40, "std": 20},  # Social organization in species
             "Resource Utilization": {"base": 60, "std": 15}, # Efficiency in using aquatic resources
             "Stealth": {"base": 60, "std": 15},        # Ability to move undetected in water
-            "Flight Capability": {"base": 0, "std": 0}   # Not applicable in traditional sense
+            "Flight Capability": {"base": 0, "std": 0},   # Not applicable in traditional sense
+            "Immune System Strength": {"base": 90, "std": 5},
+            "Nutritional Requirements": {"base": 20, "std": 10},
+            "Pressure Resistance": {"base": 80, "std": 10},
+            "Social Cooperation": {"base": 50, "std": 50},
+            "Oxygen Utilization Efficiency": {"base": 100, "std": 0},
+            "Vision Adaptation": {"base": 0, "std": 0},
+            "Eco-Sensitivity": {"base": 15, "std": 5},
+            "Predation Instincts": {"base": 50, "std": 25},
+            "Toxin Resistance": {"base": 10, "std": 5},
+            "Toxin Production": {"base": 0, "std": 0},
+            "Navigation Skills": {"base": 80, "std": 10},
+            "Offspring": {"base": 1, "std": 0},
         },
         "Cold-Tolerant Fauna": {
+            "Height": {"base": 50, "std": 20},  # Height in meters
+            "Mass": {"base": 50, "std": 20},  # Mass in kilograms
             "Intelligence": {"base": 50, "std": 15},  # Average, varies among species
             "Strength": {"base": 65, "std": 15},      # Physical power for survival in harsh climates
             "Dexterity": {"base": 40, "std": 20},     # Coordination, limited by bulky physiques
@@ -148,9 +165,23 @@ class Lifeform:
             "Social Structure": {"base": 40, "std": 20},  # Varies among species
             "Resource Utilization": {"base": 50, "std": 20}, # Efficiency in resource-scarce environments
             "Stealth": {"base": 40, "std": 20},        # Predatory or defensive stealth
-            "Flight Capability": {"base": 10, "std": 10}   # Limited to certain bird species
+            "Flight Capability": {"base": 10, "std": 10},   # Limited to certain bird species
+            "Immune System Strength": {"base": 90, "std": 5},
+            "Nutritional Requirements": {"base": 20, "std": 10},
+            "Pressure Resistance": {"base": 80, "std": 10},
+            "Social Cooperation": {"base": 50, "std": 50},
+            "Oxygen Utilization Efficiency": {"base": 100, "std": 0},
+            "Vision Adaptation": {"base": 0, "std": 0},
+            "Eco-Sensitivity": {"base": 15, "std": 5},
+            "Predation Instincts": {"base": 50, "std": 25},
+            "Toxin Resistance": {"base": 10, "std": 5},
+            "Toxin Production": {"base": 0, "std": 0},
+            "Navigation Skills": {"base": 80, "std": 10},
+            "Offspring": {"base": 1, "std": 0},
         },
         "Cold-Tolerant Flora": {
+            "Height": {"base": 50, "std": 20},  # Height in meters
+            "Mass": {"base": 50, "std": 20},  # Mass in kilograms
             "Intelligence": {"base": 1, "std": 1},  # Limited to adaptive behaviors
             "Strength": {"base": 20, "std": 10},    # Structural strength against elements
             "Dexterity": {"base": 1, "std": 1},     # Limited to growth patterns
@@ -176,9 +207,23 @@ class Lifeform:
             "Social Structure": {"base": 1, "std": 1},  # Limited to plant interactions
             "Resource Utilization": {"base": 60, "std": 15}, # Resource efficiency
             "Stealth": {"base": 1, "std": 1},         # Not applicable
-            "Flight Capability": {"base": 1, "std": 1}   # Limited to seed dispersal
+            "Flight Capability": {"base": 1, "std": 1},   # Limited to seed dispersal
+            "Immune System Strength": {"base": 90, "std": 5},
+            "Nutritional Requirements": {"base": 20, "std": 10},
+            "Pressure Resistance": {"base": 80, "std": 10},
+            "Social Cooperation": {"base": 50, "std": 50},
+            "Oxygen Utilization Efficiency": {"base": 100, "std": 0},
+            "Vision Adaptation": {"base": 0, "std": 0},
+            "Eco-Sensitivity": {"base": 15, "std": 5},
+            "Predation Instincts": {"base": 50, "std": 25},
+            "Toxin Resistance": {"base": 10, "std": 5},
+            "Toxin Production": {"base": 0, "std": 0},
+            "Navigation Skills": {"base": 80, "std": 10},
+            "Offspring": {"base": 1, "std": 0},
         },
         "Gaseous": {
+            "Height": {"base": 80, "std": 20},  # Height in meters
+            "Mass": {"base": 1, "std": 1},  # Mass in kilograms
             "Intelligence": {"base": 10, "std": 5},   # Hypothetical cognitive abilities
             "Strength": {"base": 5, "std": 5},        # Limited physical force
             "Dexterity": {"base": 80, "std": 10},     # High maneuverability in gaseous state
@@ -204,9 +249,23 @@ class Lifeform:
             "Social Structure": {"base": 10, "std": 10},  # Hypothetical social interactions
             "Resource Utilization": {"base": 70, "std": 15}, # Efficiency in resource use
             "Stealth": {"base": 80, "std": 10},        # Moving undetected
-            "Flight Capability": {"base": 100, "std": 0}   # Innate ability to float or drift
+            "Flight Capability": {"base": 100, "std": 0},   # Innate ability to float or drift
+            "Immune System Strength": {"base": 90, "std": 5},
+            "Nutritional Requirements": {"base": 20, "std": 10},
+            "Pressure Resistance": {"base": 80, "std": 10},
+            "Social Cooperation": {"base": 50, "std": 50},
+            "Oxygen Utilization Efficiency": {"base": 100, "std": 0},
+            "Vision Adaptation": {"base": 0, "std": 0},
+            "Eco-Sensitivity": {"base": 15, "std": 5},
+            "Predation Instincts": {"base": 50, "std": 25},
+            "Toxin Resistance": {"base": 10, "std": 5},
+            "Toxin Production": {"base": 0, "std": 0},
+            "Navigation Skills": {"base": 80, "std": 10},
+            "Offspring": {"base": 1, "std": 0},
         },
         "Plasma": {
+            "Height": {"base": 20, "std": 20},  # Height in meters
+            "Mass": {"base": 20, "std": 20},  # Mass in kilograms
             "Intelligence": {"base": 30, "std": 20},  # Hypothetical cognitive abilities
             "Strength": {"base": 40, "std": 20},      # Potential force exertion in a plasma state
             "Dexterity": {"base": 70, "std": 15},     # Maneuverability and shape adaptation
@@ -232,9 +291,23 @@ class Lifeform:
             "Social Structure": {"base": 10, "std": 15},  # Hypothetical social organization
             "Resource Utilization": {"base": 60, "std": 20}, # Efficiency in energy use
             "Stealth": {"base": 50, "std": 20},        # Ability to exist undetected
-            "Flight Capability": {"base": 100, "std": 0}   # Innate floating or flying ability
+            "Flight Capability": {"base": 100, "std": 0},  # Innate floating or flying ability
+            "Immune System Strength": {"base": 90, "std": 5},
+            "Nutritional Requirements": {"base": 20, "std": 10},
+            "Pressure Resistance": {"base": 80, "std": 10},
+            "Social Cooperation": {"base": 50, "std": 50},
+            "Oxygen Utilization Efficiency": {"base": 100, "std": 0},
+            "Vision Adaptation": {"base": 0, "std": 0},
+            "Eco-Sensitivity": {"base": 15, "std": 5},
+            "Predation Instincts": {"base": 50, "std": 25},
+            "Toxin Resistance": {"base": 10, "std": 5},
+            "Toxin Production": {"base": 0, "std": 0},
+            "Navigation Skills": {"base": 80, "std": 10},
+            "Offspring": {"base": 1, "std": 0},
         },
         "Crystalline": {
+            "Height": {"base": 50, "std": 50},  # Height in meters
+            "Mass": {"base": 50, "std": 50},  # Mass in kilograms
             "Intelligence": {"base": 20, "std": 10},  # Hypothetical cognitive abilities
             "Strength": {"base": 80, "std": 10},      # Structural robustness and stability
             "Dexterity": {"base": 10, "std": 5},      # Limited due to rigid structure
@@ -260,9 +333,23 @@ class Lifeform:
             "Social Structure": {"base": 10, "std": 10},  # Hypothetical social interactions
             "Resource Utilization": {"base": 50, "std": 20}, # Efficiency in resource use
             "Stealth": {"base": 40, "std": 20},        # Ability to remain undetected
-            "Flight Capability": {"base": 0, "std": 0}   # Not applicable
+            "Flight Capability": {"base": 0, "std": 0},  # Not applicable
+            "Immune System Strength": {"base": 90, "std": 5},
+            "Nutritional Requirements": {"base": 20, "std": 10},
+            "Pressure Resistance": {"base": 80, "std": 10},
+            "Social Cooperation": {"base": 50, "std": 50},
+            "Oxygen Utilization Efficiency": {"base": 100, "std": 0},
+            "Vision Adaptation": {"base": 0, "std": 0},
+            "Eco-Sensitivity": {"base": 15, "std": 5},
+            "Predation Instincts": {"base": 50, "std": 25},
+            "Toxin Resistance": {"base": 10, "std": 5},
+            "Toxin Production": {"base": 0, "std": 0},
+            "Navigation Skills": {"base": 80, "std": 10},
+            "Offspring": {"base": 1, "std": 0},
         },
         "Electromagnetic": {
+            "Height": {"base": 50, "std": 50},  # Height in meters
+            "Mass": {"base": 50, "std": 50},  # Mass in kilograms
             "Intelligence": {"base": 40, "std": 20},  # Hypothetical cognitive abilities in manipulating electromagnetic fields
             "Strength": {"base": 70, "std": 15},      # Ability to exert force through electromagnetic interactions
             "Dexterity": {"base": 60, "std": 20},     # Coordination and control over electromagnetic phenomena
@@ -288,9 +375,23 @@ class Lifeform:
             "Social Structure": {"base": 20, "std": 15},  # Hypothetical social organization based on electromagnetic communication
             "Resource Utilization": {"base": 70, "std": 15}, # Efficiency in using electromagnetic resources
             "Stealth": {"base": 70, "std": 15},        # Moving undetected within electromagnetic fields
-            "Flight Capability": {"base": 80, "std": 10}   # Manipulating electromagnetic fields for movement
+            "Flight Capability": {"base": 80, "std": 10},   # Manipulating electromagnetic fields for movement
+            "Immune System Strength": {"base": 90, "std": 5},
+            "Nutritional Requirements": {"base": 20, "std": 10},
+            "Pressure Resistance": {"base": 80, "std": 10},
+            "Social Cooperation": {"base": 50, "std": 50},
+            "Oxygen Utilization Efficiency": {"base": 100, "std": 0},
+            "Vision Adaptation": {"base": 0, "std": 0},
+            "Eco-Sensitivity": {"base": 15, "std": 5},
+            "Predation Instincts": {"base": 50, "std": 25},
+            "Toxin Resistance": {"base": 10, "std": 5},
+            "Toxin Production": {"base": 0, "std": 0},
+            "Navigation Skills": {"base": 80, "std": 10},
+            "Offspring": {"base": 1, "std": 0},
         },
         "Flora": {
+            "Height": {"base": 50, "std": 50},  # Height in meters
+            "Mass": {"base": 50, "std": 25},  # Mass in kilograms
             "Intelligence": {"base": 1, "std": 1},  # Limited to adaptive responses
             "Strength": {"base": 30, "std": 15},    # Structural strength against gravity and elements
             "Dexterity": {"base": 1, "std": 1},     # Limited to growth patterns
@@ -316,9 +417,23 @@ class Lifeform:
             "Social Structure": {"base": 1, "std": 1},  # Interaction with other plants and organisms
             "Resource Utilization": {"base": 70, "std": 15}, # Efficiency in using soil and sunlight
             "Stealth": {"base": 1, "std": 1},         # Not applicable
-            "Flight Capability": {"base": 1, "std": 1}   # Limited to seed dispersal
+            "Flight Capability": {"base": 1, "std": 1},   # Limited to seed dispersal
+            "Immune System Strength": {"base": 90, "std": 5},
+            "Nutritional Requirements": {"base": 20, "std": 10},
+            "Pressure Resistance": {"base": 80, "std": 10},
+            "Social Cooperation": {"base": 50, "std": 50},
+            "Oxygen Utilization Efficiency": {"base": 100, "std": 0},
+            "Vision Adaptation": {"base": 0, "std": 0},
+            "Eco-Sensitivity": {"base": 15, "std": 5},
+            "Predation Instincts": {"base": 50, "std": 25},
+            "Toxin Resistance": {"base": 10, "std": 5},
+            "Toxin Production": {"base": 0, "std": 0},
+            "Navigation Skills": {"base": 80, "std": 10},     
+            "Offspring": {"base": 1, "std": 0},      
         },
         "Pressure-Resistant": {
+            "Height": {"base": 50, "std": 50},  # Height in meters
+            "Mass": {"base": 50, "std": 50},  # Mass in kilograms
             "Intelligence": {"base": 30, "std": 15},  # Cognitive abilities focused on survival in high-pressure environments
             "Strength": {"base": 60, "std": 20},      # Physical strength to withstand pressure
             "Dexterity": {"base": 40, "std": 20},     # Agility under pressure, possibly limited by environmental constraints
@@ -344,9 +459,23 @@ class Lifeform:
             "Social Structure": {"base": 20, "std": 15},  # Social interactions, likely limited
             "Resource Utilization": {"base": 60, "std": 15}, # Efficient use of available resources in their environment
             "Stealth": {"base": 40, "std": 20}, # Ability to move or exist without detection, adapted to high-pressure conditions
-            "Flight Capability": {"base": 10, "std": 10} # Limited to swimming capabilities, not traditional flight
+            "Flight Capability": {"base": 10, "std": 10}, # Limited to swimming capabilities, not traditional flight
+            "Immune System Strength": {"base": 90, "std": 5},
+            "Nutritional Requirements": {"base": 20, "std": 10},
+            "Pressure Resistance": {"base": 80, "std": 10},
+            "Social Cooperation": {"base": 50, "std": 50},
+            "Oxygen Utilization Efficiency": {"base": 100, "std": 0},
+            "Vision Adaptation": {"base": 0, "std": 0},
+            "Eco-Sensitivity": {"base": 15, "std": 5},
+            "Predation Instincts": {"base": 50, "std": 25},
+            "Toxin Resistance": {"base": 10, "std": 5},
+            "Toxin Production": {"base": 0, "std": 0},
+            "Navigation Skills": {"base": 80, "std": 10},
+            "Offspring": {"base": 1, "std": 0},
         },
         "Quantum": {
+            "Height": {"base": 50, "std": 50},  # Height in meters
+            "Mass": {"base": 50, "std": 50},  # Mass in kilograms
             "Intelligence": {"base": 80, "std": 10},  # Advanced cognitive abilities, potentially linked to quantum computing principles
             "Strength": {"base": 50, "std": 20},      # Conceptual strength, possibly related to influence on quantum states
             "Dexterity": {"base": 70, "std": 15},     # Agility in manipulating quantum phenomena
@@ -372,9 +501,23 @@ class Lifeform:
             "Social Structure": {"base": 50, "std": 20},  # Hypothetical social organization within a quantum framework
             "Resource Utilization": {"base": 70, "std": 15}, # Efficiency in using quantum resources
             "Stealth": {"base": 80, "std": 10},        # Moving or existing undetected, aided by quantum indeterminacy
-            "Flight Capability": {"base": 50, "std": 20}   # Potential for movement not bound by traditional physics
+            "Flight Capability": {"base": 50, "std": 20},   # Potential for movement not bound by traditional physics
+            "Immune System Strength": {"base": 90, "std": 5},
+            "Nutritional Requirements": {"base": 20, "std": 10},
+            "Pressure Resistance": {"base": 80, "std": 10},
+            "Social Cooperation": {"base": 50, "std": 50},
+            "Oxygen Utilization Efficiency": {"base": 100, "std": 0},
+            "Vision Adaptation": {"base": 0, "std": 0},
+            "Eco-Sensitivity": {"base": 15, "std": 5},
+            "Predation Instincts": {"base": 50, "std": 25},
+            "Toxin Resistance": {"base": 10, "std": 5},
+            "Toxin Production": {"base": 0, "std": 0},
+            "Navigation Skills": {"base": 80, "std": 10},
+            "Offspring": {"base": 1, "std": 0},
         },
         "Radiation-Resistant": {
+            "Height": {"base": 50, "std": 50},  # Height in meters
+            "Mass": {"base": 50, "std": 50},  # Mass in kilograms
             "Intelligence": {"base": 10, "std": 10},  # Limited to adaptive behaviors and survival strategies
             "Strength": {"base": 30, "std": 20},      # Physical strength, relevant to structural integrity under radiation
             "Dexterity": {"base": 10, "std": 10},     # Limited to growth and movement capabilities
@@ -400,9 +543,23 @@ class Lifeform:
             "Social Structure": {"base": 5, "std": 5},  # Limited to interactions within microbial or ecological communities
             "Resource Utilization": {"base": 60, "std": 15}, # Efficiency in using available resources in radiation-affected environments
             "Stealth": {"base": 20, "std": 15},        # Ability to exist without detection, relevant in microbial communities
-            "Flight Capability": {"base": 0, "std": 0}   # Not applicable
+            "Flight Capability": {"base": 0, "std": 0},   # Not applicable
+            "Immune System Strength": {"base": 90, "std": 5},
+            "Nutritional Requirements": {"base": 20, "std": 10},
+            "Pressure Resistance": {"base": 80, "std": 10},
+            "Social Cooperation": {"base": 50, "std": 50},
+            "Oxygen Utilization Efficiency": {"base": 100, "std": 0},
+            "Vision Adaptation": {"base": 0, "std": 0},
+            "Eco-Sensitivity": {"base": 15, "std": 5},
+            "Predation Instincts": {"base": 50, "std": 25},
+            "Toxin Resistance": {"base": 10, "std": 5},
+            "Toxin Production": {"base": 0, "std": 0},
+            "Navigation Skills": {"base": 80, "std": 10},
+            "Offspring": {"base": 1, "std": 0},
         },
         "Temperature-Resistant": {
+            "Height": {"base": 50, "std": 50},  # Height in meters
+            "Mass": {"base": 50, "std": 50},  # Mass in kilograms
             "Intelligence": {"base": 10, "std": 10},  # Limited to basic survival instincts and adaptations
             "Strength": {"base": 40, "std": 20},      # Physical strength, relevant to structural integrity under extreme temperatures
             "Dexterity": {"base": 20, "std": 15},     # Limited movement capabilities
@@ -428,9 +585,23 @@ class Lifeform:
             "Social Structure": {"base": 5, "std": 5},  # Limited to interactions within microbial communities
             "Resource Utilization": {"base": 60, "std": 15}, # Efficiency in using resources in extreme thermal environments
             "Stealth": {"base": 20, "std": 15},        # Limited applicability
-            "Flight Capability": {"base": 0, "std": 0}   # Not applicable
+            "Flight Capability": {"base": 0, "std": 0},   # Not applicable
+            "Immune System Strength": {"base": 90, "std": 5},
+            "Nutritional Requirements": {"base": 20, "std": 10},
+            "Pressure Resistance": {"base": 80, "std": 10},
+            "Social Cooperation": {"base": 50, "std": 50},
+            "Oxygen Utilization Efficiency": {"base": 100, "std": 0},
+            "Vision Adaptation": {"base": 0, "std": 0},
+            "Eco-Sensitivity": {"base": 15, "std": 5},
+            "Predation Instincts": {"base": 50, "std": 25},
+            "Toxin Resistance": {"base": 10, "std": 5},
+            "Toxin Production": {"base": 0, "std": 0},
+            "Navigation Skills": {"base": 80, "std": 10},
+            "Offspring": {"base": 1, "std": 0},
         },
         "Terrestrial": {
+            "Height": {"base": 50, "std": 20},  # Height in meters
+            "Mass": {"base": 50, "std": 20},  # Mass in kilograms
             "Intelligence": {"base": 50, "std": 20},  # Varies from simple instinctive behaviors to complex problem-solving in higher mammals
             "Strength": {"base": 50, "std": 20},      # Ranges from the minimal strength of small insects to the great power of large mammals
             "Dexterity": {"base": 50, "std": 20},     # Coordination and fine motor skills vary among species, from limited to highly skilled
@@ -456,6 +627,18 @@ class Lifeform:
             "Social Structure": {"base": 40, "std": 20}, # Social interactions, significant in herd, pack, or community-forming species
             "Resource Utilization": {"base": 50, "std": 20}, # Efficiency in using available resources, varies based on ecological niche
             "Stealth": {"base": 40, "std": 20}, # Ability to move undetected, important for predators and prey alike
-            "Flight Capability": {"base": 20, "std": 20} # Present in birds and some insects, not applicable to most terrestrial species
+            "Flight Capability": {"base": 20, "std": 20}, # Present in birds and some insects, not applicable to most terrestrial species
+            "Immune System Strength": {"base": 90, "std": 5},
+            "Nutritional Requirements": {"base": 20, "std": 10},
+            "Pressure Resistance": {"base": 80, "std": 10},
+            "Social Cooperation": {"base": 50, "std": 50},
+            "Oxygen Utilization Efficiency": {"base": 100, "std": 0},
+            "Vision Adaptation": {"base": 0, "std": 0},
+            "Eco-Sensitivity": {"base": 15, "std": 5},
+            "Predation Instincts": {"base": 50, "std": 25},
+            "Toxin Resistance": {"base": 10, "std": 5},
+            "Toxin Production": {"base": 0, "std": 0},
+            "Navigation Skills": {"base": 80, "std": 10},
+            "Offspring": {"base": 1, "std": 0},
             }
     }

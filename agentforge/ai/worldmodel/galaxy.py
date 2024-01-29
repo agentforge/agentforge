@@ -27,7 +27,7 @@ class Galaxy:
         self.REPULSION_DISTANCE = 10
         self.NUM_SAMPLES = 100
         self.GALACTIC_SCALE_FACTOR = 5.0
-        self.ALIEN_LIFE_PROBABILITY = 0.001
+        self.ALIEN_LIFE_PROBABILITY = 0.0001
         self.LIFE_PROBABILITY = 0.1
         self.star_simulation = StarSimulation(self.REPULSION_DISTANCE)
         self.star_designations = star_designations
@@ -210,40 +210,38 @@ class Galaxy:
                     moon["Name"] = moon_name
 
                 for _ in range(estimated_biomes):
+                    lifeforms = []
                     biome_type = np.random.choice(biome_names, p=normalized_px_b_df.iloc[planet_index])
                     biome_index = biome_names.index(biome_type)
-                    # origin_of_species = EvolutionarySimulation(planet_type, biome_type)
-                    lifeforms = []
+
+                    evolutionary_report =  None
                     if life_presence:
                         biome_quotient = self.biome.biome_biological_support[biome_type]['biological_diversity_quotient']
-                        biome_supported_species = math.ceil(biome_quotient * np.random.rand() * 1.0)
+                        biome_supported_species = 25
 
-                        # for _ in range(biome_supported_species):
-                        #     biological_probabilities = normalized_bx_b_df.iloc[biome_index]
-                        #     biological_type = np.random.choice(self.lifeform.life_form_categories, p=biological_probabilities)
+                        for _ in range(biome_supported_species):
+                            biological_probabilities = normalized_bx_b_df.iloc[biome_index]
+                            biological_type = np.random.choice(self.lifeform.life_form_categories, p=biological_probabilities)
 
-                        #     biological_index = self.lifeform.life_form_categories.index(biological_type)
+                            biological_index = self.lifeform.life_form_categories.index(biological_type)
 
-                        #     life_form_characteristic_probabilities = normalized_bx_lf_df.iloc[biological_index]
-                        #     adjusted_probabilities = ensure_non_negative_and_normalize_row(life_form_characteristic_probabilities)
-                        #     life_form_characteristic_list = list(set(np.random.choice(self.lifeform.life_form_characteristic_names, p=adjusted_probabilities, size=5)))
+                            life_form_characteristic_probabilities = normalized_bx_lf_df.iloc[biological_index]
+                            adjusted_probabilities = ensure_non_negative_and_normalize_row(life_form_characteristic_probabilities)
+                            life_form_characteristic_list = list(set(np.random.choice(self.lifeform.life_form_characteristic_names, p=adjusted_probabilities, size=5)))
 
-                        #     final_evolutionary_stage = self.lifeform.roll_evolutionary_stage()
+                            bio_info = {
+                                "Biological Type": biological_type,
+                                "Life Form Attributes": life_form_characteristic_list,
+                                "Genetic Profile": self.lifeform.sample_genetic_profile(biological_type),
+                                "system_uuid": star_id,
+                            }
 
-                        #     bio_info = {
-                        #         "Biological": biological_type,
-                        #         "Biological Characteristics": self.lifeform.biologic_concepts[biological_type].metadata,
-                        #         "Life Form Attributes": life_form_characteristic_list,
-                        #         "Evolutionary Stage": final_evolutionary_stage,
-                        #         "Technological Milestone": self.lifeform.roll_technological_milestone(final_evolutionary_stage),
-                        #         "Genetic Profile": self.lifeform.sample_genetic_profile(biological_type),
-                        #         "system_uuid": star_id,
-                        #     }
+                            lifeforms.append(bio_info)
+                            self.all_life_forms.append(bio_info)
 
-                        #     lifeforms.append(bio_info)
-                        #     self.all_life_forms.append(bio_info)
-                        #     if(final_evolutionary_stage == "Interstellar Civilization"):
-                        #         self.interstellar_civilizations.append(bio_info)
+                        print("evolving life {} for {}".format(len(lifeforms), planet_type))
+                        origin_of_species = EvolutionarySimulation(planet_type, biome_type)
+                        evolutionary_report = origin_of_species.run(lifeforms)
 
                     biome_info = {
                         "Biome Type": biome_type,
@@ -253,6 +251,9 @@ class Galaxy:
                     if biome_type not in planet_info["Biomes"]:
                         planet_info["Biomes"][biome_type] = {}
 
+                    # Save final evolutionary report for this planet
+                    if evolutionary_report:
+                        biome_info["Evolution"] = evolutionary_report
                     planet_info["Biomes"][biome_type].update(biome_info)
 
                 solar_system_info["Planets"].append(planet_info)

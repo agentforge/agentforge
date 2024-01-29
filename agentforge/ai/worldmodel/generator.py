@@ -11,7 +11,7 @@ class SpeciesGenerator:
         self.model_profile = self.model_profile_interface.get("64fdf296716cbeaafedc545e")
         self.service = interface_interactor.get_interface("llm")
     
-    def generate(self, biome, evolutionary_stage, life_form_class):
+    def generate(self, biome, evolutionary_stage, life_form_class, attempts=0):
         # Create a species
         prompt = """Generate a species for a {} planet in a {} biome. The ecological system is in the evolutionary stage {}. The Species classification is {}. Be creative in the naming conventions and descriptions. DO NOT NAME THE SPECIES AFTER A VARIATION AFTER ANY OF THE ABOVE INFORMATION. Output the reponse using the following template:
         {{   "Name": "Species Name",
@@ -35,5 +35,7 @@ class SpeciesGenerator:
         try:
             return json.loads(val)
         except:
-            print("Failed to parse: {}".format(val))
-            return {}
+            if attempts > 5:
+                print("we tried 5 times to generate a species and failed. Implement grammars already!")
+                return None
+            return self.generate(biome, evolutionary_stage, life_form_class, attempts= attempts + 1)
