@@ -233,14 +233,13 @@ class Galaxy:
                                 "Biological Type": biological_type,
                                 "Life Form Attributes": life_form_characteristic_list,
                                 "Genetic Profile": self.lifeform.sample_genetic_profile(biological_type),
-                                "system_uuid": star_id,
                             }
 
                             lifeforms.append(bio_info)
                             self.all_life_forms.append(bio_info)
 
-                        print("evolving life {} for {}".format(len(lifeforms), planet_type))
-                        origin_of_species = EvolutionarySimulation(planet_type, biome_type)
+                        print("evolving life {} for {} ({})".format(len(lifeforms), planet_type, biome_type))
+                        origin_of_species = EvolutionarySimulation(planet_type, biome_type, planet_info['uuid'])
                         evolutionary_report = origin_of_species.run(lifeforms)
 
                     biome_info = {

@@ -15,7 +15,6 @@ bio_info = {
     "Evolutionary Stage": final_evolutionary_stage,
     "Technological Milestone": self.lifeform.roll_technological_milestone(final_evolutionary_stage),
     "Genetic Profile": self.lifeform.sample_genetic_profile(biological_type),
-    "system_uuid": star_id,
 }
 
 """
@@ -492,7 +491,7 @@ class Species:
         # more efficient predators consume more
         # logger.info("Mass {}".format(prey_ind[2]['Mass']/100.0))
         # logger.info("gained {} health % {}".format(consumed / (predator[2]['Resource Utilization']/100.0), health_percentage))
-        predator[1] += min(MAX_HEALTH, consumed / (predator[2]['Resource Utilization']/100.0))
+        predator[1] += min(MAX_HEALTH, consumed * (predator[2]['Resource Utilization']/100.0))
         # prey.population -= 1y
 
     def consume_decomposing_matter(self):
@@ -508,17 +507,19 @@ class Species:
         pass
 
 class EvolutionarySimulation:
-    def __init__(self, planet_type, biome_type):
+    def __init__(self, planet_type, biome_type, uuid="default"):
         # Roll final states
         self.final_evolutionary_stage = self.roll_evolutionary_stage()
         self.current_milestone = self.roll_technological_milestone(self.final_evolutionary_stage),
 
         # Create the ecology model
-        self.ecology = SpeciesGenerator(planet_type)
+        self.ecology = SpeciesGenerator(planet_type, uuid)
         self.life = Lifeform()
         self.biome_type = biome_type
         self.total_population = 0
         self.dead_mass = 0 # for scavengers and decomposers
+        prefix = self.primordial_biome_prefix()
+        self.real_biome = prefix + ' ' + biome_type
 
         # Define initial conditions
         self.lifeforms = []  # List to store lifeform objects
@@ -609,23 +610,34 @@ class EvolutionarySimulation:
             # Mutate and evolve the next stage of life -- reset population for fairness
             self.mutate_lifeforms()
             for lifeform in lifeforms:
+                # Get existing information to create evolution chain
+                if "Name" in lifeform.species_data and "Description" in lifeform.species_data:
+                    previous_lifeform = "{} ({}) {}".format(lifeform.species_data["Name"], lifeform.genus, lifeform.species_data["Description"])
+                else:
+                    previous_lifeform = ""
+
                 lifeform.genus = self.get_genus(lifeform.species_data["Biological Type"], self.evolutionary_stage)
+                generative_data = self.ecology.generate(
+                    self.real_biome,
+                    self.evolutionary_stage,
+                    lifeform.genus,
+                    lifeform.role,
+                    lifeform.behavioral_role,
+                    previous_species=previous_lifeform
+                )
+                lifeform.species_data.update(generative_data)
                 # TODO: SELECT ROLES WITH PROBABILISTIC MATRIX
                 # lifeform.role = lifeform.choose_role(self.evolutionary_stage_idx, lifeform.consumption_roles, lifeform)
-                lifeform.population = int(INITIAL_POPULATION * lifeform.consumption_pop_modifiers[lifeform.role])
+                # lifeform.population = int(INITIAL_POPULATION * lifeform.consumption_pop_modifiers[lifeform.role])
         return lifeforms
 
     # From the primordial goo emerges initial life
     def initiate_life(self, lifeforms):
         logger.info("Creating {} initial lifeforms".format(len(lifeforms)))
         self.lifeforms = lifeforms
-        prefix = self.primordial_biome_prefix()
         species = []
 
         for lifeform in self.lifeforms:
-            real_biome = prefix + ' ' + self.biome_type
-            # generative_data = self.ecology.generate(real_biome, evolutionary_stage=self.evolutionary_stage, life_form_class=lifeform['Biological Type'])
-            # lifeform.update(generative_data)
             ### TODO: Better way to generate intial population
             new_species = Species(lifeform, self.evolutionary_stage_idx)
 
@@ -636,6 +648,18 @@ class EvolutionarySimulation:
                 new_species.role = new_species.choose_role(self.evolutionary_stage_idx, new_species.consumption_roles, species)
             new_species.genus = self.get_genus(new_species.species_data["Biological Type"], self.evolutionary_stage)
             new_species.behavioral_role = new_species.choose_role(self.evolutionary_stage_idx, new_species.behavioral_roles, species)
+
+            generative_data = self.ecology.generate(
+                self.real_biome,
+                self.evolutionary_stage,
+                new_species.genus,
+                new_species.role,
+                new_species.behavioral_role,
+                attributes=new_species.species_data["Life Form Attributes"],
+            )
+            # lifeform.update(generative_data)
+            logger.info("generated species {}".format(generative_data))
+
             new_species.population = int(INITIAL_POPULATION * new_species.consumption_pop_modifiers[new_species.role])
             self.total_population += new_species.population
             new_species.generate_population()
@@ -713,7 +737,8 @@ class EvolutionarySimulation:
                 if chosen_prey.role != "Producers": # Producers don't die, they just lose health
                     to_remove[chosen_prey].add(prey_idx)
                 else:
-                    chosen_prey.individuals[prey_idx][1] -= HUNGER_LOSS * chosen_prey.individuals[prey_idx][2]['Mass'] / chosen_prey.individuals[prey_idx][2]['Regeneration']
+                    regen = (1- chosen_prey.individuals[prey_idx][2]['Regeneration'] / 100.0)
+                    chosen_prey.individuals[prey_idx][1] -= HUNGER_LOSS * chosen_prey.individuals[prey_idx][2]['Mass'] * regen
                     if chosen_prey.individuals[prey_idx][1] <= 0:
                         chosen_prey.individuals[prey_idx][1] = 0
                         chosen_prey.population -= 1

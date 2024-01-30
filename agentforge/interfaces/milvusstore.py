@@ -38,7 +38,7 @@ class MilvusVectorStore(VectorStoreProtocol):
          embedding_function = self.embdeddings, 
          collection_name = collection,
          connection_args = connection_args,
-         # drop_old = self.reset,
+         drop_old = self.reset,
       )
       # Default search params when one is not provided.
       milvus_store.default_search_params = {
@@ -86,7 +86,6 @@ class MilvusVectorStore(VectorStoreProtocol):
    def add_texts(self, texts: List[str], metadata: List[Any], **kwargs) -> None:
       milvus_store = self.init_store_connection(kwargs["collection"])
       return milvus_store.add_texts(texts, metadata)
-
 
 class Milvus(VectorStore):
     """Wrapper around the Milvus vector database."""

@@ -3,6 +3,7 @@ import numpy as np
 from .star import Star
 from .moon import Moon
 from .concept import Concept
+import uuid
 
 class Planet:
 
@@ -137,6 +138,7 @@ class Planet:
             "Orbital Period (year)": orbital_period,
             "Orbital Period (days)": orbital_period_days,
             "Moons": moons,
+            "uuid": str(uuid.uuid4())
         }
 
         gravity_info = self.estimate_planetary_characteristics(planet_info, planet_type)
