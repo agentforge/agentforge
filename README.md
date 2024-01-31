@@ -230,6 +230,11 @@ On the VQA container:
 PYTHONPATH="/app/agentforge/" uvicorn vqa:app --reload --host=0.0.0.0 --port=3000
 ```
 
+On the PixArt container:
+```
+PYTHONPATH="/app/agentforge/" uvicorn pixart:app --reload --host=0.0.0.0 --port=3000
+```
+
 VLLM
 ```
 python -m vllm.entrypoints.api_server \
@@ -240,8 +245,5 @@ python -m vllm.entrypoints.api_server \
 
 Outlines
 ``````
-python -m outlines.serve.serve \
---model TheBloke/Speechless-Llama2-Hermes-Orca-Platypus-WizardLM-13B-AWQ \
---quantization awq \
---max-num-batched-tokens 4096
+python3 -m outlines.serve.serve --model TheBloke/Speechless-Llama2-Hermes-Orca-Platypus-WizardLM-13B-AWQ --quantization awq --max-num-batched-tokens 4096
 ``````

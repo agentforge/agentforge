@@ -95,7 +95,12 @@ class vLLMService(APIService):
     logger.info(output)
     return {'choices': [{'text': output}]} #OAI output format
 
-### TODO: Create mock test fixtures for each service and return when config is set to test
+class PixArtService(APIService):
+  def __init__(self):
+    super().__init__()
+    self.url = os.getenv('IMAGE_GEN_URL')
+    self.service = "pixart"
+
 class LLMService(APIService):
   def __init__(self):
     super().__init__()
