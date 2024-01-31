@@ -9,6 +9,8 @@ from agentforge.api.model_profiles import router as model_profiles_router
 from agentforge.api.agent import router as agent_router
 from agentforge.api.user import router as user_router
 from agentforge.api.ws import router as ws_router
+from agentforge.api.sim import router as sim_router
+# from agentforge.api.events import router as events_router
 from agentforge.api.subscription import router as subscription_router
 from agentforge.api.supertokens import override_functions
 from agentforge.api.app import init_api
@@ -31,6 +33,8 @@ from supertokens_python.ingredients.emaildelivery.types import EmailDeliveryConf
 from typing import Dict, Deque
 from collections import deque
 from datetime import datetime, timedelta
+
+# from celery_config import celery_app
 
 class LoggingMiddleware(BaseHTTPMiddleware):
     async def dispatch(self, request: Request, call_next):
@@ -141,11 +145,19 @@ app.include_router(user_router, prefix="/v1/user", tags=["users"])
 app.include_router(agent_router, prefix="/v1", tags=["agent_forge"])
 app.include_router(subscription_router, prefix="/v1", tags=["subscription"])
 app.include_router(ws_router, prefix="/v1", tags=["ws"])
+app.include_router(sim_router, prefix="/v1", tags=["sim"])
+# app.include_router(events_router, prefix="/v1/events", tags=["events"])
 
 @app.on_event("startup")
 def startup_event():
     print("[AGENTFORGE] Starting up...")
     app.state.redis = interface_interactor.create_redis_connection()
+    
+    # Start Celery Beat schedule
+    # celery_app.worker_main(['beat', '--detach'])
+
+    # Start Celery task worker
+    # celery_app.worker_main(['-A', 'main', 'worker', '--loglevel=info', '--concurrency=1'])
 
 @app.on_event("shutdown")
 def shutdown_event():

@@ -59,8 +59,6 @@ async def agent(request: Request, session: SessionContainer = Depends(verify_ses
 
     user_id = session.get_user_id()
 
-    user_id = session.get_user_id()
-
     # You can learn more about the `User` object over here https://github.com/supertokens/core-driver-interface/wiki
     user = await get_user_by_id(user_id)
     user_name = user.email.split("@")[0]

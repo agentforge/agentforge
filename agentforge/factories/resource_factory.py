@@ -8,6 +8,11 @@ class ResourceFactory:
     def __init__(self) -> None:
         self.__resources: dict[str, Any] = {}
 
+    def create_pixart_resource(self, config: dict = {}) -> None:
+        # Instantiate the correct LLM resource based on llm_type
+        pixart = getattr(importlib.import_module('agentforge.interfaces.pixart.resource'), 'PixArtResource')
+        self.__resources["image_gen"] = pixart(config)
+
     def create_llm_resource(self, config: dict = {}) -> None:
         llm_type = os.getenv("LLM_TYPE")
         # Instantiate the correct LLM resource based on llm_type

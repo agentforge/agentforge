@@ -27,6 +27,10 @@ class vLLMService(APIService):
       stop = []
     if user_id is not None and stream:
       redis_server = redis.StrictRedis(host=self.redis_config.host, port=self.redis_config.port, db=self.redis_config.db)
+    if 'schema' in form_data:
+      schema = form_data['schema']
+    else:
+      schema = None
     response = post_http_request(
       self.url,
       form_data['prompt'],
@@ -36,7 +40,8 @@ class vLLMService(APIService):
       form_data['generation_config']['top_p'],
       form_data['generation_config']['top_k'],
       stop, # stopping strings
-      form_data['model_config']['streaming']
+      form_data['model_config']['streaming'],
+      schema
     )
 
     num_printed_lines = 0
