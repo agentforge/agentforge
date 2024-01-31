@@ -94,6 +94,31 @@ class SpeciesGenerator:
             self.vectorstore.add_texts([choice['Name']])
             
             return choice
+        
+        formatted_prompt = """Extract the species name and description from the following text: {}""".format(val)
+        input['prompt'] = formatted_prompt
+        # Try outlines
+        input['schema'] = {
+            "$schema": "http://json-schema.org/draft-07/schema#",
+            "type": "object",
+            "properties": {
+                "Name": {
+                "type": "string"
+                },
+                "description": {
+                "type": "string"
+                }
+            },
+            "required": ["Name", "description"]
+        }
+        response = self.service.call(input)
+        val = response['choices'][0]['text']
+
+        try:
+            ret_val = json.loads(val)
+            return ret_val
+        except:
+            pass
 
         # If data is None try again
         if attempts > 5:

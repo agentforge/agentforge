@@ -2,7 +2,7 @@
 
 import argparse
 import json
-from typing import Iterable, List
+from typing import Iterable, List, Dict
 from agentforge.utils import logger
 import requests
 
@@ -21,6 +21,7 @@ def post_http_request(api_url: str,
                       top_k: int = -1,
                       stop: List[List[str]] = [],
                       stream: bool = False,
+                      schema: Dict = None,
                       n: int = 1) -> requests.Response:
     headers = {"User-Agent": "Test Client"}
     pload = {
@@ -36,6 +37,8 @@ def post_http_request(api_url: str,
         "top_k": top_k,
         "stop": stop,
     }
+    if schema:
+        pload["schema"] = schema
     logger.info(f"Prompt Length: {len(prompt)}")
     response = requests.post(api_url, headers=headers, json=pload, stream=True)
     return response

@@ -237,3 +237,11 @@ python -m vllm.entrypoints.api_server \
 --quantization awq \
 --max-num-batched-tokens 4096
 ```
+
+Outlines
+``````
+python -m outlines.serve.serve \
+--model TheBloke/Speechless-Llama2-Hermes-Orca-Platypus-WizardLM-13B-AWQ \
+--quantization awq \
+--max-num-batched-tokens 4096
+``````
