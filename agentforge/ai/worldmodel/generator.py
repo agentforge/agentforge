@@ -41,6 +41,19 @@ class SpeciesGenerator:
         collection = "species"
         self.vectorstoremanager = MilvusVectorStore(model_name, collection, reset=True)
         self.vectorstore = self.vectorstoremanager.init_store_connection(collection)
+        self.image_gen = interface_interactor.get_interface("image_gen")
+
+    def generate_image(self, species_name, species_description):
+        # Generate an image for the species
+        prompt = """
+        Generate an image for the species {} with the following description: {}
+        """.format(species_name, species_description)
+        input = {
+            "prompt": prompt,
+        }
+        response = self.image_gen.call(input)
+        return response
+
     
     def generate(self, biome, evolutionary_stage, life_form_class, role, behavior_role, previous_species="", attributes=[], attempts=0):
         # Create a species
@@ -92,7 +105,8 @@ class SpeciesGenerator:
 
             # Add the species to the vector store
             self.vectorstore.add_texts([choice['Name']])
-            
+            image = self.generate_image(choice['Name'], choice['Description'])
+            choice['image'] = image
             return choice
         
         formatted_prompt = """Extract the species name and description from the following text: {}""".format(val)
@@ -116,6 +130,8 @@ class SpeciesGenerator:
 
         try:
             ret_val = json.loads(val)
+            image = self.generate_image(ret_val['Name'], ret_val['Description'])
+            ret_val['image'] = image
             return ret_val
         except:
             pass

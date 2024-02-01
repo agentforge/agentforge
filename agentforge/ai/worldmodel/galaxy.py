@@ -278,6 +278,7 @@ class Galaxy:
                 }
                 system['Neighbors'].append(neighbor)
                 dist_idx += 1
+
         print(len(self.has_life))
         print(self.life_data)
         return {

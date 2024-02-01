@@ -14,10 +14,11 @@ class VQARequest(BaseModel):
 class TextResponse(BaseModel):
    text: str
 
+# Test me: curl -X POST -d '{"prompt": "test"}' http://pixart:8000/v1/generate
 @app.post("/v1/generate", operation_id="pixArtQuery")
 async def generate_endpoint(request: Request):
+    print("request")
     payload = await request.json()
     prompt = payload.get('prompt', '')
     response = await image_gen.generate(prompt)
-
     return TextResponse(text=response)
