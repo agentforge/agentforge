@@ -7,31 +7,27 @@ from agentforge.utils import logger
 from agentforge.ai.worldmodel.species import Species
 from agentforge.ai.worldmodel.predator import HuntReport
 from agentforge.ai.worldmodel.genus import Genus
+from agentforge.ai.worldmodel.environment import Environment
+from agentforge.interfaces import interface_interactor
 
 """ Evolution baby! A Genetic Algorithm for simulating evolution of lifeforms on a planet"""
 
-HEALTH_CONSUMPTION_FACTOR = 0.1
-MIN_DEATH_RATE = 0.01  # 5% minimal death rate
-REPRODUCTION_MODIFIER = 0.1  # 1.0 is default
 INITIAL_POPULATION = 100
-MUTATION_RATE = 0.05
-PLANT_GROWTH_FACTOR = 0.30
 TOTAL_EPOCHS = 50
-TOTAL_EVOLUTIONARY_STAGES = 3
 HUNGER_LOSS = 0.025
 SATIATED_LEVEL = 90
 TOTAL_NUTRIENTS = 100.0
 NUTRIENT_REFRESH_RATE = 0.1
 MAX_POPULATION = 5000
-MAX_HEALTH = 100.0
+NUM_GROUPS_AT_START = 5
 
 class EvolutionarySimulation:
     def __init__(self, planet_type, biome_type, uuid="default"):
         # Roll final states
         self.final_evolutionary_stage = self.roll_evolutionary_stage()
-        self.current_milestone = self.roll_technological_milestone(self.final_evolutionary_stage),
-
-        # Create the ecology model
+        # self.current_milestone = self.roll_technological_milestone(self.final_evolutionary_stage),
+        self.total_evolutionary_stages = len(self.evolutionary_probability.keys())
+        # Create the ecology, species, and genus models
         self.ecology = SpeciesGenerator(planet_type, uuid)
         self.life = Lifeform()
         self.genus = Genus()
@@ -40,22 +36,11 @@ class EvolutionarySimulation:
         self.dead_mass = 0 # for scavengers and decomposers
         prefix = self.primordial_biome_prefix()
         self.real_biome = prefix + ' ' + biome_type
+        self.db = interface_interactor.get_interface("db")
 
         # Define initial conditions
         self.lifeforms = []  # List to store lifeform objects
-        self.environment = {
-            'Temperature': 20,
-            'Gravity': 9.81,
-            'Atmosphere Thickness': 1,
-            'Water Coverage': 0.5,
-            'Radiation': 0.5,
-            'UV Index': 0.5,
-            'Weather Pattern': 0.5,
-            'Season': 0.5,
-            'Water': TOTAL_NUTRIENTS,
-            'Sunlight': 100,
-            'Nutrients': TOTAL_NUTRIENTS
-        }  # Dictionary to store environmental conditions
+        self.environment = Environment(TOTAL_NUTRIENTS)
         self.current_epoch = 0
         self.total_epochs = 0 # point at which to evolve to next stage
 
@@ -66,52 +51,18 @@ class EvolutionarySimulation:
         # Timescales
         self.epoch_duration = 100  # Example duration in arbitrary units
 
-    environmental_effects = [
-        # Temperature Impact
-        lambda self, lifeform, bio_type: (-abs(self.environment['Temperature'] - 20) * (1 - lifeform["Thermal Resistance"] / 100)),
-
-        # Gravity Impact on strength and endurance
-        lambda self, lifeform, bio_type: (-abs(self.environment['Gravity'] - 9.81) * (1 - (lifeform["Strength"] + lifeform["Endurance"]) / 200)),
-
-        # Gravity Impact on height and mass
-        lambda self, lifeform, bio_type: (
-            ((9.81 - self.environment['Gravity']) * lifeform["Height"] / 100) +
-            ((9.81 - self.environment['Gravity']) * lifeform["Mass"] / 100)
-        ),
-
-        # Atmosphere Thickness Impact
-        lambda self, lifeform, bio_type: (-abs(self.environment['Atmosphere Thickness'] - 1) * (1 - lifeform["Oxygen Utilization Efficiency"] / 100)),
-
-        # Water Coverage Impact
-        lambda self, lifeform, bio_type: (self.environment['Water Coverage'] * lifeform["Aquatic Adaptation"] / 100),
-
-        # Radiation Impact
-        lambda self, lifeform, bio_type: (-self.environment['Radiation'] * (1 - lifeform["Radiation Resistance"] / 100)),
-
-        # Photosynthetic Ability Impact (for flora)
-        lambda self, lifeform, bio_type: (self.environment['UV Index'] * lifeform["Photosynthetic Ability"] / 100) if bio_type == "Flora" else 0,
-
-        # UV Index Impact
-        lambda self, lifeform, bio_type: (-self.environment['UV Index'] * (1 - lifeform["Regeneration"] / 100)),
-
-        # # Weather Patterns and Seasons Impact
-        # lambda lifeform, weather_pattern: lifeform.update_health(-abs(weather_pattern - 0.5) * (1 - lifeform.traits["Adaptability"] / 100)),
-    ]
-
     def run(self, lifeforms):
-        # Unicellular stage
+        # Start at unicellular stage
         self.evolutionary_stage_idx = 0
-        self.evolutionary_stage = list(self.evolutionary_probability.keys())[self.evolutionary_stage_idx]
-        
-        self.lifeforms = self.create_initial_lifeforms(lifeforms)
-        self.lifeforms = self.run_simulation(total_epochs=TOTAL_EPOCHS)
-        
-        # Complex stages
-        for i in range(TOTAL_EVOLUTIONARY_STAGES-1):
-            self.evolutionary_stage_idx += 1
-            self.evolutionary_stage = list(self.evolutionary_probability.keys())[self.evolutionary_stage_idx]
-            self.lifeforms = self.create_initial_lifeforms(self.lifeforms)
+        self.lifeforms = lifeforms
+
+        for i in range(self.total_evolutionary_stages):
+            self.evolutionary_stage_idx = i
+            self.evolutionary_stage = list(self.evolutionary_probability.keys())[i]
+            self.lifeforms = self.init_lifeforms(self.lifeforms)
             self.lifeforms = self.run_simulation(total_epochs=TOTAL_EPOCHS)
+            for lifeform in self.lifeforms:
+                lifeform.save(self.db, 'species')
             results = self.collect_data()
         return results
     
@@ -122,13 +73,20 @@ class EvolutionarySimulation:
         else:
             return 'Alien Primordial'
 
-    def create_initial_lifeforms(self, lifeforms):
+    def init_lifeforms(self, lifeforms):        
         # Initial lifeform are generated from probability engine
         if self.evolutionary_stage_idx == 0:
             return self.initiate_life(lifeforms)
-        else:
-            # Mutate and evolve the next stage of life -- reset population for fairness
+        else: # Mutate and evolve the next stage of life -- reset population for fairness
+            # Always mutate the lifeforms
             self.mutate_lifeforms()
+            
+            # If we are into technological evolution skip huge evolutionary changes
+            # The timescales are moving beyond that of biological evolution
+            if self.evolutionary_stage_idx >= 3:
+                return lifeforms
+            
+            # With some probability we need to generate new lifeforms
             for lifeform in lifeforms:
                 # Get existing information to create evolution chain
                 if "Name" in lifeform.species_data and "Description" in lifeform.species_data:
@@ -137,18 +95,16 @@ class EvolutionarySimulation:
                     previous_lifeform = ""
 
                 lifeform.genus = self.genus.get_genus(lifeform.species_data["Biological Type"], self.evolutionary_stage)
-                generative_data = self.ecology.generate(
-                    self.real_biome,
-                    self.evolutionary_stage,
-                    lifeform.genus,
-                    lifeform.role,
-                    lifeform.behavioral_role,
-                    previous_species=previous_lifeform
-                )
-                lifeform.species_data.update(generative_data)
+                # generative_data = self.ecology.generate(
+                #     self.real_biome,
+                #     self.evolutionary_stage,
+                #     lifeform.genus,
+                #     lifeform.role,
+                #     lifeform.behavioral_role,
+                #     previous_species=previous_lifeform
+                # )
+                # lifeform.species_data.update(generative_data)
                 # TODO: SELECT ROLES WITH PROBABILISTIC MATRIX
-                # lifeform.role = lifeform.choose_role(self.evolutionary_stage_idx, lifeform.consumption_roles, lifeform)
-                # lifeform.population = int(INITIAL_POPULATION * lifeform.consumption_pop_modifiers[lifeform.role])
         return lifeforms
 
     # From the primordial goo emerges initial life
@@ -169,16 +125,16 @@ class EvolutionarySimulation:
             new_species.genus = self.genus.get_genus(new_species.species_data["Biological Type"], self.evolutionary_stage)
             new_species.behavioral_role = new_species.choose_role(self.evolutionary_stage_idx, new_species.behavioral_roles, species)
 
-            generative_data = self.ecology.generate(
-                self.real_biome,
-                self.evolutionary_stage,
-                new_species.genus,
-                new_species.role,
-                new_species.behavioral_role,
-                attributes=new_species.species_data["Life Form Attributes"],
-            )
+            # generative_data = self.ecology.generate(
+            #     self.real_biome,
+            #     self.evolutionary_stage,
+            #     new_species.genus,
+            #     new_species.role,
+            #     new_species.behavioral_role,
+            #     attributes=new_species.species_data["Life Form Attributes"],
+            # )
             # lifeform.update(generative_data)
-            logger.info("generated species {}".format(generative_data))
+            # logger.info("generated species {}".format(generative_data))
 
             new_species.population = int(INITIAL_POPULATION * new_species.consumption_pop_modifiers[new_species.role])
             self.total_population += new_species.population
@@ -197,13 +153,7 @@ class EvolutionarySimulation:
     def environmental_interaction(self):
         # Simulate environmental interaction with lifeforms
         for lifeform in self.lifeforms:
-            for effect in self.environmental_effects:
-                for individual_idx in range(len(lifeform.individuals)):
-                    genetics = lifeform.decode_genetics(lifeform.individuals[individual_idx][0], lifeform.genetic_base_line)
-                    lifeform.individuals[individual_idx][1] += effect(self, genetics, lifeform.species_data['Biological Type'])
-                    if lifeform.individuals[individual_idx][1] <= 0:
-                        lifeform.individuals[individual_idx][1] = 0
-                        lifeform.population -= 1
+            lifeform = self.environment.interact(lifeform)
 
     def predation_consumption_loop(self):
         # Generate a list of (lifeform_index, individual_index) pairs
@@ -332,7 +282,6 @@ class EvolutionarySimulation:
         self.environmental_interaction()
         self.predation_consumption_loop()
         self.natural_events()
-
         self.mutate_lifeforms()
         self.natural_selection()
         self.reproduce_lifeforms()
@@ -351,7 +300,6 @@ class EvolutionarySimulation:
         # continue evolving
         return True
 
-
     def run_simulation(self, total_epochs):
         # Run the simulation for the specified number of epochs
         self.total_epochs = total_epochs
@@ -365,6 +313,30 @@ class EvolutionarySimulation:
             if not living_world:
                 return []
         return self.lifeforms
+    
+    # Identify the species that achieves supremacy in the ecosystem
+    def identify_apex_species(self):
+            apex_species = None
+            highest_score = -1  # Initialize with a value that will be lower than any possible score
+
+            for species in self.lifeforms:
+                genus, biological_type, role, average_health, max_health, min_health, population = species.analyze_health_statistics()
+                
+                # Define a scoring mechanism for identifying the apex species
+                # This example simply multiplies average health by population for a basic score
+                species_score = average_health * population
+
+                if species_score > highest_score:
+                    highest_score = species_score
+                    apex_species = species
+
+            if apex_species:
+                print(f"Apex Species: {apex_species.genus}, {apex_species.species_data['Biological Type']}, {apex_species.role}")
+                print(f"Average Health: {average_health}, Max Health: {max_health}, Min Health: {min_health}, Population: {population}")
+                return apex_species
+            else:
+                print("No apex species identified.")
+                return None
 
     def collect_data(self):
         # Collect and return data from the simulation
@@ -373,19 +345,8 @@ class EvolutionarySimulation:
             "environment": self.environment,
             "current_epoch": self.current_epoch,
             "final_evolutionary_stage": self.final_evolutionary_stage,
-            "current_milestone": self.current_milestone
+            "apex_species": self.identify_apex_species()
         }
-
-    def analyze_outcomes(self):
-        # Analyze the outcomes of the simulation
-        pass  # Implement analysis logic
-
-    def roll_technological_milestone(self, evolutionary_stage):
-        # Iterate through each key and value
-        if evolutionary_stage not in self.technological_milestones:
-            return None
-        milestones = self.technological_milestones[evolutionary_stage]['milestones']
-        return milestones[np.random.randint(0, len(milestones))]
         
     def roll_evolutionary_stage(self):
         # Iterate through each key and value
@@ -399,93 +360,9 @@ class EvolutionarySimulation:
             return "No evolutionary stage reached"
         return highestStage
     
+    # Biological complexity path
     evolutionary_probability = {
         'Single-celled organisms': 0.95,
         'Multi-celled organisms': 0.80,
         'Complex lifeforms': 0.75,
-        'Primitive Civilization - Hunter Gatherers': 0.5, # early sentience evolves from complex lifeforms
-        'Primitive Civilization - Tribal Societies': 0.45,
-        'Classical Civilization - City States and Empires': 0.45,
-        'Feudal Civilization - Medieval Era': 0.4,
-        'Feudal Civilization - Renaissance': 0.35,
-        'Industrial Civilization - Industrial Era': 0.35,
-        'Industrial Civilization - Atomic Era': 0.3,
-        'Information Civilization - Digital Era': 0.25,
-        'Spacefaring Civilization - Homebound': 0.2,
-        'Spacefaring Civilization - Multiplanetary': 0.15,
-        'Interstellar Civilization': 0.1
-    }
-
-    # THIS IS CAPSTONE CONCEPTS FROM PRE-HISTORY TO SPACE AGE
-    technological_milestones = {
-        'Advanced Civilization - Early Societies': {
-            'milestones': [
-                'Development of Agriculture',
-                'Invention of Writing',
-                'Bronze Age Technology'
-            ]
-        },
-        'Advanced Civilization - Classical Era': {
-            'milestones': [
-                'Philosophy and Early Science',
-                'Aqueducts and Engineering',
-                'Expansion of Trade and Cultural Exchange'
-            ]
-        },
-        'Advanced Civilization - Medieval Era': {
-            'milestones': [
-                'Feudal Systems and Governance',
-                'Architectural Advancements (e.g., Castles, Cathedrals)',
-                'Early Navigational Tools and Exploration'
-            ]
-        },
-        'Advanced Civilization - Renaissance': {
-            'milestones': [
-                'Revival of Arts and Sciences',
-                'Invention of Printing Press',
-                'Early Modern Philosophy and Humanism'
-            ]
-        },
-        'Advanced Civilization - Industrial Era': {
-            'milestones': [
-                'Steam Engine',
-                'Electricity Harnessing',
-                'Assembly Line Manufacturing'
-            ]
-        },
-        'Advanced Civilization - Atomic Era': {
-            'milestones': [
-                'Nuclear Fission',
-                'Space Exploration Initiation',
-                'Advanced Materials Science'
-            ]
-        },
-        'Advanced Civilization - Information Era': {
-            'milestones': [
-                'Internet Inception',
-                'Quantum Computing',
-                'Genetic Engineering'
-            ]
-        },
-        'Advanced Civilization - Digital Age': {
-            'milestones': [
-                'Widespread Artificial Intelligence',
-                'Virtual Reality and Augmented Reality Integration',
-                'Advanced Robotics and Automation'
-            ]
-        },
-        'Early Spacefaring Civilization': {
-            'milestones': [
-                'Interplanetary Travel',
-                'Orbital Infrastructure',
-                'Advanced Propulsion Systems'
-            ]
-        },
-        'Advanced Spacefaring Civilization': {
-            'milestones': [
-                'Permanent Extraterrestrial Colonies',
-                'Asteroid Mining and Resource Exploitation',
-                'Deep Space Exploration and Habitats'
-            ]
-        }
     }

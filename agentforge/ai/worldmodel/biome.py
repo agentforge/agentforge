@@ -16,10 +16,6 @@ class Biome:
             for subcategory, probability in subcategory_probs.items():
                 biome_concepts[biome_type].add_connection(subcategory, probability)
 
-    # Evolve the lifeform at each stage up to complex lifeforms
-    def evolve_lifeform(self, lifeform, final_stage):
-        pass
-
     biomes = ["Forest", 
         "Desert", 
         "Ocean", 

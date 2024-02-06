@@ -1,16 +1,58 @@
 import random
 import numpy as np
 from agentforge.utils import logger
+import uuid as uuid
 
+MIN_DEATH_RATE = 0.01  # 5% minimal death rate
+REPRODUCTION_MODIFIER = 0.1  # 1.0 is default
+MAX_HEALTH = 100.0
+HEALTH_CONSUMPTION_FACTOR = 0.1
+MUTATION_RATE = 0.05
+PLANT_GROWTH_FACTOR = 0.30
 class Species:
-    def __init__(self, species_data, evolutionary_stage, health=100):
+    def __init__(self, species_data, evolutionary_stage):
         self.species_data = species_data
-        self.genetic_base_line = species_data["Genetic Profile"]
         self.reproduction_type = self.determine_reproduction(evolutionary_stage)
         self.individuals = []  # List to store individual lifeforms
+        self.population = 0
+        self.evolutionary_stage = evolutionary_stage
+        self.uuid = str(uuid.uuid4())
+
+    def genetic_base_line(self):
+        return self.species_data["Genetic Profile"]
+    
+    def get_trait(self, trait):
+        return round(self.genetic_base_line()[trait] / 100.0, 2)
+
+    def save(self, db, collection: str):
+        """Save the species instance to MongoDB."""
+        species_dict = {
+            "species_data": self.species_data,
+            "reproduction_type": self.reproduction_type,
+            "population": self.population,
+            "individuals": self.individuals,
+            "evolutionary_stage": self.evolutionary_stage,
+        }
+        db.set(collection, self.uuid, species_dict)
+
+    @classmethod
+    def load(cls, db, collection: str, key: str):
+        """Load a species instance from MongoDB."""
+        species = db.get(collection, key)
+        if species:
+            species_data = species["species_data"]
+            # Create a new Species instance with the loaded data
+            species_instance = cls(species_data, species["evolutionary_stage"])
+            species_instance.population = species["population"]
+            species_instance.reproduction_type = species["reproduction_type"]
+            species_instance.individuals = species["individuals"]
+            species_instance.evolutionary_stage = species["evolutionary_stage"]
+            return species_instance
+        else:
+            return None
 
     def generate_population(self, health=100):
-        encoded_genetics =  self.encode_genetics(self.genetic_base_line)
+        encoded_genetics =  self.encode_genetics(self.genetic_base_line())
         logger.info("Generating {}".format(self.population))
         for x in range(self.population):
             encoded_genetics = self.mutate(encoded_genetics)
@@ -18,7 +60,7 @@ class Species:
             self.individuals.append([
                 encoded_genetics,
                 health,
-                self.genetic_base_line
+                self.genetic_base_line()
             ])
 
         logger.info(len(self.individuals))
@@ -205,7 +247,6 @@ class Species:
 
         return trait_values
 
-
     def mutate(self, encoded_genetics, length=24):
         # Convert the binary string to a list for mutation
         binary_list = list(encoded_genetics)
@@ -225,14 +266,14 @@ class Species:
 
     def reproduce(self, replace=False):
         offspring = []
-        offspring_number = self.genetic_base_line["Offspring"]
+        offspring_number = self.genetic_base_line()["Offspring"]
         if replace:
             offspring_number = 1
         reproduction_rates = []
         for idx, individual in enumerate(self.individuals):
             if individual[1] <= 0:
                 continue # Skip dead individuals
-            decoded_genetics = self.decode_genetics(individual[0], self.genetic_base_line)
+            decoded_genetics = self.decode_genetics(individual[0], self.genetic_base_line())
             reproduction_rate = decoded_genetics["Reproductive Rate"]
             reproduction_rate = reproduction_rate / 100.0
             health_factor = individual[1] / 100.0
@@ -245,7 +286,7 @@ class Species:
                     elif self.reproduction_type == "Sexual":
                         partner = self.select_mate()  # Select a mate for sexual reproduction
                         new_genetics = self.genetic_crossover(individual[0], partner[0])
-                        decoded_genetics = self.decode_genetics(new_genetics, self.genetic_base_line)
+                        decoded_genetics = self.decode_genetics(new_genetics, self.genetic_base_line())
                         offspring.append([new_genetics, 100, decoded_genetics])  # New offspring with full health
                 if replace:
                     self.individuals[idx] = offspring[0]
@@ -424,3 +465,4 @@ class Species:
     def parasitic_interaction(self):
         # Handle parasitic interaction with host
         pass
+

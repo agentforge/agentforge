@@ -2,7 +2,7 @@ import numpy as np
 
 class Genus:
     
-    def __init__(self, lifeform_genus_data):
+    def __init__(self):
         pass
 
     def get_genus(self, biological_type, evolutionary_stage):
