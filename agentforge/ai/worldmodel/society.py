@@ -39,29 +39,26 @@ class SociologicalGroup:
 
         # Social Constraints
         self.population = initial_population
+        self.observe_food()
         
     def run_epoch(self, action):
-        self.observe()
-        # self.build()
-        # self.interact()
-        # self.rest()
-        self.calculate_fitness()
+
+        # Run the prescribed action
+        self.actions[action](self)
         self.adjust_population()
-        self.mutate_society
-        self.evolve_society()
-        print(self.artifacts)
-        print(self.resources_needed)
-        print(self.housing_to_build)
-        print(self.public_works_to_build)
-        print(self.food_supply)
+        # self.mutate_society
+        # self.evolve_society()
     
     ### OBSERVATIONS ###
+        
+    def observe_food(self):
+        self.food_required = self.population * self.food_per_pop()
+        self.food_surplus = self.food_supply - self.food_required
 
     def observe(self):
         # First determine the amount of resources needed based on the population
         # technology level, cohesiveness of society, and environmental factors
-        self.food_required = self.population * self.food_per_pop()
-        self.food_surplus = self.food_supply - self.food_required
+        self.observe_food()
         return [
             self.corruption, 
             self.happiness, 
@@ -132,9 +129,35 @@ class SociologicalGroup:
         # Engage in cultural activities and rest, update happiness and health metrics
         pass
 
-    def calculate_fitness(self):
+    actions = {
+        0: gather_food,
+        1: resource_gathering,
+        2: build,
+        3: create,
+        4: interact,
+        5: rest
+    }
+
+    def fitness(self):
+        return self.population_happiness()
         # Score civilization based on health, happiness, technological proficiency, and environmental impact
-        pass
+    
+    ### POP LEVEL FUNCTIONALITY
+    def population_happiness(self):
+        # happiness is based on having adequate food, housing, and cultural artifacts
+        food_happiness = max(1.0, self.food_surplus / self.food_required)
+        housing_happiness = max(1.0, self.housing / self.population)
+        artifact_happiness = max(1.0, self.artifacts / self.population)
+
+        new_happiness = (food_happiness + housing_happiness + artifact_happiness) / 3
+
+        # Return delta of happiness as reward
+        happiness_change = new_happiness - self.happiness
+        self.happiness = new_happiness
+        return max(0, happiness_change)
+
+        # happiness is boosted by rest+cultural activities
+        # festival_importance = self.culture.get_dimension_value("Ritual Importance")        
 
     def adjust_population(self):
         # Adjust population based on disease, war, migration, birth and death rates

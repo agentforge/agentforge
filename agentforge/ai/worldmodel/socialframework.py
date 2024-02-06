@@ -18,7 +18,7 @@ class SocialFramework():
     return self.dimension_values[dimension]
   
   def values(self) -> dict:
-    return self.dimension_values.values() + self.state_values.values()
+    return list(self.dimension_values.values()) + list(self.state_values.values())
 
   def __str__(self) -> str:
     state_vals = {}

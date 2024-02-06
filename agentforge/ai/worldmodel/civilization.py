@@ -2,12 +2,26 @@ from agentforge.interfaces import interface_interactor
 from agentforge.ai.worldmodel.society import SociologicalGroup
 from stable_baselines3 import PPO
 from stable_baselines3.common.env_util import make_vec_env
-import gym
+from gymnasium import spaces
+import gymnasium as gym
 from agentforge.ai.worldmodel.species import Species
-from gym import spaces
 import numpy as np
+from agentforge.utils import logger
 
 NUM_GROUPS_AT_START = 10
+
+class CivilizationRunner():
+  def __init__(self, species_ids=[]):
+      self.species_ids = species_ids
+
+  def make_env(self):
+      # Get DB interface and get species
+      db = interface_interactor.get_interface("db")
+      species_id = self.species_ids.pop()
+      species = Species.load(db, "species", species_id)
+      
+      # Set the environment and civilization
+      return Civilization(species)
 
 ### Encompasses sociological groups coordinated by an RL Agent that plays
 ### a game of society management through self-play to determine
@@ -15,15 +29,15 @@ NUM_GROUPS_AT_START = 10
 class Civilization(gym.Env):
   metadata = {'render.modes': ['human']}
 
-  def __init__(self) -> None:
+  def __init__(self, species=None) -> None:
     super(Civilization, self).__init__()    
     self.societies = []
     self.society_idx = 0
     self.action_space = spaces.Discrete(6)  # Define your actions here
-    self.observation_space = spaces.Box(low=0, high=1, shape=(7,), dtype=np.float32)  # Define your state space here
-
-    # Initialize state and other necessary variables
-    self.reset()
+    self.observation_space = spaces.Box(low=0, high=1, shape=(71,), dtype=np.float32)  # Define your state space here
+    if species:
+        self.create(species)
+        self.state = self.get_state()  # Example initialization
 
   def step(self, action):
       # Implement action logic, state transition, and reward calculation
@@ -33,25 +47,29 @@ class Civilization(gym.Env):
       
       reward = self.calculate_reward()
       done = False
+      truncated = False
       if len(self.societies) == 1: # We have a winner
           done = True
-      self.sosciety_idx += 1
+      self.society_idx += 1
       if self.society_idx >= len(self.societies):
           self.society_idx = 0
-      return self.state, reward, done, {}
+      output = "{} - Happiness: {}".format(self.society_idx, self.societies[self.society_idx].happiness)
+      logger.info(output)
+      return self.state, reward, done, truncated, {}
 
-  def reset(self):
+  def reset(self, seed=None):
       # Reset the environment state
       self.state = self.get_state()  # Example initialization
-      return self.state
+      return self.state, {}
 
   def render(self, mode='human', close=False):
       # Optional: Implement rendering for visualization if needed
-      pass
+      output = "{} - Happiness: {}".format(self.society_idx, self.societies[self.society_idx].happiness)
+      logger.info(output)
 
   def calculate_reward(self):
       # Implement your custom reward function
-      return np.random.rand()  # Placeholder reward calculation
+      return self.societies[self.society_idx].fitness()
 
   # Gets the current observable state for the current society the RL Agent is managing
   def get_state(self):
@@ -65,24 +83,23 @@ class Civilization(gym.Env):
           self.societies.append(society)
 
   @classmethod
-  def runner(cls, species_id="472180b0-6dd3-4294-986b-a6aaaa33f967"):
+  def run(cls, species_ids=["a104d248-3df1-49ac-ae15-543e8e01168f"]):
       # Get DB interface
       db = interface_interactor.get_interface("db")
       
       # Set the environment and civilization
-      civ = Civilization()
-      species = Species.load(db, "species", species_id)
-      civ.create(species)
+      civ = CivilizationRunner(species_ids)
 
       # Vectorize the environment
-      env = make_vec_env(lambda: civ, n_envs=4)
+      env = make_vec_env(civ.make_env, n_envs=len(species_ids))
+      print(env)
 
       # Run the civilization
       model = PPO("MlpPolicy", env, verbose=1)
       model.learn(total_timesteps=20000)
 
       # Save the trained model
-      model.save("civilization-{}".format(species_id))
+      model.save("civilization")
       
       # print(society.sociopolitical)
       # print(society.economy)
