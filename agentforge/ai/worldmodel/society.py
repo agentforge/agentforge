@@ -8,11 +8,30 @@ from agentforge.ai.worldmodel.culture import CulturalFramework
 from agentforge.ai.worldmodel.economics import EconomicFramework
 from agentforge.ai.worldmodel.values import ValueFramework
 
-BASE_POP_RESOURCE_REQUIREMENT = 50
+
+# TODO: make dependent on tech level, cultural framework, and environmental factors
+BASE_POP_RESOURCE_REQUIREMENT = 100
 MIN_POP_REQUIREMENTS = 5
 RESOURCE_GATHERING_MULTIPLIER = 4
 BASE_HOUSE_COST = 10
 BASE_CIVIC_BUILDING_COST = 30
+HOUSING_LOSS_RATE = 0.1
+ARTIFACT_LOSS_RATE = 0.25
+FOOD_LOSS_RATE = 0.05
+
+def linear_interpolate(X1, X2, t):
+    """
+    Linearly interpolates between X1 and X2 as t goes from 0 to 1.
+
+    Parameters:
+    - X1: The starting value at t=0.
+    - X2: The ending value at t=1.
+    - t: The interpolation parameter, ranging from 0 to 1.
+
+    Returns:
+    - The interpolated value between X1 and X2 based on t.
+    """
+    return X1 + (X2 - X1) * t
 
 class SociologicalGroup:
     def __init__(self, initial_population, species: Species):
@@ -36,21 +55,34 @@ class SociologicalGroup:
         self.forums = 0
         self.artifacts = 0
         self.food_supply = 0
+        self.resource_pool = 0
 
         # Social Constraints
         self.population = initial_population
         self.observe_food()
-        
-    def run_epoch(self, action):
 
+    def __str__(self):
+        return f"""Society X:
+            Population: {self.population}
+            Happiness Total: {self.happiness}
+                Food: {min(1.0, self.food_supply / (self.food_per_pop() * self.population))}
+                Housing: {min(1.0, (self.housing_per_pop() * self.housing / self.population))}
+                Culture: {min(1.0, self.artifacts / self.population)}
+            Food Supply: {self.food_supply}
+            Housing: {self.housing}
+            Artifacts: {self.artifacts}
+            Resources: {self.resource_pool}
+            """
+
+    def run_epoch(self, action):
         # Run the prescribed action
         self.actions[action](self)
+        self.adjust_supplies()
         self.adjust_population()
         # self.mutate_society
         # self.evolve_society()
     
     ### OBSERVATIONS ###
-        
     def observe_food(self):
         self.food_required = self.population * self.food_per_pop()
         self.food_surplus = self.food_supply - self.food_required
@@ -61,11 +93,11 @@ class SociologicalGroup:
         self.observe_food()
         return [
             self.corruption, 
-            self.happiness, 
-            self.disease, 
+            self.happiness,
+            self.disease,
             self.housing, 
-            self.forums, 
-            self.artifacts, 
+            self.forums,
+            self.artifacts,
             self.food_surplus
         ] + self.sociopolitical.values() + self.technology.values() + self.economy.values()
 
@@ -85,9 +117,11 @@ class SociologicalGroup:
     def food_gathered_per_pop(self):
         resource_acquisition_efficiency = self.economy.get_state_value("Resource Acquisition Methods")
         return BASE_POP_RESOURCE_REQUIREMENT * max(0.2, resource_acquisition_efficiency) * RESOURCE_GATHERING_MULTIPLIER
+    
+    def housing_per_pop(self):
+        return 4 # Rough estimate for now, adjust based on cultural framework and tech
 
     ### ACTIONS FOR THE RL AGENT ###
-
     def gather_food(self):
         self.food_supply += self.population * self.food_gathered_per_pop()
     
@@ -102,18 +136,20 @@ class SociologicalGroup:
         self.housing_needed = self.population * self.housing_per_pop()
         self.housing_to_build = max(0, self.housing_needed - self.housing)
         house_cost = self.technology.get_state_value("Engineering") * BASE_HOUSE_COST
-
         self.resources_needed = (self.housing_needed * house_cost)
-        self.public_works_required = self.population * self.sociopolitical.get_dimension_value("Civic Participation") * (1 - self.sociopolitical.get_dimension_value("Centralization"))
-        self.public_works_to_build = max(0, self.public_works_required - self.forums)
-        civic_building_cost = self.technology.get_state_value("Engineering") * BASE_CIVIC_BUILDING_COST
-        self.resources_needed = (self.public_works_required * civic_building_cost)
+        
+        #If we have the resources and need housing, build the building
+        if self.resources_needed <= self.resource_pool and self.housing_needed > self.housing:
+            self.housing += self.housing_to_build
+            self.resource_pool -= self.resources_needed
+
+        # self.public_works_required = self.population * self.sociopolitical.get_dimension_value("Civic Participation") * (1 - self.sociopolitical.get_dimension_value("Centralization"))
+        # self.public_works_to_build = max(0, self.public_works_required - self.forums)
+        # civic_building_cost = self.technology.get_state_value("Engineering") * BASE_CIVIC_BUILDING_COST
+        # self.resources_needed += (self.public_works_required * civic_building_cost)
 
     def create(self):
         self.artifacts += self.population * self.culture.get_dimension_value("Creativity")
-
-    def housing_per_pop(self):
-        return 4 # Rough estimate for now, adjust based on cultural framework and tech
 
     def interact(self):
         # Determine the type of interaction based on governance system and external relations
@@ -145,23 +181,32 @@ class SociologicalGroup:
     ### POP LEVEL FUNCTIONALITY
     def population_happiness(self):
         # happiness is based on having adequate food, housing, and cultural artifacts
-        food_happiness = max(1.0, self.food_surplus / self.food_required)
-        housing_happiness = max(1.0, self.housing / self.population)
-        artifact_happiness = max(1.0, self.artifacts / self.population)
+        food_happiness = min(1.0, self.food_supply / (self.food_per_pop() * self.population))
+        housing_happiness = min(1.0, self.housing_per_pop() * self.housing / self.population)
+        artifact_happiness = min(1.0, self.artifacts / self.population)
 
         new_happiness = (food_happiness + housing_happiness + artifact_happiness) / 3
 
         # Return delta of happiness as reward
         happiness_change = new_happiness - self.happiness
         self.happiness = new_happiness
+
         return max(0, happiness_change)
 
         # happiness is boosted by rest+cultural activities
-        # festival_importance = self.culture.get_dimension_value("Ritual Importance")        
+        # festival_importance = self.culture.get_dimension_value("Ritual Importance")
 
-    def adjust_population(self):
-        # Adjust population based on disease, war, migration, birth and death rates
-        pass
+    def adjust_supplies(self):
+         # Food is consumed
+        self.food_supply -= self.population * self.food_per_pop()
+        self.food_supply -= self.food_supply * FOOD_LOSS_RATE
+        self.food_supply = max(0, self.food_supply)
+
+        # Housing and artifacts degrade over time
+        self.housing -= self.housing * HOUSING_LOSS_RATE
+        self.artifacts -= self.artifacts * ARTIFACT_LOSS_RATE
+        self.housing = max(0, self.housing)
+        self.artifacts = max(0, self.artifacts)
 
     def mutate_society(self):
         pass
@@ -175,30 +220,16 @@ class SociologicalGroup:
     #     self.social_stratification = self.determine_social_systems_and_values(self.species.genetic_base_line())
     #     self.governance_system = self.adjust_governance_scores(self.social_stratification)
 
-    # def run_sociological_loop(self, environment, societies, evolutionary_stage):
-    #     # Simulate societal changes over time
-    #     logger.info("Simulating societal changes for evolutionary_stage: " + str(evolutionary_stage))
-    #     self.evolutionary_stage = evolutionary_stage
-    #     self.simulate_population_changes()
-    #     fitness = self.calculate_detailed_fitness()
-    #     return fitness
+    def adjust_population(self):
+        # Birth/death rates decline over time as healthcare, education, and economic opportunities improve
+        progress_total = self.sociopolitical.get_state_value("Healthcare") + self.sociopolitical.get_state_value("Education") + self.sociopolitical.get_dimension_value("Gender Equality")
 
-    def simulate_population_changes(self):
-        stage_birth_death_rates = {
-            'Primitive Civilization - Hunter Gatherers': (0.04, 0.03),
-            'Primitive Civilization - Tribal Societies': (0.035, 0.028),
-            'Classical Civilization - City States and Empires': (0.03, 0.02),
-            'Feudal Civilization - Medieval Era': (0.025, 0.018),
-            'Feudal Civilization - Renaissance': (0.02, 0.015),
-            'Industrial Civilization - Industrial Era': (0.018, 0.012),
-            'Industrial Civilization - Atomic Era': (0.015, 0.01),
-            'Information Civilization - Digital Era': (0.012, 0.008),
-            'Spacefaring Civilization - Homebound': (0.01, 0.005),
-            'Spacefaring Civilization - Multiplanetary': (0.009, 0.004),
-            'Interstellar Civilization': (0.008, 0.003)
-        }
+        birth_rate = linear_interpolate(0.04, 0.008, progress_total / 3)
+        death_rate = linear_interpolate(0.03, 0.003, progress_total / 3)
 
-        birth_rate, death_rate = stage_birth_death_rates.get(self.evolutionary_stage, (0.02, 0.02))
+        if self.food_supply <= 0:
+            death_rate *= 2.5
+
         self.population += int(self.population * (birth_rate - death_rate))
     
     def simulate_technological_progress(self):

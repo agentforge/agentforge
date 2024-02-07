@@ -40,27 +40,30 @@ class Civilization(gym.Env):
         self.state = self.get_state()  # Example initialization
 
   def step(self, action):
-      # Implement action logic, state transition, and reward calculation
-      # Example: self.state, reward, done, info = self.transition(action)
-      society = self.societies[self.society_idx]
-      society.run_epoch(action)
-      
-      reward = self.calculate_reward()
-      done = False
-      truncated = False
-      if len(self.societies) == 1: # We have a winner
-          done = True
-      self.society_idx += 1
-      if self.society_idx >= len(self.societies):
-          self.society_idx = 0
-      output = "{} - Happiness: {}".format(self.society_idx, self.societies[self.society_idx].happiness)
-      logger.info(output)
-      return self.state, reward, done, truncated, {}
+    # Implement action logic, state transition, and reward calculation
+    # Example: self.state, reward, done, info = self.transition(action)
+    society = self.societies[self.society_idx]
+    society.run_epoch(action)
+    reward = self.calculate_reward()
+    done = False
+    truncated = False
+    if len(self.societies) == 1: # We have a winner
+        done = True
+    if society.population <= 0:
+        self.societies.remove(society)
+
+    # Setup for the next step
+    self.society_idx += 1
+    if self.society_idx >= len(self.societies):
+        self.society_idx = 0
+    output = "{} - Happiness: {}".format(self.society_idx, self.societies[self.society_idx].happiness)
+    logger.info(output)
+    return self.state, reward, done, truncated, {}
 
   def reset(self, seed=None):
-      # Reset the environment state
-      self.state = self.get_state()  # Example initialization
-      return self.state, {}
+    # Reset the environment state
+    self.state = self.get_state()  # Example initialization
+    return self.state, {}
 
   def render(self, mode='human', close=False):
       # Optional: Implement rendering for visualization if needed
@@ -100,9 +103,6 @@ class Civilization(gym.Env):
 
       # Save the trained model
       model.save("civilization")
-      
-      # print(society.sociopolitical)
-      # print(society.economy)
-      # print(society.values.values)
-      # print(fitness)
-      # print(society)
+
+      for society in env.envs[0].societies:
+          print(society)
