@@ -17,7 +17,7 @@ export default function Landing_demo() {
   return (
     <>
       <div className={"flex justify-self-center z-10 w-full max-w-[912px] pt-[144px] md:pt-[264px] px-[32px] md:px-0"}>
-          <div className={"font-mono text-center text-black dark:text-white font-bold text-3xl md:text-7xl w-full"}>
+          <div className={"font-mono text-center text-zinc-900 dark:text-zinc-50 font-bold text-3xl md:text-7xl w-full"}>
             MULTI-MODAL AGENT
             INFRASTRUCTURE <br />
             FOR EVERYONE
@@ -25,7 +25,7 @@ export default function Landing_demo() {
       </div>
 
       <div className={"flex justify-self-center z-10 w-full max-w-[912px] mt-[24px] md:mt-[64px] px-[32px] md:px-0"}>
-          <div className={"font-mono text-center text-black dark:text-white text-sm md:text-lg w-full"}>
+          <div className={"font-mono text-center text-zinc-800 dark:text-zinc-50 text-sm md:text-lg w-full"}>
             Large language models provide a new probabilistic inference platform for building the next generation of agent applications
             <br/>AgentForge makes it easy
           </div>
@@ -33,19 +33,19 @@ export default function Landing_demo() {
 
 
       <div id="sec-vision" className={"flex justify-self-center z-10 w-full max-w-[1120px] mt-[72px] md:mt-[176px] px-[32px] md:px-0"}>
-          <div className={"font-mono text-center md:text-left text-black dark:text-zinc-400 text-sm md:text-lg w-full"}>
+          <div className={"font-mono text-center md:text-left text-zinc-500 dark:text-zinc-400 text-sm md:text-lg w-full"}>
           WE ARE BUILDING INFRASTRUCTURE AT THE INTERSECTION BETWEEN
           </div>
       </div>
 
       <div className={"hidden md:flex justify-self-center z-10 w-full max-w-[1120px] mt-[8px] md:mt-[16px] px-[32px] md:px-0"}>
-          <div className={"font-mono text-left text-black dark:text-white font-[300] md:text-4xl w-full"}>
+          <div className={"font-mono text-left text-zinc-900 dark:text-zinc-50 font-[300] md:text-4xl w-full"}>
           Human Cognition • Artificial Intelligence
           </div>
       </div>
 
       <div className={"flex md:hidden justify-self-center z-10 w-full max-w-[1120px] mt-[8px] md:mt-[16px] px-[32px] md:px-0"}>
-          <div className={"font-mono text-center text-black dark:text-white font-[300] text-2xl w-full"}>
+          <div className={"font-mono text-center text-zinc-900 dark:text-zinc-50 font-[300] text-2xl w-full"}>
           Human Cognition<br />•<br />Artificial Intelligence
           </div>
       </div>
@@ -69,7 +69,12 @@ export default function Landing_demo() {
             <div className="font-mono text-center text-black dark:text-white text-3xl mt-[32px]">LLM</div>
           </div>
           <div className="justify-self-center min-w-[208px] max-w-[330px]">
-            <Image alt="Low poly face" src="/homepage/AvatarHead_face_front.png" width={ 330 } height={ 406 }/>
+            {theme === 'light' ? (
+              <Image alt="Low poly face" src="/homepage/light_AvatarHead_face_front.png" width={ 330 } height={ 406 }/>
+              ) : (
+                <Image alt="Low poly face" src="/homepage/AvatarHead_face_front.png" width={ 330 } height={ 406 }/>
+              )
+            }
             <div className="font-mono text-center text-black dark:text-white text-3xl mt-[44px]">Multi-modal agent</div>
           </div>
           <div className="justify-self-end min-w-[208px] max-w-[330px]">
@@ -90,15 +95,30 @@ export default function Landing_demo() {
         <div className={"flex md:hidden justify-self-left z-10 w-full min-w-[717px] mt-[48px] px-[32px]"}>
           <div className="grid grid-cols-3 gap-[24px]">
             <div className="justify-self-start min-w-[208px] max-w-[330px]">
-              <Image alt="Stack of LLMs" src="/homepage/LLM_stack.svg" width={ 330 } height={ 406 }/>
+              {theme === 'light' ? (
+                <Image alt="Stack of LLMs" src="/homepage/light_LLM_stack.svg" width={ 330 } height={ 406 }/>
+              ) : (
+                <Image alt="Stack of LLMs" src="/homepage/LLM_stack.svg" width={ 330 } height={ 406 }/>
+                )
+              }
               <div className="font-mono text-center text-black dark:text-white text-xl mt-[24px]">LLM</div>
             </div>
             <div className="justify-self-center min-w-[208px] max-w-[330px]">
-              <Image alt="Low poly face" src="/homepage/AvatarHead_face_front.png" width={ 330 } height={ 406 }/>
+              {theme === 'light' ? (
+              <Image alt="Low poly face" src="/homepage/light_AvatarHead_face_front.png" width={ 330 } height={ 406 }/>
+              ) : (
+                <Image alt="Low poly face" src="/homepage/AvatarHead_face_front.png" width={ 330 } height={ 406 }/>
+              )
+              }
               <div className="font-mono text-center text-black dark:text-white text-xl mt-[32px]">Multi-modal agent</div>
             </div>
             <div className="justify-self-end min-w-[208px] max-w-[330px]">
-              <Image alt="config JSON" src="/homepage/AgentForge_config.svg" width={ 330 } height={ 406 }/>
+              {theme === 'light' ? (
+                <Image alt="config JSON" src="/homepage/light_AgentForge_config.svg" width={ 330 } height={ 406 }/>
+              ) : (
+                <Image alt="config JSON" src="/homepage/AgentForge_config.svg" width={ 330 } height={ 406 }/>
+                )
+              }
               <div className="font-mono text-center text-black dark:text-white text-xl mt-[32px]">AgentForge</div>
             </div>
           </div>
@@ -108,13 +128,13 @@ export default function Landing_demo() {
       
       
       <div id="sec-cognition" className={"flex justify-self-center z-10 w-full max-w-[1120px] mt-[72px] md:mt-[176px] px-[32px] md:px-0"}>
-          <div className={"font-mono text-center md:text-left text-black dark:text-zinc-400 text-sm md:text-lg w-full"}>
+          <div className={"font-mono text-center md:text-left text-zinc-500 dark:text-zinc-400 text-sm md:text-lg w-full"}>
           AUTONOMOUS ONLINE AGENTS AS A PLATFORM FOR
           </div>
       </div>
 
       <div className={"flex justify-self-center z-10 w-full max-w-[1120px] mt-[8px] md:mt-[16px] px-[32px] md:px-0"}>
-          <div className={"font-mono text-center md:text-left text-black dark:text-white font-[300] text-2xl md:text-4xl w-full"}>
+          <div className={"font-mono text-center md:text-left text-zinc-900 dark:text-zinc-50 font-[300] text-2xl md:text-4xl w-full"}>
           Cognition Engine
           </div>
       </div>
@@ -135,15 +155,21 @@ export default function Landing_demo() {
             <div className="font-mono text-center text-black dark:text-white text-3xl mt-[32px]"> </div>
           </div>
           <div className="justify-self-center max-w-[208px]">
-            <Image alt="Avatar facing left" src="/homepage/Avatarhead_face_left.png" width={ 208 } height={ 406 }/>
+            {theme === 'light' ? (
+                <Image alt="Avatar facing left" src="/homepage/light_Avatarhead_face_left.png" width={ 208 } height={ 406 }/>
+                ) : (
+                <Image alt="Avatar facing left" src="/homepage/Avatarhead_face_left.png" width={ 208 } height={ 406 }/>
+                )
+            }
             <div className="font-mono text-center text-black dark:text-white text-3xl mt-[32px]">Agent</div>
           </div>
           <div className="col-span-2 justify-self-end max-w-[436px]">
             {theme === 'light' ? (
-              <Image alt="Conversation text bubbles" src="/homepage/light_Cognition.svg" width={ 436 } height={ 406 }/>
-            ) : (
-              <Image alt="Conversation text bubbles" src="/homepage/Cognition.svg" width={ 436 } height={ 406 }/>
-            )}
+              <Image alt="Abstract cognition" src="/homepage/light_Cognition.svg" width={ 436 } height={ 406 }/>
+              ) : (
+                <Image alt="Abstract cognition" src="/homepage/Cognition.svg" width={ 436 } height={ 406 }/>
+              )
+            }
             <div className="font-mono text-center text-black dark:text-white text-3xl mt-[32px]">Cognition</div>
           </div>
         </div>
@@ -152,20 +178,25 @@ export default function Landing_demo() {
 
       {/* Section - 1-col Cognition engine - Mobile */}
       <div className="flex md:hidden grid grid-cols-1 justify-self-center z-10 w-full max-w-[1120px] mt-[8px] md:mt-[16px] px-[32px] md:px-0">
-          <Image alt="Abstract cognition" src="/homepage/Cognition.svg" className="justify-self-center" width={ 436 } height={ 406 }/>
+            {theme === 'light' ? (
+              <Image alt="Abstract cognition" src="/homepage/light_Cognition.svg" width={ 436 } height={ 406 }/>
+              ) : (
+                <Image alt="Abstract cognition" src="/homepage/Cognition.svg" width={ 436 } height={ 406 }/>
+              )
+            }
           {/*<div className="font-mono text-center text-white text-xl mt-[24px]"> </div>*/}
       </div>
       {/* End of Section - 1-col Cognition engine - Mobile */}
 
       
       <div id="sec-projects" className={"flex justify-self-center z-10 w-full max-w-[1120px] mt-[72px] md:mt-[176px] px-[32px] md:px-0"}>
-          <div className={"font-mono text-center md:text-left text-black dark:text-zinc-400 text-sm md:text-lg w-full"}>
+          <div className={"font-mono text-center md:text-left text-zinc-500 dark:text-zinc-400 text-sm md:text-lg w-full"}>
           A SNEAK PEEK OF OUR
           </div>
       </div>
 
       <div className={"flex justify-self-center z-10 w-full max-w-[1120px] mt-[8px] md:mt-[16px] px-[32px] md:px-0"}>
-          <div className={"font-mono text-center md:text-left text-black dark:text-white font-[300] text-2xl md:text-4xl w-full"}>
+          <div className={"font-mono text-center md:text-left text-zinc-900 dark:text-zinc-50 font-[300] text-2xl md:text-4xl w-full"}>
           Projects
           </div>
       </div>
@@ -173,50 +204,56 @@ export default function Landing_demo() {
       {/* Section - 3-col Projects - Desktop */}
       <div className={"hidden lg:flex justify-self-center z-10 w-full max-w-[1120px] mt-[64px] px-0"}>
         <div className={"grid grid-cols-3 gap-[40px]"}>
-          <div className={"col-span-2 grid grid-cols-2 gap-[20px] justify-self-start" +  
-                          "min-w-[750px] rounded-[8px] border-2 border-black dark:border-zinc-600 " + 
-                          "shadow-[0_12px_50px_-9px_rgba(255, 255, 255, 0.48)] " + 
-                          "p-[64px] pb-[48px]"}
+          <div className={"col-span-2 gap-[20px] justify-self-start" +  
+                          "min-w-[750px] rounded-[8px] border-2 border-zinc-300 dark:border-zinc-600 " + 
+                          "drop-shadow-[0_25px_32px_rgba(8,51,8,0.4)] " + 
+                          "dark:drop-shadow-[0_25px_32px_rgba(199,237,40,0.24)] " + 
+                          "p-[64px] pb-[48px] " + 
+                          "bg-contain bg-center " }
+
+               style={{background: "linear-gradient(30deg, rgba(0, 0, 0, 0.79), rgba(20, 53, 8, 0.88)), " 
+                                  + "url(" + "/homepage/GS_card_bg.jpg" + ");"}}
             >
             <div>
-              <div className={"font-mono text-left text-black dark:text-white text-5xl w-full"}>
-                Almanac
+              {/*
+              <div className={"font-mono text-left text-white text-5xl w-full"}>
+                GreenSage
               </div>
-              <div className={"font-mono text-left text-black dark:text-white text-lg w-full pt-[36px]"}>
-                An on-demand virtual assistant which guides end-users with planning activities requiring specialized knowledge
+            */}
+              <Image alt="greensage with avatar" src="/homepage/GS_card_title.svg" width={ 451 } height={ 72 }/>
+              <div className={"font-mono text-left text-white text-lg w-full pt-[36px]"}>
+                Provides smart assistance for budtenders and commercial cannabis establishments. 
+                Greensage seamlessly integrates into the daily operations of cannabis dispensary and provides a simple natural language interface 
+                to access its vast database.
               </div>
-              <div className={"font-mono text-left text-black dark:text-white text-lg w-full pt-[36px]"}>
-                For Small Businesses and startups to provide technical support at scale
+              <div className={"font-mono text-left text-white text-lg w-full pt-[36px]"}>
+                For homegrowers, it simplifies the journey from seed to harvest.
               </div>
-            </div>
-            <div>
-              <video autoPlay muted loop className={"w-full rounded-[16px] border-2 border-black dark:border-zinc-600"}>         
-                  <source src="/homepage/almanac_idle_loop.mp4" type="video/mp4"/>       
-              </video>
               <button
                 className={"w-full mt-[24px] font-mono rounded-[4px] p-[10px] px-4 " + 
-                            "text-base font-medium text-white bg-black dark:text-black dark:bg-white transition-all hover:bg-white/60"}
+                            "text-base font-medium text-black bg-white transition-all hover:bg-zinc/500"}
                 onClick={() => router.push('/demo')}
               >
-                Chat with Gardener-Almanac
+                Open greensage.app
               </button>
             </div>
+            
           </div>
 
           <div className={"justify-self-end min-w-[330px] grid grid-cols-1 gap-[32px]"}>
-            <div className={"rounded-[8px] border-2 border-black dark:border-zinc-600 p-[32px]"}>
-              <div className={"font-mono text-left text-black dark:text-white text-5xl w-full"}>
+            <div className={"rounded-[8px] border-2 border-zinc-300 dark:border-zinc-600 p-[32px] bg-white dark:bg-black"}>
+              <div className={"font-mono text-left text-zinc-800 dark:text-zinc-100 text-5xl w-full"}>
                 Caretaker
               </div>
-              <div className={"font-mono text-left text-black dark:text-white text-lg w-full pt-[36px]"}>
+              <div className={"font-mono text-left text-zinc-900 dark:text-zinc-50 text-lg w-full pt-[36px]"}>
                 An always on agent with capabilities, TBA
               </div>
             </div>
-            <div className={"rounded-[8px] border-2 border-black dark:border-zinc-600 p-[32px]"}>
-              <div className={"font-mono text-left text-black dark:text-white text-5xl w-full"}>
+            <div className={"rounded-[8px] border-2 border-zinc-300 dark:border-zinc-600 p-[32px] bg-white dark:bg-black"}>
+              <div className={"font-mono text-left text-800 dark:text-zinc-100 text-5xl w-full"}>
                 The Forge
               </div>
-              <div className={"font-mono text-left text-black dark:text-white text-lg w-full pt-[36px]"}>
+              <div className={"font-mono text-left text-zinc-900 dark:text-zinc-50 text-lg w-full pt-[36px]"}>
                 No-code GUI for agent-avatar creation, training and deployment, TBA
               </div>
             </div>
@@ -227,47 +264,56 @@ export default function Landing_demo() {
 
       {/* Section - 1-col Projects - Mobile */}
       <div className="flex lg:hidden grid grid-cols-1 justify-self-center z-10 w-full max-w-[1120px] mt-[44px] px-[32px]">
-        <div className={"rounded-[8px] border-2 border-black dark:border-zinc-600 " +
+        <div className={"rounded-[8px] border-2 border-zinc-300 dark:border-zinc-600 " +
                         "shadow-[0_12px_50px_-9px_rgba(255, 255, 255, 0.48)] " + 
-                        "p-[32px]"}
+                        "p-[32px] " + 
+                        "bg-contain bg-center " + 
+                        "drop-shadow-[0_16px_24px_rgba(8,51,8,0.4)] " + 
+                        "dark:drop-shadow-[0_16px_24px_rgba(199,237,40,0.24)] "}
+
+               style={{background: "linear-gradient(30deg, rgba(0, 0, 0, 0.79), rgba(20, 53, 8, 0.88)), " 
+                                  + "url(" + "/homepage/GS_card_bg.jpg" + ");"}}
               >
             <div>
-              <div className={"font-mono text-center text-black dark:text-white text-3xl w-full"}>
-                Almanac
+              {/*
+              <div className={"font-mono text-center text-zinc-100 text-3xl w-full"}>
+                Greensage
               </div>
-
+              */}
+              <div className="flex justify-center">
+                <Image alt="greensage with avatar" src="/homepage/GS_card_title.svg" width={ 286 } height={ 46 }/>
+              </div>
               <div>
-              <video autoPlay muted loop className={"w-full rounded-[16px] border-2 border-black dark:border-zinc-600 mt-[24px]"}>         
-                  <source src="/homepage/almanac_idle_loop.mp4" type="video/mp4"/>       
-              </video>
               <button
                 className={"w-full mt-[24px] font-mono rounded-[4px] py-[10px] px-[16px] " + 
-                            "text-base font-medium text-white bg-black dark:text-black dark:bg-white transition-all hover:bg-white/60"}
+                            "text-base font-medium text-black bg-white transition-all hover:bg-white/500"}
                 onClick={() => router.push('/demo')}
               >
-                Chat with <br/> Gardener-Almanac
+                Open greensage.app
               </button>
             </div>
 
-              <div className={"font-mono text-center text-black dark:text-white text-base w-full pt-[36px]"}>
-                An on-demand virtual assistant which guides end-users with planning activities requiring specialized knowledge
+              <div className={"font-mono text-center text-zinc-50 text-base w-full pt-[36px]"}>
+                Provides smart assistance for budtenders and commercial cannabis establishments. 
+                Greensage seamlessly integrates into the daily operations of cannabis dispensary and provides a simple natural language interface 
+                to access its vast database.
               </div>
-              <div className={"font-mono text-center text-black dark:text-white text-base w-full pt-[36px]"}>
-                For Small Businesses and startups to provide technical support at scale
+              <div className={"font-mono text-center text-zinc-50 text-base w-full pt-[36px]"}>
+                For homegrowers, it simplifies the journey from seed to harvest.
               </div>
             </div>
             
           </div>
 
-          <div className={"rounded-[8px] border-2 border-black dark:border-zinc-600 " +
+          <div className={"rounded-[8px] border-2 border-zinc-300 dark:border-zinc-600 " +
                         "p-[32px] mt-[24px]"}
               >
             <div>
-              <div className={"font-mono text-center text-black dark:text-white text-3xl w-full"}>
+              <div className={"font-mono text-center text-zinc-800 dark:text-zinc-100 text-3xl w-full"}>
                 Caretaker
               </div>
 
-              <div className={"font-mono text-center text-black dark:text-white text-base w-full pt-[36px]"}>
+              <div className={"font-mono text-center text-zinc-900 dark:text-zinc-50 text-base w-full pt-[36px]"}>
                 An always on agent with capabilities, TBA
               </div>
 
@@ -275,15 +321,15 @@ export default function Landing_demo() {
             
           </div>
 
-          <div className={"rounded-[8px] border-2 border-black dark:border-zinc-600 " +
+          <div className={"rounded-[8px] border-2 border-zinc-300 dark:border-zinc-600 " +
                         "p-[32px] mt-[24px]"}
               >
             <div>
-              <div className={"font-mono text-center light:text-black dark:text-white text-3xl w-full"}>
+              <div className={"font-mono text-center light:text-zinc-800 dark:text-zinc-100 text-3xl w-full"}>
                 The Forge
               </div>
 
-              <div className={"font-mono text-center text-black dark:text-white text-base w-full pt-[36px]"}>
+              <div className={"font-mono text-center text-zinc-900 dark:text-zinc-50 text-base w-full pt-[36px]"}>
                 No-code GUI for agent-avatar creation, training and deployment, TBA
               </div>
 
@@ -292,6 +338,132 @@ export default function Landing_demo() {
           </div>
       </div>
       {/* End of Section - 1-col Projects - Mobile */}
+
+      
+      <div id="sec-team" className={"flex justify-self-center z-10 w-full max-w-[1120px] mt-[72px] md:mt-[176px] px-[32px] md:px-0"}>
+          <div className={"font-mono text-center text-zinc-500 dark:text-zinc-400 text-sm md:text-lg w-full"}>
+          THE HUMANS BEHIND THE AGENTS
+          </div>
+      </div>
+
+      <div className={"flex justify-self-center z-10 w-full max-w-[1120px] mt-[8px] md:mt-[16px] px-[32px] md:px-0"}>
+          <div className={"font-mono text-center text-zinc-900 dark:text-zinc-50 font-[300] text-2xl md:text-4xl w-full"}>
+          Team
+          </div>
+      </div>
+
+      {/* Section - 3-col Team - Desktop */}
+      {/*<div className={"hidden lg:flex justify-self-center z-10 w-full max-w-[872px] mt-[134px] px-0"}>*/}
+      <div className={"flex-auto justify-self-center z-10 md:w-full w-80 max-w-[872px] md:mt-[134px] mt-[34px] px-0"}>
+        <div className={"grid grid-cols-3 lg:gap-[124px] gap-[28px]"}>
+          
+          <div className={"col-span-1 justify-self-center"}  
+            >
+            <div>
+              <div className={"rounded-full border-2 border-zinc-300 dark:border-zinc-600 "}
+                    style={{overflow: 'hidden'}}>
+                <Image alt="Frank headshot" src="/homepage/team_Frank.png" width={ 208 } height={ 208 }/>
+              </div>
+              <div className={"font-mono text-center text-zinc-700 dark:text-zinc-100 lg:text-3xl md:text-xl text-base w-full pt-[24px]"}>
+                Frank
+              </div>
+            </div>
+
+            <div>
+              <div className={"rounded-full border-2 border-zinc-300 dark:border-zinc-600 mt-[76px]"}
+                    style={{overflow: 'hidden'}}>
+                <Image alt="Chelsea headshot" src="/homepage/team_Chelsea.png" width={ 208 } height={ 208 }/>
+              </div>
+              <div className={"font-mono text-center text-zinc-700 dark:text-zinc-100 lg:text-3xl md:text-xl text-base w-full pt-[24px]"}>
+                Chelsea
+              </div>
+            </div>
+
+            <div>
+              <div className={"rounded-full border-2 border-zinc-300 dark:border-zinc-600 mt-[76px]"}
+                    style={{overflow: 'hidden'}}>
+                <Image alt="Saul headshot" src="/homepage/team_Saul.png" width={ 208 } height={ 208 }/>
+              </div>
+              <div className={"font-mono text-center text-zinc-700 dark:text-zinc-100 lg:text-3xl md:text-xl text-base w-full pt-[24px]"}>
+                Saul
+              </div>
+            </div>
+            
+          </div>
+
+
+          <div className={"col-span-1 justify-self-center"}  
+            >
+            <div>
+              <div className={"rounded-full border-2 border-zinc-300 dark:border-zinc-600 "}
+                    style={{overflow: 'hidden'}}>
+                <Image alt="Oly headshot" src="/homepage/team_Oly.png" width={ 208 } height={ 208 }/>
+              </div>
+              <div className={"font-mono text-center text-zinc-700 dark:text-zinc-100 lg:text-3xl md:text-xl text-base w-full pt-[24px]"}>
+                Oly
+              </div>
+            </div>
+
+            <div>
+              <div className={"rounded-full border-2 border-zinc-300 dark:border-zinc-600 mt-[76px]"}
+                    style={{overflow: 'hidden'}}>
+                <Image alt="Sara headshot" src="/homepage/team_Sara.png" width={ 208 } height={ 208 }/>
+              </div>
+              <div className={"font-mono text-center text-zinc-700 dark:text-zinc-100 lg:text-3xl md:text-xl text-base w-full pt-[24px]"}>
+                Sara
+              </div>
+            </div>
+
+            <div>
+              <div className={"rounded-full border-2 border-zinc-300 dark:border-zinc-600 mt-[76px]"}
+                    style={{overflow: 'hidden'}}>
+                <Image alt="Avin headshot" src="/homepage/team_Avin.png" width={ 208 } height={ 208 }/>
+              </div>
+              <div className={"font-mono text-center text-zinc-700 dark:text-zinc-100 lg:text-3xl md:text-xl text-base w-full pt-[24px]"}>
+                Avin
+              </div>
+            </div>
+            
+          </div>
+
+
+          <div className={"col-span-1 justify-self-center"}  
+            >
+            <div>
+              <div className={"rounded-full border-2 border-zinc-300 dark:border-zinc-600 "}
+                    style={{overflow: 'hidden'}}>
+                <Image alt="Jackson headshot" src="/homepage/team_Jackson.png" width={ 208 } height={ 208 }/>
+              </div>
+              <div className={"font-mono text-center text-zinc-700 dark:text-zinc-100 lg:text-3xl md:text-xl text-base w-full pt-[24px]"}>
+                Jackson
+              </div>
+            </div>
+
+            <div>
+              <div className={"rounded-full border-2 border-zinc-300 dark:border-zinc-600 mt-[76px]"}
+                    style={{overflow: 'hidden'}}>
+                <Image alt="Anthony headshot" src="/homepage/team_Anthony.png" width={ 208 } height={ 208 }/>
+              </div>
+              <div className={"font-mono text-center text-zinc-700 dark:text-zinc-100 lg:text-3xl md:text-xl text-base w-full pt-[24px]"}>
+                Anthony
+              </div>
+            </div>
+
+            <div>
+              <div className={"rounded-full border-2 border-zinc-300 dark:border-zinc-600 mt-[76px]"}
+                    style={{overflow: 'hidden'}}>
+                <Image alt="Deeptish headshot" src="/homepage/team_Deeptish.png" width={ 208 } height={ 208 }/>
+              </div>
+              <div className={"font-mono text-center text-zinc-700 dark:text-zinc-100 lg:text-3xl md:text-xl text-base w-full pt-[24px]"}>
+                Deeptish
+              </div>
+            </div>
+            
+          </div>
+        </div>
+      </div>
+      {/* End of Section - 3-col Team - Desktop */}
+
       
       <div className="fixed bottom-0 right-0 mb-4 mr-4 z-50">
         <ModeToggle />
