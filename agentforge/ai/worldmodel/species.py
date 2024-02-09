@@ -17,6 +17,9 @@ class Species:
         self.population = 0
         self.evolutionary_stage = evolutionary_stage
         self.uuid = str(uuid.uuid4())
+        self.role = ""
+        self.behavioral_role = ""
+        self.genus = ""
 
     def genetic_base_line(self):
         return self.species_data["Genetic Profile"]
@@ -32,6 +35,9 @@ class Species:
             "population": self.population,
             "individuals": self.individuals,
             "evolutionary_stage": self.evolutionary_stage,
+            "role": self.role,
+            "behavioral_role": self.behavioral_role,
+            "genus": self.genus
         }
         db.set(collection, self.uuid, species_dict)
 
@@ -43,10 +49,8 @@ class Species:
             species_data = species["species_data"]
             # Create a new Species instance with the loaded data
             species_instance = cls(species_data, species["evolutionary_stage"])
-            species_instance.population = species["population"]
-            species_instance.reproduction_type = species["reproduction_type"]
-            species_instance.individuals = species["individuals"]
-            species_instance.evolutionary_stage = species["evolutionary_stage"]
+            for key, value in species.items():
+                setattr(species_instance, key, value)
             return species_instance
         else:
             return None

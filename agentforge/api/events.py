@@ -37,6 +37,8 @@ PUBLIC_APPLICATION_SERVER_KEY = "BPZjhYmoa74hrffBOS0flp3Sk_EcLuSFFww7iJ8HNFZe6JV
 # should raise max pool connections, currently at default of 10
 mongo_client = MongoDBKVStore(DB)
 
+# TO-DO: Store events in events table based on user-id key, so that we can also store 
+# global events not tied to user, for example
 @router.post("/create-schedule")
 def create_schedule(request: Request, session: SessionContainer = Depends(verify_session())):
     session = await get_session(request)

@@ -1,5 +1,6 @@
-# Naming system for celestial bodies.
-
+import random
+import time
+# Simple Naming system for celestial bodies.
 class CelestialNamingSystem:
     def __init__(self, system_name):
         self.system_name = system_name
@@ -54,3 +55,65 @@ star_designations = [
     'SETI', 'TESS', 'VLA', 'VLBI', 'WISE', 'XMM-Newton', 'HD', 'PSR', 'WASP', 'KIC',
     'LHS', 'TOI', 'GJ', 'TRAPPIST', 'OGLE', 'K2'
 ]
+
+class SocietyNamingSystem:
+    def __init__(self) -> None:
+        # Load society names from a file
+        societies = []
+        with open("agentforge/ai/worldmodel/societies.txt", "r") as f:
+            raw = f.read()
+
+        societies = raw.split("\n")
+        total_syllables = 0
+
+        self.syllables = []
+
+        # Analyze syllables in society names
+        for s in societies:
+            lex = s.split("-")
+            total_syllables += len(lex)
+            for l in lex:
+                if l not in self.syllables:
+                    self.syllables.append(l)
+        print("Syllables : " + str(len(self.syllables)))
+
+        # Calculate diversity index
+        div_index = len(self.syllables) / total_syllables
+        div_index_str = str(div_index)[:4]
+        print("Diversity index : " + div_index_str)
+
+        # Prepare for frequency analysis
+        self.size = len(self.syllables) + 1
+        self.freq = [[0] * self.size for i in range(self.size)]
+
+        # Frequency analysis
+        for s in societies:
+            lex = s.split("-")
+            i = 0
+            while i < len(lex) - 1:
+                self.freq[self.syllables.index(lex[i])][self.syllables.index(lex[i+1])] += 1
+                i += 1
+            self.freq[self.syllables.index(lex[len(lex) - 1])][self.size-1] += 1
+        print('Frequency analysis : done!\n')
+
+    def generate_name(self, suffix):
+
+        # Generate society names
+        num_names = 0
+        society_name = ""
+        names = []
+        while num_names < 20:
+            length = random.randint(2, 3)
+            initial = random.randint(0, self.size - 2)
+            while length > 0:
+                while 1 not in self.freq[initial]:
+                    initial = random.randint(0, self.size - 2)
+                society_name += self.syllables[initial]
+                initial = self.freq[initial].index(1)
+                length -= 1
+            society_name = "".join([society_name.capitalize(), " ", suffix])
+            names.append(society_name)
+            society_name = ""
+            num_names += 1
+
+        return random.choice(names)

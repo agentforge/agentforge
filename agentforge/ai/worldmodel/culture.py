@@ -12,6 +12,7 @@ class CulturalFramework(SocialFramework):
     "Diversity": [0,1],
     "Creativity": [0,1],
     "Ritual Importance": [0,1],
+    "Cultural Homogeneity": [0,1], # Indicates the extent to which a government promotes a singular cultural or ethnic identity.
     "Diversity of Belief": [0, 1],  # Measures the diversity and complexity of belief systems, including religion, philosophy, and worldview.
   }
 

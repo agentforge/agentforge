@@ -72,23 +72,48 @@ class SocioPoliticalFramework(SocialFramework):
   }
 
   dimensions = {
-    "Rights": [0,1], # The degree of protection and respect for human rights in a society.
-    "Security": [0,1], # The degree of security and safety in a society.
-    "Peace": [0,1], # The degree of peace and stability in a society.
-    "Rule of Law": [0,1], # The degree of adherence to the rule of law in a society.
-    "Corruption": [0,1], # The degree of corruption and transparency in a society.
-    "Gender Equality": [0,1], # The degree of equality between the genders in a society.
-    "Religious Tolerance": [0,1], # The degree of acceptance of various religious beliefs and practices.
-    "Political Freedom": [0,1], # The degree of political freedom and civil liberties in a society.
-    "Social Welfare": [0,1], # The degree of well-being and social support for all citizens.
-    "Social Mobility": [0,1], # The ability of individuals or families to move between social strata.
-    "Centralization": [0,1], # The degree of centralization of power and authority in a society.
-    "Democracy": [0,1], # The degree of democratic governance in a society.
-    "Environmental Sustainability": [0,1], # The degree of environmental sustainability and stewardship in a society.
-    "Information Freedom": [0,1], # The degree of freedom of information and expression in a society.
-    "Privacy": [0,1], # The degree of privacy protection and privacy rights in a society.
-    "Civic Participation": [0,1], # The degree of civic participation and engagement in a society.
-    "Diplomacy": [0,1], # The degree of diplomatic engagement and international relations in a society.
-    "Isolationism": [0,1], # The degree of isolationism or engagement with the global community in a society.
-    "Nationalism": [0,1], # The degree of nationalism and national identity in a society.
+    "Rights": [0,1],
+    "Security": [0,1],
+    "Rule of Law": [0,1],
+    "Gender Equality": [0,1],
+    "Religious Tolerance": [0,1],
+    "Political Freedom": [0,1],
+    "Social Welfare": [0,1],
+    "Social Mobility": [0,1],
+    "Centralization": [0,1],
+    "Democracy": [0,1],
+    "Environmental Sustainability": [0,1],
+    "Information Freedom": [0,1],
+    "Privacy": [0,1],
+    "Civic Participation": [0,1],
+    "Diplomatic": [0,1],
+    "Isolationism": [0,1],
+    "Nationalism": [0,1],
+    "Militaristic": [0,1],
+    "Economic Control": [0,1],
+    "Open Borders": [0,1],
+    "Education System": [0,1],
+    "Healthcare System": [0,1],
+    "Property Ownership": [0,1],
+    "Freedom of Assembly": [0,1],
+    "Press Freedom": [0,1],
+    "Innovation and Research": [0,1], # Reflects the emphasis on and support for innovation and research: 0 for minimal support and 1 for significant investment and encouragement.
+    "State Religion": [0,1],
+    "Compulsory Military Service": [0,1],
+    "Egalitarianism": [0,1], # Indicates a commitment to egalitarian principles: 0 for societies with significant class distinctions and 1 for those striving towards equality across various dimensions (beyond gender equality).
+    "Class Stratification": [0,1], # Measures the presence and impact of social class divisions: 1 for rigid class systems and 0 for societies with minimal or no class stratification.
+    "Technological Integration": [0,1],
+    "Collective Ownership": [0,1], # Reflects the degree to which property and productive assets are owned collectively or by the state.
+    "Worker Self-Management": [0,1], # Indicates the degree to which workers directly control the means of production.
+    "State Intervention": [0,1], # The extent of state involvement in the economy and social services.
+    "Economic Equality": [0,1], # Reflects the degree of income and wealth equality enforced by the government.
+    "Autarky": [0,1], # The degree to which a society is self-sufficient and minimizes reliance on external entities.
+    "Merit-based Advancement": [0,1], # Reflects the degree to which advancement is based on merit, skill, and achievement.
+    "Innovation Encouragement": [0,1], # Focus on incentives and support for technological and scientific advancement.
+    "Public Commons": [0,1], # Extent to which resources are managed as public commons rather than private property.
+    "Historical Continuity": [0,1], # The extent to which governance structures are rooted in historical and traditional precedents.
+    "Ideological Enforcement": [0,1], # The extent to which governments enforce a particular ideology or set of beliefs.
+    "Participatory Governance": [0,1], # Emphasizes direct participation of citizens in decision-making processes.
+    "Sustainability Focus": [0,1], # A focus on sustainable living and ecological balance.
+    "Global Solidarity": [0,1] # The extent to which a society or government works with others globally.
   }

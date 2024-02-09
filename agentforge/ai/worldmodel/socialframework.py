@@ -5,6 +5,9 @@ class SocialFramework():
   def __init__(self) -> None:
     self.dimension_values = {}
     self.state_values = {}
+    
+    # controls the progress of state_values
+    self.progress = 0.0
 
     for dim in self.dimensions.keys():
       self.dimension_values[dim] = round(np.random.uniform(0, 1), 2)
