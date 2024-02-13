@@ -1,4 +1,4 @@
-import random, math
+import random, math, humanize
 import numpy as np
 from agentforge.utils import logger
 from agentforge.ai.worldmodel.species import Species
@@ -8,18 +8,27 @@ from agentforge.ai.worldmodel.culture import CulturalFramework
 from agentforge.ai.worldmodel.economics import EconomicFramework
 from agentforge.ai.worldmodel.values import ValueFramework
 from agentforge.ai.worldmodel.designation import SocietyNamingSystem
+from agentforge.ai.worldmodel.resource import Resource
 from agentforge.ai.worldmodel.government import determine_governance_type
+from noise import pnoise1
 
 # TODO: make dependent on tech level, cultural framework, and environmental factors
-BASE_POP_RESOURCE_REQUIREMENT = 100
+BASE_POP_RESOURCE_REQUIREMENT = 10
 MIN_POP_REQUIREMENTS = 5
-RESOURCE_GATHERING_MULTIPLIER = 4
+RESOURCE_GATHERING_MULTIPLIER = 1
+FOOD_RESOURCE_GATHERING_MULTIPLIER = 5
 BASE_HOUSE_COST = 100
 BASE_CIVIC_BUILDING_COST = 30
-HOUSING_LOSS_RATE = 0.01
+HOUSING_LOSS_RATE = 0.001
 ARTIFACT_LOSS_RATE = 0.25
 FOOD_LOSS_RATE = 0.05
-BASE_RESEARCH_RATE = 0.01
+BASE_RESEARCH_RATE = 0.001
+WORKERS_PER_HOUSE = 5
+STARVATION_RATE = 1.1
+
+def gaussian(x, mu, sigma):
+    """Generate a Gaussian curve for a given x, mean (mu), and standard deviation (sigma)."""
+    return np.exp(-np.power(x - mu, 2.) / (2 * np.power(sigma, 2.)))
 
 def linear_interpolate(X1, X2, t):
     """
@@ -47,14 +56,16 @@ class SociologicalGroup:
         self.values = ValueFramework(species.species_data["Life Form Attributes"])
         self.government = determine_governance_type(self.sociopolitical.dimension_values)
         self.name = self.designator.generate_name(self.government)
+        self.current_year = 0
 
         # Resource/Economics stand-in
-        self.resource_pool = 0
-        self.food_supply = 0
-        self.building_queue = []
-        self.housing = 0
+        self.resources = {
+            "food_supply": Resource("Food", 1000, req_per_pop=self.food_per_pop(), gather_per_pop=self.food_gathered_per_pop(), tradeable=True, consumable=True),
+            "housing": Resource("Housing", 4, req_per_pop=0.25, gather_per_pop=1, consumable=True),
+            "artifacts": Resource("Artifacts", 12, req_per_pop=1, gather_per_pop=1, tradeable=True, consumable=True),
+            "resource_pool": Resource("Resources", 200, req_per_pop=1, gather_per_pop=1, tradeable=True)
+        }
         self.forums = 0
-        self.artifacts = 0
 
         # Societal Characteristics
         self.corruption = 0
@@ -62,58 +73,59 @@ class SociologicalGroup:
         self.disease = 0
         self.war_action = {}
 
-        # Social Constraints
+        # Social Constraints and demographics
         self.population = initial_population
-        self.observe_food()
+        self.demographics = self.generate_demographic_distribution(initial_population)
 
     def __str__(self):
+        resource_happiness = [f"{i.name}: {i.inventory(self.population)['happiness']}" for i in self.resources.values() if i.consumable]
+        resource_str = "                \n                ".join(resource_happiness)
         return f"""{self.name}:
-            Population: {self.population}
+            Population: {humanize.intword(self.population)}
             Happiness Total: {self.happiness}
-                Food: {min(1.0, self.food_supply / (self.food_per_pop() * self.population))}
-                Housing: {min(1.0, (self.housing_per_pop() * self.housing / self.population))}
-                Culture: {min(1.0, self.artifacts / self.population)}
-            Food Supply: {self.food_supply}
-            Housing: {self.housing}
-            Artifacts: {self.artifacts}
-            Resources: {self.resource_pool}
+                {resource_str}
+            {humanize.intword(self.resources['food_supply'])}
+            {humanize.intword(self.resources['housing'])}
+            {humanize.intword(self.resources['artifacts'])}
+            {humanize.intword(self.resources['resource_pool'])}
             Values: {self.values.values}
             Ecological Role: {self.species.role}
             Last War Action: {self.war_action}
+            Technology: {self.technology.state_values}
+            Sociopolitical: {self.sociopolitical.state_values}
+            Demographics: {self.demographics}
             """
 
-    def run_epoch(self, action, civs, current_year, current_season):
-        # Run the prescribed action
-        self.actions[action](self, civs=civs, year=current_year, season=current_season)
+    def run_epoch(self, action, civs, current_year, current_season, environment):
+        self.demographics = self.generate_demographic_distribution(self.population)
+        self.actions[action](self, civs=civs, year=current_year, season=current_season, environment=environment)
         self.adjust_supplies()
-        self.adjust_population() # birth/death
+        # Run the prescribed action
+        if self.current_year != current_year:
+            self.adjust_population() # birth/death
         self.migration()
         self.reset_to_zero()
+        # print(self.housing)
         # self.mutate_society
         # self.evolve_society()
-    
-    ### OBSERVATIONS ###
-    def observe_food(self):
-        self.food_required = self.population * self.food_per_pop()
-        self.food_surplus = self.food_supply - self.food_required
+        self.current_year = current_year
+        return environment
+
+    # Determines order in which societies take actions
+    def initiative(self):
+        return (self.culture.get_dimension_value("Zealotry") + self.sociopolitical.get_dimension_value("Civic Participation") / 2.0) * np.random.rand()
 
     def wealth(self):
         # Wealth is based on the amount of resources and artifacts +1 to avoid division by zero
-        return self.resource_pool + self.artifacts + self.food_supply + self.population + 1.0
+        resource_values = [i.value for i in self.resources.values() if i.tradeable]
+        return sum(resource_values) + self.population + 1.0
 
     def observe(self):
         # First determine the amount of resources needed based on the population
         # technology level, cohesiveness of society, and environmental factors
-        self.observe_food()
-        return [
-            self.corruption, 
-            self.happiness,
-            self.disease,
-            self.housing, 
-            self.forums,
-            self.artifacts,
-            self.food_surplus
-        ] + self.sociopolitical.values() + self.technology.values() + self.economy.values()
+        resources = [i.value for i in self.resources.values()]
+        social_factors = [ self.corruption, self.happiness, self.disease ]
+        return resources + social_factors + self.sociopolitical.values() + self.technology.values() + self.economy.values()
 
     # Return the amount of resources needed per population member
     def food_per_pop(self):
@@ -130,64 +142,162 @@ class SociologicalGroup:
     # Gather resources, hunter-gatherer absolute min = 0.2
     def food_gathered_per_pop(self):
         resource_acquisition_efficiency = self.economy.get_state_value("Resource Acquisition Methods")
-        return BASE_POP_RESOURCE_REQUIREMENT * max(0.2, resource_acquisition_efficiency) * RESOURCE_GATHERING_MULTIPLIER
+        return BASE_POP_RESOURCE_REQUIREMENT * max(0.2, resource_acquisition_efficiency) * FOOD_RESOURCE_GATHERING_MULTIPLIER
     
     def housing_per_pop(self):
         return 4 # Rough estimate for now, adjust based on cultural framework and tech
 
-    ### ACTIONS FOR THE RL AGENT ###
+    ### RESOURCE ACTIONS FOR THE RL AGENT ###
+
+    # Gathering food, manually or through hunting/farming -- plants/animals
     def gather_food(self, **kwargs):
-        self.food_supply += self.population * self.food_gathered_per_pop()
+        food_gathered = min(self.population * self.food_gathered_per_pop(), kwargs['environment']['food_supply'])
+        self.resources['food_supply'] += food_gathered
+        kwargs['environment']['food_supply'] -= food_gathered
+        # print(f"FOOD SUPPLY NOW AT: {kwargs['environment']['food_supply']} and {food_gathered} gathered.")
+        return kwargs['environment']
     
-    # Gathering resources needed, manually or through mining
+    # Gathering resources needed, manually or through mining --  iron/wood/stone
     def resource_gathering(self, **kwargs):
         resource_acquisition_efficiency = self.economy.get_state_value("Resource Acquisition Methods") + 0.1
-        resources_gathered = self.population * resource_acquisition_efficiency * RESOURCE_GATHERING_MULTIPLIER
-        self.resource_pool += resources_gathered
+        resources_gathered = min(self.population * resource_acquisition_efficiency * RESOURCE_GATHERING_MULTIPLIER, kwargs['environment']['resource_pool'])
+        self.resources['resource_pool'] += resources_gathered
+        kwargs['environment']['resource_pool'] -= resources_gathered
+        return kwargs['environment']
 
     def build(self, **kwargs):
         # Determine need for new infrastructure, technology, and cultural artifacts
-        self.housing_needed = self.population * self.housing_per_pop()
-        self.housing_to_build = max(0, self.housing_needed - self.housing)
-        house_cost = (self.technology.get_state_value("Engineering") + 0.1) * BASE_HOUSE_COST
+        cur_housing = self.resources['housing'].value
+        tot_resources = self.resources['resource_pool'].value
+        self.housing_needed = self.population / self.housing_per_pop()
+        self.housing_to_build = max(0, self.housing_needed - cur_housing)
+        # House cost increases over time based on technology
+        house_cost = (self.technology.get_state_value("Engineering") + 0.001) * BASE_HOUSE_COST
         self.resources_needed = (self.housing_needed * house_cost)
-        print(f"{house_cost} <= {self.resource_pool} and {self.housing_needed} > {self.housing}")
+        # print(f"{house_cost} <= {tot_resources} and {self.housing_needed} > {cur_housing}")
         #If we have the resources and need housing, build the building
-        if house_cost <= self.resource_pool and self.housing_needed > self.housing:
-            self.housing += 1
-            self.resource_pool -= house_cost
+        if house_cost <= tot_resources and self.housing_needed > cur_housing:
+            houses_affordable = tot_resources / house_cost
+            houses_to_build = int(self.demographics['workers'] / WORKERS_PER_HOUSE)
+            # print(f"{houses_to_build} and {houses_affordable}")
+            if houses_to_build > houses_affordable: # if more homes than we have resources for
+                houses_to_build = houses_affordable
+            # print(f"building {houses_to_build} houses for {house_cost * houses_to_build} resources.")
+            self.resources['housing'] += houses_to_build
+            self.resources['resource_pool'] -= house_cost * houses_to_build
+            # print(f"new housing: {cur_housing} and resources: {tot_resources}")
 
+        # TODO: Add a building system and more building types
         # self.public_works_required = self.population * self.sociopolitical.get_dimension_value("Civic Participation") * (1 - self.sociopolitical.get_dimension_value("Centralization"))
         # self.public_works_to_build = max(0, self.public_works_required - self.forums)
         # civic_building_cost = self.technology.get_state_value("Engineering") * BASE_CIVIC_BUILDING_COST
         # self.resources_needed += (self.public_works_required * civic_building_cost)
 
     def create(self, **kwargs):
-        self.artifacts += self.population * self.culture.get_dimension_value("Creativity")
+        self.resources['artifacts'] += self.population * self.culture.get_dimension_value("Creativity")
 
     def research(self, **kwargs):
-        pass
+        # Pick a random technology to research
+        tech = random.choice([self.technology, self.sociopolitical, self.economy, self.culture])
+        research_rate = BASE_RESEARCH_RATE * self.species.get_trait("Intelligence") * self.demographics['scholars']
+        tech.research(research_rate)
 
+    ### DIPLOMATIC FUNCTIONS ###
     def ally(self, **kwargs):
         pass
 
+    ### TRADING RESOURCES ###
     def trade(self, **kwargs):
         # Determine the type of trade based on economic framework and technological proficiency
+        if self.demographics['merchants'] == 0:
+            return
+        # For each possible trade parter, determine the trade value
+        best_trade_value = 0
+        best_trade_partner = None
+        for civ in kwargs['civs']:
+            if civ == self or civ.demographics['merchants'] == 0:
+                continue
+            trade_value = self.calculate_trade_value(civ)
+            if trade_value > best_trade_value:
+                best_trade_value = trade_value
+                best_trade_partner = civ
+        if best_trade_partner is not None:
+            self.trade_with(best_trade_partner)
 
-        # Plan for trade with other societies, including resource exchange and technological transfer, decide what action to take
+    def calculate_trade_value(self, society):
+        # Trade value is based on the economic framework and technological proficiency
+        # TODO: Include trade ratios for artifacts
+        total_value = 0.0
+        for key, resource in self.resources.items():
+            their_resources = society.resources[key].value
+            resource_value = (resource.value + 1.0) / (their_resources + 1.0)
+            total_value += resource_value
+        return total_value
 
-        # Take action and determine the outcome of the trade
-        pass
+    def get_deficit_surplus(self, society):
+        surplus_resources = []
+        needed_resources = []
+        for key, resource in society.resources.items():
+            report = resource.inventory(society.population)
+            if report["surplus"] > 0:
+                surplus_resources.append(key)
+            elif report["deficit"] > 0:
+                needed_resources.append(key)
+        return surplus_resources, needed_resources
 
+    def trade_with(self, society):
+        # TODO: Trade resources and artifacts -- first determine if we have any deficits
+        our_surplus, our_needs = self.get_deficit_surplus(self)
+        their_surplus, their_needs = self.get_deficit_surplus(society)
+        if len(our_surplus) == 0 or len(their_needs) == 0:
+            return
+        # Trade the surplus resources for the needed resources
+        matching_our_surplus = list(set(our_surplus) & set(their_needs))
+        matching_our_needs = list(set(our_needs) & set(their_surplus))
+        if len(matching_our_surplus) == 0 or len(matching_our_needs) == 0:
+            return
+        # Trade the surplus resources for the needed resources
+        accepts = society.accept_trade(self, matching_our_surplus[0], matching_our_needs[0])
+        if not accepts:
+            return
+        # If they accept, we trade the resources
+        exchange_rate_good1_to_good2, exchange_rate_good2_to_good1 = self.resources[matching_our_surplus[0]].determine_trade_value(society.resources[matching_our_needs[0]], self.population, society.population)
+        print(f"Exchange rates: {exchange_rate_good1_to_good2} and {exchange_rate_good2_to_good1}")
+        # Trade the resources
+        # We want to cover our deficit
+        needs = abs(society.resources[matching_our_needs[0]].inventory(society.population)["deficit"])
+        wants = self.resources[matching_our_surplus[0]].inventory(self.population)["surplus"]
+        cost = round(exchange_rate_good2_to_good1 * needs,2)
+        # If the cost is more expensive than they can afford, we adjust the cost and needs
+        if cost > wants:
+            cost = round(wants,2)
+            needs = round(cost / exchange_rate_good2_to_good1, 2)
+        print(f"Trading {needs} {matching_our_needs[0]} for {cost} {matching_our_surplus[0]} with {wants} available.")
+        self.resources[matching_our_needs[0]] += needs
+        society.resources[matching_our_needs[0]] -= needs
+        self.resources[matching_our_surplus[0]] -= cost
+        society.resources[matching_our_surplus[0]] += cost
+
+    def accept_trade(self, society, our_surplus, their_needs):
+        # Determine if we accept the trade based on the economic framework and technological proficiency
+        # TODO: Make this specific to our relations with this society and current needs
+        return True
+
+    ### WAR ACTIONS ###
     def war(self, **kwargs):
         if self.sociopolitical.get_dimension_value("Militaristic") < 0.25:
             return # No war for pacifist societies
         possible_war_targets = []
         possible_war_probabilities = []
         for civ in kwargs['civs']:
-            if civ != self:
+            if civ != self and civ.population > 0:
+                probability = self.calculate_war_probabilities(civ)
+                if probability <= 0 or math.isnan(probability):
+                    continue
                 possible_war_targets.append(civ)
                 possible_war_probabilities.append(self.calculate_war_probabilities(civ))
+        if len(possible_war_targets) == 0:
+            return
         normalized_war_probabilities = np.array(possible_war_probabilities) / np.sum(possible_war_probabilities)
         target = np.random.choice(possible_war_targets, p=normalized_war_probabilities)
         resolution = self.resolve_conflict(target)
@@ -215,26 +325,47 @@ class SociologicalGroup:
             return conflict_score * 2
 
     def war_spoils(self, resolution, other):
+        report = {}
+        # Get the victor
         if resolution == 0.5:
-            return {"population": 0, "resources": 0, "artifacts": 0}
+            return {"population": 0, "resources": 0, "artifacts": 0, "food": 0}
         if resolution > 0.5: # conquer
             victor = self
             loser = other
         else:
             victor = other
             loser = self
-        pop_diff = math.ceil(loser.population * 0.25 * ((victor.technology.get_state_value("Warfare")) + 0.1))
-        resource_diff = math.ceil(loser.resource_pool * 0.25 * ((victor.technology.get_state_value("Warfare")) + 0.1))
-        artifact_diff = math.ceil(loser.artifacts * 0.25 * ((victor.technology.get_state_value("Warfare")) + 0.1))
+
+        # Base population change factor
+        base_factor = 0.25 * (victor.technology.get_state_value("Warfare") + 0.1)
+        
+        # Adding Perlin noise based on the current time
+        # The seed can be any fixed value; here we use a random value for variability
+        seed = random.randint(0, 10000)
+        noise_factor = pnoise1(self.current_year + seed, octaves=1, persistence=0.5, lacunarity=2.0, repeat=1024, base=0)
+        
+        # Adjust the base factor with Perlin noise
+        pop_diff_factor = base_factor * (1 + noise_factor)  # Noise can increase or decrease the impact
+        
+        # Calculate the population difference
+        pop = loser.demographics['military'] + (loser.demographics['workers'] / 3)
+        pop_diff = math.ceil(pop * pop_diff_factor)
         loser.population -= pop_diff
+        
         integrate_pops = victor.culture.get_dimension_value("Cultural Homogeneity") < 0.75 or victor.sociopolitical.get_dimension_value("Rights") < 0.25
-        if integrate_pops: # integrate new pops or kill em
+        if integrate_pops:  # Integrate new pops or eliminate them
             victor.population += pop_diff
-        loser.resource_pool -= resource_diff
-        victor.resource_pool += resource_diff
-        loser.artifacts -= artifact_diff
-        victor.artifacts += artifact_diff
-        return {"population": pop_diff, "resources": resource_diff, "artifacts": artifact_diff}
+
+        report["population"] = pop_diff
+
+        # Calculate the spoils
+        for resource in ['resource_pool', 'food_supply', 'artifacts']:
+            resource_diff = math.ceil(loser.resources[resource].value * 0.25 * ((victor.technology.get_state_value("Warfare")) + 0.1))
+            loser.resources[resource] -= resource_diff
+            victor.resources[resource] += resource_diff
+            report[resource] = resource_diff
+        
+        return report
 
     def rest(self, **kwargs):
         # Determine the type of rest and cultural activities based on sociopolitical framework and cultural values
@@ -256,9 +387,7 @@ class SociologicalGroup:
 
     def fitness(self, action, societies, year, season):
         # happiness is based on having adequate food, housing, and cultural artifacts
-        food_happiness = min(1.0, self.food_supply / (self.food_per_pop() * self.population))
-        housing_happiness = min(1.0, self.housing_per_pop() * self.housing / self.population)
-        artifact_happiness = min(1.0, self.artifacts / self.population)
+        happiness = [i.inventory(self.population)["happiness"] for i in self.resources.values() if i.consumable]
         war_happiness = 0.0
 
         # is the action a war? if so, calculate the war weariness/happiness
@@ -268,7 +397,7 @@ class SociologicalGroup:
             else:
                 war_happiness = -0.3 * (1-self.sociopolitical.get_dimension_value("Militaristic"))
 
-        new_happiness = ((food_happiness + housing_happiness + artifact_happiness) / 3) + war_happiness
+        new_happiness = (sum(happiness) / len(happiness)) + war_happiness
 
         # Return delta of happiness as reward
         happiness_change = new_happiness - self.happiness
@@ -280,12 +409,12 @@ class SociologicalGroup:
 
     def adjust_supplies(self):
          # Food is consumed
-        self.food_supply -= self.population * self.food_per_pop()
-        self.food_supply -= self.food_supply * FOOD_LOSS_RATE
+        self.resources['food_supply'] -= self.population * self.food_per_pop()
+        self.resources['food_supply'] -= self.resources['food_supply'].value * FOOD_LOSS_RATE
 
         # Housing and artifacts degrade over time
-        self.housing -= self.housing * HOUSING_LOSS_RATE
-        self.artifacts -= self.artifacts * ARTIFACT_LOSS_RATE
+        self.resources['housing'] -= HOUSING_LOSS_RATE
+        self.resources['artifacts'] -= self.resources['artifacts'].value * ARTIFACT_LOSS_RATE
 
     def mutate_society(self):
         pass
@@ -293,10 +422,82 @@ class SociologicalGroup:
     def evolve_society(self):
         pass
 
+    # Determines the demographic makeup of the society
+
+    def generate_demographic_distribution(self, population):
+        """
+        Generate a demographic distribution based on input metrics and total population.
+        
+        Args:
+        - class_stratification (float): Determines the presence and number of nobility (0 to 1).
+        - militaristic (float): Influence on the military population (0 to 1).
+        - science_focus (float): Influence on the scholar population (0 to 1).
+        - creativity (float): Influence on artisans and merchants (0 to 1).
+        - development_scale (float): Overall development of the civilization (0.001 to 1).
+        - population (int): Total population of the civilization.
+        
+        Returns:
+        - dict: A dictionary with demographics as keys and absolute population numbers as values.
+        """
+        class_stratification = self.sociopolitical.feudalism_focus()
+        militaristic = self.sociopolitical.military_focus()
+        science_focus = self.sociopolitical.technological_focus()
+        creativity = self.culture.get_dimension_value("Creativity") * self.sociopolitical.worker_control_focus()
+        development_scale=0.1
+        
+        demographics = {
+            'children': 0,
+            'workers': 0,
+            'elderly': 0,
+            'unemployed': 0,
+            'military': 0,
+            'scholars': 0,
+            'artisans': 0,
+            'merchants': 0,
+            'nobility': 0
+        }
+        
+        # Base proportions in an early-stage civilization
+        base_children = 0.4
+        base_workers = 0.5
+        base_elderly = 0.05
+
+        # Adjust base proportions based on development scale (linear scaling)
+        demographics['children'] = base_children - development_scale * 0.15
+        demographics['workers'] = base_workers - development_scale * 0.1
+        demographics['elderly'] = base_elderly + development_scale * 0.2
+        
+        # Calculate unemployed based on worker population
+        demographics['unemployed'] = demographics['workers'] * 0.05
+        
+        # Adjustments based on militaristic, science focus, and creativity
+        demographics['military'] = militaristic * 0.15
+        demographics['scholars'] = science_focus * 0.1
+        demographics['artisans'] = creativity * 0.1
+        demographics['merchants'] = creativity * 0.08
+        
+        # Nobility based on class stratification
+        demographics['nobility'] = class_stratification * 0.02
+        
+        # Convert percentages to absolute numbers based on the population
+        for key in demographics:
+            demographics[key] = round(demographics[key] * population)
+        
+        # Adjust to ensure the sum equals the total population
+        total_demographics_sum = sum(demographics.values())
+        difference = population - total_demographics_sum
+        # Add or subtract the difference to/from the largest demographic group
+        if difference != 0:
+            largest_group = max(demographics, key=demographics.get)
+            demographics[largest_group] += difference
+        
+        return demographics
+
+    # Ensure no negative values
     def reset_to_zero(self):
-        self.food_supply = max(0, round(self.food_supply,0))
-        self.housing = max(0, round(self.housing,0))
-        self.artifacts = max(0, round(self.artifacts,0))
+        for key in self.resources:
+            if self.resources[key].value < 0:
+                self.resources[key].value = 0
 
     # # Given a species create a sociological group
     # def create(self, evolutionary_stage):
@@ -307,15 +508,40 @@ class SociologicalGroup:
     def adjust_population(self):
         # Birth/death rates decline over time as healthcare, education, and economic opportunities improve
         progress_total = self.sociopolitical.get_state_value("Healthcare") + self.sociopolitical.get_state_value("Education") + self.sociopolitical.get_dimension_value("Gender Equality")
+        progress_proportional = progress_total / 3
 
-        birth_rate = linear_interpolate(0.004, 0.0008, progress_total / 3)
-        death_rate = linear_interpolate(0.003, 0.0003, progress_total / 3)
+        # Parameters for the inverted Gaussian curve
+        mu = 0.68  # Adjusted for a specific period in the timeline, around 1700 in a 2500-year timeline
+        sigma = 0.01  # Spread of the dip
 
-        if self.food_supply <= 0:
-            missing_meals = abs(self.food_supply) / self.food_per_pop()
-            death_rate *= (missing_meals / self.population) * 2.4
+        # Implementing the adjustments to ensure death rate never exceeds birth rate
+        # Applying the inverted Gaussian to decrease the death rate temporarily
+        birth_rate_adjustment = gaussian(progress_proportional, mu, sigma) * 0.1  # Smaller magnitude of adjustment
+        # Birth rate formula, ensuring it's always higher than the death rate
+        death_rate = (1 / (1 + np.exp(-(progress_proportional * 2500 - 1000) / 200))) + 0.05  # Base birth rate
+        # Death rate formula adjusted to be always lower than the birth rate
+        birth_rate = death_rate + birth_rate_adjustment - 0.1  # Ensures death rate is lower with a buffer
+        
+        # Invert
+        birth_rate = min(1, (1-birth_rate))  # Ensure birth rate never exceeds 1
+        death_rate = (1-death_rate)
+        # print(f"Birth Rate: {birth_rate} Death Rate: {death_rate}")
 
-        self.population += round(self.population * (birth_rate - death_rate),0)
+        if self.resources['food_supply'].value <= 0:
+            missing_meals = abs(self.resources['food_supply'].value) / self.food_per_pop()
+            missing_rate = min(1, missing_meals / self.population)
+            death_rate *= missing_rate * STARVATION_RATE
+
+        # Adjust down 
+        birth_rate *= .025
+        death_rate *= .023
+
+        # Fertile population
+        fertile_pop = self.population - (self.demographics['children'] + self.demographics['elderly'])
+        new_pop = round(fertile_pop * (birth_rate - death_rate), 0)
+        # print(f"new_pop: {new_pop}")
+        self.population += new_pop
+        # print(f"self.population: {humanize.intword(self.population)}")
 
     def migration(self):
         # Migration is based on the sociopolitical framework, environmental factors, and happiness
@@ -346,7 +572,7 @@ class SociologicalGroup:
         }
 
         self.technological_proficiency += stage_innovation_rate.get(self.evolutionary_stage, 0.01)
-    
+
     def simulate_societal_interactions(self, societies):
         # Interaction effects for each governance system
         governance_interaction_effects = {
@@ -417,7 +643,7 @@ class SociologicalGroup:
             self.sociopolitical.get_dimension_value("Nationalism"),
             self.sociopolitical.get_dimension_value("Egalitarianism"),
             self.sociopolitical.get_dimension_value("Participatory Governance")]
-        return self.population * (sum(proficiency) / len(proficiency))
+        return self.demographics['military'] * (sum(proficiency) / len(proficiency))
     
     def simulate_environmental_impacts(self, environment):
         stage_environmental_impact_factor = {
@@ -454,12 +680,6 @@ class SociologicalGroup:
 
         improvement = stage_healthcare_improvement.get(self.evolutionary_stage, 0)
         self.life_expectancy += improvement
-
-    def calculate_detailed_fitness(self):
-        health_score = self.life_expectancy / 100
-        environmental_sustainability = 1 - self.environmental_impact
-        fitness = self.population * health_score * environmental_sustainability * self.technological_proficiency
-        return fitness
 
     def determine_current_stage(self):
         # Placeholder function for determining the society's current evolutionary stage

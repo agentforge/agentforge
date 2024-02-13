@@ -2,18 +2,12 @@ from agentforge.ai.worldmodel.socialframework import SocialFramework
 
 # Tech tree for pre-interstellar society
 class TechnologicalFramework(SocialFramework):
-  def __init__(self):
-    super().__init__()
+    def __init__(self):
+        super().__init__()
 
-  dimensions = {
-      "Innovation Focus": [0, 1],  # Measures the adoption and sophistication of scientific methodologies.
-      "Defense": [0, 1],  # Assesses the development of technologies aimed at ensuring the safety and security of the society.
-      "Transportation": [0, 1],  # Reflects the efficiency, diversity, and reach of transportation technologies.
-      "Energy Usage": [0, 1],  # Evaluates the extent and sustainability of energy consumption and generation methods.
-      "Resource Extraction Technology": [0, 1],  # Assesses the efficiency and environmental impact of resource extraction methods.
-  }
+    dimensions = {}
 
-  states = {
+    states = {
     "Warfare": [
         {"name": "Stone Weapons and Tools", "point": 0},
         {"name": "Wooden Palisades and Earthworks", "point": 0.05},

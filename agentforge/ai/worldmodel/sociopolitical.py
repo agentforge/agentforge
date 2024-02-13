@@ -5,6 +5,43 @@ class SocioPoliticalFramework(SocialFramework):
   def __init__(self) -> None:
     super().__init__()
 
+  def military_focus(self) -> float:
+    return (self.get_dimension_value("Militaristic") + self.get_dimension_value("Compulsory Military Service")) / 2.0
+  
+  def diplomacy_focus(self) -> float:
+    return (self.get_dimension_value("Diplomatic") + self.get_dimension_value("Global Solidarity")) / 2.0
+  
+  def federalism_focus(self) -> float:
+    return (self.get_dimension_value("Centralization") + self.get_dimension_value("Participatory Governance")) / 2.0
+  
+  def state_economic_focus(self) -> float:
+    return (self.get_dimension_value("Economic Control") + self.get_dimension_value("Economic Equality") + self.get_dimension_value("State Intervention")) / 2.0
+  
+  def social_focus(self) -> float:
+    return (self.get_dimension_value("Social Welfare") + self.get_dimension_value("Egalitarianism")) / 2.0
+  
+  def rights_focus(self) -> float:
+    return (self.get_dimension_value("Rights") + self.get_dimension_value("Privacy") + self.get_dimension_value("Rule of Law") + self.get_dimension_value("Freedom of Assembly") + self.get_dimension_value("Press Freedom")) / 4.0
+
+  def security_focus(self) -> float:
+    return (self.get_dimension_value("Security") + self.get_dimension_value("Nationalism")) / 2.0
+  
+  def political_focus(self) -> float:
+    return (self.get_dimension_value("Political Freedom") + self.get_dimension_value("Democracy") + self.get_dimension_value("Civic Participation")) / 3.0
+  
+  def technological_focus(self) -> float:
+    return (self.get_dimension_value("Technological Integration") + self.get_dimension_value("Innovation and Research")) / 2.0
+  
+  # the opposite of feudalism_focus
+  def classless_focus(self) -> float:
+    return (self.get_dimension_value("Class Stratification") + self.get_dimension_value("Social Mobility")) / 2.0
+  
+  def feudalism_focus(self) -> float:
+    return (1-self.classless_focus())
+  
+  def worker_control_focus(self) -> float:
+    return (self.get_dimension_value("Worker Self-Management") + self.get_dimension_value("Collective Ownership")) / 2.0
+
   states = {
     "Ethics": [
       {"name": "Tribal Taboos and Oral Moral Codes", "point": 0},
@@ -35,40 +72,19 @@ class SocioPoliticalFramework(SocialFramework):
       {"name": "Advanced Social Support Systems with AI Integration", "point": 1}
     ],
     "Diplomacy": [
-      {"name": "Tribal Alliances", "point": 0},
+      {"name": "Tribal and Familial Alliances", "point": 0},
       {"name": "Emergence of Diplomatic Protocols among City-States", "point": 0.25},
       {"name": "Nation-State Diplomacy and International Law", "point": 0.5},
       {"name": "Global Governance and Multilateral Institutions", "point": 0.75},
       {"name": "Confederated Diplomacy across Societal Sectors", "point": 1}
     ],
-    "Immigration Policies": [
-      {"name": "Tribal Nomadism with Open Migration", "point": 0},
-      {"name": "Early Settlement Controls and Guest Worker Systems", "point": 0.25},
-      {"name": "Nation-State Citizenship and Immigration Laws", "point": 0.5},
-      {"name": "Multinational Agreements on Movement and Residency", "point": 0.75},
-      {"name": "Open and Regulated Global Mobility", "point": 1}
-    ],
-    "Military": [
-      {"name": "Tribal Warriors and Militias", "point": 0},
-      {"name": "Formation of Standing Armies and Fortifications", "point": 0.25},
-      {"name": "National Armed Forces with Advanced Weaponry", "point": 0.5},
-      {"name": "International Peacekeeping Forces", "point": 0.75},
-      {"name": "Integrated Global Defense and Security Networks", "point": 1}
-    ],
-    "Law": [
+    "Legal Systems": [
       {"name": "Tribal Customs and Oral Laws", "point": 0},
       {"name": "Codification of Laws in Early Civilizations", "point": 0.25},
       {"name": "Establishment of National Legal Systems", "point": 0.5},
       {"name": "International Legal Standards and Human Rights", "point": 0.75},
       {"name": "Advanced Global Legal Frameworks", "point": 1}
-    ],
-    "Class Stratification": [
-      {"name": "Tribal and Caste Hierarchies", "point": 0},
-      {"name": "Emergence of Social Classes and Estates", "point": 0.25},
-      {"name": "Industrial and Economic Class Divisions", "point": 0.5},
-      {"name": "Global Wealth and Opportunity Disparities", "point": 0.75},
-      {"name": "Universal Equity and Opportunity", "point": 1}
-    ],
+    ]
   }
 
   dimensions = {
@@ -101,7 +117,7 @@ class SocioPoliticalFramework(SocialFramework):
     "State Religion": [0,1],
     "Compulsory Military Service": [0,1],
     "Egalitarianism": [0,1], # Indicates a commitment to egalitarian principles: 0 for societies with significant class distinctions and 1 for those striving towards equality across various dimensions (beyond gender equality).
-    "Class Stratification": [0,1], # Measures the presence and impact of social class divisions: 1 for rigid class systems and 0 for societies with minimal or no class stratification.
+    "Class Stratification": [0,1], # Measures the presence and impact of social class divisions: 0 for rigid class systems and 1 for societies with minimal or no class stratification.
     "Technological Integration": [0,1],
     "Collective Ownership": [0,1], # Reflects the degree to which property and productive assets are owned collectively or by the state.
     "Worker Self-Management": [0,1], # Indicates the degree to which workers directly control the means of production.

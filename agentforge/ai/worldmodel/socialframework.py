@@ -19,9 +19,13 @@ class SocialFramework():
 
   def get_dimension_value(self, dimension: str) -> float:
     return self.dimension_values[dimension]
-  
+
   def values(self) -> dict:
     return list(self.dimension_values.values()) + list(self.state_values.values())
+
+  def research(self, value: float) -> None:
+    for dimension in self.state_values.keys():
+      self.state_values[dimension] += value
 
   def __str__(self) -> str:
     state_vals = {}
