@@ -18,7 +18,7 @@ class Resource:
             "demand": self.req_per_pop * population,
             "surplus": self.value - (self.req_per_pop * population),
             "deficit": (self.req_per_pop * population) - self.value,
-            "happiness": min(1.0, round(self.value / (self.req_per_pop * population),2)) # relative to demand
+            "happiness": min(1.25, round(self.value / (self.req_per_pop * population),2)) # relative to demand
         }
 
     def determine_trade_value(self, good, population1, population2):

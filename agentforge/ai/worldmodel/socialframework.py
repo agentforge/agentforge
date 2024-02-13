@@ -1,4 +1,5 @@
 import numpy as np
+import random
 
 ## Frameworks make up a society like a genetic code
 class SocialFramework():
@@ -14,6 +15,9 @@ class SocialFramework():
     for state in self.states.keys():
       self.state_values[state] = 0
 
+  def get_progress(self) -> float:
+    return sum(self.state_values.values()) / len(self.state_values)
+
   def get_state_value(self, state: str) -> dict:
     return self.state_values[state]
 
@@ -24,8 +28,15 @@ class SocialFramework():
     return list(self.dimension_values.values()) + list(self.state_values.values())
 
   def research(self, value: float) -> None:
-    for dimension in self.state_values.keys():
-      self.state_values[dimension] += value
+    key = random.choice(list(self.state_values.keys()))
+    self.state_values[key] += value
+    self.state_values[key] = min(1, self.state_values[key])
+    return key
+
+  def mutate(self, dimension: str, value: float) -> None:
+    self.dimension_values[dimension] += value
+    self.dimension_values[dimension] = min(1, self.dimension_values[dimension])
+    self.dimension_values[dimension] = max(0, self.dimension_values[dimension])
 
   def __str__(self) -> str:
     state_vals = {}

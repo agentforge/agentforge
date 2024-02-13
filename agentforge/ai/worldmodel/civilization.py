@@ -53,7 +53,7 @@ class Civilization(gym.Env):
         self.analysis_engine = analysis_engine
 
         self.action_space = spaces.Discrete(9)  # Define your actions here
-        self.observation_space = spaces.Box(low=0, high=1, shape=(82,), dtype=np.float32)  # Define your state space here
+        self.observation_space = spaces.Box(low=0, high=1, shape=(74,), dtype=np.float32)  # Define your state space here
         if species:
             self.create(species)
             self.state = self.get_state()  # Example initialization
@@ -73,6 +73,9 @@ class Civilization(gym.Env):
         self.counters(action)
         # Implement action logic, state transition, and reward calculation
         # Example: self.state, reward, done, info = self.transition(action)
+        if len(self.societies) == 0:
+            return self.state, 0, True, False, {}
+
         society = self.societies[self.society_idx]
         self.environment = society.run_epoch(action, self.societies, self.year, self.season, self.environment)
         if action == 6: # war
@@ -81,8 +84,8 @@ class Civilization(gym.Env):
 
         done = False
         truncated = False
-
-        self.analysis_engine.add(self.societies[self.society_idx].name, self.year, self.societies[self.society_idx].population)
+        society_name = self.societies[self.society_idx].name
+        self.analysis_engine.add(society_name, self.year, self.societies[self.society_idx].population)
 
         if society.population <= 5: # a society has died out
             self.societies.remove(society)

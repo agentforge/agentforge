@@ -75,12 +75,12 @@ class SocietyNamingSystem:
             for l in lex:
                 if l not in self.syllables:
                     self.syllables.append(l)
-        print("Syllables : " + str(len(self.syllables)))
+        # print("Syllables : " + str(len(self.syllables)))
 
         # Calculate diversity index
         div_index = len(self.syllables) / total_syllables
         div_index_str = str(div_index)[:4]
-        print("Diversity index : " + div_index_str)
+        # print("Diversity index : " + div_index_str)
 
         # Prepare for frequency analysis
         self.size = len(self.syllables) + 1
@@ -96,8 +96,7 @@ class SocietyNamingSystem:
             self.freq[self.syllables.index(lex[len(lex) - 1])][self.size-1] += 1
         print('Frequency analysis : done!\n')
 
-    def generate_name(self, suffix):
-
+    def generate_name(self):
         # Generate society names
         num_names = 0
         society_name = ""
@@ -111,8 +110,7 @@ class SocietyNamingSystem:
                 society_name += self.syllables[initial]
                 initial = self.freq[initial].index(1)
                 length -= 1
-            society_name = "".join([society_name.capitalize(), " ", suffix])
-            names.append(society_name)
+            names.append(society_name.capitalize())
             society_name = ""
             num_names += 1
 

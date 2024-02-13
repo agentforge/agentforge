@@ -15,7 +15,7 @@ class SocioPoliticalFramework(SocialFramework):
     return (self.get_dimension_value("Centralization") + self.get_dimension_value("Participatory Governance")) / 2.0
   
   def state_economic_focus(self) -> float:
-    return (self.get_dimension_value("Economic Control") + self.get_dimension_value("Economic Equality") + self.get_dimension_value("State Intervention")) / 2.0
+    return (self.get_dimension_value("Economic Control") + self.get_dimension_value("State Intervention")) / 2.0
   
   def social_focus(self) -> float:
     return (self.get_dimension_value("Social Welfare") + self.get_dimension_value("Egalitarianism")) / 2.0
@@ -44,46 +44,76 @@ class SocioPoliticalFramework(SocialFramework):
 
   states = {
     "Ethics": [
-      {"name": "Tribal Taboos and Oral Moral Codes", "point": 0},
-      {"name": "Emergence of Religious and Philosophical Ethics", "point": 0.25},
-      {"name": "Codification of Ethical Systems in Written Laws", "point": 0.5},
-      {"name": "Development of Secular and Human Rights Ethics", "point": 0.75},
-      {"name": "Advanced Universal Ethical Systems", "point": 1}
+      {"name": "Instinctual Behavior and Early Social Norms", "point": 0.0},
+      {"name": "Tribal Taboos and Oral Moral Codes", "point": 0.11},
+      {"name": "Emergence of Religious and Philosophical Ethics", "point": 0.22},
+      {"name": "Codification of Ethical Systems in Written Laws", "point": 0.33},
+      {"name": "Humanism and the Questioning of Traditional Ethics", "point": 0.44},
+      {"name": "Development of Secular and Human Rights Ethics", "point": 0.56},
+      {"name": "Ethical Considerations of Industrial and War Ethics", "point": 0.67},
+      {"name": "Expansion of Civil Rights and Environmental Ethics", "point": 0.78},
+      {"name": "Ethical Debates on Technology and AI", "point": 0.89},
+      {"name": "Advanced Universal Ethical Systems", "point": 1.0}
     ],
     "Healthcare": [
-      {"name": "Herbal Remedies and Shamanic Practices", "point": 0},
-      {"name": "Institutionalized Medicine and Early Hospitals", "point": 0.25},
-      {"name": "Development of Modern Medicine and Public Health", "point": 0.5},
-      {"name": "Universal Healthcare Systems", "point": 0.75},
-      {"name": "Personalized Medicine and AI-enhanced Healthcare", "point": 1}
+      {"name": "Primitive Healing Practices and Rituals", "point": 0.0},
+      {"name": "Herbal Remedies and Shamanic Practices", "point": 0.11},
+      {"name": "Institutionalized Medicine and Early Hospitals", "point": 0.22},
+      {"name": "Development of Modern Medicine and Public Health", "point": 0.33},
+      {"name": "Advancements in Surgery and Anatomical Knowledge", "point": 0.44},
+      {"name": "Introduction of Sanitation and Vaccines", "point": 0.56},
+      {"name": "Universal Healthcare Systems", "point": 0.67},
+      {"name": "Biotechnological Innovations and Ethics", "point": 0.78},
+      {"name": "Integration of Digital Health and Telemedicine", "point": 0.89},
+      {"name": "Personalized Medicine and Gene Editing", "point": 1.0}
     ],
     "Education": [
-      {"name": "Oral Traditions and Apprenticeships", "point": 0},
-      {"name": "Establishment of Formal Schools and Texts", "point": 0.25},
-      {"name": "Universal Public Education and Literacy", "point": 0.5},
-      {"name": "Digital Learning Platforms and Global Access to Education", "point": 0.75},
-      {"name": "AI-enhanced Knowledge Acquisition and Skills Development", "point": 1}
+      {"name": "Knowledge Transmission through Oral Traditions", "point": 0.0},
+      {"name": "Oral Traditions and Apprenticeships", "point": 0.11},
+      {"name": "Establishment of Formal Schools and Texts", "point": 0.22},
+      {"name": "Emergence of the University and Scholar Guilds", "point": 0.33},
+      {"name": "Renaissance Humanism and the Revival of Classical Knowledge", "point": 0.44},
+      {"name": "Foundations of the Scientific Method and Academies", "point": 0.56},
+      {"name": "Universal Public Education and Literacy", "point": 0.67},
+      {"name": "Expansion of Higher Education and Research", "point": 0.78},
+      {"name": "Digital Learning Platforms and Global Access", "point": 0.89},
+      {"name": "AI-enhanced Knowledge Acquisition and Skills Development", "point": 1.0}
     ],
     "Social Support": [
-      {"name": "Family and Tribe-based Support Systems", "point": 0},
-      {"name": "Community and Religious Support Networks", "point": 0.25},
-      {"name": "State Welfare and Social Security Systems", "point": 0.5},
-      {"name": "Universal Basic Income and Social Services", "point": 0.75},
-      {"name": "Advanced Social Support Systems with AI Integration", "point": 1}
+      {"name": "Support Within Hunter-Gatherer Bands", "point": 0.0},
+      {"name": "Family and Tribe-based Support Systems", "point": 0.11},
+      {"name": "Community and Religious Support Networks", "point": 0.22},
+      {"name": "Feudal Obligations and Charitable Alms", "point": 0.33},
+      {"name": "Guilds and Mutual Aid Societies", "point": 0.44},
+      {"name": "State Welfare and Social Security Systems", "point": 0.56},
+      {"name": "Development of Modern Welfare States", "point": 0.67},
+      {"name": "Emergence of Non-Governmental Organizations", "point": 0.78},
+      {"name": "Universal Basic Income and Social Services", "point": 0.89},
+      {"name": "Advanced Social Support Systems with AI Integration", "point": 1.0}
     ],
     "Diplomacy": [
-      {"name": "Tribal and Familial Alliances", "point": 0},
-      {"name": "Emergence of Diplomatic Protocols among City-States", "point": 0.25},
-      {"name": "Nation-State Diplomacy and International Law", "point": 0.5},
-      {"name": "Global Governance and Multilateral Institutions", "point": 0.75},
-      {"name": "Confederated Diplomacy across Societal Sectors", "point": 1}
+      {"name": "Inter-Tribal Communications and Alliances", "point": 0.0},
+      {"name": "Tribal and Familial Alliances", "point": 0.11},
+      {"name": "Emergence of Diplomatic Protocols among City-States", "point": 0.22},
+      {"name": "Medieval Treaties and Papal Mediation", "point": 0.33},
+      {"name": "Diplomatic Missions and Resident Ambassadors", "point": 0.44},
+      {"name": "Nation-State Diplomacy and International Law", "point": 0.56},
+      {"name": "Colonialism, Imperialism, and Global Exploration", "point": 0.67},
+      {"name": "Creation of International Organizations", "point": 0.78},
+      {"name": "Global Governance and Multilateral Institutions", "point": 0.89},
+      {"name": "Confederated Diplomacy across Societal Sectors", "point": 1.0}
     ],
     "Legal Systems": [
-      {"name": "Tribal Customs and Oral Laws", "point": 0},
-      {"name": "Codification of Laws in Early Civilizations", "point": 0.25},
-      {"name": "Establishment of National Legal Systems", "point": 0.5},
-      {"name": "International Legal Standards and Human Rights", "point": 0.75},
-      {"name": "Advanced Global Legal Frameworks", "point": 1}
+      {"name": "Pre-Legal Societal Norms and Conflict Resolution", "point": 0.0},
+      {"name": "Tribal Customs and Oral Laws", "point": 0.11},
+      {"name": "Codification of Laws in Early Civilizations", "point": 0.22},
+      {"name": "Medieval Legal Traditions and Canon Law", "point": 0.33},
+      {"name": "Development of National Legal Codes", "point": 0.44},
+      {"name": "Codification and Standardization of Laws", "point": 0.56},
+      {"name": "Establishment of Constitutional Democracies", "point": 0.67},
+      {"name": "International Legal Standards and Human Rights", "point": 0.78},
+      {"name": "Supranational Courts and Transnational Law", "point": 0.89},
+      {"name": "Advanced Global Legal Frameworks", "point": 1.0}
     ]
   }
 
@@ -106,10 +136,7 @@ class SocioPoliticalFramework(SocialFramework):
     "Isolationism": [0,1],
     "Nationalism": [0,1],
     "Militaristic": [0,1],
-    "Economic Control": [0,1],
     "Open Borders": [0,1],
-    "Education System": [0,1],
-    "Healthcare System": [0,1],
     "Property Ownership": [0,1],
     "Freedom of Assembly": [0,1],
     "Press Freedom": [0,1],
@@ -121,11 +148,7 @@ class SocioPoliticalFramework(SocialFramework):
     "Technological Integration": [0,1],
     "Collective Ownership": [0,1], # Reflects the degree to which property and productive assets are owned collectively or by the state.
     "Worker Self-Management": [0,1], # Indicates the degree to which workers directly control the means of production.
-    "State Intervention": [0,1], # The extent of state involvement in the economy and social services.
-    "Economic Equality": [0,1], # Reflects the degree of income and wealth equality enforced by the government.
-    "Autarky": [0,1], # The degree to which a society is self-sufficient and minimizes reliance on external entities.
     "Merit-based Advancement": [0,1], # Reflects the degree to which advancement is based on merit, skill, and achievement.
-    "Innovation Encouragement": [0,1], # Focus on incentives and support for technological and scientific advancement.
     "Public Commons": [0,1], # Extent to which resources are managed as public commons rather than private property.
     "Historical Continuity": [0,1], # The extent to which governance structures are rooted in historical and traditional precedents.
     "Ideological Enforcement": [0,1], # The extent to which governments enforce a particular ideology or set of beliefs.
