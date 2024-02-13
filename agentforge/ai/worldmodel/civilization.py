@@ -8,7 +8,7 @@ from agentforge.ai.worldmodel.species import Species
 import numpy as np
 from collections import defaultdict
 from agentforge.utils import logger
-from agentforge.utils.timeseries import TimeSeriesPlotter
+from agentforge.utils.timeseries import TimeSeriesPlotterManager
 
 NUM_GROUPS_AT_START = 10
 
@@ -31,7 +31,7 @@ class CivilizationRunner():
 ### the sociological history of this planet and historical events
 class Civilization(gym.Env):
     metadata = {'render.modes': ['human']}
-    resource_total = 100000000
+    resource_total = 1000000000
 
     def __init__(self, species=None, analysis_engine=None) -> None:
         super(Civilization, self).__init__()    
@@ -85,7 +85,8 @@ class Civilization(gym.Env):
         done = False
         truncated = False
         society_name = self.societies[self.society_idx].name
-        self.analysis_engine.add(society_name, self.year, self.societies[self.society_idx].population)
+        self.analysis_engine.add("population", society_name, self.year, self.societies[self.society_idx].population)
+        self.analysis_engine.add("technology", society_name, self.year, self.societies[self.society_idx].technology.get_progress())
 
         if society.population <= 5: # a society has died out
             self.societies.remove(society)
@@ -97,7 +98,7 @@ class Civilization(gym.Env):
         # Setup for the next step
         self.society_idx += 1
         if self.society_idx >= len(self.societies):
-            self.societies = sorted(self.societies, key=lambda x: x.initiative(), reverse=True)
+            self.societies = sorted(self.societies, key=lambda x: x.initiative() * np.random.random(), reverse=True)
             self.society_idx = 0
             # Replinish environmental resources
             for key, resource in self.environment.items():
@@ -135,7 +136,7 @@ class Civilization(gym.Env):
     @classmethod
     def run(cls, species_ids=["a104d248-3df1-49ac-ae15-543e8e01168f"]):     
         # Set the environment and civilization
-        analysis_engine = TimeSeriesPlotter()
+        analysis_engine = TimeSeriesPlotterManager(["population", "technology"])
         civ = CivilizationRunner(species_ids, analysis_engine)
 
         # Vectorize the environment
@@ -144,7 +145,7 @@ class Civilization(gym.Env):
 
         # Run the civilization
         model = PPO("MlpPolicy", env, verbose=1)
-        model.learn(total_timesteps=100000)
+        model.learn(total_timesteps=200000)
 
         # Save the trained model
         model.save("civilization")

@@ -1,13 +1,30 @@
 import matplotlib.pyplot as plt
 from uuid import uuid4
 
+class TimeSeriesPlotterManager:
+    def __init__(self, keys = []) -> None:
+        self.keys = keys
+        for key in keys:
+            setattr(self, key, TimeSeriesPlotter(key))
+
+    def get(self, key):
+        return getattr(self, key)
+
+    def add(self, key, series_name, time, value):
+        getattr(self, key).add(series_name, time, value)
+
+    def show(self):
+        for key in self.keys:
+            getattr(self, key).show()
+
 class TimeSeriesPlotter:
-    def __init__(self):
+    def __init__(self, name) -> None:
         """
         Initializes the TimeSeriesPlotter class with an empty dictionary to store time series data.
         The dictionary structure is now {series_name: {'times': [int], 'values': [float]}}.
         """
         self.time_series_data = {}
+        self.name = name
 
     def add(self, series_name, time, value):
         """
@@ -36,12 +53,12 @@ class TimeSeriesPlotter:
         
         plt.title('Time Series Data', fontsize=50)  # Adjusted title size
         plt.xlabel('Time', fontsize=40)  # Adjusted xlabel size
-        plt.ylabel('Value', fontsize=40)  # Adjusted ylabel size
+        plt.ylabel(self.name, fontsize=40)  # Adjusted ylabel size
         plt.xticks(fontsize=30)  # Adjusted xticks size
         plt.yticks(fontsize=30)  # Adjusted yticks size
         plt.legend(fontsize=40)  # Adjusted legend size
         if uuid is None:
           uuid = str(uuid4())
-        print(f"Saving /app/cache/worldgen/{uuid}.png")
-        plt.savefig(f"/app/cache/worldgen/{uuid}.png")
+        print(f"/app/cache/worldgen/{self.name}-{uuid}.png")
+        plt.savefig(f"/app/cache/worldgen/{self.name}-{uuid}.png")
 

@@ -16,13 +16,13 @@ from noise import pnoise1
 BASE_POP_RESOURCE_REQUIREMENT = 10
 MIN_POP_REQUIREMENTS = 5
 RESOURCE_GATHERING_MULTIPLIER = 1
-FOOD_RESOURCE_GATHERING_MULTIPLIER = 200
+FOOD_RESOURCE_GATHERING_MULTIPLIER = 100
 BASE_HOUSE_COST = 100
 BASE_CIVIC_BUILDING_COST = 30
 HOUSING_LOSS_RATE = 0.001
 ARTIFACT_LOSS_RATE = 0.01
 FOOD_LOSS_RATE = 0.05
-BASE_RESEARCH_RATE = 0.025
+BASE_RESEARCH_RATE = 0.00000005
 WORKERS_PER_HOUSE = 5
 STARVATION_RATE = 0.005
 BASE_ARTIFACTS_PER_ARTISAN = 2.0
@@ -73,6 +73,7 @@ class SociologicalGroup:
         self.corruption = 0
         self.happiness = 0
         self.disease = 0
+        self.missing_meals = 0
         self.war_action = {}
         self.trade_action = {}
         self.research_action = {}
@@ -153,7 +154,7 @@ class SociologicalGroup:
             total_requirement *= 0.8
         if self.values.has("Food Cultivation'"):
             total_requirement *= 0.8
-        return max(MIN_POP_REQUIREMENTS, total_requirement)
+        return total_requirement
     
     # Gather resources, hunter-gatherer absolute min = 0.2
     def food_gathered_per_pop(self):
@@ -169,13 +170,13 @@ class SociologicalGroup:
     def gather_food(self, **kwargs):
         food_gathered_per_pop = self.food_gathered_per_pop()
         # Technology dictates how much of the environment we can capture
-        food_supply_capturable = kwargs['environment']['food_supply'] * max(self.technology.get_state_value("Agriculture and Pastoralism"), 0.1)
-        food_gathered = min(self.demographics['workers'] * food_gathered_per_pop, food_supply_capturable)
+        # food_supply_capturable = kwargs['environment']['food_supply'] * max(self.technology.get_state_value("Agriculture and Pastoralism"), 0.1)
+        food_gathered = self.demographics['workers'] * food_gathered_per_pop
         self.resources['food_supply'] += food_gathered
         kwargs['environment']['food_supply'] -= food_gathered
-        # print(f"FOOD SUPPLY NOW AT: {kwargs['environment']['food_supply']} and {food_gathered} gathered ({food_gathered_per_pop} per pop). by {self.demographics['workers']} workers with {food_supply_capturable} capturable.")
+        print(f"FOOD SUPPLY NOW AT: {kwargs['environment']['food_supply']} and {food_gathered} gathered ({food_gathered_per_pop} per pop). by {self.demographics['workers']} workers.")
         return kwargs['environment']
-    
+
     # Gathering resources needed, manually or through mining --  iron/wood/stone
     def resource_gathering(self, **kwargs):
         resource_acquisition_efficiency = self.economy.get_state_value("Resource Acquisition Methods") + 0.1
@@ -219,7 +220,7 @@ class SociologicalGroup:
     def research(self, **kwargs):
         # Pick a random technology to research
         tech = random.choice([self.technology, self.sociopolitical, self.economy, self.culture])
-        research_rate = BASE_RESEARCH_RATE * self.species.get_trait("Intelligence") * self.demographics['scholars']
+        research_rate = BASE_RESEARCH_RATE * self.species.get_trait("Intelligence") * self.demographics['scholars'] * self.sociopolitical.get_dimension_value("Technological Integration") * self.sociopolitical.get_dimension_value("Innovation and Research")
         name = tech.research(research_rate)
         self.research_action = {
             "year": self.year,
@@ -462,22 +463,13 @@ class SociologicalGroup:
         self.resources['housing'] -= HOUSING_LOSS_RATE
         self.resources['artifacts'] -= self.resources['artifacts'].value * ARTIFACT_LOSS_RATE
 
-        if self.resources['food_supply'].value <= 0:
-            missing_meals = abs(self.resources['food_supply'].value) / self.food_per_pop()
-            missing_rate = min(1, missing_meals / self.population)
-            death_rate = missing_rate * STARVATION_RATE
-            self.starvation_event = {
-                "year": self.year,
-                "season": self.season,
-                "missing_meals": missing_meals,
-                "missing_rate": missing_rate
-            }
-            self.population -= math.ceil(self.population * death_rate)
-
         # Food is consumed
         self.resources['food_supply'] -= self.population * self.food_per_pop()
         self.resources['food_supply'] -= self.resources['food_supply'].value * FOOD_LOSS_RATE
 
+        if self.resources['food_supply'].value <= 0:
+            self.missing_meals += abs(self.resources['food_supply'].value) / self.food_per_pop()
+            self.resources['food_supply'].value = 0
 
     # Societal drift over time base on actions
     def mutate_society(self, action):
@@ -619,11 +611,11 @@ class SociologicalGroup:
 
         # Parameters for the inverted Gaussian curve
         mu = 0.68  # Adjusted for a specific period in the timeline, around 1700 in a 2500-year timeline
-        sigma = 0.01  # Spread of the dip
+        sigma = 0.20  # Spread of the dip
 
         # Implementing the adjustments to ensure death rate never exceeds birth rate
         # Applying the inverted Gaussian to decrease the death rate temporarily
-        birth_rate_adjustment = gaussian(progress_proportional, mu, sigma) * 0.1  # Smaller magnitude of adjustment
+        birth_rate_adjustment = gaussian(progress_proportional, mu, sigma) * 0.01  # Smaller magnitude of adjustment
         # Birth rate formula, ensuring it's always higher than the death rate
         death_rate = (1 / (1 + np.exp(-(progress_proportional * 2500 - 1000) / 200))) + 0.05  # Base birth rate
         # Death rate formula adjusted to be always lower than the birth rate
@@ -635,8 +627,27 @@ class SociologicalGroup:
         # print(f"Birth Rate: {birth_rate} Death Rate: {death_rate}")
 
         # Adjust down 
-        birth_rate *= .08
-        death_rate *= .07
+        birth_rate *= .015
+        death_rate *= .013
+
+        # Adjust for happiness
+        print(f"{birth_rate} *= max({self.happiness} + 0.1, 1.0) == {max(self.happiness + 0.1, 1.0)}")
+        birth_rate *= max(self.happiness + 0.1, 1.0)
+
+        if self.missing_meals > 0:
+            missing_rate = min(1, self.missing_meals / self.population)
+            death_rate = missing_rate * STARVATION_RATE
+            self.starvation_event = {
+                "year": self.year,
+                "season": self.season,
+                "missing_meals": self.missing_meals,
+                "missing_rate": missing_rate,
+                "death_rate": death_rate,
+                "dead": math.ceil(self.population * death_rate),
+                "food_supply": self.resources['food_supply'].value,
+            }
+            self.population -= math.ceil(self.population * death_rate)
+            self.missing_meals = 0
 
         # Fertile population
         fertile_pop = self.population - (self.demographics['children'] + self.demographics['elderly'])
