@@ -79,7 +79,7 @@ class Civilization(gym.Env):
         society = self.societies[self.society_idx]
         self.environment = society.run_epoch(action, self.societies, self.year, self.season, self.environment)
         if action == 6: # war
-            self.wars.append(society.war_action)
+            self.wars.append(society.last_effect)
         reward = self.societies[self.society_idx].fitness(action, self.societies, self.year, self.season)
 
         done = False
@@ -88,12 +88,16 @@ class Civilization(gym.Env):
         self.analysis_engine.add("population", society_name, self.year, self.societies[self.society_idx].population)
         self.analysis_engine.add("technology", society_name, self.year, self.societies[self.society_idx].technology.get_progress())
 
+        # Log action for this society
+        society.action_history.add(action, reward, self.year, self.season, society.last_effect)
+
         if society.population <= 5: # a society has died out
             self.societies.remove(society)
+            society.collapse = (self.year, self.season)
             self.dead_societies.append(society)
 
         if len(self.societies) <= 1: # We have a winner
-            done = True
+            done = True        
 
         # Setup for the next step
         self.society_idx += 1

@@ -1,3 +1,4 @@
+import numpy as np
 from agentforge.ai.worldmodel.socialframework import SocialFramework
 
 ### The Sociopolitical class describes the sociopolitical framework of a society
@@ -41,6 +42,58 @@ class SocioPoliticalFramework(SocialFramework):
   
   def worker_control_focus(self) -> float:
     return (self.get_dimension_value("Worker Self-Management") + self.get_dimension_value("Collective Ownership")) / 2.0
+
+  @staticmethod
+  def align_dimensions(dim1, dim2):
+      """Align two sets of dimensions, returning arrays of matched dimensions."""
+      common_keys = set(dim1.keys()) & set(dim2.keys())
+      dim1_aligned = np.array([dim1[key] for key in common_keys])
+      dim2_aligned = np.array([dim2[key] for key in common_keys])
+      return dim1_aligned, dim2_aligned
+
+  def calculate_alliance_factor(self, other):
+      contributing_factors = ['Diplomatic', 'Global Solidarity', 'Environmental Sustainability', 'Open Borders', 'Religious Tolerance', 'Information Freedom', 'Political Freedom', 'Social Welfare']
+      detracting_factors = ['Nationalism', 'Militaristic', 'Isolationism']
+
+      # Extract and align dimensions for contributing and detracting factors
+      contrib_dim1, contrib_dim2 = self.align_dimensions({k: self.dimension_values[k] for k in contributing_factors if k in self.dimension_values},
+                                                          {k: other.dimension_values[k] for k in contributing_factors if k in other.dimension_values})
+      
+      detract_dim1, detract_dim2 = self.align_dimensions({k: self.dimension_values[k] for k in detracting_factors if k in self.dimension_values},
+                                                          {k: other.dimension_values[k] for k in detracting_factors if k in other.dimension_values})
+
+      # Calculate the base similarity and detracting factor using NumPy operations
+      if contrib_dim1.size > 0:  # Ensure arrays are not empty
+          base_similarity = np.mean(1 - np.abs(contrib_dim1 - contrib_dim2))
+      else:
+          base_similarity = 0
+
+      if detract_dim1.size > 0:
+          detracting_factor = np.mean(np.abs(detract_dim1 - detract_dim2))
+      else:
+          detracting_factor = 0
+
+      adjusted_similarity = base_similarity - detracting_factor * 0.5
+
+      # Final alliance factor calculation
+      return adjusted_similarity
+  
+   
+  def calculate_war_potential(self, other, wealth, war_weariness, other_wealth, other_war_weariness):
+      """Calculate the war potential against another society."""
+      # Simplified formula considering directly relevant factors
+      self_potential = (self.dimension_values['Militaristic'] + self.dimension_values['Technological Integration'] +
+                        wealth - war_weariness + (self.dimension_values['Compulsory Military Service'] * 0.5))
+      other_potential = (other.dimension_values['Militaristic'] + other.dimension_values['Technological Integration'] +
+                          other_wealth - other_war_weariness + (other.dimension_values['Compulsory Military Service'] * 0.5))
+      
+      # Adjusting for diplomatic stance and potential alliances
+      diplomatic_adjustment = self.dimension_values['Diplomatic'] - other.dimension_values['Diplomatic']
+      
+      # Calculating the net war potential difference
+      net_war_potential = self_potential - other_potential + diplomatic_adjustment
+      
+      return net_war_potential
 
   states = {
     "Ethics": [

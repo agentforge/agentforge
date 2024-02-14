@@ -1,4 +1,4 @@
-import random, math, humanize
+import random, math, humanize, pprint
 import numpy as np
 from agentforge.utils import logger
 from agentforge.ai.worldmodel.species import Species
@@ -9,6 +9,8 @@ from agentforge.ai.worldmodel.economics import EconomicFramework
 from agentforge.ai.worldmodel.values import ValueFramework
 from agentforge.ai.worldmodel.designation import SocietyNamingSystem
 from agentforge.ai.worldmodel.resource import Resource
+from agentforge.ai.worldmodel.action import ActionHistoryManager
+from agentforge.ai.worldmodel.reputation import ReputationManager
 from agentforge.ai.worldmodel.government import determine_governance_type
 from noise import pnoise1
 
@@ -50,14 +52,18 @@ class SociologicalGroup:
         # Identification
         self.species = species
         self.designator = SocietyNamingSystem()
+        self.action_history = ActionHistoryManager()
         self.sociopolitical = SocioPoliticalFramework()
         self.technology = TechnologicalFramework()
         self.economy = EconomicFramework()
         self.culture = CulturalFramework()
+        self.reputation = ReputationManager()
+        # Store reputation with other societies
         self.values = ValueFramework(species.species_data["Life Form Attributes"])
         self.government = determine_governance_type(self.sociopolitical.dimension_values, 'Prehistoric') # Start at hunter-gatherer level
         self.era = 'Prehistoric'
         self.name = self.designator.generate_name()
+        self.collapse = None
         self.year = 0
 
         # Resource/Economics stand-in
@@ -74,9 +80,6 @@ class SociologicalGroup:
         self.happiness = 0
         self.disease = 0
         self.missing_meals = 0
-        self.war_action = {}
-        self.trade_action = {}
-        self.research_action = {}
         self.starvation_event = {}
 
         # Social Constraints and demographics
@@ -97,13 +100,11 @@ class SociologicalGroup:
             {humanize.intword(self.resources['artifacts'])}
             {humanize.intword(self.resources['resource_pool'])}
             Starvation Event: {self.starvation_event}
+            Collapse: {self.collapse}
             Values: {self.values.values}
             Ecological Role: {self.species.role}
-            Last War Action: {self.war_action}
-            Last Trade Action: {self.trade_action}
-            Last Research Action: {self.research_action}
             Technology: {self.technology.state_values}
-            Sociopolitical: {self.sociopolitical.state_values}
+        Sociopolitical: {pprint.pformat({k: (round(v, 2) if isinstance(v, float) else v) for k, v in self.sociopolitical.dimension_values.items()})}
             Demographics: {self.demographics}
             """
 
@@ -114,7 +115,8 @@ class SociologicalGroup:
         year_change = self.year != current_year
         self.year = current_year
         self.season = current_season
-
+        self.last_effect = {}
+        
         self.demographics = self.generate_demographic_distribution(self.population)
         self.actions[action](self, civs=civs, year=current_year, season=current_season, environment=environment)
         self.adjust_supplies()
@@ -136,6 +138,9 @@ class SociologicalGroup:
         # Wealth is based on the amount of resources and artifacts +1 to avoid division by zero
         resource_values = [i.value for i in self.resources.values() if i.tradeable]
         return sum(resource_values) + self.population + 1.0
+    
+    def war_weariness(self):
+        pass
 
     def observe(self):
         # First determine the amount of resources needed based on the population
@@ -174,7 +179,7 @@ class SociologicalGroup:
         food_gathered = self.demographics['workers'] * food_gathered_per_pop
         self.resources['food_supply'] += food_gathered
         kwargs['environment']['food_supply'] -= food_gathered
-        print(f"FOOD SUPPLY NOW AT: {kwargs['environment']['food_supply']} and {food_gathered} gathered ({food_gathered_per_pop} per pop). by {self.demographics['workers']} workers.")
+        # print(f"FOOD SUPPLY NOW AT: {kwargs['environment']['food_supply']} and {food_gathered} gathered ({food_gathered_per_pop} per pop). by {self.demographics['workers']} workers.")
         return kwargs['environment']
 
     # Gathering resources needed, manually or through mining --  iron/wood/stone
@@ -222,7 +227,8 @@ class SociologicalGroup:
         tech = random.choice([self.technology, self.sociopolitical, self.economy, self.culture])
         research_rate = BASE_RESEARCH_RATE * self.species.get_trait("Intelligence") * self.demographics['scholars'] * self.sociopolitical.get_dimension_value("Technological Integration") * self.sociopolitical.get_dimension_value("Innovation and Research")
         name = tech.research(research_rate)
-        self.research_action = {
+        self.last_effect = {
+            "type": "research",
             "year": self.year,
             "season": kwargs["season"],
             "target": name,
@@ -231,7 +237,13 @@ class SociologicalGroup:
 
     ### DIPLOMATIC FUNCTIONS ###
     def ally(self, **kwargs):
-        pass
+        for civ in kwargs['civs']:
+            if civ == self:
+                continue
+            alliance_potential = self.sociopolitical.calculate_alliance_factor(civ.sociopolitical)
+            similarity = self.sociopolitical.calculate_similarity(civ.sociopolitical)
+            logger.info(f"alliance_potential: {alliance_potential} and similarity: {similarity}")
+
 
     ### TRADING RESOURCES ###
     def trade(self, **kwargs):
@@ -306,7 +318,8 @@ class SociologicalGroup:
         society.resources[matching_our_needs[0]] -= needs
         self.resources[matching_our_surplus[0]] -= cost
         society.resources[matching_our_surplus[0]] += cost
-        self.trade_action = {
+        self.last_effect = {
+            "type": "trade",
             "year": self.year,
             "season": kwargs["season"],
             "target": society.name,
@@ -337,13 +350,15 @@ class SociologicalGroup:
         target = np.random.choice(possible_war_targets, p=normalized_war_probabilities)
         resolution = self.resolve_conflict(target)
         spoils = self.war_spoils(resolution, target)
-        self.war_action = {
+        self.last_effect = {
+            "type": "war",
             "year": kwargs['year'],
             "target": target.name,
             "resolution": resolution,
             "season": kwargs["season"],
             "spoils": spoils,
         }
+        target.reputation.update_reputation(self.name, "war", -0.2)
 
     def resolve_conflict(self, other_society):
         total_war_power = self.war_power() + other_society.war_power()
@@ -431,20 +446,20 @@ class SociologicalGroup:
         happiness_boost = 0.0
 
         # calculate the war weariness/happiness
-        if "resolution" in self.war_action and self.war_action["year"] == year and self.war_action["season"] == season:
+        if "type" in self.last_effect and self.last_effect["type"] == "war" and self.last_effect["year"] == year and self.last_effect["season"] == season:
             proportion = self.demographics['military'] / self.population
-            if self.war_action["resolution"] > 0.5:
+            if self.last_effect["resolution"] > 0.5:
                 happiness_boost += 0.1 * self.sociopolitical.get_dimension_value("Militaristic") * proportion
             else:
                 happiness_boost += -0.3 * (1-self.sociopolitical.get_dimension_value("Militaristic")) * proportion
 
         # calculate trade action happiness boost
-        if "year" in self.trade_action and self.trade_action["year"] == year and self.trade_action["season"] == season:
+        if "type" in self.last_effect and self.last_effect["type"] == "trade" and self.last_effect["year"] == year and self.last_effect["season"] == season:
             proportion = self.demographics['merchants'] / self.population
             happiness_boost += 0.1 * self.economy.get_dimension_value("Economic Equality") * proportion
 
         # calculate research action happiness boost
-        if "year" in self.research_action and self.research_action["year"] == year and self.research_action["season"] == season:
+        if "type" in self.last_effect and self.last_effect["type"] == "research" and self.last_effect["year"] == year and self.last_effect["season"] == season:
             proportion = self.demographics['scholars'] / self.population
             happiness_boost += 0.1 * self.sociopolitical.get_dimension_value("Innovation and Research") * proportion
 
@@ -631,7 +646,7 @@ class SociologicalGroup:
         death_rate *= .013
 
         # Adjust for happiness
-        print(f"{birth_rate} *= max({self.happiness} + 0.1, 1.0) == {max(self.happiness + 0.1, 1.0)}")
+        # print(f"{birth_rate} *= max({self.happiness} + 0.1, 1.0) == {max(self.happiness + 0.1, 1.0)}")
         birth_rate *= max(self.happiness + 0.1, 1.0)
 
         if self.missing_meals > 0:
@@ -665,8 +680,7 @@ class SociologicalGroup:
         if self.sociopolitical.get_dimension_value("Militaristic") < 0.25:
             return 0
 
-        # War probability is based on the sociopolitical framework and technological proficiency
-        return society.wealth() / society.population
+        self.sociopolitical.calculate_war_potential(society.sociopolitical, self.wealth(), self.war_weariness(), society.wealth(), society.war_weariness())
 
     def simulate_societal_interactions(self, societies):
         # Interaction effects for each governance system

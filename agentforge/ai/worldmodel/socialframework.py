@@ -26,6 +26,12 @@ class SocialFramework():
 
   def values(self) -> dict:
     return list(self.dimension_values.values()) + list(self.state_values.values())
+  
+  def calculate_similarity(self, other):
+      """Calculate similarity based on sociological dimensions between self and another society."""
+      dimensions = list(self.dimension_values.keys())
+      similarity = sum([1 - abs(self.dimension_values[dim] - other.dimension_values[dim]) for dim in dimensions]) / len(dimensions)
+      return similarity
 
   def research(self, value: float) -> None:
     key = random.choice(list(self.state_values.keys()))
