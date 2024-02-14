@@ -54,6 +54,11 @@ class ValueFramework:
         'Social Cooperation': ['Collectivism', 'Cooperative Frameworks']
     }
 
+    economic_mods = {
+        "Industrial Might": [("State Intervention", 0.4), ("Economic Control", 0.2), ("Autarky", 0.1)],
+        "Waste Managers": [("State Intervention", 0.2)],
+    }
+
     sociopolitical_mods = {
         "Stature Valorization": [
             ["Social Mobility", -0.1],
@@ -88,7 +93,7 @@ class ValueFramework:
         ],
         "Warrior Culture": [
             ["Militaristic", 0.3],
-            ["Nationalism", 0.2],
+            ["Merit-based Advancement", 0.2],
         ],
         "Skillfulness": [
             ["Worker Self-Management", 0.1],
@@ -110,11 +115,13 @@ class ValueFramework:
         ],
         "Hierarchical Leadership": [
             ["Centralization", 0.4],
-            ["Class Stratification", 0.3]
+            ["Class Stratification", 0.3],
+            ["Rule of Law", 0.4]
         ],
         "Charismatic Dominance": [
             ["Centralization", 0.1],
-            ["Class Stratification", 0.1]
+            ["Class Stratification", 0.1],
+            ["State Religion", 0.4]
         ],
         "Cunning": [
             ["Diplomatic", 0.1],
@@ -199,36 +206,35 @@ class ValueFramework:
         "Lifespan Extension": [
             ["Class Stratification", 0.3]
         ],
-        "Aging Attitudes": [],
-        "Fertility Norms": [],
-        "Birthrate Control": [],
-        "Perceptual Roles": [],
-        "Sensory Enrichment": [],
-        "Industrial Might": [("Environmental Sustainability", -0.2), ("Innovation and Research", 0.2)],
-        "Waste Managers": [("Environmental Sustainability", 0.2)],
-        "Ecological Defenders": [("Environmental Sustainability", 0.3)],
+        "Aging Attitudes": [("Ideological Enforcement", 0.6), ("Historical Continuity", 0.4)],
+        "Fertility Norms": [("Gender Equality", 0.6)],
+        "Birthrate Control": [("Gender Equality", -0.4)],
+        "Perceptual Roles": [("Privacy", -0.2)],
+        "Sensory Enrichment": [("Press Freedom", 0.4)],
+        "Ecological Defenders": [("Environmental Sustainability", 0.3), ("Rule of Law", -0.2), ("Civic Participation", 0.4)],
         "Eco-Integration": [("Environmental Sustainability", 0.4)],
         "Resource Efficiency": [("Environmental Sustainability", 0.2)],
-        "Stoicism": [],
+        "Stoicism": [("Social Welfare", 0.2), ("Egalitarianism", 0.4), ("Public Commons", 0.2)],
         "Aerial Mobility": [("Technological Integration", 0.1)],
         "Vertical Architecture": [("Environmental Sustainability", 0.1)],
         "Disease Resistance": [("Social Welfare", 0.1)],
         "Pathogen Management": [("Social Welfare", 0.1)],
-        "Dietary Diversity": [],
-        "Food Cultivation": [("Environmental Sustainability", 0.2)],
+        "Dietary Diversity": [("Global Solidarity", 0.4), ("Diplomatic", 0.1)],
+        "Food Cultivation": [("Urbanization", -0.2)],
         "Breathing Adaptation": [],
         "Oxygen Management": [],
         "Visual Culture": [],
         "Colorful Culture": [],
         "Predatory Valor": [("Militaristic", 0.2)],
-        "Combat Strategies": [("Militaristic", 0.3)],
-        "Poison Immunity": [("Social Welfare", 0.1)],
+        "Combat Strategies": [("Compulsory Military Service", 0.3)],
+        "Poison Immunity": [("Religious Tolerance", 0.1)],
+        "Waste Managers": [("Environmental Sustainability", 0.2)],
         "Toxicology Knowledge": [("Innovation and Research", 0.1)],
         "Chemical Warfare": [("Militaristic", 0.2)],
         "Toxin Utilization": [("Innovation and Research", 0.1)],
         "Wayfinding Traditions": [],
-        "Migration": [],
+        "Migration": [("Urbanization", -0.4), ("Open Borders", 0.4)],
         "Exploration": [("Innovation and Research", 0.2)],
-        "Collectivism": [("Social Welfare", 0.1), ("Egalitarianism", 0.2)],
-        "Cooperative Frameworks": [("Social Welfare", 0.2), ("Participatory Governance", 0.2)]
+        "Collectivism": [("Collective Ownership", 0.8), ("Worker Self-Management", 0.6), ("Public Commons", 0.4)],
+        "Cooperative Frameworks": [("Class Stratification", -0.4), ("Participatory Governance", 0.2), ("Property Ownership", -0.4)]
     }

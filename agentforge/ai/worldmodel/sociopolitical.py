@@ -189,6 +189,7 @@ class SocioPoliticalFramework(SocialFramework):
     "Environmental Sustainability": [0,1],
     "Information Freedom": [0,1],
     "Privacy": [0,1],
+    "Urbanization": [0,1],
     "Civic Participation": [0,1],
     "Diplomatic": [0,1],
     "Isolationism": [0,1],

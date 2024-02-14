@@ -341,8 +341,10 @@ class SociologicalGroup:
     ### WAR ACTIONS ###
     def war(self, **kwargs):
         rand = np.random.rand() - self.war_manager.get_weariness()
-        if rand < self.sociopolitical.get_dimension_value("Militaristic"):
+        ethics = self.sociopolitical.get_state_value("Ethics")
+        if rand < self.sociopolitical.get_dimension_value("Militaristic") or rand < ethics:
             return # No war today, weary troops or pacifism
+        # print(f"rand: {rand} and ethics: {ethics} and weariness: {self.war_manager.get_weariness()}")
         possible_war_targets = []
         possible_war_probabilities = []
         for civ in kwargs['civs']:

@@ -9,23 +9,25 @@ import numpy as np
 from collections import defaultdict
 from agentforge.utils import logger
 from agentforge.utils.timeseries import TimeSeriesPlotterManager
+from agentforge.ai.worldmodel.generator import CivilizationGenerator
 import json
 
 NUM_GROUPS_AT_START = 10
 
 class CivilizationRunner():
   def __init__(self, species_ids=[], analysis_engine=None):
-      self.species_ids = species_ids
-      self.analysis_engine = analysis_engine
+    self.species_ids = species_ids
+    self.analysis_engine = analysis_engine
+    self.civilization_generator = CivilizationGenerator() # for llm access
 
   def make_env(self):
-      # Get DB interface and get species
-      db = interface_interactor.get_interface("db")
-      species_id = self.species_ids.pop()
-      species = Species.load(db, "species", species_id)
-      
-      # Set the environment and civilization
-      return Civilization(species, analysis_engine=self.analysis_engine)
+    # Get DB interface and get species
+    db = interface_interactor.get_interface("db")
+    species_id = self.species_ids.pop()
+    species = Species.load(db, "species", species_id)
+
+    # Set the environment and civilization
+    return Civilization(species, analysis_engine=self.analysis_engine)
 
 ### Encompasses sociological groups coordinated by an RL Agent that plays
 ### a game of society management through self-play to determine
@@ -54,7 +56,7 @@ class Civilization(gym.Env):
         self.analysis_engine = analysis_engine
 
         self.action_space = spaces.Discrete(9)  # Define your actions here
-        self.observation_space = spaces.Box(low=0, high=1, shape=(74,), dtype=np.float32)  # Define your state space here
+        self.observation_space = spaces.Box(low=0, high=1, shape=(75,), dtype=np.float32)  # Define your state space here
         if species:
             self.create(species)
             self.state = self.get_state()  # Example initialization
@@ -165,8 +167,10 @@ class Civilization(gym.Env):
         for society in env.envs[0].get_wrapper_attr('societies'):
             logger.info(society)
             print(society.action_history.get_stats())
+            civ.civilization_generator.generate("Terrestrial", "Forest", society.era, society.government, " ".join(society.values.values))
             # json_str = json.dumps(society.action_history.get_stats(), indent=4)
             # logger.info(json_str)
+
         logger.info(f"Wars: {len(env.envs[0].get_wrapper_attr('wars'))}")
         logger.info(f"Year: {env.envs[0].get_wrapper_attr('year')}")
         logger.info(f"Season: {env.envs[0].get_wrapper_attr('season')}")
