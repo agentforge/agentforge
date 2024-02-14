@@ -35,6 +35,20 @@ class ReputationManager:
             dict: A copy of the reputation scores dictionary.
         """
         return self.reputation_scores.copy()
+    
+
+    def tick(self, decay_factor=0.01):
+        """
+        Adjusts all reputation scores slightly towards zero, simulating the natural decay or improvement over time.
+        
+        Args:
+            decay_factor (float): The rate at which reputations decay towards neutral. Default is 0.01.
+        """
+        for society, score in self.reputation_scores.items():
+            if score > 0:
+                self.reputation_scores[society] = max(score - decay_factor, 0)
+            elif score < 0:
+                self.reputation_scores[society] = min(score + decay_factor, 0)
 
 # # Example usage
 # reputation_manager = ReputationManager()

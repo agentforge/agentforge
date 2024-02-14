@@ -11,6 +11,7 @@ from agentforge.ai.worldmodel.designation import SocietyNamingSystem
 from agentforge.ai.worldmodel.resource import Resource
 from agentforge.ai.worldmodel.action import ActionHistoryManager
 from agentforge.ai.worldmodel.reputation import ReputationManager
+from agentforge.ai.worldmodel.war import War
 from agentforge.ai.worldmodel.government import determine_governance_type
 from noise import pnoise1
 
@@ -51,15 +52,16 @@ class SociologicalGroup:
     def __init__(self, initial_population, species: Species):
         # Identification
         self.species = species
+        self.values = ValueFramework(species.species_data["Life Form Attributes"])
         self.designator = SocietyNamingSystem()
         self.action_history = ActionHistoryManager()
-        self.sociopolitical = SocioPoliticalFramework()
+        self.sociopolitical = SocioPoliticalFramework(self.values)
         self.technology = TechnologicalFramework()
         self.economy = EconomicFramework()
         self.culture = CulturalFramework()
         self.reputation = ReputationManager()
+        self.war_manager = War()
         # Store reputation with other societies
-        self.values = ValueFramework(species.species_data["Life Form Attributes"])
         self.government = determine_governance_type(self.sociopolitical.dimension_values, 'Prehistoric') # Start at hunter-gatherer level
         self.era = 'Prehistoric'
         self.name = self.designator.generate_name()
@@ -99,7 +101,11 @@ class SociologicalGroup:
             {humanize.intword(self.resources['housing'])}
             {humanize.intword(self.resources['artifacts'])}
             {humanize.intword(self.resources['resource_pool'])}
+            Last War Actions: {self.action_history.get_window(6, 5)}
+            Last Trade Actions: {self.action_history.get_window(4, 5)}
+            Last Research Actions: {self.action_history.get_window(8, 5)}
             Starvation Event: {self.starvation_event}
+            Reputation: {self.reputation.list_all_reputations()}
             Collapse: {self.collapse}
             Values: {self.values.values}
             Ecological Role: {self.species.role}
@@ -128,6 +134,8 @@ class SociologicalGroup:
         # print(self.housing)
         self.mutate_society(action)
         self.evolve_society()
+        self.war_manager.tick()
+        self.reputation.tick()
         return environment
 
     # Determines order in which societies take actions
@@ -138,9 +146,6 @@ class SociologicalGroup:
         # Wealth is based on the amount of resources and artifacts +1 to avoid division by zero
         resource_values = [i.value for i in self.resources.values() if i.tradeable]
         return sum(resource_values) + self.population + 1.0
-    
-    def war_weariness(self):
-        pass
 
     def observe(self):
         # First determine the amount of resources needed based on the population
@@ -243,7 +248,7 @@ class SociologicalGroup:
             alliance_potential = self.sociopolitical.calculate_alliance_factor(civ.sociopolitical)
             similarity = self.sociopolitical.calculate_similarity(civ.sociopolitical)
             logger.info(f"alliance_potential: {alliance_potential} and similarity: {similarity}")
-
+            # self.reputation.update_reputation(civ.name, "ally", 0.1)
 
     ### TRADING RESOURCES ###
     def trade(self, **kwargs):
@@ -318,6 +323,8 @@ class SociologicalGroup:
         society.resources[matching_our_needs[0]] -= needs
         self.resources[matching_our_surplus[0]] -= cost
         society.resources[matching_our_surplus[0]] += cost
+        society.reputation.update_reputation(self.name, "trade", 0.1)
+        self.reputation.update_reputation(society.name, "trade", 0.1)
         self.last_effect = {
             "type": "trade",
             "year": self.year,
@@ -333,23 +340,27 @@ class SociologicalGroup:
 
     ### WAR ACTIONS ###
     def war(self, **kwargs):
-        if self.sociopolitical.get_dimension_value("Militaristic") < 0.25:
-            return # No war for pacifist societies
+        rand = np.random.rand() - self.war_manager.get_weariness()
+        if rand < self.sociopolitical.get_dimension_value("Militaristic"):
+            return # No war today, weary troops or pacifism
         possible_war_targets = []
         possible_war_probabilities = []
         for civ in kwargs['civs']:
             if civ != self and civ.population > 0:
-                probability = self.calculate_war_probabilities(civ)
+                probability = self.war_manager.calculate_war_probabilities(self, civ)
                 if probability <= 0 or math.isnan(probability):
                     continue
                 possible_war_targets.append(civ)
-                possible_war_probabilities.append(self.calculate_war_probabilities(civ))
+                possible_war_probabilities.append(self.war_manager.calculate_war_probabilities(self, civ))
         if len(possible_war_targets) == 0:
             return
+        print(possible_war_probabilities)
+        print(self.war_manager.get_weariness())
         normalized_war_probabilities = np.array(possible_war_probabilities) / np.sum(possible_war_probabilities)
         target = np.random.choice(possible_war_targets, p=normalized_war_probabilities)
         resolution = self.resolve_conflict(target)
-        spoils = self.war_spoils(resolution, target)
+        # Now let's calculate the impact, weariness, and spoils of war
+        spoils, victor = self.war_spoils(resolution, target)
         self.last_effect = {
             "type": "war",
             "year": kwargs['year'],
@@ -357,7 +368,13 @@ class SociologicalGroup:
             "resolution": resolution,
             "season": kwargs["season"],
             "spoils": spoils,
+            "victor": victor.name if victor else None
         }
+        print(self.last_effect)
+        impact = self.war_manager.calculate_war_impact(victor, resolution)
+        print(f"War impact: {impact} and resolution: {resolution}")
+        self.war_manager.update_weariness(impact, self.sociopolitical.dimension_values, self.wealth())
+        target.war_manager.update_weariness(impact, target.sociopolitical.dimension_values, target.wealth())
         target.reputation.update_reputation(self.name, "war", -0.2)
 
     def resolve_conflict(self, other_society):
@@ -378,7 +395,7 @@ class SociologicalGroup:
         report = {}
         # Get the victor
         if resolution == 0.5:
-            return {"population": 0, "resources": 0, "artifacts": 0, "food": 0}
+            return {"population": 0, "resources": 0, "artifacts": 0, "food": 0}, None
         if resolution > 0.5: # conquer
             victor = self
             loser = other
@@ -398,8 +415,9 @@ class SociologicalGroup:
         pop_diff_factor = base_factor * (1 + noise_factor)  # Noise can increase or decrease the impact
         
         # Calculate the population difference
-        pop = loser.demographics['military'] + (loser.demographics['workers'] / 3)
-        pop_diff = math.ceil(pop * pop_diff_factor)
+        pop = loser.demographics['military'] + (loser.demographics['workers'] / 10)
+        pop_diff = math.floor(pop * pop_diff_factor)
+        # print(f"pop_diff: {pop_diff} and pop_diff_factor: {pop_diff_factor} and noise_factor: {noise_factor}")
         loser.population -= pop_diff
         
         integrate_pops = victor.culture.get_dimension_value("Cultural Homogeneity") < 0.75 or victor.sociopolitical.get_dimension_value("Rights") < 0.25
@@ -415,7 +433,7 @@ class SociologicalGroup:
             victor.resources[resource] += resource_diff
             report[resource] = resource_diff
         
-        return report
+        return report, victor
 
     def rest(self, **kwargs):
         # Determine the type of rest and cultural activities based on sociopolitical framework and cultural values
@@ -446,27 +464,27 @@ class SociologicalGroup:
         happiness_boost = 0.0
 
         # calculate the war weariness/happiness
-        if "type" in self.last_effect and self.last_effect["type"] == "war" and self.last_effect["year"] == year and self.last_effect["season"] == season:
+        if action == 6 and "resolution" in self.last_effect:
             proportion = self.demographics['military'] / self.population
             if self.last_effect["resolution"] > 0.5:
-                happiness_boost += 0.1 * self.sociopolitical.get_dimension_value("Militaristic") * proportion
+                happiness_boost += 0.8 * self.sociopolitical.get_dimension_value("Militaristic") * proportion
             else:
-                happiness_boost += -0.3 * (1-self.sociopolitical.get_dimension_value("Militaristic")) * proportion
+                happiness_boost -= 1.2 * self.sociopolitical.get_dimension_value("Militaristic") * proportion
 
         # calculate trade action happiness boost
-        if "type" in self.last_effect and self.last_effect["type"] == "trade" and self.last_effect["year"] == year and self.last_effect["season"] == season:
+        if action == 4 and "year" in self.last_effect:
             proportion = self.demographics['merchants'] / self.population
-            happiness_boost += 0.1 * self.economy.get_dimension_value("Economic Equality") * proportion
+            happiness_boost += 0.5 * self.economy.get_dimension_value("Economic Equality") * proportion
 
         # calculate research action happiness boost
-        if "type" in self.last_effect and self.last_effect["type"] == "research" and self.last_effect["year"] == year and self.last_effect["season"] == season:
+        if action == 8 and "year" in self.last_effect:
             proportion = self.demographics['scholars'] / self.population
-            happiness_boost += 0.1 * self.sociopolitical.get_dimension_value("Innovation and Research") * proportion
+            happiness_boost += 0.2 * self.sociopolitical.get_dimension_value("Innovation and Research") * proportion
 
         new_happiness = (sum(happiness) / len(happiness)) + happiness_boost
 
         # Return delta of happiness as reward
-        happiness_change = new_happiness - self.happiness
+        happiness_change = max(0, new_happiness - self.happiness)
         self.happiness = new_happiness
         return happiness_change
 
@@ -666,21 +684,14 @@ class SociologicalGroup:
 
         # Fertile population
         fertile_pop = self.population - (self.demographics['children'] + self.demographics['elderly'])
-        new_pop = round(fertile_pop * (birth_rate - death_rate), 0)
-        # print(f"new_pop: {new_pop}")
+        new_pop = max(round(fertile_pop * (birth_rate - death_rate), 0), 1)
+        # print(f"new_pop: {new_pop} and {fertile_pop} * ({birth_rate - death_rate})")
         self.population += new_pop
         # print(f"self.population: {humanize.intword(self.population)}")
 
     def migration(self):
         # Migration is based on the sociopolitical framework, environmental factors, and happiness
         pass
-
-    def calculate_war_probabilities(self, society):
-        # Less militaristic societies only engage in wars of necessity
-        if self.sociopolitical.get_dimension_value("Militaristic") < 0.25:
-            return 0
-
-        self.sociopolitical.calculate_war_potential(society.sociopolitical, self.wealth(), self.war_weariness(), society.wealth(), society.war_weariness())
 
     def simulate_societal_interactions(self, societies):
         # Interaction effects for each governance system

@@ -9,6 +9,7 @@ import numpy as np
 from collections import defaultdict
 from agentforge.utils import logger
 from agentforge.utils.timeseries import TimeSeriesPlotterManager
+import json
 
 NUM_GROUPS_AT_START = 10
 
@@ -89,7 +90,7 @@ class Civilization(gym.Env):
         self.analysis_engine.add("technology", society_name, self.year, self.societies[self.society_idx].technology.get_progress())
 
         # Log action for this society
-        society.action_history.add(action, reward, self.year, self.season, society.last_effect)
+        self.societies[self.society_idx].action_history.add(action, reward, self.year, self.season, self.societies[self.society_idx].last_effect)
 
         if society.population <= 5: # a society has died out
             self.societies.remove(society)
@@ -159,8 +160,13 @@ class Civilization(gym.Env):
         logger.info(str(env.envs[0].get_wrapper_attr('action_metrics')))
         for society in env.envs[0].get_wrapper_attr('dead_societies'):
             logger.info(society)
+            wars = [i for i in society.action_history.action_histories[6].effects if len(i) is not 0]
+            logger.info(wars)
         for society in env.envs[0].get_wrapper_attr('societies'):
             logger.info(society)
+            print(society.action_history.get_stats())
+            # json_str = json.dumps(society.action_history.get_stats(), indent=4)
+            # logger.info(json_str)
         logger.info(f"Wars: {len(env.envs[0].get_wrapper_attr('wars'))}")
         logger.info(f"Year: {env.envs[0].get_wrapper_attr('year')}")
         logger.info(f"Season: {env.envs[0].get_wrapper_attr('season')}")

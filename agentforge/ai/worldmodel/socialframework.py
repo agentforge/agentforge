@@ -3,7 +3,7 @@ import random
 
 ## Frameworks make up a society like a genetic code
 class SocialFramework():
-  def __init__(self) -> None:
+  def __init__(self, mods = {}) -> None:
     self.dimension_values = {}
     self.state_values = {}
     

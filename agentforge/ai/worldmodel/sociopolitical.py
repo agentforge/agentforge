@@ -3,8 +3,13 @@ from agentforge.ai.worldmodel.socialframework import SocialFramework
 
 ### The Sociopolitical class describes the sociopolitical framework of a society
 class SocioPoliticalFramework(SocialFramework):
-  def __init__(self) -> None:
+  def __init__(self, value_framework) -> None:
     super().__init__()
+    for value, mods in value_framework.sociopolitical_mods.items():
+      if value_framework.has(value):
+        for mod, value in mods:
+          self.dimension_values[mod] += value
+          self.dimension_values[mod] = max(min(1, self.dimension_values[mod]), 0)
 
   def military_focus(self) -> float:
     return (self.get_dimension_value("Militaristic") + self.get_dimension_value("Compulsory Military Service")) / 2.0
@@ -89,7 +94,7 @@ class SocioPoliticalFramework(SocialFramework):
       
       # Adjusting for diplomatic stance and potential alliances
       diplomatic_adjustment = self.dimension_values['Diplomatic'] - other.dimension_values['Diplomatic']
-      
+
       # Calculating the net war potential difference
       net_war_potential = self_potential - other_potential + diplomatic_adjustment
       

@@ -7,6 +7,17 @@ class ActionHistoryManager:
             self.action_histories[action] = ActionHistory()
         self.action_histories[action].add(reward, year, season, effect)
 
+    def get_stats(self):
+        report = {}
+        for action in self.action_histories.keys():
+            report[action] = self.action_histories[action].get_stats()
+        return report
+    
+    def get_window(self, action, past_n_actions):
+        if action not in self.action_histories:
+            return None
+        return self.action_histories[action].get_window(past_n_actions)
+
 # Stores actions and rewards for a society -- use for introspection and debugging
 class ActionHistory:
     def __init__(self):

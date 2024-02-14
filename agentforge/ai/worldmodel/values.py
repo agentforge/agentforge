@@ -54,299 +54,181 @@ class ValueFramework:
         'Social Cooperation': ['Collectivism', 'Cooperative Frameworks']
     }
 
-    # TODO: Convert to new method of determining governance
-    sociological_values_to_governance_adjustments = {
-        'Stature Valorization': {
-            'Feudal System': {'adjustment': 0.1, 'operator': '+'},
-            'Tribalism': {'adjustment': 0.05, 'operator': '+'}
-        },
-        'Intellect Valorization': {
-            'Technocracy': {'adjustment': 0.2, 'operator': '+'},
-            'Meritocracy': {'adjustment': 0.15, 'operator': '+'},
-            'Democracy': {'adjustment': 0.05, 'operator': '+'}
-        },
-        'Physical Valor': {
-            'Oligarchy': {'adjustment': 0.1, 'operator': '+'},
-            'Dictatorship': {'adjustment': 0.1, 'operator': '+'},
-            'Empire': {'adjustment': 0.05, 'operator': '+'}
-        },
-        'Evolutionary Dynamism': {
-            'Republic': {'adjustment': 0.1, 'operator': '+'},
-            'Direct Democracy': {'adjustment': 0.1, 'operator': '+'},
-            'Federation': {'adjustment': 0.15, 'operator': '+'}
-        },
-        'Eco-Integration': {
-            'Eco-Governance': {'adjustment': 0.3, 'operator': '+'},
-            'Federation': {'adjustment': 0.1, 'operator': '+'},
-            'Republic': {'adjustment': 0.05, 'operator': '+'}
-        },
-        'Resource Efficiency': {
-            'Corporate State': {'adjustment': 0.2, 'operator': '+'},
-            'Technocracy': {'adjustment': 0.15, 'operator': '+'},
-            'Meritocracy': {'adjustment': 0.1, 'operator': '+'}
-        },
-        'Tall Architectural Adaptation': {
-            'Feudal System': {'adjustment': 0.05, 'operator': '+'},
-            'Empire': {'adjustment': 0.05, 'operator': '+'}
-        },
-        'Physical Presence': {
-            'Monarchy': {'adjustment': 0.1, 'operator': '+'},
-            'Empire': {'adjustment': 0.05, 'operator': '+'}
-        },
-        'Huge Structural Design': {
-            'Technocracy': {'adjustment': 0.1, 'operator': '+'},
-            'Corporate State': {'adjustment': 0.05, 'operator': '+'}
-        },
-        'Educational Priority': {
-            'Republic': {'adjustment': 0.1, 'operator': '+'},
-            'Democracy': {'adjustment': 0.1, 'operator': '+'}
-        },
-        'Innovation Emphasis': {
-            'Technocracy': {'adjustment': 0.2, 'operator': '+'},
-            'Meritocracy': {'adjustment': 0.15, 'operator': '+'}
-        },
-        'Warrior Culture': {
-            'Oligarchy': {'adjustment': 0.1, 'operator': '+'},
-            'Dictatorship': {'adjustment': 0.1, 'operator': '+'}
-        },
-        'Skillfulness': {
-            'Meritocracy': {'adjustment': 0.1, 'operator': '+'},
-            'Republic': {'adjustment': 0.05, 'operator': '+'}
-        },
-        'Ranged Combat': {
-            'Republic': {'adjustment': 0.1, 'operator': '+'},
-            'Federation': {'adjustment': 0.05, 'operator': '+'}
-        },
-        'Resilience': {
-            'Feudal System': {'adjustment': 0.1, 'operator': '+'},
-            'Tribalism': {'adjustment': 0.1, 'operator': '+'}
-        },
-        'Perseverance': {
-            'Republic': {'adjustment': 0.1, 'operator': '+'},
-            'Direct Democracy': {'adjustment': 0.1, 'operator': '+'}
-        },
-        'Endurance Cultivation': {
-            'Technocracy': {'adjustment': 0.1, 'operator': '+'},
-            'Meritocracy': {'adjustment': 0.1, 'operator': '+'}
-        },
-        'Hierarchical Leadership': {
-            'Oligarchy': {'adjustment': 0.2, 'operator': '+'},
-            'Monarchy': {'adjustment': 0.15, 'operator': '+'}
-        },
-        'Charismatic Dominance': {
-            'Dictatorship': {'adjustment': 0.2, 'operator': '+'},
-            'Monarchy': {'adjustment': 0.1, 'operator': '+'}
-        },
-        'Cunning': {
-            'Theocracy': {'adjustment': 0.1, 'operator': '+'},
-            'Corporate State': {'adjustment': 0.1, 'operator': '+'}
-        },
-        'Strategic Councils': {
-            'Republic': {'adjustment': 0.2, 'operator': '+'},
-            'Democracy': {'adjustment': 0.1, 'operator': '+'}
-        },
-        'Insight Cultivation': {
-            'Meritocracy': {'adjustment': 0.1, 'operator': '+'},
-            'Technocracy': {'adjustment': 0.2, 'operator': '+'}
-        },
-        'Sensory Acuity': {
-            'Technocracy': {'adjustment': 0.1, 'operator': '+'},
-            'Meritocracy': {'adjustment': 0.1, 'operator': '+'}
-        },
-        'High-Frequency Language': {
-            'Federation': {'adjustment': 0.1, 'operator': '+'},
-            'Republic': {'adjustment': 0.05, 'operator': '+'}
-        },
-        'Rapid Response': {
-            'Republic': {'adjustment': 0.1, 'operator': '+'},
-            'Direct Democracy': {'adjustment': 0.1, 'operator': '+'}
-        },
-        'Flexibility': {
-            'Egalitarian': {'adjustment': 0.2, 'operator': '+'},
-            'Anarchy': {'adjustment': 0.1, 'operator': '+'}
-        },
-        'Evolutionary Dynamism': {
-            'Technocracy': {'adjustment': 0.15, 'operator': '+'},
-            'Meritocracy': {'adjustment': 0.1, 'operator': '+'}
-        },
-        'Embedded Architecture': {
-            'Tribalism': {'adjustment': 0.1, 'operator': '+'},
-            'Eco-Governance': {'adjustment': 0.1, 'operator': '+'}
-        },
-        'Social Concealment': {
-            'Anarchy': {'adjustment': 0.1, 'operator': '+'},
-            'Corporate State': {'adjustment': 0.05, 'operator': '+'}
-        },
-        'Privacy Emphasis': {
-            'Direct Democracy': {'adjustment': 0.1, 'operator': '+'},
-            'Republic': {'adjustment': 0.05, 'operator': '+'}
-        },
-        'Covert Operations': {
-            'Corporate State': {'adjustment': 0.2, 'operator': '+'},
-            'Dictatorship': {'adjustment': 0.15, 'operator': '+'}
-        },
-        'Aquatic Lifestyle': {
-            'Tribalism': {'adjustment': 0.2, 'operator': '+'},
-            'Federation': {'adjustment': 0.1, 'operator': '+'}
-        },
-        'Water Affinity': {
-            'Eco-Governance': {'adjustment': 0.2, 'operator': '+'},
-            'Federation': {'adjustment': 0.1, 'operator': '+'}
-        },
-        'Deep-Sea Adaptation': {
-            'Tribalism': {'adjustment': 0.2, 'operator': '+'},
-            'Federation': {'adjustment': 0.1, 'operator': '+'}
-        },
-        'Pressure Tolerance': {
-            'Technocracy': {'adjustment': 0.15, 'operator': '+'},
-            'Meritocracy': {'adjustment': 0.1, 'operator': '+'}
-        },
-        'Heat Adaptation': {
-            'Feudal System': {'adjustment': 0.1, 'operator': '+'},
-            'Empire': {'adjustment': 0.05, 'operator': '+'}
-        },
-        'Cold Endurance': {
-            'Feudal System': {'adjustment': 0.1, 'operator': '+'},
-            'Empire': {'adjustment': 0.05, 'operator': '+'}
-        },
-        'Radiation Baths': {
-            'Technocracy': {'adjustment': 0.2, 'operator': '+'},
-            'Meritocracy': {'adjustment': 0.1, 'operator': '+'}
-        },
-        'Mutagenic Forms': {
-            'Technocracy': {'adjustment': 0.2, 'operator': '+'},
-            'Meritocracy': {'adjustment': 0.1, 'operator': '+'}
-        },
-        'Autotrophic Lifestyle': {
-            'Eco-Governance': {'adjustment': 0.3, 'operator': '+'},
-            'Federation': {'adjustment': 0.1, 'operator': '+'}
-        },
-        'Photosynthetic Architectural Integration': {
-            'Eco-Governance': {'adjustment': 0.3, 'operator': '+'},
-            'Technocracy': {'adjustment': 0.1, 'operator': '+'}
-        },
-        'Regenerative Healing': {
-            'Meritocracy': {'adjustment': 0.1, 'operator': '+'},
-            'Republic': {'adjustment': 0.05, 'operator': '+'}
-        },
-        'Rapid Recovery': {
-            'Republic': {'adjustment': 0.1, 'operator': '+'},
-            'Direct Democracy': {'adjustment': 0.1, 'operator': '+'}
-        },
-        'Fertility Norms': {
-            'Tribalism': {'adjustment': 0.3, 'operator': '+'},
-            'Feudal System': {'adjustment': 0.1, 'operator': '+'}
-        },
-        'Birthrate Control': {
-            'Technocracy': {'adjustment': 0.2, 'operator': '+'},
-            'Meritocracy': {'adjustment': 0.15, 'operator': '+'}
-        },
-        'Perceptual Roles': {
-            'Meritocracy': {'adjustment': 0.1, 'operator': '+'},
-            'Technocracy': {'adjustment': 0.15, 'operator': '+'}
-        },
-        'Sensory Enrichment': {
-            'Direct Democracy': {'adjustment': 0.1, 'operator': '+'},
-            'Republic': {'adjustment': 0.05, 'operator': '+'}
-        },
-        'Industrial Might': {
-            'Corporate State': {'adjustment': 0.2, 'operator': '+'},
-            'Oligarchy': {'adjustment': 0.1, 'operator': '+'}
-        },
-        'Waste Managers': {
-            'Eco-Governance': {'adjustment': 0.2, 'operator': '+'},
-            'Corporate State': {'adjustment': 0.1, 'operator': '+'}
-        },
-        'Ecological Defenders': {
-            'Eco-Governance': {'adjustment': 0.3, 'operator': '+'},
-            'Federation': {'adjustment': 0.15, 'operator': '+'}
-        },
-        'Stoicism': {
-            'Republic': {'adjustment': 0.1, 'operator': '+'},
-            'Democracy': {'adjustment': 0.05, 'operator': '+'}
-        },
-        'Aerial Mobility': {
-            'Federation': {'adjustment': 0.15, 'operator': '+'},
-            'Direct Democracy': {'adjustment': 0.1, 'operator': '+'}
-        },
-        'Vertical Architecture': {
-            'Corporate State': {'adjustment': 0.2, 'operator': '+'},
-            'Technocracy': {'adjustment': 0.1, 'operator': '+'}
-        },
-        'Disease Resistance': {
-            'Meritocracy': {'adjustment': 0.1, 'operator': '+'},
-            'Technocracy': {'adjustment': 0.15, 'operator': '+'}
-        },
-        'Pathogen Management': {
-            'Technocracy': {'adjustment': 0.2, 'operator': '+'},
-            'Republic': {'adjustment': 0.1, 'operator': '+'}
-        },
-        'Dietary Diversity': {
-            'Eco-Governance': {'adjustment': 0.2, 'operator': '+'},
-            'Federation': {'adjustment': 0.1, 'operator': '+'}
-        },
-        'Food Cultivation': {
-            'Tribalism': {'adjustment': 0.2, 'operator': '+'},
-            'Eco-Governance': {'adjustment': 0.15, 'operator': '+'}
-        },
-        'Breathing Adaptation': {
-            'Technocracy': {'adjustment': 0.15, 'operator': '+'},
-            'Meritocracy': {'adjustment': 0.1, 'operator': '+'}
-        },
-        'Oxygen Management': {
-            'Republic': {'adjustment': 0.1, 'operator': '+'},
-            'Direct Democracy': {'adjustment': 0.1, 'operator': '+'}
-        },
-        'Visual Culture': {
-            'Democracy': {'adjustment': 0.1, 'operator': '+'},
-            'Republic': {'adjustment': 0.05, 'operator': '+'}
-        },
-        'Colorful Culture': {
-            'Direct Democracy': {'adjustment': 0.1, 'operator': '+'},
-            'Egalitarian': {'adjustment': 0.15, 'operator': '+'}
-        },
-        'Predatory Valor': {
-            'Empire': {'adjustment': 0.2, 'operator': '+'},
-            'Dictatorship': {'adjustment': 0.15, 'operator': '+'}
-        },
-        'Combat Strategies': {
-            'Military Junta': {'adjustment': 0.2, 'operator': '+'},
-            'Empire': {'adjustment': 0.1, 'operator': '+'}
-        },
-        'Poison Immunity': {
-            'Technocracy': {'adjustment': 0.15, 'operator': '+'},
-            'Meritocracy': {'adjustment': 0.1, 'operator': '+'}
-        },
-        'Toxicology Knowledge': {
-            'Republic': {'adjustment': 0.1, 'operator': '+'},
-            'Technocracy': {'adjustment': 0.2, 'operator': '+'}
-        },
-        'Chemical Warfare': {
-            'Dictatorship': {'adjustment': 0.2, 'operator': '+'},
-            'Oligarchy': {'adjustment': 0.1, 'operator': '+'}
-        },
-        'Toxin Utilization': {
-            'Corporate State': {'adjustment': 0.2, 'operator': '+'},
-            'Technocracy': {'adjustment': 0.15, 'operator': '+'}
-        },
-        'Wayfinding Traditions': {
-            'Federation': {'adjustment': 0.15, 'operator': '+'},
-            'Republic': {'adjustment': 0.1, 'operator': '+'}
-        },
-        'Migration': {
-            'Tribalism': {'adjustment': 0.3, 'operator': '+'},
-            'Anarchy': {'adjustment': 0.15, 'operator': '+'}
-        },
-        'Exploration': {
-            'Federation': {'adjustment': 0.2, 'operator': '+'},
-            'Republic': {'adjustment': 0.1, 'operator': '+'}
-        },
-        'Collectivism': {
-            'Egalitarian': {'adjustment': 0.2, 'operator': '+'},
-            'Anarchy': {'adjustment': 0.15, 'operator': '+'}
-        },
-        'Cooperative Frameworks': {
-            'Republic': {'adjustment': 0.2, 'operator': '+'},
-            'Democracy': {'adjustment': 0.15, 'operator': '+'}
-        }
+    sociopolitical_mods = {
+        "Stature Valorization": [
+            ["Social Mobility", -0.1],
+            ["Militaristic", 0.1]
+        ],
+        "Tall Architectural Adaptation": [
+            ["Environmental Sustainability", 0.1],
+            ["Technological Integration", 0.1]
+        ],
+        "Physical Presence": [
+            ["Militaristic", 0.2],
+            ["Nationalism", 0.1]
+        ],
+        "Huge Structural Design": [
+            ["Environmental Sustainability", 0.1],
+            ["Technological Integration", 0.2]
+        ],
+        "Intellect Valorization": [
+            ["Innovation and Research", 0.3],
+            ["Social Mobility", 0.2]
+        ],
+        "Educational Priority": [
+            ["Social Welfare", 0.2],
+            ["Information Freedom", 0.2]
+        ],
+        "Innovation Emphasis": [
+            ["Innovation and Research", 0.3]
+        ],
+        "Physical Valor": [
+            ["Militaristic", 0.2],
+            ["Egalitarianism", -0.3]
+        ],
+        "Warrior Culture": [
+            ["Militaristic", 0.3],
+            ["Nationalism", 0.2],
+        ],
+        "Skillfulness": [
+            ["Worker Self-Management", 0.1],
+            ["Merit-based Advancement", 0.2]
+        ],
+        "Ranged Combat": [
+            ["Militaristic", 0.2]
+        ],
+        "Resilience": [
+            ["Social Welfare", 0.1],
+            ["Environmental Sustainability", 0.1]
+        ],
+        "Perseverance": [
+            ["Social Welfare", 0.1]
+        ],
+        "Endurance Cultivation": [
+            ["Health", 0.2],
+            ["Environmental Sustainability", 0.1]
+        ],
+        "Hierarchical Leadership": [
+            ["Centralization", 0.4],
+            ["Class Stratification", 0.3]
+        ],
+        "Charismatic Dominance": [
+            ["Centralization", 0.1],
+            ["Class Stratification", 0.1]
+        ],
+        "Cunning": [
+            ["Diplomatic", 0.1],
+            ["Covert Operations", 0.2]
+        ],
+        "Strategic Councils": [
+            ["Diplomatic", 0.2],
+            ["Centralization", -0.4]
+        ],
+        "Insight Cultivation": [
+            ["Innovation and Research", 0.2],
+            ["Educational Priority", 0.1]
+        ],
+        "Sensory Acuity": [
+            ["Environmental Sustainability", 0.1]
+        ],
+        "High-Frequency Language": [
+            ["Information Freedom", 0.1]
+        ],
+        "Rapid Response": [
+            ["Security", 0.2],
+            ["Civic Participation", 0.4]
+        ],
+        "Flexibility": [
+            ["Social Mobility", 0.1],
+            ["Open Borders", 0.4]
+        ],
+        "Evolutionary Dynamism": [
+            ["Environmental Sustainability", 0.2],
+            ["Technological Integration", 0.1]
+        ],
+        "Embedded Architecture": [
+            ["Environmental Sustainability", 0.2]
+        ],
+        "Social Concealment": [
+            ["Privacy", 0.2],
+            ["Covert Operations", 0.1]
+        ],
+        "Privacy Emphasis": [
+            ["Privacy", 0.3]
+        ],
+        "Covert Operations": [
+            ["Security", 0.2],
+            ["Diplomatic", -0.1]
+        ],
+        "Aquatic Lifestyle": [
+            ["Environmental Sustainability", 0.2]
+        ],
+        "Water Affinity": [
+            ["Environmental Sustainability", 0.2]
+        ],
+        "Deep-Sea Adaptation": [
+            ["Environmental Sustainability", 0.2]
+        ],
+        "Pressure Tolerance": [
+            ["Technological Integration", 0.1]
+        ],
+        "Heat Adaptation": [
+            ["Environmental Sustainability", 0.1]
+        ],
+        "Cold Endurance": [
+            ["Environmental Sustainability", 0.1]
+        ],
+        "Radiation Baths": [
+            ["Technological Integration", 0.2]
+        ],
+        "Mutagenic Forms": [
+            ["Ideological Enforcement", -0.4],
+        ],
+        "Autotrophic Lifestyle": [
+            ["Ideological Enforcement", 0.3]
+        ],
+        "Photosynthetic Architectural Integration": [
+            ["Public Commons", 0.3]
+        ],
+        "Regenerative Healing": [
+            ["Social Welfare", 0.3]
+        ],
+        "Rapid Recovery": [
+            ["Security", 0.2]
+        ],
+        "Lifespan Extension": [
+            ["Class Stratification", 0.3]
+        ],
+        "Aging Attitudes": [],
+        "Fertility Norms": [],
+        "Birthrate Control": [],
+        "Perceptual Roles": [],
+        "Sensory Enrichment": [],
+        "Industrial Might": [("Environmental Sustainability", -0.2), ("Innovation and Research", 0.2)],
+        "Waste Managers": [("Environmental Sustainability", 0.2)],
+        "Ecological Defenders": [("Environmental Sustainability", 0.3)],
+        "Eco-Integration": [("Environmental Sustainability", 0.4)],
+        "Resource Efficiency": [("Environmental Sustainability", 0.2)],
+        "Stoicism": [],
+        "Aerial Mobility": [("Technological Integration", 0.1)],
+        "Vertical Architecture": [("Environmental Sustainability", 0.1)],
+        "Disease Resistance": [("Social Welfare", 0.1)],
+        "Pathogen Management": [("Social Welfare", 0.1)],
+        "Dietary Diversity": [],
+        "Food Cultivation": [("Environmental Sustainability", 0.2)],
+        "Breathing Adaptation": [],
+        "Oxygen Management": [],
+        "Visual Culture": [],
+        "Colorful Culture": [],
+        "Predatory Valor": [("Militaristic", 0.2)],
+        "Combat Strategies": [("Militaristic", 0.3)],
+        "Poison Immunity": [("Social Welfare", 0.1)],
+        "Toxicology Knowledge": [("Innovation and Research", 0.1)],
+        "Chemical Warfare": [("Militaristic", 0.2)],
+        "Toxin Utilization": [("Innovation and Research", 0.1)],
+        "Wayfinding Traditions": [],
+        "Migration": [],
+        "Exploration": [("Innovation and Research", 0.2)],
+        "Collectivism": [("Social Welfare", 0.1), ("Egalitarianism", 0.2)],
+        "Cooperative Frameworks": [("Social Welfare", 0.2), ("Participatory Governance", 0.2)]
     }
