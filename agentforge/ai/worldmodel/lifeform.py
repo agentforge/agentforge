@@ -457,7 +457,7 @@ class Lifeform:
             "Physical Fortitude": {"base": 90, "std": 10}, # High resistance to physical damage from pressure
             "Ecosystem Impact": {"base": 50, "std": 20},  # Influence on and adaptation to their high-pressure ecosystem
             "Social Structure": {"base": 20, "std": 15},  # Social interactions, likely limited
-            "Resource Utilization": {"base": 60, "std": 15}, # Efficient use of available resources in their environment
+            "Resource Utilization": {"base": 60, "std": 15}, # Efficient use of available resources in their envieronment
             "Stealth": {"base": 40, "std": 20}, # Ability to move or exist without detection, adapted to high-pressure conditions
             "Flight Capability": {"base": 10, "std": 10}, # Limited to swimming capabilities, not traditional flight
             "Immune System Strength": {"base": 90, "std": 5},

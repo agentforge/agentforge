@@ -95,15 +95,15 @@ class EvolutionarySimulation:
                     previous_lifeform = ""
 
                 lifeform.genus = self.genus.get_genus(lifeform.species_data["Biological Type"], self.evolutionary_stage)
-                # generative_data = self.ecology.generate(
-                #     self.real_biome,
-                #     self.evolutionary_stage,
-                #     lifeform.genus,
-                #     lifeform.role,
-                #     lifeform.behavioral_role,
-                #     previous_species=previous_lifeform
-                # )
-                # lifeform.species_data.update(generative_data)
+                generative_data = self.ecology.generate(
+                    self.real_biome,
+                    self.evolutionary_stage,
+                    lifeform.genus,
+                    lifeform.role,
+                    lifeform.behavioral_role,
+                    previous_species=previous_lifeform
+                )
+                lifeform.species_data.update(generative_data)
                 # TODO: SELECT ROLES WITH PROBABILISTIC MATRIX
         return lifeforms
 
@@ -269,9 +269,9 @@ class EvolutionarySimulation:
 
     def update_environment(self):
         # Simulate environmental changes -- refresh resources
-        self.environment['Water'] = min(TOTAL_NUTRIENTS, self.environment['Water'] + (TOTAL_NUTRIENTS * NUTRIENT_REFRESH_RATE))
-        self.environment['Sunlight'] = TOTAL_NUTRIENTS # Sunlight always hits max each turn, limit represents canopy
-        self.environment['Nutrients'] = min(TOTAL_NUTRIENTS, self.environment['Nutrients'] + (TOTAL_NUTRIENTS * NUTRIENT_REFRESH_RATE))
+        self.environment.set('Water', min(TOTAL_NUTRIENTS, self.environment.get('Water') + (TOTAL_NUTRIENTS * NUTRIENT_REFRESH_RATE)))
+        self.environment.set('Sunlight', TOTAL_NUTRIENTS) # Sunlight always hits max each turn, limit represents canopy)
+        self.environment.set('Nutrients', min(TOTAL_NUTRIENTS, self.environment.get('Nutrients') + (TOTAL_NUTRIENTS * NUTRIENT_REFRESH_RATE)))
 
         self.total_population = 0
         for lifeform in self.lifeforms:

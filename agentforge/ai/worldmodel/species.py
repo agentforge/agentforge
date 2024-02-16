@@ -354,14 +354,14 @@ class Species:
         current_health = individual[1]
 
         # Calculate realistic resource consumption
-        water_consumption = min(resource_utilization * mass * PLANT_GROWTH_FACTOR, environment['Water'] * PLANT_GROWTH_FACTOR)
-        sunlight_consumption = min(photosynthetic_ability * mass * PLANT_GROWTH_FACTOR, environment['Sunlight'] * PLANT_GROWTH_FACTOR)
-        nutrient_consumption = min(resource_utilization * mass * PLANT_GROWTH_FACTOR, environment['Nutrients'] * PLANT_GROWTH_FACTOR)
+        water_consumption = min(resource_utilization * mass * PLANT_GROWTH_FACTOR, environment.get('Water') * PLANT_GROWTH_FACTOR)
+        sunlight_consumption = min(photosynthetic_ability * mass * PLANT_GROWTH_FACTOR, environment.get('Sunlight') * PLANT_GROWTH_FACTOR)
+        nutrient_consumption = min(resource_utilization * mass * PLANT_GROWTH_FACTOR, environment.get('Nutrients') * PLANT_GROWTH_FACTOR)
 
         # Reduce available resources in the environment
-        environment['Water'] -= water_consumption
-        environment['Sunlight'] -= sunlight_consumption
-        environment['Nutrients'] -= nutrient_consumption
+        environment.set('Water', environment.get('Water') - water_consumption)
+        environment.set('Sunlight', environment.get('Sunlight') - sunlight_consumption)
+        environment.set('Nutrients', environment.get('Nutrients') - nutrient_consumption)
 
         # Update individual's health based on resource consumption and nutritional requirements
         growth = water_consumption + sunlight_consumption + nutrient_consumption

@@ -40,7 +40,7 @@ mongo_client = MongoDBKVStore(DB)
 # TO-DO: Store events in events table based on user-id key, so that we can also store 
 # global events not tied to user, for example
 @router.post("/create-schedule")
-def create_schedule(request: Request, session: SessionContainer = Depends(verify_session())):
+async def create_schedule(request: Request, session: SessionContainer = Depends(verify_session())):
     session = await get_session(request)
 
     if session is None:
@@ -105,7 +105,7 @@ def create_schedule(request: Request, session: SessionContainer = Depends(verify
         raise  # Re-raise the exception to maintain FastAPI's default behavior
 
 @router.post("/delete-schedule")
-def delete_schedule(request: Request, session: SessionContainer = Depends(verify_session())):
+async def delete_schedule(request: Request, session: SessionContainer = Depends(verify_session())):
     session = await get_session(request)
 
     if session is None:
@@ -135,7 +135,7 @@ def delete_schedule(request: Request, session: SessionContainer = Depends(verify
         raise HTTPException(status_code=404, detail="User not found or user has no scheduled events.")
 
 @router.get("/view-schedule")
-def view_schedule(session: SessionContainer = Depends(verify_session())):
+async def view_schedule(request: Request, session: SessionContainer = Depends(verify_session())):
     session = await get_session(request)
     
     if session is None:
@@ -154,7 +154,7 @@ def view_schedule(session: SessionContainer = Depends(verify_session())):
 
 # update an event
 @router.post("/update-schedule/")
-def update_schedule(request: Request, session: SessionContainer = Depends(verify_session())):
+async def update_schedule(request: Request, session: SessionContainer = Depends(verify_session())):
     session = await get_session(request)
     
     if session is None:
@@ -181,7 +181,7 @@ def update_schedule(request: Request, session: SessionContainer = Depends(verify
     if interval:
         update_fields["interval"] = data.interval
 
-     try:
+    try:
         # Update the scheduled event in the user's "events" field using MongoDBKVStore
         result = mongo_client.set("users", key=user_id, data={"events": {event_name: update_fields}})
 
@@ -201,7 +201,7 @@ def update_schedule(request: Request, session: SessionContainer = Depends(verify
 
 # subscribe to an event
 @router.post("/subscribe-schedule/")
-def subscribe_schedule(request: Request, session: SessionContainer = Depends(verify_session())):
+async def subscribe_schedule(request: Request, session: SessionContainer = Depends(verify_session())):
     session = await get_session(request)
     
     if session is None:
@@ -231,7 +231,7 @@ def subscribe_schedule(request: Request, session: SessionContainer = Depends(ver
 
 # unsubscribe from event
 @router.post("/unsubscribe-schedule/")
-def unsubscribe_schedule(request: Request, session: SessionContainer = Depends(verify_session())):
+async def unsubscribe_schedule(request: Request, session: SessionContainer = Depends(verify_session())):
     session = await get_session(request)
     
     if session is None:
@@ -268,7 +268,7 @@ class SubscriptionData(BaseModel):
 # stores push notification object and create NOVU 
 # subscriber
 @router.post("/subscribe-notifications")
-def subscribe_notifications(request: Request, session: SessionContainer = Depends(verify_session())):
+async def subscribe_notifications(request: Request, session: SessionContainer = Depends(verify_session())):
     session = await get_session(request)
     
     if session is None:
@@ -342,7 +342,7 @@ def subscribe_notifications(request: Request, session: SessionContainer = Depend
         raise HTTPException(status_code=500, detail=f"Error: {str(e)}")
     
 @router.post("/unsubscribe-notifications")
-def unsubscribe_notifications(request: Request, session: SessionContainer = Depends(verify_session())):
+async def unsubscribe_notifications(request: Request, session: SessionContainer = Depends(verify_session())):
     session = await get_session(request)
     
     if session is None:

@@ -17,6 +17,12 @@ class Environment:
         # Dictionary to store various resources
         self.resources = 5000
 
+    def get(self, key):
+        return self.environment[key]
+    
+    def set(self, key, value):
+        self.environment[key] = value
+
     # Interactaction with the environment and lifeforms
     def interact(self, lifeform):
       for effect in self.environmental_effects:

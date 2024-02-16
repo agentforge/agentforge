@@ -1,12 +1,17 @@
-from .concept import Concept
+import math
+from .concept import Concept, ensure_non_negative_and_normalize_row
+from .lifeform import Lifeform
+from agentforge.ai.worldmodel.evolution import EvolutionarySimulation
+import numpy as np
 
 class Biome:
     def __init__(self) -> None:
+        self.lifeform = Lifeform()
         
         # Create concepts for each planet type
-        biome_concepts = {}
+        self.biome_concepts = {}
         for biome_type in self.biomes:
-            biome_concepts[biome_type] = Concept(biome_type, "Biome")
+            self.biome_concepts[biome_type] = Concept(biome_type, "Biome")
 
         # Extracting unique biology subcategories from biome_biology_probabilities
         unique_biology_subcategories = list(set(subcat for biomes in self.biome_biology_probabilities.values() for subcat in biomes))
@@ -14,7 +19,38 @@ class Biome:
         # Update biome_concepts with connections to biology subcategories including probabilities
         for biome_type, subcategory_probs in self.biome_biology_probabilities.items():
             for subcategory, probability in subcategory_probs.items():
-                biome_concepts[biome_type].add_connection(subcategory, probability)
+                self.biome_concepts[biome_type].add_connection(subcategory, probability)
+
+    def evolve_for_biome(self, planet_info, biome_type, normalized_bx_b_df, normalized_bx_lf_df):
+        lifeforms = []
+        biome_quotient = self.biome_biological_support[biome_type]['biological_diversity_quotient']
+        biome_supported_species = math.ceil(25 * biome_quotient)
+        biome_index = self.biomes.index(biome_type)
+
+        for _ in range(biome_supported_species):
+            biological_probabilities = normalized_bx_b_df.iloc[biome_index]
+            biological_type = np.random.choice(self.lifeform.life_form_categories, p=biological_probabilities)
+
+            biological_index = self.lifeform.life_form_categories.index(biological_type)
+
+            life_form_characteristic_probabilities = normalized_bx_lf_df.iloc[biological_index]
+            adjusted_probabilities = ensure_non_negative_and_normalize_row(life_form_characteristic_probabilities)
+            life_form_characteristic_list = list(set(np.random.choice(self.lifeform.life_form_characteristic_names, p=adjusted_probabilities, size=5)))
+
+            bio_info = {
+                "Biological Type": biological_type,
+                "Life Form Attributes": life_form_characteristic_list,
+                "Genetic Profile": self.lifeform.sample_genetic_profile(biological_type),
+            }
+
+            lifeforms.append(bio_info)
+
+        print("evolving life {} for {} ({})".format(len(lifeforms), planet_info['Planet Type'], biome_type))
+        origin_of_species = EvolutionarySimulation(planet_info['Planet Type'], biome_type, planet_info['uuid'])
+        evolutionary_report = origin_of_species.run(lifeforms)
+
+        # Now update the planet/biome with the new life forms
+        return evolutionary_report
 
     biomes = ["Forest", 
         "Desert", 

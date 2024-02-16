@@ -73,7 +73,7 @@ class Planet:
             1, #volcanism,
             core_activity
         )
-
+ 
         # Special setting atmospheric composition for water presence
         if water_presence:
             atmosphere_composition['H2O'] = np.random.uniform(0.05, 0.1)
