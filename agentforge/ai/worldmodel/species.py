@@ -54,7 +54,7 @@ class Species:
             db.batch_upload(collection + "_individuals", self.individuals[i:i+slice_size])
 
     @classmethod
-    def load(cls, db, collection: str, key: str):
+    def load(cls, db, collection: str, key: str, load_individuals=True):
         """Load a species instance from MongoDB."""
         species = db.get(collection, key)
         if species:
@@ -65,10 +65,11 @@ class Species:
             species_instance = cls(species_data, species["evolutionary_stage"], planet_id, biome)
             for key, value in species.items():
                 setattr(species_instance, key, value)
-            for i in range(0, len(species_instance.population), 50):
-                individuals = db.get(collection + "_individuals", key + "_" + str(i))
-                if individuals:
-                    species_instance.individuals.extend(individuals)
+            if load_individuals:
+                for i in range(0, species_instance.population, 50):
+                    individuals = db.get(collection + "_individuals", key + "_" + str(i))
+                    if individuals:
+                        species_instance.individuals.extend(individuals)
             return species_instance
         else:
             return None

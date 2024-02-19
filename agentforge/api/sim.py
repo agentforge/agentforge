@@ -28,24 +28,42 @@ app = Celery(
     backend=db_uri,
 )
 
+def analyze_biome_species(biomes, db):
+    max_score = 0
+    apex_species = None
+    highest_evolutionary_level = 0
+    for biome in biomes.values():
+        if 'apex_species' not in biome or biome['apex_species'] is None:
+            continue
+        species = Species.load(db, 'species', biome['apex_species']['id'], load_individuals=False)
+        if species.evolutionary_stage >= highest_evolutionary_level:
+            highest_evolutionary_level = species.evolutionary_stage
+            high_score = biome['apex_species']['score']
+            if high_score > max_score:
+                max_score = high_score
+                apex_species = species
+    return apex_species
+
+
 @app.task
 def evolve_society():
     db = interface_interactor.get_interface("db")
-    planet = db.get_one("planets", {"evolution_complete": True, "evolutionary_stage": 2, "civilization": {"$exists": False}, "civilization_emerging": {"$exists": False}})
+    planet = db.get_one("planets", {"evolution_complete": True, "civilization": {"$exists": False}, "civilization_emerging": {"$exists": False}})
     if planet:
         planet["civilization_emerging"] = True
-        # db.set("planets", planet["id"], planet)
+        db.set("planets", planet["id"], planet)
         print(f"Getting species for planet {planet['id']}")
-        species_cursor = db.get_many("species", {"planet_id": planet["id"], "evolutionary_stage": 2})
-        species_objs =[]
+        apex_species = analyze_biome_species(planet["Biomes"], db)
         # for _, s in enumerate(species_cursor):
         #     species_objs.append(Species.load_from_object(db, 'species', s))
         # apex_species = EvolutionarySimulation.identify_apex_species(species_objs)
         print(f"Apex species: {apex_species}")
-        Civilization.run(species_ids=[apex_species["id"]])
-        # planet["civilization_emerging"] = False
-        # planet["civilization"] = True
-        # db.set("planets", planet["id"], planet)
+        societies = Civilization.run(species_ids=[apex_species.uuid])
+        print(societies)
+        planet["civilization_emerging"] = False
+        planet["civilization"] = True
+        planet["societies"] = societies
+        db.set("planets", planet["id"], planet)
         # return evolve_society()
     print("Generation complete")
 

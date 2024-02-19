@@ -161,21 +161,19 @@ class Civilization(gym.Env):
         # Save the trained model
         model.save("civilization")
 
-        # Presentation layer
+        # Presentation layer -- create plots for introspection into progress
         civ.analysis_engine.show()
-        logger.info(str(env.envs[0].get_wrapper_attr('action_metrics')))
-        for society in env.envs[0].get_wrapper_attr('dead_societies'):
-            logger.info(society)
-            wars = [i for i in society.action_history.action_histories[6].effects if len(i) is not 0]
-            logger.info(wars)
-        for society in env.envs[0].get_wrapper_attr('societies'):
-            logger.info(society)
-            print(society.action_history.get_stats())
-            civ.civilization_generator.generate("Terrestrial", "Forest", society.era, society.government, " ".join(society.values.values))
+        return env.envs[0].get_wrapper_attr('societies')
+        # logger.info(str(env.envs[0].get_wrapper_attr('action_metrics')))
+        # for society in env.envs[0].get_wrapper_attr('dead_societies'):
+        #     wars = [i for i in society.action_history.action_histories[6].effects if len(i) is not 0]
+        # for society in env.envs[0].get_wrapper_attr('societies'):
+        #     print(society.action_history.get_stats())
+            # civ.civilization_generator.generate("Terrestrial", "Forest", society.era, society.government, " ".join(society.values.values))
             # json_str = json.dumps(society.action_history.get_stats(), indent=4)
             # logger.info(json_str)
 
-        logger.info(f"Wars: {len(env.envs[0].get_wrapper_attr('wars'))}")
-        logger.info(f"Year: {env.envs[0].get_wrapper_attr('year')}")
-        logger.info(f"Season: {env.envs[0].get_wrapper_attr('season')}")
+        # logger.info(f"Wars: {len(env.envs[0].get_wrapper_attr('wars'))}")
+        # logger.info(f"Year: {env.envs[0].get_wrapper_attr('year')}")
+        # logger.info(f"Season: {env.envs[0].get_wrapper_attr('season')}")
       

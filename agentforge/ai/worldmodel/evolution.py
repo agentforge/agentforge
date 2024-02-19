@@ -361,7 +361,9 @@ class EvolutionarySimulation:
                     for trait in cls.apex_species_traits:
                         if trait in species.species_data['Genetic Profile']:
                             species_genetics += species.species_data['Genetic Profile'][trait]
-                    species_score = (species_health * 0.2) + (species_genetics * 0.8)
+                    species_score = ((species_health * 0.2) + (species_genetics * 0.8)) * species.evolutionary_stage
+                    if species.species_data['Biological Type'] == "Flora" or species.species_data['Biological Type'] == "Aquatic":
+                        species_score *= 0.5
 
                     if species_score > highest_score:
                         highest_score = species_score

@@ -199,6 +199,7 @@ class SocioPoliticalFramework(SocialFramework):
     "Property Ownership": [0,1],
     "Freedom of Assembly": [0,1],
     "Press Freedom": [0,1],
+    "Perception of Threat": [0,1], # Reflects the perception of external and internal threats: 0 for minimal perceived threat and 1 for significant perceived threat -- leads to higher paranoia and intelligence apparatus
     "Innovation and Research": [0,1], # Reflects the emphasis on and support for innovation and research: 0 for minimal support and 1 for significant investment and encouragement.
     "State Religion": [0,1],
     "Compulsory Military Service": [0,1],
