@@ -10,7 +10,7 @@ HEALTH_CONSUMPTION_FACTOR = 0.1
 MUTATION_RATE = 0.05
 PLANT_GROWTH_FACTOR = 0.30
 class Species:
-    def __init__(self, species_data, evolutionary_stage):
+    def __init__(self, species_data, evolutionary_stage, planet_id, biome):
         self.species_data = species_data
         self.reproduction_type = self.determine_reproduction(evolutionary_stage)
         self.individuals = []  # List to store individual lifeforms
@@ -20,10 +20,13 @@ class Species:
         self.role = ""
         self.behavioral_role = ""
         self.genus = ""
+        self.planet_id = planet_id
+        self.biome = biome
+        self.ancestor = None
 
     def genetic_base_line(self):
         return self.species_data["Genetic Profile"]
-    
+
     def get_trait(self, trait):
         return round(self.genetic_base_line()[trait] / 100.0, 2)
 
@@ -33,13 +36,22 @@ class Species:
             "species_data": self.species_data,
             "reproduction_type": self.reproduction_type,
             "population": self.population,
-            "individuals": self.individuals,
+            # "individuals": self.individuals,
             "evolutionary_stage": self.evolutionary_stage,
             "role": self.role,
             "behavioral_role": self.behavioral_role,
-            "genus": self.genus
+            "genus": self.genus,
+            "ancestor": self.ancestor,
+            "uuid": self.uuid,
+            "biome": self.biome,
+            "planet_id": self.planet_id
         }
         db.set(collection, self.uuid, species_dict)
+        # Save individuals separately for performance
+        slice_size = 50
+        for i in range(0, len(self.individuals), slice_size):
+            self.individuals[i:i+slice_size]
+            db.batch_upload(collection + "_individuals", self.individuals[i:i+slice_size])
 
     @classmethod
     def load(cls, db, collection: str, key: str):
@@ -47,10 +59,37 @@ class Species:
         species = db.get(collection, key)
         if species:
             species_data = species["species_data"]
+            planet_id = species["planet_id"]
+            biome = species["biome"]
             # Create a new Species instance with the loaded data
-            species_instance = cls(species_data, species["evolutionary_stage"])
+            species_instance = cls(species_data, species["evolutionary_stage"], planet_id, biome)
             for key, value in species.items():
                 setattr(species_instance, key, value)
+            for i in range(0, len(species_instance.population), 50):
+                individuals = db.get(collection + "_individuals", key + "_" + str(i))
+                if individuals:
+                    species_instance.individuals.extend(individuals)
+            return species_instance
+        else:
+            return None
+        
+    @classmethod
+    def load_from_object(cls, db, collection: str, species: dict):
+        """Load a species instance from MongoDB."""
+        if species:
+            species_data = species["species_data"]
+            planet_id = species["planet_id"]
+            biome = species["biome"]
+            # Create a new Species instance with the loaded data
+            species_instance = cls(species_data, species["evolutionary_stage"], planet_id, biome)
+            for key, value in species.items():
+                setattr(species_instance, key, value)
+            for i in range(0, species_instance.population, 50):
+                individuals = db.get_many(collection + "_individuals", {'species_id': species_instance.uuid})
+                individuals = list(individuals)
+                if individuals:
+                    species_instance.individuals.extend(individuals)
+            print(f"Loaded {species_instance.population} individuals for {species_instance.role}")
             return species_instance
         else:
             return None
@@ -61,17 +100,15 @@ class Species:
         for x in range(self.population):
             encoded_genetics = self.mutate(encoded_genetics)
             # Create initial individuals
-            self.individuals.append([
-                encoded_genetics,
-                health,
-                self.genetic_base_line()
-            ])
-
-        logger.info(len(self.individuals))
+            self.individuals.append({
+                'genes': encoded_genetics,
+                'health': health,
+                'species_id': self.uuid
+            })
 
     def analyze_health_statistics(self):
         # Extract health values from the array
-        health_values = np.array([individual[1] for individual in self.individuals], dtype=float)
+        health_values = np.array([individual['health'] for individual in self.individuals], dtype=float)
 
         # Check if health_values is empty
         if health_values.size == 0:
@@ -82,10 +119,10 @@ class Species:
         max_health = np.max(health_values) if health_values.size > 0 else 0
         min_health = np.min(health_values) if health_values.size > 0 else 0
 
-        return self.genus, self.species_data['Biological Type'], self.role, round(average_health,2), round(max_health,2), round(min_health,2), self.population
+        return round(average_health,2), round(max_health,2), round(min_health,2)
 
     def __str__(self):
-        return self.species_data['Name'] + "\n" + self.species_data['Type'] + "\n" + self.species_data['Description'] + "\n" + self.role + "\n" + self.behavioral_role + " \nAverage Health:" + str(self.analyze_health_statistics()) + " \nPopulation:" + str(round(self.population, 2)) + " " + self.reproduction_type
+        return self.role + "\n" + self.behavioral_role + " \nAverage Health:" + str(self.analyze_health_statistics()) + " \nPopulation:" + str(round(self.population, 2)) + " " + self.reproduction_type
 
     def __repr__(self):
         return self.__str__()
@@ -96,14 +133,15 @@ class Species:
 
         for individual in self.individuals:
             # Death rate increases as health decreases, with a more gradual distribution
-            health_based_death_rate = (1-(individual[2]["Longevity"]/100.0)) + 0.45 * ((100 - individual[1]) / 100)
+            decoded_genes = self.decode_genetics(individual['genes'], self.genetic_base_line())
+            health_based_death_rate = (1-(decoded_genes["Longevity"]/100.0)) + 0.45 * ((100 - individual['health']) / 100)
 
             # Calculate total death rate, ensuring it doesn't exceed the maximum
             total_death_rate = min(health_based_death_rate, MIN_DEATH_RATE)
             death_rates.append(total_death_rate)
 
             # Determine if individual survives based on the death rate
-            if random.random() > total_death_rate and individual[1] > 0:
+            if random.random() > total_death_rate and individual['health'] > 0:
                 survived_individuals.append(individual)
 
         # Update individuals and population
@@ -251,13 +289,13 @@ class Species:
 
         return trait_values
 
-    def mutate(self, encoded_genetics, length=24):
+    def mutate(self, encoded_genetics, length=24, mutation_rate=MUTATION_RATE):
         # Convert the binary string to a list for mutation
         binary_list = list(encoded_genetics)
 
         # Calculate the mutation chance for each bit
         for i in range(length):
-            if random.random() < MUTATION_RATE:
+            if random.random() < mutation_rate:
                 # Flip the bit
                 binary_list[i] = '1' if binary_list[i] == '0' else '0'
 
@@ -275,12 +313,12 @@ class Species:
             offspring_number = 1
         reproduction_rates = []
         for idx, individual in enumerate(self.individuals):
-            if individual[1] <= 0:
+            if individual['health'] <= 0:
                 continue # Skip dead individuals
-            decoded_genetics = self.decode_genetics(individual[0], self.genetic_base_line())
+            decoded_genetics = self.decode_genetics(individual['genes'], self.genetic_base_line())
             reproduction_rate = decoded_genetics["Reproductive Rate"]
             reproduction_rate = reproduction_rate / 100.0
-            health_factor = individual[1] / 100.0
+            health_factor = individual['health'] / 100.0
             reproduction_probability = reproduction_rate * health_factor * REPRODUCTION_MODIFIER
             reproduction_rates.append(reproduction_probability)
             if random.random() < reproduction_probability:
@@ -289,23 +327,23 @@ class Species:
                         offspring.append(individual)  # Clone the individual
                     elif self.reproduction_type == "Sexual":
                         partner = self.select_mate()  # Select a mate for sexual reproduction
-                        new_genetics = self.genetic_crossover(individual[0], partner[0])
+                        new_genetics = self.genetic_crossover(individual['genes'], partner['genes'])
                         decoded_genetics = self.decode_genetics(new_genetics, self.genetic_base_line())
-                        offspring.append([new_genetics, 100, decoded_genetics])  # New offspring with full health
+                        offspring.append({'genes': new_genetics, 'health': 100})  # New offspring with full health
                 if replace:
                     self.individuals[idx] = offspring[0]
 
         # Append offspring to the population
         if not replace:
-            for new_individual in offspring:
-                self.individuals.append(new_individual)
+            self.individuals.extend(offspring)
 
         self.population = len(self.individuals)
         total  = sum(reproduction_rates) / len(reproduction_rates)
         # logger.info("reproduction rate {}%".format(total))
 
     def select_mate(self):
-        # Select a mate randomly for sexual reproduction
+        # Select a mate randomly for sexual reproduction 
+        # TODO: Make this more intelligent, e.g., based on genetic fitness
         random_index = np.random.randint(0, len(self.individuals))
         return self.individuals[random_index]
 
@@ -335,6 +373,20 @@ class Species:
 
         return possible_prey
     
+    def has_predator(self, lifeforms):
+        for predator in lifeforms:
+            if self.evolutionary_stage > predator.evolutionary_stage:
+                continue
+            if predator.role in ["Primary Consumers"] and self.role in ["Producers"]:
+                return True
+            if predator.role in ["Secondary Consumers"] and self.role in ["Primary Consumers"]:
+                return True
+            if predator.role in ["Tertiary Consumers"] and self.role in ["Secondary Consumers"]:
+                return True
+            if predator.role in ["Omnivores"] and self.role in ["Primary Consumers", "Producers"]:
+                return True
+        return False
+    
     def roll_for_prey_location(self, predator, possible_prey, total_population):
         prey_possible = []
         for prey in possible_prey:
@@ -347,11 +399,12 @@ class Species:
     
     def autotropic_growth(self, individual, environment):
         # Extracting individual's attributes
-        resource_utilization = individual[2]['Resource Utilization'] / 100.0
-        mass = individual[2]['Mass']
-        photosynthetic_ability = individual[2]['Photosynthetic Ability'] / 100.0
-        nutritional_requirements = individual[2]['Nutritional Requirements'] / 100.0
-        current_health = individual[1]
+        decoded_genetics = self.decode_genetics(individual['genes'], self.genetic_base_line())
+        resource_utilization = decoded_genetics['Resource Utilization'] / 100.0
+        mass = decoded_genetics['Mass']
+        photosynthetic_ability = decoded_genetics['Photosynthetic Ability'] / 100.0
+        nutritional_requirements = decoded_genetics['Nutritional Requirements'] / 100.0
+        current_health = individual['health']
 
         # Calculate realistic resource consumption
         water_consumption = min(resource_utilization * mass * PLANT_GROWTH_FACTOR, environment.get('Water') * PLANT_GROWTH_FACTOR)
@@ -368,14 +421,14 @@ class Species:
         health_increase = min(growth, 100 - current_health)
         health_decrease_due_to_nutrition = nutritional_requirements * mass
         # logger.info("health_increase {}".format(health_increase - health_decrease_due_to_nutrition))
-        individual[1] = max(0, current_health + health_increase - health_decrease_due_to_nutrition)  # Ensure health doesn't go below 0
+        individual['health'] = max(0, current_health + health_increase - health_decrease_due_to_nutrition)  # Ensure health doesn't go below 0
         # logger.info("water left {}".format(environment['Water']))
         # logger.info("current_health + health_increase - health_decrease_due_to_nutrition = health")
         # logger.info("{} + {} - {} = {}".format(current_health, health_increase, health_decrease_due_to_nutrition, individual[1]))
 
         return environment
 
-    def roll_for_consumption(self, predator, food):
+    def roll_for_consumption(self, predator, food, prey_species):
         # Factors influencing consumption success
         predation_success_factors = {
             "Strength": 0.3,  # Strength's influence on the success rate
@@ -394,17 +447,19 @@ class Species:
             "Dexterity": 0.2,          # Influence of dexterity (in self-defense)
             "Intelligence": 0.3        # Influence of intelligence (in self-defense)
         }
+        predator_genes = self.decode_genetics(predator['genes'], self.genetic_base_line())
+        food_genes = prey_species.decode_genetics(food['genes'], prey_species.genetic_base_line())
 
         # Calculate predator's success potential based on its traits
-        predation_potential = sum([predator[2][trait] * weight for trait, weight in predation_success_factors.items()])
+        predation_potential = sum([predator_genes[trait] * weight for trait, weight in predation_success_factors.items()])
 
         # Adjust for the predator's toxin resistance
-        predation_potential -= predator[2]["Toxin Resistance"] * predation_success_factors["Toxin Resistance"]
+        predation_potential -= predator_genes["Toxin Resistance"] * predation_success_factors["Toxin Resistance"]
 
         # Calculate food's defense potential based on its traits
-        food_defense = sum([food[2][trait] * weight for trait, weight in food_defense_factors.items()])
+        food_defense = sum([food_genes[trait] * weight for trait, weight in food_defense_factors.items()])
         # Adjust for the food's toxin resistance
-        food_defense -= food[2]["Toxin Resistance"] * food_defense_factors["Toxin Resistance"]
+        food_defense -= food_genes["Toxin Resistance"] * food_defense_factors["Toxin Resistance"]
 
         # Determine the overall success rate
         success_rate = predation_potential / (predation_potential + food_defense)
@@ -418,7 +473,7 @@ class Species:
             return None, None
 
         # Extract health values
-        health_values = np.array([individual[1] for individual in self.individuals], dtype=float)
+        health_values = np.array([individual['health'] for individual in self.individuals], dtype=float)
 
         # Replace NaN values with a large number to effectively make their probability zero
         health_values = np.nan_to_num(health_values, nan=9999999)
@@ -450,12 +505,14 @@ class Species:
 
     def consume(self, predator, prey, prey_ind):
         # Handle consumption of prey
-        health_percentage = (prey_ind[2]['Mass']/100.0 * HEALTH_CONSUMPTION_FACTOR)
-        consumed = prey_ind[1] * health_percentage
+        decoded_genetics = prey.decode_genetics(prey_ind['genes'], prey.genetic_base_line())
+        predator_decoded_genetics = self.decode_genetics(predator['genes'], self.genetic_base_line())
+        health_percentage = (decoded_genetics['Mass']/100.0 * HEALTH_CONSUMPTION_FACTOR)
+        consumed = prey_ind['health'] * health_percentage
         # more efficient predators consume more
         # logger.info("Mass {}".format(prey_ind[2]['Mass']/100.0))
         # logger.info("gained {} health % {}".format(consumed / (predator[2]['Resource Utilization']/100.0), health_percentage))
-        predator[1] += min(MAX_HEALTH, consumed * (predator[2]['Resource Utilization']/100.0))
+        predator['health'] += min(MAX_HEALTH, consumed * (predator_decoded_genetics['Resource Utilization']/100.0))
         # prey.population -= 1y
 
     def consume_decomposing_matter(self):

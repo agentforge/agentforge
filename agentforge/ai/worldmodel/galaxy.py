@@ -9,6 +9,7 @@ from agentforge.ai.worldmodel.biome import Biome
 from agentforge.ai.worldmodel.moon import Moon
 from scipy.spatial import KDTree
 from agentforge.ai.worldmodel.designation import CelestialNamingSystem, star_designations
+from tqdm import tqdm
 from uuid import uuid4
 from agentforge.ai.worldmodel.simulation import StarSimulation
 from agentforge.ai.worldmodel.probability import UniverseProbability
@@ -52,31 +53,16 @@ class Galaxy:
     async def generate_with_life(self):
         simulated_systems = int(math.ceil(self.LIFE_PROBABILITY * self.NUM_SYSTEMS) * (10000/28))
         print("Generating {} systems to sample life...".format(simulated_systems))
-        systems_dict = self.generate(simulated_systems)
-        solar_systems_w_life = len(self.has_life)
-        # Edge case, every solar system has life -- probably an error
-        if self.NUM_SYSTEMS <= solar_systems_w_life:
-            dead_systems = []
-        else:
-            num_dead_systems = self.NUM_SYSTEMS
-            dead_systems = np.random.choice(self.systems, num_dead_systems, replace=False).tolist()
-        systems_to_return = dead_systems + systems_dict["has_life"]
-        return {
-            "systems": systems_to_return,
-            "starfield_positions": systems_dict["starfield_positions"],
-            "lifeforms": systems_dict["lifeforms"],
-            "systems_with_life": solar_systems_w_life,
-            "interstellar_civilizations": systems_dict["interstellar_civilizations"],
-        }
+        return self.generate(simulated_systems)
 
+    # generate a galaxy with solar systems and life preseance esrtimates
+    # num_systems: int, simulated number of solar systems to generate to ensure life probability is met
     def generate(self, num_systems):
         system_names = self.get_system_name(num_systems)
         # From the macro to the micro, we build the world model
         self.systems = []
         self.has_life = []
         self.life_data = defaultdict(int)
-        self.all_life_forms = []
-        self.interstellar_civilizations = []
 
         print("Generating star positions...")
         
@@ -115,8 +101,7 @@ class Galaxy:
         print("Generating systems...")
         self.up.setup() # setup the universe probability matricies
         star_probabilities = self.up.normalized_gx_s_df.iloc[0]
-        for star_position in star_positions:
-
+        for i in tqdm(range(num_systems), desc="Sampling solar systems..."):
             star_type = np.random.choice(star_names, p=star_probabilities)
 
             # Find the index of the sampled star type
@@ -140,14 +125,14 @@ class Galaxy:
             solar_system_info = {
                 "Name": name,
                 "Star": star_type,
-                "Star Position": star_position.tolist(),
+                # "Star Position": star_position.tolist(),
                 "Star Information": self.star.star_concepts[star_type].metadata,
                 "Star Mass (kg)": star_mass_kg,
                 "Star Age (Gyr)": star_age_Gyr,
                 "Number of Planets": num_planets,
                 "Disk Mass": disk_mass,
                 "Planets": [],
-                "uuid": star_id
+                "id": star_id
             }
 
             # Sample a planet type based on star type
@@ -178,7 +163,7 @@ class Galaxy:
                         "Life Presence": life_presence,
                     }
                     if life_presence:
-                        biome_info['Life Evolved'] = False
+                        biome_info['evolved'] = False
 
                     if biome_type not in planet_info["Biomes"]:
                         planet_info["Biomes"][biome_type] = {}
@@ -194,16 +179,19 @@ class Galaxy:
                 self.life_data[planet_type] += 1
                 solar_system_info["Life"] = True
 
-        # Setup neighbors
         end_time = time.time()
         print(f"System Generation Time elapsed: {end_time - start_time}")
+        dead_systems = np.random.choice(self.systems, self.NUM_SYSTEMS - len(self.has_life), replace=False).tolist()
+        self.systems = dead_systems + self.has_life
 
+        # Setup neighbors
         for i, system in enumerate(self.systems):
+            self.systems[i]['Star Position'] = star_positions[i].tolist()
             system['Neighbors'] = []
             dist_idx = 0
             for neighbor_index in nearest_neighbors[i]:
                 neighbor = {
-                    "uuid": self.systems[neighbor_index]['uuid'],
+                    "id": self.systems[neighbor_index]['id'],
                     "Distance": str(distances_matrix[i, dist_idx]),
                     "Name": self.systems[neighbor_index]['Name'],
                 }
@@ -215,10 +203,7 @@ class Galaxy:
 
         return {
             "systems": self.systems,
-            "has_life": self.has_life,
             "starfield_positions": starfield_positions.tolist(),
-            "lifeforms": self.all_life_forms,
-            "interstellar_civilizations": self.interstellar_civilizations,
         }
 
     # Perlin noise implementation
@@ -299,9 +284,7 @@ class Galaxy:
         # star_positions = self.update_positions_with_random_speeds(star_positions, star_speeds, 0.1, anim_steps)
 
         # Slow but accurate
-        for i in range(anim_steps):
-            if(i % 10 == 0):
-                print(f"step {i} of {anim_steps}")
+        for i in tqdm(range(anim_steps), desc="Aging Galaxy"):
             star_positions = self.update_positions_with_random_speeds_og(star_positions, star_speeds, i)
         
         end_time = time.time()

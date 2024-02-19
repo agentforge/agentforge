@@ -42,9 +42,10 @@ class MongoDBKVStore(DB):
         operations = []
         for doc in documents:
             # Use the _id field for upsert operations
-            operation = UpdateOne({'_id': doc['uuid']}, {'$set': doc}, upsert=True)
+            if 'id' not in doc:
+                doc['id'] = str(uuid.uuid4())
+            operation = UpdateOne({'_id': doc['id']}, {'$set': doc}, upsert=True)
             operations.append(operation)
-
         try:
             collection_ref = self.db[collection]
             result = collection_ref.bulk_write(operations)
@@ -120,7 +121,6 @@ class MongoDBKVStore(DB):
             logging.error(f'Copy operation failed for key {key}: {str(e)}')
             return False
 
-
     def delete(self, collection:str, key: str) -> None:
         self._check_connection()
         collection = self.db[collection]
@@ -131,12 +131,21 @@ class MongoDBKVStore(DB):
             logging.error(f'Delete operation failed for key {key}: {str(e)}')
             raise
 
-
     def count(self, collection:str, filter: Dict[str, Any]) -> Cursor:
         self._check_connection()
         collection = self.db[collection]
         try:
             result = collection.count_documents(filter)
+            return result
+        except Exception as e:
+            logging.error(f'Get operation failed for filter {filter}: {str(e)}')
+            raise
+
+    def get_one(self, collection:str, filter: Dict[str, Any]) -> Cursor:
+        self._check_connection()
+        collection = self.db[collection]
+        try:
+            result = collection.find_one(filter)
             return result
         except Exception as e:
             logging.error(f'Get operation failed for filter {filter}: {str(e)}')

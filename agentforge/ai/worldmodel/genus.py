@@ -7,6 +7,7 @@ class Genus:
 
     def get_genus(self, biological_type, evolutionary_stage):
         if biological_type not in self.lifeform_genus_data:
+            print(f"Biological type not found in genus data '{biological_type}'")
             return "Exotic"
         probabilities = list(self.lifeform_genus_data[biological_type][evolutionary_stage].values())
         total = sum(probabilities)
@@ -39,6 +40,59 @@ class Genus:
             "Woody Plants (Trees, Shrubs)": 1.0,
             "Herbaceous Plants (Non-woody Plants)": 1.0,
         }
+    }
+
+    cold_tolerate_fauna_genus = {
+        "Single-celled organisms": {
+                "Bacteria": 1.0, 
+                "Archaea": 1.0,
+                "Protozoa": 1.0,
+                "Unicellular Fungi (e.g., Yeasts)": 1.0,
+                "Protists (e.g., Amoebas, Slime Molds)": 1.0,
+                "Choanoflagellates": 1.0,
+                "Ciliates (such as Paramecium)": 1.0,
+                "Flagellates (e.g., Euglena)": 1.0,
+            },
+            "Multi-celled organisms": {
+                "Fungi": 1.0,
+                "Molds": 1.0,
+                "Mildews": 1.0,
+                "Yeast": 1.0,
+                "Simple Annelids": 1.0,  
+            },
+            "Complex lifeforms": {
+                "Mammals": 1.0,
+                "Birds": 1.0,
+                "Reptiles": 1.0,
+                "Amphibians": 1.0,
+                "Fish": 1.0,
+                "Coleoptera (Beetles)": 1.0,
+                "Lepidoptera (Butterflies and Moths)": 1.0,
+                "Hymenoptera (Bees, Wasps, Ants)": 1.0,
+                "Diptera (Flies)": 1.0,
+                "Hemiptera (True Bugs)": 1.0,
+                "Odonata (Dragonflies)": 1.0,
+                "Orthoptera (Grasshoppers)": 1.0,
+                "Araneae (Spiders)": 1.0,
+                "Gastropoda (Snails)": 1.0,
+                "Isoptera (Termites)": 1.0,
+                "Lagomorpha (Rabbits)": 1.0,
+                "Mantodea (Praying Mantises)": 1.0,
+                "Blattodea (Cockroaches)": 1.0,
+                "Myriapods": 1.0,
+                "Arachnids": 1.0,
+                "Arachnids": 1.0,
+                "Felines": 1.0,
+                "Canines": 1.0,
+                "Primates": 1.0,
+                "Rodents": 1.0,
+                "Bovines": 1.0,
+                "Equines": 1.0,
+                "Porcines": 1.0,
+                "Avians": 1.0,
+                "Annelids": 1.0,
+                "Mollusks": 1.0,
+            }
     }
 
     # More speciiic life form concepts -- to supply LLM prompts
@@ -93,7 +147,7 @@ class Genus:
                 "Avians": 1.0,
                 "Annelids": 1.0,
                 "Mollusks": 1.0,
-            }
+            }    
         },
         "Aquatic": {
             "Single-celled organisms": {
@@ -133,5 +187,6 @@ class Genus:
         },
         "Flora": flora_genus,
         "Cold-Tolerant Flora": flora_genus,
+        "Cold-Tolerant Fauna": cold_tolerate_fauna_genus,
     }
 

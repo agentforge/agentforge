@@ -141,7 +141,11 @@ class Civilization(gym.Env):
         self.num_societies = len(self.societies)
 
     @classmethod
-    def run(cls, species_ids=["a104d248-3df1-49ac-ae15-543e8e01168f"]):     
+    def apex(cls, species):
+        return species.get_apex_species()
+
+    @classmethod
+    def run(cls, species_ids=[]):
         # Set the environment and civilization
         analysis_engine = TimeSeriesPlotterManager(["population", "technology"])
         civ = CivilizationRunner(species_ids, analysis_engine)

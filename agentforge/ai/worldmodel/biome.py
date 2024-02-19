@@ -4,10 +4,11 @@ from .lifeform import Lifeform
 from agentforge.ai.worldmodel.evolution import EvolutionarySimulation
 import numpy as np
 
+
 class Biome:
     def __init__(self) -> None:
         self.lifeform = Lifeform()
-        
+
         # Create concepts for each planet type
         self.biome_concepts = {}
         for biome_type in self.biomes:
@@ -25,8 +26,24 @@ class Biome:
         lifeforms = []
         biome_quotient = self.biome_biological_support[biome_type]['biological_diversity_quotient']
         biome_supported_species = math.ceil(25 * biome_quotient)
-        biome_index = self.biomes.index(biome_type)
+        lifeforms = self.sample_lifeform(biome_type, biome_supported_species, normalized_bx_b_df, normalized_bx_lf_df)
 
+        print("evolving life {} for {} ({})".format(len(lifeforms), planet_info['id'], biome_type))
+        origin_of_species = EvolutionarySimulation(
+            planet_info['Planet Type'],
+            biome_type,
+            planet_info['id'],
+            normalized_bx_b_df,
+            normalized_bx_lf_df
+        )
+        evolutionary_report = origin_of_species.run(lifeforms, biome_supported_species)
+
+        # Now update the planet/biome with the new life forms
+        return evolutionary_report
+    
+    def sample_lifeform(self, biome_type, biome_supported_species,normalized_bx_b_df, normalized_bx_lf_df):
+        lifeforms = []
+        biome_index = self.biomes.index(biome_type)
         for _ in range(biome_supported_species):
             biological_probabilities = normalized_bx_b_df.iloc[biome_index]
             biological_type = np.random.choice(self.lifeform.life_form_categories, p=biological_probabilities)
@@ -44,41 +61,36 @@ class Biome:
             }
 
             lifeforms.append(bio_info)
+        return lifeforms
 
-        print("evolving life {} for {} ({})".format(len(lifeforms), planet_info['Planet Type'], biome_type))
-        origin_of_species = EvolutionarySimulation(planet_info['Planet Type'], biome_type, planet_info['uuid'])
-        evolutionary_report = origin_of_species.run(lifeforms)
-
-        # Now update the planet/biome with the new life forms
-        return evolutionary_report
-
-    biomes = ["Forest", 
-        "Desert", 
-        "Ocean", 
-        "Tundra", 
-        "Grassland", 
-        "Wetlands", 
-        "Savanna", 
-        "Taiga", 
-        "Chaparral", 
-        "Temperate Deciduous Forest", 
-        "Temperate Rainforest", 
+    biomes = [
+        "Forest",
+        "Desert",
+        "Ocean",
+        "Tundra",
+        "Grassland",
+        "Wetlands",
+        "Savanna",
+        "Taiga",
+        "Chaparral",
+        "Temperate Deciduous Forest",
+        "Temperate Rainforest",
         "Mediterranean", 
         "Montane (Alpine)",
         "Coral Reefs", 
         "Mangroves",
-        "Silicon-based", 
-        "Ammonia-based", 
+        "Silicon-based",
+        "Ammonia-based",
         "Lava", 
         "Ice", 
         "Super-Earth Oceanic", 
-        "Carbon-rich", 
+        "Carbon-rich",
         "Iron-rich",
         "Helium-rich", 
         "Sulfuric Acid Cloud", 
         "Chlorine-based Atmosphere", 
         "Hydrocarbon Lakes", 
-        "Supercritical Fluid", 
+        "Supercritical Fluid",
         "Subsurface Ocean"
     ]
 

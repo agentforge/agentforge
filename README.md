@@ -247,3 +247,27 @@ Outlines
 ``````
 python3 -m outlines.serve.serve --model TheBloke/Speechless-Llama2-Hermes-Orca-Platypus-WizardLM-13B-AWQ --quantization awq --max-num-batched-tokens 4096
 ``````
+
+### Generating a Universe From Scratch
+
+#### Generate a Galaxy + Planets:
+```
+from agentforge.api.sim import get_galaxy
+galaxy = await get_galaxy("milky_way4275", num_systems=2000, anim_steps=10)
+```
+
+#### Evolve Life:
+First run workers:
+```
+celery -A agentforge.api.sim worker --loglevel=INFO -n worker1@%h
+celery -A agentforge.api.sim worker --loglevel=INFO -n worker2@%h
+celery -A agentforge.api.sim worker --loglevel=INFO -n worker3@%h
+celery -A agentforge.api.sim worker --loglevel=INFO -n worker4@%h
+```
+
+Next run evolve:
+```
+from agentforge.api.sim import evolve_life
+evolve_life.delay()
+
+```

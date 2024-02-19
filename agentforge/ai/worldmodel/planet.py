@@ -138,7 +138,7 @@ class Planet:
             "Orbital Period (year)": orbital_period,
             "Orbital Period (days)": orbital_period_days,
             "Moons": moons,
-            "uuid": str(uuid.uuid4())
+            "id": str(uuid.uuid4())
         }
 
         gravity_info = self.estimate_planetary_characteristics(planet_info, planet_type)

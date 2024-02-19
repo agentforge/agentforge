@@ -1,3 +1,4 @@
+import os
 from fastapi import APIRouter, Request, Depends, status, HTTPException
 from pydantic import BaseModel
 from typing import List, Dict
@@ -5,14 +6,82 @@ from agentforge.factories import resource_factory
 from agentforge.api.app import init_api
 from agentforge.utils import logger
 from agentforge.ai.worldmodel.galaxy import Galaxy
+from agentforge.ai.worldmodel.biome import Biome
+from agentforge.ai.worldmodel.species import Species
+from agentforge.ai.worldmodel.probability import UniverseProbability
+from agentforge.ai.worldmodel.evolution import EvolutionarySimulation
+from agentforge.ai.worldmodel.civilization import Civilization
 from agentforge.interfaces import interface_interactor
 import traceback
-
-router = APIRouter()
+from celery import Celery
 
 class GalaxyResponse(BaseModel):
    systems: Dict
 
+router = APIRouter()
+db_uri = os.getenv("MONGODB_URI")
+
+# Initialize a Celery instance - adjust broker URL as needed
+app = Celery(
+    'evolution',
+    broker=db_uri,
+    backend=db_uri,
+)
+
+@app.task
+def evolve_society():
+    db = interface_interactor.get_interface("db")
+    planet = db.get_one("planets", {"evolution_complete": True, "evolutionary_stage": 2, "civilization": {"$exists": False}, "civilization_emerging": {"$exists": False}})
+    if planet:
+        planet["civilization_emerging"] = True
+        # db.set("planets", planet["id"], planet)
+        print(f"Getting species for planet {planet['id']}")
+        species_cursor = db.get_many("species", {"planet_id": planet["id"], "evolutionary_stage": 2})
+        species_objs =[]
+        # for _, s in enumerate(species_cursor):
+        #     species_objs.append(Species.load_from_object(db, 'species', s))
+        # apex_species = EvolutionarySimulation.identify_apex_species(species_objs)
+        print(f"Apex species: {apex_species}")
+        Civilization.run(species_ids=[apex_species["id"]])
+        # planet["civilization_emerging"] = False
+        # planet["civilization"] = True
+        # db.set("planets", planet["id"], planet)
+        # return evolve_society()
+    print("Generation complete")
+
+@app.task
+def evolve_life():
+    biome = Biome()
+    up = UniverseProbability()
+    up.setup()
+    db = interface_interactor.get_interface("db")
+    # Grab a planet to evolve
+    planet_info = db.get_one("planets", {"Life Presence": True, "evolution_in_progress": {"$exists": False}, "evolution_complete": {"$exists": False}})
+    if planet_info:
+        print(f"Evolution in progress for planet {planet_info['id']}")
+        planet_info["evolution_in_progress"] = True
+        db.set("planets", planet_info["id"], planet_info)
+        for biome_type in planet_info["Biomes"].keys():
+            if planet_info["Biomes"][biome_type]['evolved'] == False:
+                evolutionary_report = biome.evolve_for_biome(planet_info, biome_type, up.normalized_bx_b_df, up.normalized_bx_lf_df)
+                # Convert lifeforms to UUIDs for lookup on the species table
+                for i, life in enumerate(evolutionary_report["lifeforms"]):
+                    evolutionary_report["lifeforms"][i] = life.uuid
+                del evolutionary_report["environment"]
+                # planet_info["Biomes"][biome_type]['Evolution'] = evolutionary_report
+                planet_info["Biomes"][biome_type]['evolved'] = True
+                planet_info["Biomes"][biome_type]["evolutionary_stage"] = evolutionary_report["final_evolutionary_stage"]
+                planet_info["Biomes"][biome_type]["apex_species"] = {
+                    "id": evolutionary_report["apex_species"],
+                    "score": evolutionary_report["apex_species_score"],
+                }
+        planet_info["evolution_in_progress"] = False
+        planet_info["evolution_complete"] = True
+        db.set("planets", planet_info["id"], planet_info)
+        return evolve_life() # recursively try again
+    
+    # No more planets to evolve
+    print("Generation complete")
 
 ### Generates a galaxy and saves it to the database
 ### If the galaxy already exists, it will be returned
@@ -21,9 +90,9 @@ class GalaxyResponse(BaseModel):
 ### @param anim_steps: The number of animation steps to generate
 ### @param recreate: Whether to recreate the galaxy if it already exists
 ### @return: The generated galaxy
-async def get_galaxy(
+async def evolve_galaxy(
         key: str,
-        num_systems: int,
+        num_systems: int = 625,
         anim_steps: int = 100,
         recreate: bool = False
     ):
@@ -61,7 +130,6 @@ async def get_galaxy(
 
     # Split and store systems in separate collections
     systems = response.pop('systems', [])
-    print(len(systems))
     has_life = response.pop('has_life', [])
     planet_queue = []
 
@@ -69,11 +137,12 @@ async def get_galaxy(
         if 'Planets' not in system:
             continue
         for planet in system['Planets']:
-            planet['system_id'] = system['uuid']
+            planet['system_id'] = system['id']
             system['galaxy_key'] = key
             planet_queue.append(planet)
         system.pop('Planets')
 
+    print("Saving galaxy to database...")
     planet_slices = [planet_queue[i:i + BATCH_SIZE] for i in range(0, len(planet_queue), BATCH_SIZE)]
     for i, slice in enumerate(planet_slices):
         db.batch_upload(planets_collection, slice)
@@ -99,5 +168,5 @@ async def get_galaxy(
 
 @router.post("/generate-galaxy", operation_id="generateGalaxy")
 async def output() -> GalaxyResponse:
-   response = await get_galaxy("milky_way", 625)
+   response = await evolve_galaxy("milky_way", 625)
    return GalaxyResponse(systems=response)

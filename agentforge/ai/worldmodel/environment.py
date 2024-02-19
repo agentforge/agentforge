@@ -26,11 +26,11 @@ class Environment:
     # Interactaction with the environment and lifeforms
     def interact(self, lifeform):
       for effect in self.environmental_effects:
-        for individual_idx in range(len(lifeform.individuals)):
-            genetics = lifeform.decode_genetics(lifeform.individuals[individual_idx][0], lifeform.genetic_base_line())
-            lifeform.individuals[individual_idx][1] += effect(self, genetics, lifeform.species_data['Biological Type'])
-            if lifeform.individuals[individual_idx][1] <= 0:
-                lifeform.individuals[individual_idx][1] = 0
+        for individual in lifeform.individuals:
+            genetics = lifeform.decode_genetics(individual['genes'], lifeform.genetic_base_line())
+            individual['health'] += effect(self, genetics, lifeform.species_data['Biological Type'])
+            if individual['health'] <= 0:
+                individual['health'] = 0
                 lifeform.population -= 1
       return lifeform
 
