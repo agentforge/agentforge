@@ -16,3 +16,4 @@ if RESOURCE == "AGENT":
     interface_interactor.create_service("tts")
     interface_interactor.create_service("w2l")
     interface_interactor.create_service("tokenizer")
+    interface_interactor.create_image_generator("pixart")

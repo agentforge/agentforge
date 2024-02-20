@@ -1,0 +1,226 @@
+{
+    "Forest": {
+        "Aquatic": 0.00, "Terrestrial": 0.20, "Flora": 0.30,
+        "Crystalline": 0.00, "Amorphous": 0.0001,
+        "Cold-Tolerant Fauna": 0.02, "Cold-Tolerant Flora": 0.03,
+        "Gaseous": 0.00, "Plasma": 0.00,
+        "Electromagnetic": 0.00, "Quantum": 0.00,
+        "Radiation-Resistant": 0.00, "Pressure-Resistant": 0.00, "Temperature-Resistant": 0.00
+    },
+    "Desert": {
+        "Aquatic": 0.00, "Terrestrial": 0.25, "Flora": 0.15,
+        "Crystalline": 0.00, "Amorphous": 0.0001,
+        "Cold-Tolerant Fauna": 0.01, "Cold-Tolerant Flora": 0.01,
+        "Gaseous": 0.00, "Plasma": 0.00,
+        "Electromagnetic": 0.00, "Quantum": 0.00,
+        "Radiation-Resistant": 0.00, "Pressure-Resistant": 0.00, "Temperature-Resistant": 0.00
+    },
+    "Ocean": {
+        "Aquatic": 0.70, "Terrestrial": 0.00, "Flora": 0.00,
+        "Crystalline": 0.00, "Amorphous": 0.0001,
+        "Cold-Tolerant Fauna": 0.05, "Cold-Tolerant Flora": 0.05,
+        "Gaseous": 0.00, "Plasma": 0.00,
+        "Electromagnetic": 0.00, "Quantum": 0.0001,
+        "Radiation-Resistant": 0.00, "Pressure-Resistant": 0.00, "Temperature-Resistant": 0.00
+        },
+    "Tundra": {
+        "Aquatic": 0.01, "Terrestrial": 0.15, "Flora": 0.10,
+        "Crystalline": 0.00, "Amorphous": 0.0001,
+        "Cold-Tolerant Fauna": 0.20, "Cold-Tolerant Flora": 0.20,
+        "Gaseous": 0.00, "Plasma": 0.00,
+        "Electromagnetic": 0.00, "Quantum": 0.0001,
+        "Radiation-Resistant": 0.00, "Pressure-Resistant": 0.00, "Temperature-Resistant": 0.00
+        },
+    "Grassland": {
+        "Aquatic": 0.01, "Terrestrial": 0.25, "Flora": 0.25,
+        "Crystalline": 0.00, "Amorphous": 0.0001,
+        "Cold-Tolerant Fauna": 0.02, "Cold-Tolerant Flora": 0.02,
+        "Gaseous": 0.00, "Plasma": 0.00,
+        "Electromagnetic": 0.00, "Quantum": 0.0001,
+        "Radiation-Resistant": 0.00, "Pressure-Resistant": 0.00, "Temperature-Resistant": 0.00
+        },
+    "Wetlands": {
+        "Aquatic": 0.20, "Terrestrial": 0.25, "Flora": 0.20,
+        "Crystalline": 0.00, "Amorphous": 0.0001,
+        "Cold-Tolerant Fauna": 0.03, "Cold-Tolerant Flora": 0.03,
+        "Gaseous": 0.00, "Plasma": 0.00,
+        "Electromagnetic": 0.00, "Quantum": 0.0001,
+        "Radiation-Resistant": 0.00, "Pressure-Resistant": 0.00, "Temperature-Resistant": 0.00
+        },
+    "Savanna": {
+        "Aquatic": 0.01, "Terrestrial": 0.30,"Flora": 0.20,
+        "Crystalline": 0.00, "Amorphous": 0.0001,
+        "Cold-Tolerant Fauna": 0.01, "Cold-Tolerant Flora": 0.01,
+        "Gaseous": 0.00, "Plasma": 0.00,
+        "Electromagnetic": 0.00, "Quantum": 0.0001,
+        "Radiation-Resistant": 0.00, "Pressure-Resistant": 0.00, "Temperature-Resistant": 0.00
+        },
+    "Taiga": {
+        "Aquatic": 0.00, "Terrestrial": 0.20, "Flora": 0.25,
+        "Crystalline": 0.00, "Amorphous": 0.0001,
+        "Cold-Tolerant Fauna": 0.15, "Cold-Tolerant Flora": 0.15,
+        "Gaseous": 0.00, "Plasma": 0.00,
+        "Electromagnetic": 0.00, "Quantum": 0.0001,
+        "Radiation-Resistant": 0.00, "Pressure-Resistant": 0.00, "Temperature-Resistant": 0.00
+        },
+    "Chaparral": {
+        "Aquatic": 0.01, "Terrestrial": 0.30, "Flora": 0.20,
+        "Crystalline": 0.00, "Amorphous": 0.0001,
+        "Cold-Tolerant Fauna": 0.01, "Cold-Tolerant Flora": 0.01,
+        "Gaseous": 0.00, "Plasma": 0.00,
+        "Electromagnetic": 0.00, "Quantum": 0.0001,
+        "Radiation-Resistant": 0.00, "Pressure-Resistant": 0.00, "Temperature-Resistant": 0.00
+        },
+    "Temperate Deciduous Forest": {
+        "Aquatic": 0.10, "Terrestrial": 0.20, "Flora": 0.25,
+        "Crystalline": 0.00, "Amorphous": 0.0001,
+        "Cold-Tolerant Fauna": 0.05, "Cold-Tolerant Flora": 0.05,
+        "Gaseous": 0.00, "Plasma": 0.00,
+        "Electromagnetic": 0.00, "Quantum": 0.0001,
+        "Radiation-Resistant": 0.00, "Pressure-Resistant": 0.00, "Temperature-Resistant": 0.00
+    },
+    "Temperate Rainforest": {
+        "Aquatic": 0.15, "Terrestrial": 0.15, "Flora": 0.20,
+        "Crystalline": 0.00, "Amorphous": 0.0001,
+        "Cold-Tolerant Fauna": 0.06, "Cold-Tolerant Flora": 0.06,
+        "Gaseous": 0.00, "Plasma": 0.00,
+        "Electromagnetic": 0.00, "Quantum": 0.0001,
+        "Radiation-Resistant": 0.00, "Pressure-Resistant": 0.00, "Temperature-Resistant": 0.00
+    },
+    "Mediterranean": {
+        "Aquatic": 0.10, "Terrestrial": 0.20, "Flora": 0.25,
+        "Crystalline": 0.00, "Amorphous": 0.0001,
+        "Cold-Tolerant Fauna": 0.02, "Cold-Tolerant Flora": 0.02,
+        "Gaseous": 0.00, "Plasma": 0.00,
+        "Electromagnetic": 0.00, "Quantum": 0.0001,
+        "Radiation-Resistant": 0.00, "Pressure-Resistant": 0.00, "Temperature-Resistant": 0.00
+    },
+    "Montane (Alpine)": {
+        "Aquatic": 0.00, "Terrestrial": 0.20, "Flora": 0.25, 
+        "Crystalline": 0.00, "Amorphous": 0.0001,
+        "Cold-Tolerant Fauna": 0.10, "Cold-Tolerant Flora": 0.10, 
+        "Gaseous": 0.00, "Plasma": 0.00, 
+        "Electromagnetic": 0.00, "Quantum": 0.0001,
+        "Radiation-Resistant": 0.00, "Pressure-Resistant": 0.00, "Temperature-Resistant": 0.00
+    },
+    "Coral Reefs": {
+        "Aquatic": 0.30, "Terrestrial": 0.00, "Flora": 0.20,
+        "Crystalline": 0.00, "Amorphous": 0.0001,
+        "Cold-Tolerant Fauna": 0.00, "Cold-Tolerant Flora": 0.00,
+        "Gaseous": 0.00, "Plasma": 0.00,
+        "Electromagnetic": 0.00, "Quantum": 0.0001,
+        "Radiation-Resistant": 0.00, "Pressure-Resistant": 0.00, "Temperature-Resistant": 0.00
+    },
+    "Mangroves": {
+        "Aquatic": 0.15, "Terrestrial": 0.15, "Flora": 0.20,
+        "Crystalline": 0.00, "Amorphous": 0.0001,
+        "Cold-Tolerant Fauna": 0.05, "Cold-Tolerant Flora": 0.05,
+        "Gaseous": 0.00, "Plasma": 0.00,
+        "Electromagnetic": 0.00, "Quantum": 0.0001,
+        "Radiation-Resistant": 0.00, "Pressure-Resistant": 0.00, "Temperature-Resistant": 0.00
+    },
+    "Silicon-based": {
+        "Aquatic": 0.0, "Terrestrial": 0.0, "Flora": 0.0,
+        "Crystalline": 0.35, "Amorphous": 0.35,  
+        "Cold-Tolerant Fauna": 0, "Cold-Tolerant Flora": 0,
+        "Gaseous": 0.05, "Plasma": 0.05,  
+        "Electromagnetic": 0.05, "Quantum": 0.05,  
+        "Radiation-Resistant": 0, "Pressure-Resistant": 0, "Temperature-Resistant": 0
+    },
+    "Ammonia-based": {
+        "Aquatic": 0.0, "Terrestrial": 0.0, "Flora": 0.0,
+        "Cold-Tolerant Fauna": 0.4, "Cold-Tolerant Flora": 0.4,  
+        "Crystalline": 0, "Amorphous": 0,
+        "Gaseous": 0, "Plasma": 0,
+        "Electromagnetic": 0.05, "Quantum": 0.05,  
+        "Radiation-Resistant": 0.025, "Pressure-Resistant": 0.025, "Temperature-Resistant": 0.025
+    },
+    "Lava": {
+        "Aquatic": 0.0, "Terrestrial": 0.0, "Flora": 0.0,
+        "Crystalline": 0.05, "Amorphous": 0.05,  
+        "Cold-Tolerant Fauna": 0, "Cold-Tolerant Flora": 0,
+        "Gaseous": 0, "Plasma": 0,
+        "Electromagnetic": 0.05, "Quantum": 0.05,  
+        "Radiation-Resistant": 0.1, "Pressure-Resistant": 0.1, "Temperature-Resistant": 0.1
+    },
+    "Ice": {
+        "Aquatic": 0.0, "Terrestrial": 0.0, "Flora": 0.0,  
+        "Cold-Tolerant Fauna": 0.3, "Cold-Tolerant Flora": 0.3,  
+        "Crystalline": 0.01, "Amorphous": 0,  
+        "Gaseous": 0, "Plasma": 0,  
+        "Electromagnetic": 0.05, "Quantum": 0.05,  
+        "Radiation-Resistant": 0.10, "Pressure-Resistant": 0.05, "Temperature-Resistant": 0.5
+    },
+    "Super-Earth Oceanic": {
+        "Aquatic": 0.35, "Terrestrial": 0.00, "Flora": 0.15,  
+        "Crystalline": 0, "Amorphous": 0,  
+        "Cold-Tolerant Fauna": 0.05, "Cold-Tolerant Flora": 0.05,  
+        "Gaseous": 0, "Plasma": 0,  
+        "Electromagnetic": 0.05, "Quantum": 0.05,  
+        "Radiation-Resistant": 0.0025, "Pressure-Resistant": 0.0025, "Temperature-Resistant": 0.0025
+    },
+    "Carbon-rich": {
+        "Aquatic": 0.30, "Terrestrial": 0.35, "Flora": 0.15,  
+        "Crystalline": 0, "Amorphous": 0,  
+        "Cold-Tolerant Fauna": 0, "Cold-Tolerant Flora": 0,  
+        "Gaseous": 0, "Plasma": 0,  
+        "Electromagnetic": 0.05, "Quantum": 0.05,  
+        "Radiation-Resistant": 0.025, "Pressure-Resistant": 0.025, "Temperature-Resistant": 0.025
+    },
+    "Iron-rich": {
+        "Aquatic": 0.0, "Terrestrial": 0.10, "Flora": 0.10, 
+        "Crystalline": 0.15, "Amorphous": 0.15,  
+        "Cold-Tolerant Fauna": 0, "Cold-Tolerant Flora": 0,  
+        "Gaseous": 0, "Plasma": 0,  
+        "Electromagnetic": 0.05, "Quantum": 0.05,  
+        "Radiation-Resistant": 0.05, "Pressure-Resistant": 0.05, "Temperature-Resistant": 0.05
+    },
+    "Helium-rich": {
+        "Aquatic": 0.0, "Terrestrial": 0.0, "Flora": 0.0,
+        "Crystalline": 0.001, "Amorphous": 0.001,  
+        "Cold-Tolerant Fauna": 0, "Cold-Tolerant Flora": 0,  
+        "Gaseous": 0.25, "Plasma": 0.25,  
+        "Electromagnetic": 0.15, "Quantum": 0.15,  
+        "Radiation-Resistant": 0.05, "Pressure-Resistant": 0.05, "Temperature-Resistant": 0
+    },
+    "Sulfuric Acid Cloud": {
+        "Aquatic": 0.0, "Terrestrial": 0.0, "Flora": 0.0,
+        "Crystalline": 0.001, "Amorphous": 0.001,  
+        "Cold-Tolerant Fauna": 0, "Cold-Tolerant Flora": 0,  
+        "Gaseous": 0, "Plasma": 0,  
+        "Electromagnetic": 0.25, "Quantum": 0.25,  
+        "Radiation-Resistant": 0.1, "Pressure-Resistant": 0.1, "Temperature-Resistant": 0 
+    },
+    "Chlorine-based Atmosphere": {
+        "Aquatic": 0.0, "Terrestrial": 0.0, "Flora": 0.0,
+        "Crystalline": 0.001, "Amorphous": 0.001,  
+        "Cold-Tolerant Fauna": 0, "Cold-Tolerant Flora": 0,  
+        "Gaseous": 0.10, "Plasma": 0.10,  
+        "Electromagnetic": 0.20, "Quantum": 0.20,  
+        "Radiation-Resistant": 0.05, "Pressure-Resistant": 0.05, "Temperature-Resistant": 0.05  
+    },
+    "Hydrocarbon Lakes": {
+        "Aquatic": 0.001, "Terrestrial": 0.00, "Flora": 0.001,
+        "Cold-Tolerant Fauna": 0.15, "Cold-Tolerant Flora": 0.15,
+        "Gaseous": 0.0, "Plasma": 0.0,
+        "Crystalline": 0.001, "Amorphous": 0.001,
+        "Electromagnetic": 0.10, "Quantum": 0.10,
+        "Radiation-Resistant": 0.05, "Pressure-Resistant": 0.05, "Temperature-Resistant": 0.05
+    },
+    "Supercritical Fluid": {
+        "Aquatic": 0.0, "Terrestrial": 0.0, "Flora": 0.0,
+        "Cold-Tolerant Fauna": 0.01, "Cold-Tolerant Flora": 0.01,
+        "Gaseous": 0.0, "Plasma": 0.0,
+        "Crystalline": 0.05, "Amorphous": 0.05,
+        "Electromagnetic": 0.3, "Quantum": 0.3,
+        "Radiation-Resistant": 0.05, "Pressure-Resistant": 0.05, "Temperature-Resistant": 0.05
+    },
+    "Subsurface Ocean": {
+        "Aquatic": 0.2, "Terrestrial": 0.0, "Flora": 0.0,  
+        "Cold-Tolerant Fauna": 0.1, "Cold-Tolerant Flora": 0.1,  
+        "Gaseous": 0.0, "Plasma": 0.0,  
+        "Crystalline": 0.005, "Amorphous": 0.005,  
+        "Electromagnetic": 0.005, "Quantum": 0.005,  
+        "Radiation-Resistant": 0.05, "Pressure-Resistant": 0.05, "Temperature-Resistant": 0.3
+    }
+}

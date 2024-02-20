@@ -23,18 +23,19 @@ class APIClientProtocol(Protocol):
 def handle_response(func: Callable[..., Response]) -> Callable[..., Response]:
     @wraps(func)
     def wrapper(*args, **kwargs):
-        try:
-            response = func(*args, **kwargs)
-            response.raise_for_status()
-        except RequestException as e:
-            logger.error(f'Request failed: {str(e)}')
-            # logger.error(traceback.format_exc())
-            raise
+        # try:
+        response = func(*args, **kwargs)
+        # response.raise_for_status()
+        # except RequestException as e:
+        #     logger.error(f'Request failed: {str(e)}')
+        #     # logger.error(traceback.format_exc())
+        #     raise
+        
+        # else:
+        if response.status_code in {HTTPStatus.OK, HTTPStatus.CREATED, HTTPStatus.NO_CONTENT}:
+            logger.info(f'Successfully received response.')
         else:
-            if response.status_code in {HTTPStatus.OK, HTTPStatus.CREATED, HTTPStatus.NO_CONTENT}:
-                logger.info(f'Successfully received response.')
-            else:
-                logger.warning(f'Unexpected status code: {response.status_code}.')
+            logger.warning(f'Unexpected status code: {response.status_code}.')
         return response
     return wrapper
 

@@ -14,8 +14,8 @@ from agentforge.adapters import DB
 from mongodb import MongoDBKVStore
 
 # TO DO: Store in env var or config file
-novu_url = "https://api.novu.co"
-novu_api_key = "f9c8bc10975f2e9148a82aa87b8891db"
+#novu_url = "https://api.novu.co"
+#novu_api_key = "f9c8bc10975f2e9148a82aa87b8891db"
 
 logger = get_task_logger(__name__)
 

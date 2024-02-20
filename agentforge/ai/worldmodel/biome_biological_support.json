@@ -1,0 +1,114 @@
+{
+    "Forest": {
+        "biological_diversity_quotient": 0.87,
+        "habitable_landmass_percentage": 0.69
+    },
+    "Desert": {
+        "biological_diversity_quotient": 0.25,
+        "habitable_landmass_percentage": 0.48
+    },
+    "Ocean": {
+        "biological_diversity_quotient": 0.85,
+        "habitable_landmass_percentage": 0.68
+    },
+    "Tundra": {
+        "biological_diversity_quotient": 0.45,
+        "habitable_landmass_percentage": 0.3
+    },
+    "Grassland": {
+        "biological_diversity_quotient": 0.9,
+        "habitable_landmass_percentage": 0.62
+    },
+    "Wetlands": {
+        "biological_diversity_quotient": 0.83,
+        "habitable_landmass_percentage": 0.61
+    },
+    "Savanna": {
+        "biological_diversity_quotient": 0.99,
+        "habitable_landmass_percentage": 0.82
+    },
+    "Taiga": {
+        "biological_diversity_quotient": 0.71,
+        "habitable_landmass_percentage": 0.67
+    },
+    "Chaparral": {
+        "biological_diversity_quotient": 0.78,
+        "habitable_landmass_percentage": 0.76
+    },
+    "Temperate Deciduous Forest": {
+        "biological_diversity_quotient": 0.75,
+        "habitable_landmass_percentage": 0.87
+    },
+    "Temperate Rainforest": {
+        "biological_diversity_quotient": 0.8,
+        "habitable_landmass_percentage": 0.79
+    },
+    "Mediterranean": {
+        "biological_diversity_quotient": 0.76,
+        "habitable_landmass_percentage": 0.45
+    },
+    "Montane (Alpine)": {
+        "biological_diversity_quotient": 0.74,
+        "habitable_landmass_percentage": 0.5
+    },
+    "Coral Reefs": {
+        "biological_diversity_quotient": 0.92,
+        "habitable_landmass_percentage": 0.43
+    },
+    "Mangroves": {
+        "biological_diversity_quotient": 0.81,
+        "habitable_landmass_percentage": 0.55
+    },
+    "Silicon-based": {
+        "biological_diversity_quotient": 0.58,
+        "habitable_landmass_percentage": 0.31
+    },
+    "Ammonia-based": {
+        "biological_diversity_quotient": 0.49,
+        "habitable_landmass_percentage": 0.42
+    },
+    "Lava": {
+        "biological_diversity_quotient": 0.8,
+        "habitable_landmass_percentage": 0.61
+    },
+    "Ice": {
+        "biological_diversity_quotient": 0.56,
+        "habitable_landmass_percentage": 0.28
+    },
+    "Super-Earth Oceanic": {
+        "biological_diversity_quotient": 0.61,
+        "habitable_landmass_percentage": 0.23
+    },
+    "Carbon-rich": {
+        "biological_diversity_quotient": 0.52,
+        "habitable_landmass_percentage": 0.88
+    },
+    "Iron-rich": {
+        "biological_diversity_quotient": 0.63,
+        "habitable_landmass_percentage": 0.24
+    },
+    "Helium-rich": {
+        "biological_diversity_quotient": 0.22,
+        "habitable_landmass_percentage": 0.64
+    },
+    "Sulfuric Acid Cloud": {
+        "biological_diversity_quotient": 0.57,
+        "habitable_landmass_percentage": 0.74
+    },
+    "Chlorine-based Atmosphere": {
+        "biological_diversity_quotient": 0.6,
+        "habitable_landmass_percentage": 0.17
+    },
+    "Hydrocarbon Lakes": {
+        "biological_diversity_quotient": 0.28,
+        "habitable_landmass_percentage": 0.59
+    },
+    "Supercritical Fluid": {
+        "biological_diversity_quotient": 0.69,
+        "habitable_landmass_percentage": 0.39
+    },
+    "Subsurface Ocean": {
+        "biological_diversity_quotient": 0.31,
+        "habitable_landmass_percentage": 0.71
+    }
+}
