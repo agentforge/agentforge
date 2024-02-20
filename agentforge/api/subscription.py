@@ -112,7 +112,7 @@ async def cancel_subscription(request: Request):
 ### Get the Subscription for the user if one such exists
 @router.post("/get-subscription")
 async def check_subscription(request: Request):
-    user_data = await get_user(request, {"stripe.payment_status": "paid"})
+    user_data = await get_user(request, {})
 
     # obj with cleaned data to be sent back to user
     user_obj = {}
@@ -121,55 +121,53 @@ async def check_subscription(request: Request):
     print(user_email)
 
     # export data to be sent to the user
-    user_obj["customer_id"] = user_data["stripe"]["customer"]
-    customer_id = user_obj["customer_id"]
-    customer = stripe.Customer.retrieve(customer_id)
+    # user_obj["customer_id"] = user_data["stripe"]["customer"]
+    # customer_id = user_obj["customer_id"]
+    # customer = stripe.Customer.retrieve(customer_id)
 
-    user_obj["expires_at"] = user_data["stripe"]["expires_at"]
-    user_obj["payment_status"] = user_data["stripe"]["payment_status"]
-    user_obj["status"] = user_data["stripe"]["status"]
-    append_payment_methods_to_user(user_obj, customer_id)
+    # user_obj["expires_at"] = user_data["stripe"]["expires_at"]
+    # user_obj["payment_status"] = user_data["stripe"]["payment_status"]
+    # user_obj["status"] = user_data["stripe"]["status"]
+    # append_payment_methods_to_user(user_obj, customer_id)
     user_obj["email"] = user_email
-    user_obj["name"] = customer.name
-    user_obj["postal_code"] = customer.address.postal_code
+    # user_obj["name"] = customer.name
+    # user_obj["postal_code"] = customer.address.postal_code
     if "role" in user_data and user_data["role"] == "admin":
         user_obj["role"] = "admin"
     else:
         user_obj["role"] = "user"
 
-    invoices = stripe.Invoice.list(customer=customer_id, limit=3)
-    invoices_final = [{
-            "date": invoice.created,
-            "amount": invoice.total / 100,  # Convert from cents to dollars
-            "status": invoice.status,
-            "description": invoice.description or "Invoice for subscription"
-        } for invoice in invoices.data]
+    # invoices = stripe.Invoice.list(customer=customer_id, limit=3)
+    # invoices_final = [{
+    #         "date": invoice.created,
+    #         "amount": invoice.total / 100,  # Convert from cents to dollars
+    #         "status": invoice.status,
+    #         "description": invoice.description or "Invoice for subscription"
+    #     } for invoice in invoices.data]
 
-    subscriptions = stripe.Subscription.list(customer=customer_id, status='active', limit=1, expand=["data.plan.product"])
-    if subscriptions.data:
-        latest_subscription = subscriptions.data[0]
-        print(latest_subscription.plan)
-        user_obj["latest_subscription"] = {
-            "id": latest_subscription.id,
-            "current_period_end": latest_subscription.current_period_end,
-            "plan": latest_subscription.plan.id,
-            "product": {
-                "id": latest_subscription.plan.product.id,
-                "name": latest_subscription.plan.product.name,
-                # Add any other product details you need here
-            },
-            "session_id": user_data["stripe"]["id"],
-            "cost": '{:.2f}'.format(user_data["stripe"]["amount_total"] / 100),
-            "invoices": invoices_final,
-            "cancel_at_period_end": latest_subscription.cancel_at_period_end,
-            # Include other relevant subscription details here
-        }
+    # subscriptions = stripe.Subscription.list(customer=customer_id, status='active', limit=1, expand=["data.plan.product"])
+    # if subscriptions.data:
+    #     latest_subscription = subscriptions.data[0]
+    #     print(latest_subscription.plan)
+    #     user_obj["latest_subscription"] = {
+    #         "id": latest_subscription.id,
+    #         "current_period_end": latest_subscription.current_period_end,
+    #         "plan": latest_subscription.plan.id,
+    #         "product": {
+    #             "id": latest_subscription.plan.product.id,
+    #             "name": latest_subscription.plan.product.name,
+    #             # Add any other product details you need here
+    #         },
+    #         "session_id": user_data["stripe"]["id"],
+    #         "cost": '{:.2f}'.format(user_data["stripe"]["amount_total"] / 100),
+    #         "invoices": invoices_final,
+    #         "cancel_at_period_end": latest_subscription.cancel_at_period_end,
+    #         # Include other relevant subscription details here
+    #     }
         
-        # update expiry in DB if needed:
-        if user_obj["expires_at"] != latest_subscription.current_period_end:
-            user_obj["expires_at"] = latest_subscription.current_period_end
-            db.set("users", user_data["id"], {"stripe.expires_at": latest_subscription.current_period_end})
-    else:
-        return {"message": "No active subscriptions found", "active": False, "user": user_obj, "status": 200}
-
-    return {"message": "subscription active", "active": True, "user": user_obj, "status": 200}
+    #     # update expiry in DB if needed:
+    #     if user_obj["expires_at"] != latest_subscription.current_period_end:
+    #         user_obj["expires_at"] = latest_subscription.current_period_end
+    #         db.set("users", user_data["id"], {"stripe.expires_at": latest_subscription.current_period_end})
+    # else:
+    return {"message": "No active subscriptions found", "active": False, "user": user_obj, "status": 200}

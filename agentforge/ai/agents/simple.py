@@ -31,12 +31,12 @@ class SimpleAgent:
         ### Primary Reactive Routine - handles user input
         self.routine = ReactiveRoutine()
         self.task_routines = {}
-        plan_routines = load(os.getenv("PLANNER_DIRECTORY"))
-        for plan in plan_routines:
-            key = plan["name"]
-            prompts = plan["prompts"]
-            goals = plan["goals"]
-            self.task_routines[key] = PlanningRoutine(key, prompts, goals)
+        # plan_routines = load(os.getenv("PLANNER_DIRECTORY"))
+        # for plan in plan_routines:
+        #     key = plan["name"]
+        #     prompts = plan["prompts"]
+        #     goals = plan["goals"]
+        #     self.task_routines[key] = PlanningRoutine(key, prompts, goals)
 
     def run(self, input: Dict[str, Any]) -> Dict[str, Any]:
         self.context = Context(input)

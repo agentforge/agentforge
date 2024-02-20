@@ -91,7 +91,7 @@ class Context:
             value = self.context_data
             for k in keys:
                 value = value.get(k, None)
-                if value is None:
+                if value is None or value == {} or value == [] or value == "":
                     if default is not None:
                         return default
                     return None
@@ -154,7 +154,7 @@ class Context:
             elif message['role'] == 'assistant':
                 messages.append(message['content'])
 
-        return " ".join(messages)
+        return " ".join(messages), len(messages)
 
 
     def format_template(self, prompt_template, **kwargs):
@@ -164,6 +164,7 @@ class Context:
         template = Template(prompt_template)
         rendered_str = template.render(kwargs)
         logger.info("INPUT")
+        rendered_str= re.sub(r'\n+', '\n', rendered_str)
         logger.info(rendered_str)
         return rendered_str
 
@@ -180,7 +181,7 @@ class Context:
         username = self.get('input.user_name', "Human")
         agentname = self.get('model.persona.display_name', "Agent")
         query = self.get('query', None)
-        message_history = self.get_messages(prefix=f"\n{username}: ", postfix=f"\n{agentname}:", n=messages_cnt)
+        message_history, msg_cnt = self.get_messages(prefix=f"\n{username}: ", postfix=f"\n{agentname}:", n=messages_cnt)
         if memory is not None:
             message_history.replace(memory, "") # remove memory from message history so no duplicates
         ack = self.get('ack', None) # if response was an acknowledgement, we want to drop it
@@ -192,7 +193,7 @@ class Context:
 
         if not use_memory:
             memory = None
-            message_history = self.get_messages(prefix=f"\n{username}: ", postfix=f"\n{agentname}:", n=2)
+            message_history, msg_cnt = self.get_messages(prefix=f"\n{username}: ", postfix=f"\n{agentname}:", n=2)
         
         if not knowledge:
             knowledge = None
@@ -232,7 +233,7 @@ class Context:
             ack=ack,
             # current_date=datetime.now().strftime("%Y-%m-%d"),
         )
-        return re.sub(r'\n+', '\n', formatted)
+        return formatted
 
     
     def get_model_input(self):

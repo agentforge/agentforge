@@ -4,7 +4,6 @@ from agentforge.interfaces import interface_interactor
 from agentforge.ai.attention.tasks import TaskManager
 from agentforge.utils.stream import stream_string
 from agentforge.ai.agents.context import Context
-from agentforge.ai.reasoning.zeroshot import ZeroShotClassifier
 from agentforge.utils import logger
 
 ### ATTENTION: Identify user intent -- This is always first step in a routine

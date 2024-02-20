@@ -20,3 +20,5 @@ if RESOURCE == "W2L":
     resource_factory.create_w2l_resource()
 if RESOURCE == "VQA":
     resource_factory.create_vqa_resource()
+if RESOURCE == "PixArt":
+    resource_factory.create_pixart_resource({})

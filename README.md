@@ -202,12 +202,12 @@ To run the FastAPI server(s) from inside the container:
 
 On the Agent container:
 ```
-API_DOMAIN="https://mite-inspired-snipe.ngrok-free.app" WEBSITE_DOMAIN="https://agentforge.ngrok.dev" PYTHONPATH="/app/agentforge/" uvicorn main:app --reload --host=0.0.0.0 --port=3005
+API_DOMAIN="https://mite-inspired-snipe.ngrok-free.app" WEBSITE_DOMAIN="https://greensage.app" PYTHONPATH="/app/agentforge/" uvicorn main:app --reload --host=0.0.0.0 --port=3000
 ```
 
 Dev:
 ```
-API_DOMAIN="https://api.agentforge.ai.ngrok-free.app" WEBSITE_DOMAIN="https://greensage.app" PYTHONPATH="/app/agentforge/" uvicorn main:app --reload --host=0.0.0.0 --port=3000
+API_DOMAIN="https://api.agentforge.ai.ngrok-free.app" WEBSITE_DOMAIN="https://agentforge.ngrok.dev" PYTHONPATH="/app/agentforge/" uvicorn main:app --reload --host=0.0.0.0 --port=3005
 ```
 
 On the LLM container:
@@ -237,3 +237,11 @@ python -m vllm.entrypoints.api_server \
 --quantization awq \
 --max-num-batched-tokens 4096
 ```
+
+Outlines
+``````
+python -m outlines.serve.serve \
+--model TheBloke/Speechless-Llama2-Hermes-Orca-Platypus-WizardLM-13B-AWQ \
+--quantization awq \
+--max-num-batched-tokens 4096
+``````
