@@ -1,12 +1,31 @@
 class War:
-    def __init__(self):
+    def __init__(self, war_weariness=0):
         """
         Initializes the war tracker for a society.
         
         Args:
             society (SocioPoliticalFramework): The society for which to track war weariness.
         """
-        self.war_weariness = 0  # Initial war weariness
+        self.war_weariness = war_weariness  # Initial war weariness
+
+    def serialize(self):
+        """
+        Serializes the war weariness for storage or transmission.
+        
+        Returns:
+            dict: The serialized war weariness.
+        """
+        return {"war_weariness": self.war_weariness}
+    
+    @classmethod
+    def deserialize(cls, data):
+        """
+        Deserializes the war weariness from storage or transmission.
+        
+        Args:
+            data (dict): The serialized war weariness.
+        """
+        return cls(data["war_weariness"])
 
     def update_weariness(self, event_impact, factors, wealth):
         """
@@ -18,9 +37,9 @@ class War:
         # Calculate dampening effect based on societal factors
         dampening_factors = self.calculate_dampening(factors, wealth)
         # Update war weariness, ensuring it doesn't decrease (negative weariness doesn't make sense)
-        print(f"event_impact: {event_impact}, dampening_factors: {dampening_factors}")
+        # print(f"event_impact: {event_impact}, dampening_factors: {dampening_factors}")
         self.war_weariness += max(event_impact * (1 - dampening_factors), 0)
-        print(f"war_weariness: {self.war_weariness}")
+        # print(f"war_weariness: {self.war_weariness}")
 
     # factors: (dict) sociopolitical.dimension_values
     # wealth: (float) wealth

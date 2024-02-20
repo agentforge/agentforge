@@ -15,6 +15,25 @@ class SocialFramework():
     for state in self.states.keys():
       self.state_values[state] = 0
 
+  def serialize(self) -> dict:
+    return {
+      "dimension_values": self.dimension_values,
+      "state_values": self.state_values
+    }
+  
+  # Returns the dimensions that are mostly high or low
+  def define_dimensions(self) -> None:
+    high_dimensions = [k for k,v in self.dimension_values.items() if v > 0.75]
+    low_dimensions = [k for k,v in self.dimension_values.items() if v < 0.25]
+    return high_dimensions, low_dimensions
+
+  @classmethod
+  def deserialize(cls, data: dict):
+    instance = cls()
+    instance.dimension_values = data["dimension_values"]
+    instance.state_values = data["state_values"]
+    return instance
+
   def get_progress(self) -> float:
     return sum(self.state_values.values()) / len(self.state_values)
 

@@ -1,4 +1,4 @@
-import json
+import json, os
 
 class ValueFramework:
     def __init__(self, genetics):
@@ -17,8 +17,14 @@ class ValueFramework:
         # Remove duplicates from the sociological values list
         return list(set(sociological_values))
 
-    values_based_on_genetics = json.load(open("values_based_on_genetics.json"))
+    def serialize(self):
+        return self.values
+    
+    @classmethod
+    def deserialize(self, values):
+        return ValueFramework(values)
 
-    economic_mods = json.load(open("economic_mods.json"))
-
-    sociopolitical_mods = sociopolitical_mods = json.load(open("sociopolitical_mods.json"))
+    data_dir = os.environ.get("WORLDGEN_DATA_DIR", "./")
+    values_based_on_genetics = json.load(open(data_dir + "values_based_on_genetics.json"))
+    economic_mods = json.load(open(data_dir + "economic_mods.json"))
+    sociopolitical_mods = sociopolitical_mods = json.load(open(data_dir + "sociopolitical_mods.json"))

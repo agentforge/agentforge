@@ -1,7 +1,16 @@
 class ReputationManager:
-    def __init__(self):
+    def __init__(self, reputation_scores={}):
         """Initialize the reputation scores dictionary."""
-        self.reputation_scores = {}
+        self.reputation_scores = reputation_scores
+
+    def serialize(self):
+        """Serialize the reputation scores dictionary."""
+        return self.reputation_scores
+
+    @classmethod
+    def deserialize(cls, data):
+        """Deserialize the reputation scores dictionary."""
+        return cls(data)
 
     def update_reputation(self, society_name, event, impact):
         """Update the reputation score based on an event.

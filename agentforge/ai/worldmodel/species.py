@@ -23,6 +23,7 @@ class Species:
         self.planet_id = planet_id
         self.biome = biome
         self.ancestor = None
+        self.info = {} # Additional information about the species
 
     def genetic_base_line(self):
         return self.species_data["Genetic Profile"]
@@ -44,7 +45,8 @@ class Species:
             "ancestor": self.ancestor,
             "uuid": self.uuid,
             "biome": self.biome,
-            "planet_id": self.planet_id
+            "planet_id": self.planet_id,
+            "info": self.info
         }
         db.set(collection, self.uuid, species_dict)
         # Save individuals separately for performance
@@ -168,19 +170,20 @@ class Species:
     Parasites: Live on or in a host organism, benefiting at the host's expense without immediate lethality (e.g., ticks, tapeworms).
     Parasitoids: Insects that lay eggs in or on a host, eventually leading to the host's death (e.g., certain wasps).
     """
-    consumption_roles =  [
-        ["Producers", 0.75, 1.0, 1.0],
-        ["Primary Consumers", 0.5, 1.0, 1.0],
-        ["Secondary Consumers", 0.1, 0.8, 1.0],
-        ["Tertiary Consumers", 0.0, 0.5, 1.0],
-        ["Omnivores", 0.0, 0.6, 1.0],
-        # ["Scavengers", 0.1, 0.7, 1.0],
-        # ["Decomposers", 0.8, 1.0, 1.0],
-        # ["Detritivores", 0.0, 0.7, 1.0],
-        # ["Pollinators", 0.0, 0.4, 0.9],
-        # ["Parasites", 0.3, 0.9, 1.0],
-        # ["Parasitoids", 0.0, 0.3, 0.8],
-    ]
+    consumption_roles =  {
+        'Producers': [0.75, 1.0, 1.0],
+        'Primary Consumers': [0.5, 1.0, 1.0],
+        'Secondary Consumers': [0.1, 0.8, 1.0],
+        'Tertiary Consumers': [0.0, 0.5, 1.0],
+        'Omnivores': [0.0, 0.6, 1.0]
+    }
+    # ["Scavengers", 0.1, 0.7, 1.0],
+    # ["Decomposers", 0.8, 1.0, 1.0],
+    # ["Detritivores", 0.0, 0.7, 1.0],
+    # ["Pollinators", 0.0, 0.4, 0.9],
+    # ["Parasites", 0.3, 0.9, 1.0],
+    # ["Parasitoids", 0.0, 0.3, 0.8],
+    # ]
 
     consumption_pop_modifiers = {
         "Producers": 1.0,

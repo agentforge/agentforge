@@ -1,0 +1,74 @@
+{
+  "Ethics": [
+    {"name": "Instinctual Behavior and Early Social Norms", "point": 0.0},
+    {"name": "Tribal Taboos and Oral Moral Codes", "point": 0.11},
+    {"name": "Emergence of Religious and Philosophical Ethics", "point": 0.22},
+    {"name": "Codification of Ethical Systems in Written Laws", "point": 0.33},
+    {"name": "Humanism and the Questioning of Traditional Ethics", "point": 0.44},
+    {"name": "Development of Secular and Human Rights Ethics", "point": 0.56},
+    {"name": "Ethical Considerations of Industrial and War Ethics", "point": 0.67},
+    {"name": "Expansion of Civil Rights and Environmental Ethics", "point": 0.78},
+    {"name": "Ethical Debates on Technology and AI", "point": 0.89},
+    {"name": "Advanced Universal Ethical Systems", "point": 1.0}
+  ],
+  "Healthcare": [
+    {"name": "Primitive Healing Practices and Rituals", "point": 0.0},
+    {"name": "Herbal Remedies and Shamanic Practices", "point": 0.11},
+    {"name": "Institutionalized Medicine and Early Hospitals", "point": 0.22},
+    {"name": "Development of Modern Medicine and Public Health", "point": 0.33},
+    {"name": "Advancements in Surgery and Anatomical Knowledge", "point": 0.44},
+    {"name": "Introduction of Sanitation and Vaccines", "point": 0.56},
+    {"name": "Universal Healthcare Systems", "point": 0.67},
+    {"name": "Biotechnological Innovations and Ethics", "point": 0.78},
+    {"name": "Integration of Digital Health and Telemedicine", "point": 0.89},
+    {"name": "Personalized Medicine and Gene Editing", "point": 1.0}
+  ],
+  "Education": [
+    {"name": "Knowledge Transmission through Oral Traditions", "point": 0.0},
+    {"name": "Oral Traditions and Apprenticeships", "point": 0.11},
+    {"name": "Establishment of Formal Schools and Texts", "point": 0.22},
+    {"name": "Emergence of the University and Scholar Guilds", "point": 0.33},
+    {"name": "Renaissance Humanism and the Revival of Classical Knowledge", "point": 0.44},
+    {"name": "Foundations of the Scientific Method and Academies", "point": 0.56},
+    {"name": "Universal Public Education and Literacy", "point": 0.67},
+    {"name": "Expansion of Higher Education and Research", "point": 0.78},
+    {"name": "Digital Learning Platforms and Global Access", "point": 0.89},
+    {"name": "AI-enhanced Knowledge Acquisition and Skills Development", "point": 1.0}
+  ],
+  "Social Support": [
+    {"name": "Support Within Hunter-Gatherer Bands", "point": 0.0},
+    {"name": "Family and Tribe-based Support Systems", "point": 0.11},
+    {"name": "Community and Religious Support Networks", "point": 0.22},
+    {"name": "Feudal Obligations and Charitable Alms", "point": 0.33},
+    {"name": "Guilds and Mutual Aid Societies", "point": 0.44},
+    {"name": "State Welfare and Social Security Systems", "point": 0.56},
+    {"name": "Development of Modern Welfare States", "point": 0.67},
+    {"name": "Emergence of Non-Governmental Organizations", "point": 0.78},
+    {"name": "Universal Basic Income and Social Services", "point": 0.89},
+    {"name": "Advanced Social Support Systems with AI Integration", "point": 1.0}
+  ],
+  "Diplomacy": [
+    {"name": "Inter-Tribal Communications and Alliances", "point": 0.0},
+    {"name": "Tribal and Familial Alliances", "point": 0.11},
+    {"name": "Emergence of Diplomatic Protocols among City-States", "point": 0.22},
+    {"name": "Medieval Treaties and Papal Mediation", "point": 0.33},
+    {"name": "Diplomatic Missions and Resident Ambassadors", "point": 0.44},
+    {"name": "Nation-State Diplomacy and International Law", "point": 0.56},
+    {"name": "Colonialism, Imperialism, and Global Exploration", "point": 0.67},
+    {"name": "Creation of International Organizations", "point": 0.78},
+    {"name": "Global Governance and Multilateral Institutions", "point": 0.89},
+    {"name": "Confederated Diplomacy across Societal Sectors", "point": 1.0}
+  ],
+  "Legal Systems": [
+    {"name": "Pre-Legal Societal Norms and Conflict Resolution", "point": 0.0},
+    {"name": "Tribal Customs and Oral Laws", "point": 0.11},
+    {"name": "Codification of Laws in Early Civilizations", "point": 0.22},
+    {"name": "Medieval Legal Traditions and Canon Law", "point": 0.33},
+    {"name": "Development of National Legal Codes", "point": 0.44},
+    {"name": "Codification and Standardization of Laws", "point": 0.56},
+    {"name": "Establishment of Constitutional Democracies", "point": 0.67},
+    {"name": "International Legal Standards and Human Rights", "point": 0.78},
+    {"name": "Supranational Courts and Transnational Law", "point": 0.89},
+    {"name": "Advanced Global Legal Frameworks", "point": 1.0}
+  ]
+}

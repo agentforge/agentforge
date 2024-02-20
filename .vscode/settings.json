@@ -5,6 +5,6 @@
   "python.testing.unittestEnabled": false,
   "python.testing.pytestEnabled": true,
   "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": true
+    "source.fixAll.eslint": "explicit"
   },
 }

@@ -1,4 +1,4 @@
-import random
+import random, json, uuid, os
 from agentforge.ai.worldmodel.lifeform import Lifeform
 from agentforge.ai.worldmodel.generator import SpeciesGenerator
 import numpy as np
@@ -11,7 +11,6 @@ from agentforge.ai.worldmodel.environment import Environment
 from agentforge.interfaces import interface_interactor
 from tqdm import tqdm
 from copy import deepcopy
-import uuid
 
 """ Evolution baby! A Genetic Algorithm for simulating evolution of lifeforms on a planet"""
 
@@ -30,9 +29,9 @@ class EvolutionarySimulation:
         self.final_evolutionary_stage = self.roll_evolutionary_stage()
         self.total_evolutionary_stages = list(self.evolutionary_probability.keys())[0:self.final_evolutionary_stage+1]
         # Create the ecology, species, and genus models
-        self.ecology = SpeciesGenerator(planet_type, planet_id)
         self.life = Lifeform()
         self.genus = Genus()
+        self.species_roles = json.load(open(os.environ.get("WORLDGEN_DATA_DIR", "./") + "species_roles.json"))
         self.biome_type = biome_type
         self.total_population = 0
         self.dead_mass = 0 # for scavengers and decomposers
@@ -108,7 +107,7 @@ class EvolutionarySimulation:
                 species_probabilities = np.array(species_probabilities)
                 ### Edge case where all species are extinct
                 if len(species_probabilities) == 0:
-                    lifeforms = self.sample_lifeform(self.biome_type, biome_supported_species, self.normalized_bx_b_df, self.normalized_bx_lf_df)
+                    pass # TODO: Fix for when all species go extinct... start over?
                 else:
                     next_species = np.random.choice(lifeforms, new_species_required, p=species_probabilities / species_probabilities.sum(), replace=True)
                     lifeforms.extend(next_species)
@@ -124,21 +123,17 @@ class EvolutionarySimulation:
                 new_lifeform.population = 100
                 new_lifeforms.append(new_lifeform)
                 # TODO: SELECT NEW ROLES WITH PROBABILISTIC MATRIX
+                consumption_roles = self.species_roles[new_lifeform.genus]
+                consumption_role_probs = []
+                for key in consumption_roles:
+                    consumption_role_probs.append([key] + new_lifeform.consumption_roles[key])
+                new_lifeform.role = new_lifeform.choose_role(ev_idx, consumption_role_probs, new_lifeforms)
 
                 # TODO: MOVE GENERATIVE CODE TO SPECIES CLASS and SIM
                 if "Name" in lifeform.species_data and "Description" in lifeform.species_data:
                     previous_lifeform = "{} ({}) {}".format(lifeform.species_data["Name"], lifeform.genus, lifeform.species_data["Description"])
                 else:
                     previous_lifeform = ""
-                # generative_data = self.ecology.generate(
-                #     self.real_biome,
-                #     self.evolutionary_stage,
-                #     lifeform.genus,
-                #     lifeform.role,
-                #     lifeform.behavioral_role,
-                #     previous_species=previous_lifeform
-                # )
-                # lifeform.species_data.update(generative_data)
         return new_lifeforms
 
     # From the primordial goo emerges initial life
@@ -152,23 +147,13 @@ class EvolutionarySimulation:
             new_species = Species(lifeform, self.evolutionary_stage_idx, planet_id=self.planet_id, biome=self.get_biome())
 
             # Determine new species role depending on environment and evolutionary stage
-            if 'Flora' in lifeform['Biological Type']:
-                new_species.role = 'Producers'
-            else:
-                new_species.role = new_species.choose_role(self.evolutionary_stage_idx, new_species.consumption_roles, species)
             new_species.genus = self.genus.get_genus(new_species.species_data["Biological Type"], self.evolutionary_stage)
             new_species.behavioral_role = new_species.choose_role(self.evolutionary_stage_idx, new_species.behavioral_roles, species)
-
-            # generative_data = self.ecology.generate(
-            #     self.real_biome,
-            #     self.evolutionary_stage,
-            #     new_species.genus,
-            #     new_species.role,
-            #     new_species.behavioral_role,
-            #     attributes=new_species.species_data["Life Form Attributes"],
-            # )
-            # lifeform.update(generative_data)
-            # logger.info("generated species {}".format(generative_data))
+            consumption_roles = self.species_roles[new_species.genus]
+            consumption_role_probs = []
+            for key in consumption_roles:
+                consumption_role_probs.append([key] + new_species.consumption_roles[key])
+            new_species.role = new_species.choose_role(self.evolutionary_stage_idx, consumption_role_probs, species)
 
             new_species.population = int(INITIAL_POPULATION * new_species.consumption_pop_modifiers[new_species.role])
             self.total_population += new_species.population
@@ -410,11 +395,7 @@ class EvolutionarySimulation:
         return highestStage
     
     # Biological complexity path
-    evolutionary_probability = {
-        'Single-celled organisms': 0.95,
-        'Multi-celled organisms': 0.80,
-        'Complex lifeforms': 0.75,
-    }
+    evolutionary_probability = json.load(open(os.environ.get("WORLDGEN_DATA_DIR", "./") + "evolutionary_probability.json"))
 
     apex_species_traits = [
         "Intelligence",  # Cognitive

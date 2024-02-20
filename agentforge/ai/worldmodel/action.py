@@ -18,6 +18,7 @@ class ActionHistoryManager:
             return None
         return self.action_histories[action].get_window(past_n_actions)
 
+
 # Stores actions and rewards for a society -- use for introspection and debugging
 class ActionHistory:
     def __init__(self):

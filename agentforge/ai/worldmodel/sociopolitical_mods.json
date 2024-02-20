@@ -32,7 +32,7 @@
     ],
     "Warrior Culture": [
         ["Militaristic", 0.3],
-        ["Merit-based Advancement", 0.2],
+        ["Merit-based Advancement", 0.2]
     ],
     "Skillfulness": [
         ["Worker Self-Management", 0.1],
@@ -70,7 +70,7 @@
         ["Centralization", -0.4]
     ],
     "Insight Cultivation": [
-        ["Innovation and Research", 0.2],
+        ["Innovation and Research", 0.2]
     ],
     "Sensory Acuity": [
         ["Environmental Sustainability", 0.1]
@@ -126,7 +126,7 @@
         ["Technological Integration", 0.2]
     ],
     "Mutagenic Forms": [
-        ["Ideological Enforcement", -0.4],
+        ["Ideological Enforcement", -0.4]
     ],
     "Autotrophic Lifestyle": [
         ["Ideological Enforcement", 0.3]

@@ -1,7 +1,8 @@
 import numpy as np
-import json
+import json, os
 
-government_types = json.load(open("government_types.json"))
+data_dir = os.environ.get("WORLDGEN_DATA_DIR", "./")
+government_types = json.load(open(data_dir + "government_types.json"))
 
 # Function to calculate the similarity score between actual dimensions and expected dimensions for each governance type
 def calculate_similarity(gov_type, actual_dimensions):

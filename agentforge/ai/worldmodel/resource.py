@@ -8,17 +8,43 @@ class Resource:
         self.tradeable = tradeable
         self.consumable = consumable
 
+    def serialize(self):
+        return {
+            "name": self.name,
+            "value": self.value,
+            "req_per_pop": self.req_per_pop,
+            "gather_per_pop": self.gather_per_pop,
+            "tradeable": self.tradeable,
+            "consumable": self.consumable
+        }
+    
+    @classmethod
+    def deserialize(cls, data):
+        return Resource(
+            data["name"],
+            data["value"],
+            data["req_per_pop"],
+            data["gather_per_pop"],
+            data["tradeable"],
+            data["consumable"]
+        )
+
     def val(self):
         return round(self.value,2)
 
     ### Returns inventory and economics information about resource
     def inventory(self, population):
+        pop_val = (self.req_per_pop * population)
+        if pop_val <= 0.0:
+            happiness = 0
+        else:
+            happiness = min(1.25, round(self.value / pop_val ,2))
         return {
             "supply": self.value,
             "demand": self.req_per_pop * population,
             "surplus": self.value - (self.req_per_pop * population),
             "deficit": (self.req_per_pop * population) - self.value,
-            "happiness": min(1.25, round(self.value / (self.req_per_pop * population),2)) # relative to demand
+            "happiness": happiness # relative to demand
         }
 
     def determine_trade_value(self, good, population1, population2):

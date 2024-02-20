@@ -232,7 +232,7 @@ PYTHONPATH="/app/agentforge/" uvicorn vqa:app --reload --host=0.0.0.0 --port=300
 
 On the PixArt container:
 ```
-PYTHONPATH="/app/agentforge/" uvicorn pixart:app --reload --host=0.0.0.0 --port=3000
+PYTHONPATH="/app/agentforge/" uvicorn pixart:app --reload --host=0.0.0.0 --port=8000
 ```
 
 VLLM

@@ -1,4 +1,4 @@
-import random, math, humanize, pprint
+import random, math, humanize, pprint, uuid
 import numpy as np
 from agentforge.utils import logger
 from agentforge.ai.worldmodel.species import Species
@@ -49,13 +49,18 @@ def linear_interpolate(X1, X2, t):
     return X1 + (X2 - X1) * t
 
 class SociologicalGroup:
-    def __init__(self, initial_population, species: Species):
+    def __init__(self, initial_population, species: Species, id=None):
+        if not id:
+            self.uuid = str(uuid.uuid4())
+        else:
+            self.uuid = id
         # Identification
         self.species = species
         self.values = ValueFramework(species.species_data["Life Form Attributes"])
         self.designator = SocietyNamingSystem()
         self.action_history = ActionHistoryManager()
-        self.sociopolitical = SocioPoliticalFramework(self.values)
+        self.sociopolitical = SocioPoliticalFramework()
+        self.sociopolitical.setup_values(self.values)
         self.technology = TechnologicalFramework()
         self.economy = EconomicFramework()
         self.culture = CulturalFramework()
@@ -83,10 +88,90 @@ class SociologicalGroup:
         self.disease = 0
         self.missing_meals = 0
         self.starvation_event = {}
+        self.civ_info = {}
 
         # Social Constraints and demographics
         self.population = initial_population
         self.demographics = self.generate_demographic_distribution(initial_population)
+
+    def serialize(self):
+        # Convert the object's state to a serializable dictionary
+        return {
+            "id": self.uuid,
+            "species": self.species.uuid,
+            "values": self.values.serialize(),
+            "sociopolitical": self.sociopolitical.serialize(),
+            "technology": self.technology.serialize(),
+            "economy": self.economy.serialize(),
+            "culture": self.culture.serialize(),
+            "reputation": self.reputation.serialize(),
+            "war_manager": self.war_manager.serialize(),
+            "government": self.government,
+            "era": self.era,
+            "name": self.name,
+            "collapse": self.collapse,
+            "year": self.year,
+            "resources": {k: v.serialize() for k, v in self.resources.items()},
+            "forums": self.forums,
+            "corruption": self.corruption,
+            "happiness": self.happiness,
+            "disease": self.disease,
+            "missing_meals": self.missing_meals,
+            "starvation_event": self.starvation_event,
+            "population": self.population,
+            "demographics": self.demographics,
+            "civ_info": self.civ_info
+        }
+
+    def save(self, db, collection):
+        species_dict = self.serialize()
+        db.set(collection, self.uuid, species_dict)
+
+    @classmethod
+    def load(cls, db, collection, uuid, society_dict=None):
+        if society_dict is None:
+            society_dict = db.get(collection, uuid)
+            if society_dict is None:
+                return None
+
+        # Deserialize the Species object
+        species = Species.load(db, "species", society_dict["species"], load_individuals=False)
+
+        # Initialize the SociologicalGroup object with basic attributes
+        obj = cls(society_dict["population"], species, id=society_dict["id"])
+
+        # Deserialize and set complex attributes
+        obj.values = ValueFramework.deserialize(society_dict["values"])
+        obj.designator = SocietyNamingSystem()
+        obj.action_history = ActionHistoryManager()
+        obj.sociopolitical = SocioPoliticalFramework.deserialize(society_dict["sociopolitical"])
+        obj.sociopolitical.setup_values(obj.values)
+        obj.technology = TechnologicalFramework.deserialize(society_dict["technology"])
+        obj.economy = EconomicFramework.deserialize(society_dict["economy"])
+        obj.culture = CulturalFramework.deserialize(society_dict["culture"])
+        obj.reputation = ReputationManager.deserialize(society_dict["reputation"])
+        obj.war_manager = War.deserialize(society_dict["war_manager"])
+
+        # Deserialize resources
+        obj.resources = {k: Resource.deserialize(v) for k, v in society_dict["resources"].items()}
+
+        # Set simple attributes
+        obj.government = society_dict["government"]
+        obj.era = society_dict["era"]
+        obj.name = society_dict["name"]
+        obj.collapse = society_dict["collapse"]
+        obj.year = society_dict["year"]
+        obj.forums = society_dict["forums"]
+        obj.corruption = society_dict["corruption"]
+        obj.happiness = society_dict["happiness"]
+        obj.disease = society_dict["disease"]
+        obj.missing_meals = society_dict["missing_meals"]
+        obj.starvation_event = society_dict["starvation_event"]
+        obj.population = society_dict["population"]
+        obj.demographics = society_dict["demographics"]
+        obj.civ_info = society_dict["civ_info"]
+
+        return obj
 
     def __str__(self):
         resource_happiness = [f"{i.name}: {i.inventory(self.population)['happiness']}" for i in self.resources.values() if i.consumable]
@@ -110,7 +195,7 @@ class SociologicalGroup:
             Values: {self.values.values}
             Ecological Role: {self.species.role}
             Technology: {self.technology.state_values}
-        Sociopolitical: {pprint.pformat({k: (round(v, 2) if isinstance(v, float) else v) for k, v in self.sociopolitical.dimension_values.items()})}
+            Sociopolitical: {pprint.pformat({k: (round(v, 2) if isinstance(v, float) else v) for k, v in self.sociopolitical.dimension_values.items()})}
             Demographics: {self.demographics}
             """
 
@@ -247,7 +332,7 @@ class SociologicalGroup:
                 continue
             alliance_potential = self.sociopolitical.calculate_alliance_factor(civ.sociopolitical)
             similarity = self.sociopolitical.calculate_similarity(civ.sociopolitical)
-            logger.info(f"alliance_potential: {alliance_potential} and similarity: {similarity}")
+            # logger.info(f"alliance_potential: {alliance_potential} and similarity: {similarity}")
             # self.reputation.update_reputation(civ.name, "ally", 0.1)
 
     ### TRADING RESOURCES ###
@@ -308,7 +393,7 @@ class SociologicalGroup:
             return
         # If they accept, we trade the resources
         exchange_rate_good1_to_good2, exchange_rate_good2_to_good1 = self.resources[matching_our_surplus[0]].determine_trade_value(society.resources[matching_our_needs[0]], self.population, society.population)
-        print(f"Exchange rates: {exchange_rate_good1_to_good2} and {exchange_rate_good2_to_good1}")
+        # print(f"Exchange rates: {exchange_rate_good1_to_good2} and {exchange_rate_good2_to_good1}")
         # Trade the resources
         # We want to cover our deficit
         needs = abs(society.resources[matching_our_needs[0]].inventory(society.population)["deficit"])
@@ -318,7 +403,7 @@ class SociologicalGroup:
         if cost > wants:
             cost = round(wants,2)
             needs = round(cost / exchange_rate_good2_to_good1, 2)
-        print(f"Trading {needs} {matching_our_needs[0]} for {cost} {matching_our_surplus[0]} with {wants} available.")
+        # print(f"Trading {needs} {matching_our_needs[0]} for {cost} {matching_our_surplus[0]} with {wants} available.")
         self.resources[matching_our_needs[0]] += needs
         society.resources[matching_our_needs[0]] -= needs
         self.resources[matching_our_surplus[0]] -= cost
@@ -356,8 +441,8 @@ class SociologicalGroup:
                 possible_war_probabilities.append(self.war_manager.calculate_war_probabilities(self, civ))
         if len(possible_war_targets) == 0:
             return
-        print(possible_war_probabilities)
-        print(self.war_manager.get_weariness())
+        # print(possible_war_probabilities)
+        # print(self.war_manager.get_weariness())
         normalized_war_probabilities = np.array(possible_war_probabilities) / np.sum(possible_war_probabilities)
         target = np.random.choice(possible_war_targets, p=normalized_war_probabilities)
         resolution = self.resolve_conflict(target)
@@ -372,9 +457,9 @@ class SociologicalGroup:
             "spoils": spoils,
             "victor": victor.name if victor else None
         }
-        print(self.last_effect)
+        # print(self.last_effect)
         impact = self.war_manager.calculate_war_impact(victor, resolution)
-        print(f"War impact: {impact} and resolution: {resolution}")
+        # print(f"War impact: {impact} and resolution: {resolution}")
         self.war_manager.update_weariness(impact, self.sociopolitical.dimension_values, self.wealth())
         target.war_manager.update_weariness(impact, target.sociopolitical.dimension_values, target.wealth())
         target.reputation.update_reputation(self.name, "war", -0.2)
@@ -461,6 +546,8 @@ class SociologicalGroup:
     }
 
     def fitness(self, action, societies, year, season):
+        if self.population <= 0:
+            return -1
         # happiness is based on having adequate food, housing, and cultural artifacts
         happiness = [i.inventory(self.population)["happiness"] for i in self.resources.values() if i.consumable]
         happiness_boost = 0.0

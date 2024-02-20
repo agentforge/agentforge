@@ -1,4 +1,4 @@
-import os
+import os, time
 from fastapi import APIRouter, Request, Depends, status, HTTPException
 from pydantic import BaseModel
 from typing import List, Dict
@@ -8,9 +8,10 @@ from agentforge.utils import logger
 from agentforge.ai.worldmodel.galaxy import Galaxy
 from agentforge.ai.worldmodel.biome import Biome
 from agentforge.ai.worldmodel.species import Species
+from agentforge.ai.worldmodel.society import SociologicalGroup
 from agentforge.ai.worldmodel.probability import UniverseProbability
-from agentforge.ai.worldmodel.evolution import EvolutionarySimulation
 from agentforge.ai.worldmodel.civilization import Civilization
+from agentforge.ai.worldmodel.generator import CivilizationGenerator, SpeciesGenerator
 from agentforge.interfaces import interface_interactor
 import traceback
 from celery import Celery
@@ -36,7 +37,7 @@ def analyze_biome_species(biomes, db):
         if 'apex_species' not in biome or biome['apex_species'] is None:
             continue
         species = Species.load(db, 'species', biome['apex_species']['id'], load_individuals=False)
-        if species.evolutionary_stage >= highest_evolutionary_level:
+        if species and species.evolutionary_stage >= highest_evolutionary_level:
             highest_evolutionary_level = species.evolutionary_stage
             high_score = biome['apex_species']['score']
             if high_score > max_score:
@@ -44,6 +45,48 @@ def analyze_biome_species(biomes, db):
                 apex_species = species
     return apex_species
 
+@app.task
+def generate_species():
+    db = interface_interactor.get_interface("db")
+    species = db.get_one("species", {"generation": {"$exists": False}, "generation_emerging": {"$exists": False}})
+    species_gen = SpeciesGenerator()
+    if species:
+        planet = db.get_one("planets", {"id": species["planet_id"]})
+        species["generation_emerging"] = True
+        db.set("species", species["id"], species)
+        species_info = species_gen.generate(
+            planet["Planet Type"],
+            species["biome"],
+            species["evolutionary_stage"],
+            species["genus"],
+            species["role"],
+            species["behavioral_role"],
+            #previous_species=previous_lifeform
+        )
+        species["info"] = (species_info)
+        del species["generation_emerging"]
+        species["generation"] = True
+        db.set("species", species["id"], species)
+        return generate_species()
+    print("Generation complete for species " + species["id"])
+
+@app.task
+def generate_society():
+    civ_gen = CivilizationGenerator()
+    db = interface_interactor.get_interface("db")
+    society = db.get_one("societies", {"generation": {"$exists": False}, "generation_emerging": {"$exists": False}})
+    if society:
+        species = Species.load(db, 'species', society["species"])
+        planet = db.get_one("planets", {"id": species.planet_id})
+        society["generation_emerging"] = True
+        db.set("societies", society["id"], society)
+        civ_info = civ_gen.run(planet["Planet Type"], SociologicalGroup.load(db, 'societies', society["id"], society_dict=society))
+        society["civ_info"] = civ_info
+        del society["generation_emerging"]
+        society["generation"] = True
+        db.set("societies", society["id"], society)
+        # return evolve_society()
+    print("Generation complete")
 
 @app.task
 def evolve_society():
@@ -59,13 +102,17 @@ def evolve_society():
         # apex_species = EvolutionarySimulation.identify_apex_species(species_objs)
         print(f"Apex species: {apex_species}")
         societies = Civilization.run(species_ids=[apex_species.uuid])
-        print(societies)
-        planet["civilization_emerging"] = False
+        for society in societies:
+            society.save(db, 'societies')
+        del planet["civilization_emerging"]
         planet["civilization"] = True
-        planet["societies"] = societies
+        planet["societies"] = [society.uuid for society in societies]
         db.set("planets", planet["id"], planet)
-        # return evolve_society()
-    print("Generation complete")
+        return evolve_society()
+    # wait for 1 minute and try again
+    print("Waiting for viable species (press ctrl+c to cancel)")
+    time.sleep(60)
+    return evolve_society()
 
 @app.task
 def evolve_life():

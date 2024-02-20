@@ -56,7 +56,7 @@ class Civilization(gym.Env):
         self.analysis_engine = analysis_engine
 
         self.action_space = spaces.Discrete(9)  # Define your actions here
-        self.observation_space = spaces.Box(low=0, high=1, shape=(75,), dtype=np.float32)  # Define your state space here
+        self.observation_space = spaces.Box(low=0, high=1, shape=(76,), dtype=np.float32)  # Define your state space here
         if species:
             self.create(species)
             self.state = self.get_state()  # Example initialization
