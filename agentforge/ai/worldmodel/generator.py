@@ -145,7 +145,7 @@ class SpeciesGenerator:
             # Add the species to the vector store
             self.vectorstore.add_texts([choice['Name']])
             image = self.generate_image(choice['Name'], choice['Description'], species['genus'])
-            choice['image'] = image
+            choice['image'] = image['text']
             return choice
 
         formatted_prompt = """Extract the species name and description from the following text: {}""".format(theme, val)
@@ -158,7 +158,7 @@ class SpeciesGenerator:
             ret_val = json.loads(val)
             if val["Result"]:
                 image = self.generate_image(ret_val['Name'], ret_val['Description'], species['genus'])
-                ret_val['image'] = image
+                ret_val['image'] = image['text']
                 return ret_val
             else:
                 print("The species description did not match the genus. Trying again.")
@@ -206,36 +206,37 @@ class CivilizationGenerator:
         self.vectorstore = self.vectorstoremanager.init_store_connection(collection)
         self.image_gen = interface_interactor.get_interface("image_gen")
 
-    def run(self, planet_type, society):
-        # Generate civilizations for the planet
-        technological_level = society.era
-        government_type = society.government
-        high_culture_traits, _ = society.culture.define_dimensions()
-        sociopolitical_traits, _ = society.sociopolitical.define_dimensions()
-        civilization = self.generate(
-            planet_type,
-            technological_level,
-            government_type,
-            ", ".join(high_culture_traits),
-            ", ".join(sociopolitical_traits),
-        )
-        if civilization:
-            return civilization
-
-    def generate_image(self, civilization_name, civilization_description):
+    def generate_image(self, civ, species, image_prompt):
         # Generate an image for the civilization
         prompt = f"""
-        Generate an image for the civilization named {civilization_name} with the following description: {civilization_description}
+        {image_prompt}
+        The species for the civilization is {species.info['Name']} {species.info['Description']}
+        The civilization is {civ['Name']} {civ['Description']}
         """
-        input = {"prompt": prompt}
+        input = {
+            "prompt": prompt,
+            "negative_prompt": "low quality, bad anatomy, mess, bizarre, cartoon, painting, illustration, deviant",
+            "num_images_per_prompt": 1
+        }
+        if species.genus != "Humanoids":
+            input['negative_prompt'] += ', human'
+        print(prompt)
         response = self.image_gen.call(input)
         return response
 
-    def generate(self, planet_type, technological_level, government_type, culture_traits, socio_traits, attempts=0):
+    def generate(self, planet, society, attempts=0):
+        planet_type = planet["Planet Type"]
+        technological_level = society.era
+        government_type = society.government
+        culture_traits, _ = society.culture.define_dimensions(n=2)
+        socio_traits, _ = society.sociopolitical.define_dimensions(n=3)
         # Create a civilization
         prompt = f"""
-        Generate a civilization name and exhaustive description with the following requirements: The civilization is on a {planet_type} planet. It has reached the technological era of {technological_level}. The government type is {government_type}, and it has cultural traits such as {culture_traits}. The civilization has the following sociopolitical characteristics: {socio_traits} Go step by step, create a list of civilizations, and select a single unique and bold civilization. The civilization should be well-adapted to its environment and have novel and scientifically plausible characteristics.
+        Generate a civilization name and exhaustive description with the following requirements. The description should include a high-level description of the sociopolitical system, the cultural system, and day to day life of the individuals living in this civilization.
+        The species of the civilization is described as: {society.species.info['Description']}.
+        The civilization is on a {planet_type} planet. It has reached the technological era of {technological_level}. The government type is {government_type}, and it has cultural traits such as {', '.join(culture_traits)}. The civilization has the following sociopolitical characteristics: {', '.join(socio_traits)} Go step by step, create a list of civilizations, and select a single unique and bold civilization. The civilization should be well-adapted to its environment and have novel and scientifically plausible characteristics.
         """
+        print(prompt)
         gen_config = self.model_profile['generation_config']
         gen_config['temperature'] = 0.4
         model_config = self.model_profile['model_config']
@@ -248,27 +249,30 @@ class CivilizationGenerator:
             "agent_name": "agentforge",
         }
         # Try outlines
-        input['schema'] = {
-            "$schema": "http://json-schema.org/draft-07/schema#",
-            "type": "object",
-            "properties": {
-                "Name": {
-                "type": "string"
-                },
-                "Description": {
-                "type": "string"
-                }
-            },
-            "required": ["Name", "Description"]
-        }
+        input['schema'] = json.load(open(os.environ.get("WORLDGEN_DATA_DIR", "./") + "schema/name_description.json"))
         response = self.service.call(input)
         val = response['choices'][0]['text']
         print(val)
         # Generate an image for the civilization
         # try:
         ret_val = json.loads(val)
-        image = self.generate_image(ret_val['Name'], ret_val['Description'])
-        ret_val['image'] = image
+        sociopolitical_scenes = json.load(open(os.environ.get("WORLDGEN_DATA_DIR", "./") + "sociopolitical_scenes.json"))
+        if socio_traits[0] in sociopolitical_scenes:
+            scene = sociopolitical_scenes[socio_traits[0]]
+        else:
+            scene = np.random.choice(list(sociopolitical_scenes.values()))
+        ret_val['scene'] = scene
+        image_prompt = f"""{ret_val['scene']} populated with {society.species.genus} in the  technological era of {technological_level} in the biome {society.species.biome}, photorealistic, masterpiece, landscape scene, wide angle, even lighting"""
+        image = self.generate_image(ret_val, society.species, image_prompt)
+        ret_val['civilization_image'] = image['text']
+
+        uniforms = json.load(open(os.environ.get("WORLDGEN_DATA_DIR", "./") + "uniforms.json"))
+        uniform_style = uniforms[government_type]
+        ret_val['uniform_style'] = uniform_style
+        image_prompt = f"""Generate an image of this species in the era {technological_level}. This species is adorned with clothing, accessories, and other culutral adornments with {uniform_style}, photorealistic, masterpiece, (((full body portrait))), full body, wide angle, high face detail, even lighting, This may be a male, female, or agender representation of the {society.species.genus}, Generate an image in the style of a realistic portrait of the above species evolved to use tools and clothing in a uniform. Ater the style as necessary for the tech level."""
+        image = self.generate_image(ret_val, society.species, image_prompt)
+        ret_val['individual_image'] = image['text']
+
         return ret_val
         # except:
         #     pass

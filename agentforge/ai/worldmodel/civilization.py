@@ -56,7 +56,7 @@ class Civilization(gym.Env):
         self.analysis_engine = analysis_engine
 
         self.action_space = spaces.Discrete(9)  # Define your actions here
-        self.observation_space = spaces.Box(low=0, high=1, shape=(76,), dtype=np.float32)  # Define your state space here
+        self.observation_space = spaces.Box(low=0, high=1, shape=(87,), dtype=np.float32)  # Define your state space here
         if species:
             self.create(species)
             self.state = self.get_state()  # Example initialization
@@ -136,7 +136,9 @@ class Civilization(gym.Env):
     def create(self, apex_species):
         # Identify the apex species in the ecosystem
         for i in range(NUM_GROUPS_AT_START):
-            society = SociologicalGroup(apex_species.population/NUM_GROUPS_AT_START, apex_species)
+            init_pop = apex_species.population/NUM_GROUPS_AT_START
+            society = SociologicalGroup(init_pop, apex_species)
+            society.initialize(init_pop)
             self.societies.append(society)
         self.num_societies = len(self.societies)
 

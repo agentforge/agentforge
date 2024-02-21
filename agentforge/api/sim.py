@@ -46,12 +46,14 @@ def analyze_biome_species(biomes, db):
     return apex_species
 
 @app.task
-def generate_species():
+def generate_species(id=None):
     evolutionary_stages = json.load(open(os.environ.get("WORLDGEN_DATA_DIR", "./") + "evolutionary_probability.json"))
     evolutionary_stages = list(evolutionary_stages.keys())
     db = interface_interactor.get_interface("db")
-    # species = db.get_one("species", {"id": "4ebf1fa2-215f-482d-86dd-f9f275115e0d"})
-    species = db.get_one("species", {"generation": {"$exists": False}, "generation_emerging": {"$exists": False}})
+    if id:
+        species = db.get_one("species", {"id": id})
+    else:
+        species = db.get_one("species", {"generation": {"$exists": False}, "generation_emerging": {"$exists": False}})
     species_gen = SpeciesGenerator()
     if species:
         planet = db.get_one("planets", {"id": species["planet_id"]})
@@ -67,33 +69,43 @@ def generate_species():
         del species["generation_emerging"]
         species["generation"] = True
         db.set("species", species["id"], species)
-        return generate_species()
+        if not id:
+            return generate_species()
         # print(species_info)
     print("Generation complete for species " + species["id"])
 
 @app.task
-def generate_society():
+def generate_society(id=None):
     civ_gen = CivilizationGenerator()
     db = interface_interactor.get_interface("db")
-    society = db.get_one("societies", {"generation": {"$exists": False}, "generation_emerging": {"$exists": False}})
+    if id:
+        society = db.get_one("societies", {"id": id})
+    else:
+        society = db.get_one("societies", {"generation": {"$exists": False}, "generation_emerging": {"$exists": False}})
     if society:
         species = Species.load(db, 'species', society["species"])
         planet = db.get_one("planets", {"id": species.planet_id})
         society["generation_emerging"] = True
         db.set("societies", society["id"], society)
-        civ_info = civ_gen.run(planet["Planet Type"], SociologicalGroup.load(db, 'societies', society["id"], society_dict=society))
+        civ_info = civ_gen.generate(
+            planet,
+            SociologicalGroup.load(db, 'societies', society["id"], society_dict=society)
+        )
         society["civ_info"] = civ_info
         del society["generation_emerging"]
         society["generation"] = True
         db.set("societies", society["id"], society)
-        # return evolve_society()
+        if not id: # Continue searching for societies to generate
+            return evolve_society()
     print("Generation complete")
 
 @app.task
-def evolve_society():
+def evolve_society(id=None):
     db = interface_interactor.get_interface("db")
-    planet = db.get_one("planets", {"evolution_complete": True, "civilization": {"$exists": False}, "civilization_emerging": {"$exists": False}})
-    # planet = db.get_one("planets", {"id": "bd67a2da-5ea1-4a59-8c0e-52cc2aa8f705"})
+    if id:
+        planet = db.get_one("planets", {"id": id})
+    else:
+        planet = db.get_one("planets", {"evolution_complete": True, "civilization": {"$exists": False}, "civilization_emerging": {"$exists": False}})
     if planet:
         planet["civilization_emerging"] = True
         db.set("planets", planet["id"], planet)
@@ -111,10 +123,12 @@ def evolve_society():
             society.save(db, 'societies')
         del planet["civilization_emerging"]
         planet["civilization"] = True
+        planet["species"]= apex_species.uuid
         planet["societies"] = [society.uuid for society in societies]
         db.set("planets", planet["id"], planet)
         # Success
-        return evolve_society()
+        if not id:
+            return evolve_society()
     # wait for 1 minute and try again
     else:
         print("Waiting for viable species (press ctrl+c to cancel)")

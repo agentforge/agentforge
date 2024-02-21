@@ -34,7 +34,8 @@
     "Felines": 0.1, 
     "Canines": 0.1, 
     "Primates": 0.9,
-    "Rodents": 0.1, 
+    "Humanoids": 1.0,
+    "Rodents": 0.1,
     "Bovines": 0.0,
     "Equines": 0.0,
     "Porcines": 0.2,
@@ -85,5 +86,7 @@
     "Dicots (e.g., Roses, Sunflowers)": 0.0,
     "Woody Plants (Trees, Shrubs)": 0.0,
     "Herbaceous Plants (Non-woody Plants)": 0.0,
-    "Exotic": 0.05
+    "Exotic": 0.05,
+    "Triceratops": 0.0,
+    "Smilodon": 0.2
 }
