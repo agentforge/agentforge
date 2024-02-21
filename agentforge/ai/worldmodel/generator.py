@@ -4,10 +4,27 @@ from agentforge.interfaces import interface_interactor
 from agentforge.interfaces.milvusstore import MilvusVectorStore
 import numpy as np
 
+def split_markdown_entries(text):
+    # Regex pattern to split on optional tab, a decimal number, a period, and optional whitespace
+    pattern = r'(\t?\d+\.\s*)'
+    
+    # Split the text using the pattern, capturing the pattern so it's included in the result
+    chunks = re.split(pattern, text)[1:]  # [1:] to skip the first empty chunk if present
+
+    # Reassemble the split chunks to include the split pattern
+    entries = [chunks[i] + chunks[i + 1].strip() for i in range(0, len(chunks), 2)]
+    
+    return entries
+
 def extract_species(text):
+    match_vals = []
     # Regular expression pattern to match species names
-    pattern = r'\d+\.\s+[A-Za-z0-9 .,\-]+\s+-\s+[A-Za-z0-9 .,\-]+\n'
-    return re.findall(pattern, text)
+    pattern = r"\d+\.\s+[^\n]+(?:\n\s+)*"
+    for val in split_markdown_entries(text):
+        matches = re.findall(pattern, text, re.MULTILINE)
+        matches = [match.strip() for match in matches]
+        match_vals.extend(matches)
+    return match_vals
 
 def process_candidates(candidates):
     processed_data = []
@@ -38,23 +55,35 @@ class SpeciesGenerator:
         self.service = interface_interactor.get_interface("llm")
         model_name = os.getenv("VECTOR_EMBEDDINGS_MODEL_NAME")
         collection = "species"
-        self.vectorstoremanager = MilvusVectorStore(model_name, collection, reset=True)
+        self.vectorstoremanager = MilvusVectorStore(model_name, collection, reset=False)
         self.vectorstore = self.vectorstoremanager.init_store_connection(collection)
         self.image_gen = interface_interactor.get_interface("image_gen")
 
-    def generate_image(self, species_name, species_description):
+    def generate_image(self, species_name, species_description, life_form_class):
         # Generate an image for the species
-        prompt = """
-        Generate an image for the species {} with the following description: {}
-        """.format(species_name, species_description)
+        prompt = f"""
+            Generate an image for the {life_form_class} species {species_name} with the following description: {species_description}
+        """
         input = {
             "prompt": prompt,
         }
         response = self.image_gen.call(input)
         return response
-
     
-    def generate(self, planet_type, biome, evolutionary_stage, life_form_class, behavior_role, previous_species="", attributes=[], attempts=0):
+    def test_species(self, species, input, ret_val):
+        print("Testing species against schema.")
+        input['schema'] = json.load(open(os.environ.get("WORLDGEN_DATA_DIR", "./") + "schema/boolean.json"))
+        input['prompt'] = f"Does this description match a {species['genus']}? {ret_val['Description']}"
+        response = self.service.call(input)
+        val = response['choices'][0]['text']
+        print(val)
+        if "Result" not in val:
+            return False
+        return val
+    
+    def generate(self, planet, species, evolutionary_stage, previous_species="", attributes=[], attempts=0):
+        planet_type = planet["Planet Type"]
+        planet_name = planet["Name"]
         # Create a species
         if previous_species != "":
             previous_species = "The previous species in this evolutionary chain was {}.".format(previous_species)
@@ -71,7 +100,8 @@ class SpeciesGenerator:
         ]
         theme = np.random.choice(themes)
         prompt = f"""
-            Generate a species name and description with the following requirements: {previous_species} {attributes_str} The species is on a {planet_type} planet in a {biome} biome. The ecological system is in the evolutionary stage {evolutionary_stage}. The Species classification is {life_form_class} and ecological role is {behavior_role}. Go step by step, create a list of species, and select a single unique and bold species. Be THOROUGH and expand on the defintion. The theme for this species is {theme}. Be creative and compelling, The species should be suited to it's environment. Determine whether the ideas are scientific and novel, modify the species as needed to make them bolder and more diverse.
+            Generate a species name and description with the following requirements:{previous_species} {attributes_str} The species is on a {planet_type} planet called {planet_name} in a {species['biome']} biome. The species is from the evolutionary stage {evolutionary_stage}. The Species is a type of {species['genus']} and ecological role is {species['role']} with a behavior role of {species['behavioral_role']}. Only produce descriptions that match these characteristics. Go step by step, create a list of species, and select a single unique and bold species.  Be CREATIVE and NOVEL but ensure the species suits it's habitat on the defintion. The theme for this species is {theme}. Be creative and compelling, The species should be suited to it's environment. Determine whether the ideas are scientific and novel, modify the species as needed to make them bolder and more diverse. Create a list using the following format:
+            1. Species Name - Species Description
         """
         gen_config = self.model_profile['generation_config']
         gen_config['temperature'] = 0.4
@@ -86,13 +116,14 @@ class SpeciesGenerator:
         }
         response = self.service.call(input)
         val = response['choices'][0]['text']
+        print(val)
 
         # This list is now extracted and tested against the existng species
         # Of the chosen species the most unique is selected
         species_list = extract_species(val)
         candidates = process_candidates(species_list)
         descriptions = {}
-
+        print(candidates)
         if len(candidates) > 0:
             # Test each of the candidates against the existing species
             processed_candidates = []
@@ -113,34 +144,25 @@ class SpeciesGenerator:
 
             # Add the species to the vector store
             self.vectorstore.add_texts([choice['Name']])
-            image = self.generate_image(choice['Name'], choice['Description'])
+            image = self.generate_image(choice['Name'], choice['Description'], species['genus'])
             choice['image'] = image
             return choice
+
         formatted_prompt = """Extract the species name and description from the following text: {}""".format(theme, val)
         input['prompt'] = formatted_prompt
         # Try outlines
-        input['schema'] = {
-            "$schema": "http://json-schema.org/draft-07/schema#",
-            "type": "object",
-            "properties": {
-                "Name": {
-                "type": "string"
-                },
-                "Description": {
-                "type": "string",
-                "minLength": 800
-                }
-            },
-            "required": ["Name", "Description"]
-        }
+        input['schema'] = json.load(open(os.environ.get("WORLDGEN_DATA_DIR", "./") + "schema/name_description.json"))
         response = self.service.call(input)
         val = response['choices'][0]['text']
-
         try:
             ret_val = json.loads(val)
-            image = self.generate_image(ret_val['Name'], ret_val['Description'])
-            ret_val['image'] = image
-            return ret_val
+            if val["Result"]:
+                image = self.generate_image(ret_val['Name'], ret_val['Description'], species['genus'])
+                ret_val['image'] = image
+                return ret_val
+            else:
+                print("The species description did not match the genus. Trying again.")
+                return self.generate(planet, species, evolutionary_stage, previous_species, attributes=attributes, attempts=attempts + 1)
         except:
             pass
 
@@ -148,7 +170,7 @@ class SpeciesGenerator:
         if attempts > 5:
             print("we tried 5 times to generate a species and failed.")
             return {}
-        return self.generate(biome, evolutionary_stage, life_form_class, behavior_role, previous_species, attributes=attributes, attempts= attempts + 1)
+        return self.generate(planet, species, evolutionary_stage, previous_species, attributes=attributes, attempts=attempts + 1)
 
         # print(candidates)
 
@@ -180,7 +202,7 @@ class CivilizationGenerator:
         self.service = interface_interactor.get_interface("llm")
         model_name = os.getenv("VECTOR_EMBEDDINGS_MODEL_NAME")
         collection = "civilizations"
-        self.vectorstoremanager = MilvusVectorStore(model_name, collection, reset=True)
+        self.vectorstoremanager = MilvusVectorStore(model_name, collection, reset=False)
         self.vectorstore = self.vectorstoremanager.init_store_connection(collection)
         self.image_gen = interface_interactor.get_interface("image_gen")
 
