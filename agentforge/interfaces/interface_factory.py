@@ -47,6 +47,13 @@ class InterfaceFactory:
         else:
             raise Exception(f"FileStore {filestore_type} does not exist")
 
+    def create_image_generator(self, generator_type: str) -> None:
+        if generator_type == "pixart":
+            pixArtService = getattr(importlib.import_module('agentforge.interfaces.api'), 'PixArtService')
+            self.__interfaces["image_gen"] = pixArtService()
+        else:
+            raise Exception(f"Service {generator_type} does not exist")
+
     def create_service(self, service_type: str) -> None:
         # Instantiate the APIService with the provided APIClient
         if service_type == "llm":

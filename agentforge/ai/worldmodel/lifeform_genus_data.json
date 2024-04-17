@@ -1,0 +1,196 @@
+{
+    "Terrestrial": {
+        "Single-celled organisms": {
+            "Bacteria": 1.0, 
+            "Archaea": 1.0,
+            "Protozoa": 1.0,
+            "Unicellular Fungi (e.g., Yeasts)": 1.0,
+            "Protists (e.g., Amoebas, Slime Molds)": 1.0,
+            "Choanoflagellates": 1.0,
+            "Ciliates (such as Paramecium)": 1.0,
+            "Flagellates (e.g., Euglena)": 1.0
+        },
+        "Multi-celled organisms": {
+            "Fungi": 1.0,
+            "Molds": 1.0,
+            "Mildews": 1.0,
+            "Yeast": 1.0,
+            "Simple Annelids": 1.0
+        },
+        "Complex lifeforms": {
+            "Triceratops": 0.9,
+            "Smilodon": 0.9,
+            "Mammals": 1.2,
+            "Birds": 1.0,
+            "Reptiles": 1.0,
+            "Amphibians": 1.0,
+            "Coleoptera (Beetles)": 1.0,
+            "Lepidoptera (Butterflies and Moths)": 1.0,
+            "Hymenoptera (Bees, Wasps, Ants)": 1.0,
+            "Diptera (Flies)": 1.0,
+            "Hemiptera (True Bugs)": 1.0,
+            "Odonata (Dragonflies)": 1.0,
+            "Orthoptera (Grasshoppers)": 1.0,
+            "Araneae (Spiders)": 1.0,
+            "Gastropoda (Snails)": 1.0,
+            "Isoptera (Termites)": 1.0,
+            "Lagomorpha (Rabbits)": 1.0,
+            "Mantodea (Praying Mantises)": 1.0,
+            "Blattodea (Cockroaches)": 1.0,
+            "Myriapods": 1.0,
+            "Arachnids": 1.0,
+            "Felines": 1.2,
+            "Canines": 1.2,
+            "Primates": 1.2,
+            "Humanoids": 1.2,
+            "Rodents": 1.2,
+            "Bovines": 1.2,
+            "Equines": 1.2,
+            "Porcines": 1.2,
+            "Avians": 1.2,
+            "Annelids": 1.2,
+            "Mollusks": 1.2
+        }    
+    },
+    "Aquatic": {
+        "Single-celled organisms": {
+            "Phytoplankton (e.g., Diatoms, Dinoflagellates)": 1.0,
+            "Green Algae (e.g., Chlamydomonas)": 1.0,
+            "Foraminifera": 1.0
+        },
+        "Multi-celled organisms": {
+            "Sponges (Porifera)": 1.0,
+            "Coenocytic Organisms": 1.0,
+            "Cnidarians": 1.0,
+            "Flatworms": 1.0,
+            "Roundworms": 1.0,
+            "Mollusks": 1.0,
+            "Annelids": 1.0,
+            "Arthropods": 1.0,
+            "Echinoderms": 1.0,
+            "Chordates": 1.0
+        },
+        "Complex lifeforms": {
+            "Corals": 1.0,
+            "Sponges": 1.0,
+            "Algae": 1.0,
+            "Anemones": 1.0,
+            "Polychaetes": 1.0,
+            "Parrotfish": 1.0,
+            "Butterflyfish": 1.0,
+            "Octopuses": 1.0,
+            "Urchins": 1.0,
+            "Turtles": 1.0,
+            "Sharks": 1.0,
+            "Groupers": 1.0,
+            "Eels": 1.0,
+            "Barracudas": 1.0,
+            "Lionfish": 1.0
+        }
+    },
+    "Flora": {
+        "Single-celled organisms": {
+                "Chlorella": 1.0,
+                "Volvox": 1.0,
+                "Diatoms": 1.0,
+                "Cyanobacteria": 1.0,
+                "Spirulina": 1.0
+        },
+        "Multi-celled organisms": {
+            "Mosses": 1.0,
+            "Liverworts": 1.0,
+            "Hornworts": 1.0,
+            "Ferns": 1.0,
+            "Horsetails": 1.0,
+            "Bryophytes" : 1.0,
+            "Conifers": 1.0,
+            "Cycads": 1.0,
+            "Gymnosperms": 1.0
+        },
+        "Complex lifeforms": {
+            "Monocots (e.g., Grasses, Orchids)": 1.0,
+            "Dicots (e.g., Roses, Sunflowers)": 1.0,
+            "Woody Plants (Trees, Shrubs)": 1.0,
+            "Herbaceous Plants (Non-woody Plants)": 1.0
+        }
+    },
+    "Cold-Tolerant Flora": {
+          "Single-celled organisms": {
+              "Chlorella": 0.8,
+              "Volvox": 0.8,
+              "Diatoms": 0.85,
+              "Cyanobacteria": 0.9,
+              "Spirulina": 0.75
+          },
+          "Multi-celled organisms": {
+              "Mosses": 0.95,
+              "Liverworts": 0.9,
+              "Hornworts": 0.9,
+              "Ferns": 0.6,
+              "Horsetails": 0.65,
+              "Bryophytes": 0.95,
+              "Conifers": 0.9,
+              "Cycads": 0.4,
+              "Gymnosperms": 0.85
+          },
+          "Complex lifeforms": {
+              "Monocots (e.g., Grasses, Orchids)": 0.5,
+              "Dicots (e.g., Roses, Sunflowers)": 0.5,
+              "Woody Plants (Trees, Shrubs)": 0.7,
+              "Herbaceous Plants (Non-woody Plants)": 0.6
+          }
+    },
+    "Cold-Tolerant Fauna": {
+        "Single-celled organisms": {
+            "Bacteria": 0.8,
+            "Archaea": 0.8,
+            "Protozoa": 0.7,
+            "Unicellular Fungi (e.g., Yeasts)": 0.75,
+            "Protists (e.g., Amoebas, Slime Molds)": 0.7,
+            "Choanoflagellates": 0.65,
+            "Ciliates (such as Paramecium)": 0.65,
+            "Flagellates (e.g., Euglena)": 0.65
+        },
+        "Multi-celled organisms": {
+            "Fungi": 0.6,
+            "Molds": 0.6,
+            "Mildews": 0.6,
+            "Yeast": 0.55,
+            "Simple Annelids": 0.5
+        },
+        "Complex lifeforms": {
+            "Triceratops": 0.5,
+            "Smilodon": 0.3,
+            "Mammals": 0.3,
+            "Birds": 0.4,
+            "Reptiles": 0.35,
+            "Amphibians": 0.25,
+            "Coleoptera (Beetles)": 0.45,
+            "Lepidoptera (Butterflies and Moths)": 0.4,
+            "Hymenoptera (Bees, Wasps, Ants)": 0.5,
+            "Diptera (Flies)": 0.55,
+            "Hemiptera (True Bugs)": 0.45,
+            "Odonata (Dragonflies)": 0.4,
+            "Orthoptera (Grasshoppers)": 0.5,
+            "Araneae (Spiders)": 0.5,
+            "Gastropoda (Snails)": 0.6,
+            "Isoptera (Termites)": 0.45,
+            "Lagomorpha (Rabbits)": 0.35,
+            "Mantodea (Praying Mantises)": 0.45,
+            "Blattodea (Cockroaches)": 0.55,
+            "Myriapods": 0.5,
+            "Arachnids": 0.5,
+            "Felines": 0.3,
+            "Canines": 0.3,
+            "Primates": 0.2,
+            "Humanoids": 0.2,
+            "Rodents": 0.4,
+            "Bovines": 0.25,
+            "Equines": 0.25,
+            "Porcines": 0.25,
+            "Avians": 0.4,
+            "Annelids": 0.5,
+            "Mollusks": 0.55
+        }
+    }
+}

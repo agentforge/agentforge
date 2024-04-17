@@ -28,3 +28,6 @@ class DB(Protocol):
 
     def aggregate(self, collection: str, pipeline: List[Dict[str, Any]]) -> Optional[Any]:
         pass
+
+    def batch_upload(self, collection: str, documents: List[Dict[str, Any]]) -> None:
+        pass

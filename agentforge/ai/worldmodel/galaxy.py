@@ -4,66 +4,80 @@ import pandas as pd
 from agentforge.ai.worldmodel.star import Star
 from agentforge.ai.worldmodel.planet import Planet
 from agentforge.ai.worldmodel.lifeform import Lifeform
-from agentforge.ai.worldmodel.evolution import EvolutionarySimulation
-from agentforge.ai.worldmodel.concept import Concept, normalize_rows, ensure_non_negative_and_normalize_row
+from agentforge.ai.worldmodel.concept import Concept
 from agentforge.ai.worldmodel.biome import Biome
 from agentforge.ai.worldmodel.moon import Moon
 from scipy.spatial import KDTree
 from agentforge.ai.worldmodel.designation import CelestialNamingSystem, star_designations
+from tqdm import tqdm
 from uuid import uuid4
 from agentforge.ai.worldmodel.simulation import StarSimulation
+from agentforge.ai.worldmodel.probability import UniverseProbability
 from collections import defaultdict
 
 class Galaxy:
-    def __init__(self, metadata=None):
+    def __init__(self, metadata=None, config={}):
         self.metadata = metadata if metadata is not None else {}
+
+        # Setup the univseral sim
+        self.galaxy_concepts = {"Milky Way": Concept("Milky Way", "Galaxy")}
+        self.up = UniverseProbability()
+        self.up.setup() # setup the universe probability matricies
         self.star = Star()
         self.planet = Planet()
         self.lifeform = Lifeform()
         self.biome = Biome()
         self.moon = Moon()
-        self.MIN_STAR_SPEED = 0.0005
-        self.MAX_STAR_SPEED = 0.0015
-        self.REPULSION_DISTANCE = 10
-        self.NUM_SAMPLES = 100
-        self.GALACTIC_SCALE_FACTOR = 5.0
-        self.ALIEN_LIFE_PROBABILITY = 0.0001
-        self.LIFE_PROBABILITY = 0.1
-        self.star_simulation = StarSimulation(self.REPULSION_DISTANCE)
         self.star_designations = star_designations
         self.designation_counters = {key: np.random.randint(0, 999) for key in self.star_designations}
 
-    async def generate_with_life(self, num_systems):
-        simulated_systems = int(math.ceil(self.LIFE_PROBABILITY * num_systems) * (10000/14))
-        print("generating {} systems to sample life...".format(simulated_systems))
-        systems_dict = self.generate(simulated_systems)
-        solar_systems_w_life = len(self.has_life)
-        # Edge case, every solar system has life -- probably an error
-        if num_systems > solar_systems_w_life:
-            dead_systems = []
-        else:
-            num_dead_systems = num_systems - len(self.has_life)
-            dead_systems = np.random.choice(self.systems, num_dead_systems, replace=False).tolist()
-        systems_to_return = dead_systems + systems_dict["has_life"]
-        return {
-            "systems": systems_to_return,
-            "starfield_positions": systems_dict["starfield_positions"],
-            "lifeforms": systems_dict["lifeforms"],
-            "interstellar_civilizations": systems_dict["interstellar_civilizations"],
-        }
+        # Setp config for sim
+        self.MIN_STAR_SPEED = 0.0005 if "MIN_STAR_SPEED" not in config else config["MIN_STAR_SPEED"]
+        self.MAX_STAR_SPEED = 0.0015 if "MAX_STAR_SPEED" not in config else config["MAX_STAR_SPEED"]
+        self.REPULSION_DISTANCE = 10 if "REPULSION_DISTANCE" not in config else config["REPULSION_DISTANCE"]
+        self.NUM_SAMPLES = 100 if "NUM_SAMPLES" not in config else config["NUM_SAMPLES"]
+        self.GALACTIC_SCALE_FACTOR = 5.0 if "GALACTIC_SCALE_FACTOR" not in config else config["GALACTIC_SCALE_FACTOR"]
+        self.ALIEN_LIFE_PROBABILITY = 0.0001 if "ALIEN_LIFE_PROBABILITY" not in config else config["ALIEN_LIFE_PROBABILITY"]
+        self.LIFE_PROBABILITY = 0.1 if "LIFE_PROBABILITY" not in config else config["LIFE_PROBABILITY"]
+        self.STARFIELD_NUM = 2200 if "STARFIELD_NUM" not in config else config["STARFIELD_NUM"]
+        self.NUM_ARMS = 4 if "NUM_ARMS" not in config else config["NUM_ARMS"]
+        self.R_SPREAD = 9500 if "R_SPREAD" not in config else config["R_SPREAD"]
+        self.CORE_RADIUS = 300 if "CORE_RADIUS" not in config else config["CORE_RADIUS"]
+        self.ANIM_STEPS = 2500 if "ANIM_STEPS" not in config else config["ANIM_STEPS"]
+        self.NOISE_SCALE = 100 if "NOISE_SCALE" not in config else config["NOISE_SCALE"]
+        self.TIGHTNESS = 3 if "TIGHTNESS" not in config else config["TIGHTNESS"]
+        self.NUM_SYSTEMS = 200 if "NUM_SYSTEMS" not in config else config["NUM_SYSTEMS"]
 
+        self.star_simulation = StarSimulation(self.REPULSION_DISTANCE)
+
+    async def generate_with_life(self):
+        simulated_systems = int(math.ceil(self.LIFE_PROBABILITY * self.NUM_SYSTEMS) * (10000/28))
+        print("Generating {} systems to sample life...".format(simulated_systems))
+        return self.generate(simulated_systems)
+
+    # generate a galaxy with solar systems and life preseance esrtimates
+    # num_systems: int, simulated number of solar systems to generate to ensure life probability is met
     def generate(self, num_systems):
         system_names = self.get_system_name(num_systems)
         # From the macro to the micro, we build the world model
         self.systems = []
         self.has_life = []
         self.life_data = defaultdict(int)
-        self.all_life_forms = []
-        self.interstellar_civilizations = []
 
-        print("generating star positions...")
+        print("Generating star positions...")
         
-        star_positions, starfield_positions = self.generate_spiral_positions(num_systems, starfieldSystems=2200, core_systems_ratio=0.1, num_arms=6, checkDistance=True, r_spread=9500, core_radius=300, anim_steps=10, noise_scale=100, tightness=3)
+        star_positions, starfield_positions = self.generate_spiral_positions(
+            self.NUM_SYSTEMS,
+            starfieldSystems=self.STARFIELD_NUM,
+            core_systems_ratio=0.1,
+            num_arms=self.NUM_ARMS,
+            checkDistance=True,
+            r_spread=self.R_SPREAD,
+            core_radius=self.CORE_RADIUS,
+            anim_steps=self.ANIM_STEPS,
+            noise_scale=self.NOISE_SCALE,
+            tightness=self.TIGHTNESS,
+        )
     
         kd_tree = KDTree(np.array(star_positions))  # Rebuild KDTree with new star positions
 
@@ -78,85 +92,16 @@ class Galaxy:
         # Calculate distances
         distances_matrix = np.linalg.norm(neighbors_positions - star_positions_reshaped, axis=2)
 
-        print("generating starfield positions...")
-        self.galaxy_concepts = {"Milky Way": Concept("Milky Way", "Galaxy")}
-        galaxy_names = list(self.galaxy_concepts.keys())
+        print("Generating starfield positions...")
         star_names = list(self.star.star_concepts.keys())
         planet_names = list(self.planet.planet_concepts.keys())
-        biome_names = list(set(b for biomes in self.planet.planet_biome_connections.values() for b in biomes))
+        self.biome_names = list(self.biome.biome_concepts.keys())
 
-        for star_type, probability in self.star.star_probabilities.items():
-            self.galaxy_concepts["Milky Way"].add_connection(self.star.star_concepts[star_type], probability)
-
-        self.star.create_connections_for_star(self.planet)
-
-        # Initialize DataFrames with float dtype
-        gx_s_df = pd.DataFrame(0.0, index=galaxy_names, columns=star_names)
-        sx_p_df = pd.DataFrame(0.0, index=star_names, columns=planet_names)
-        px_b_df = pd.DataFrame(0.0, index=planet_names, columns=biome_names)
-        bx_b_df = pd.DataFrame(0.0, index=biome_names, columns=self.lifeform.life_form_categories)
-
-        # Step 1: Create GxS DataFrame
-        gx_s_df = pd.DataFrame(0.0, index=galaxy_names, columns=star_names)
-        for galaxy in galaxy_names:
-            for connection in self.galaxy_concepts[galaxy].get_connections():
-                gx_s_df.at[galaxy, connection['concept'].name] = connection['probability']
-
-        # Step 2: Create SxP DataFrame
-        sx_p_df = pd.DataFrame(0.0, index=star_names, columns=planet_names)
-        for star in star_names:
-            for connection in self.star.star_concepts[star].get_connections():
-                sx_p_df.at[star, connection['concept'].name] = connection['probability']
-
-        # Create the PxB DataFrame
-        px_b_df = pd.DataFrame(0.0, index=planet_names, columns=biome_names)
-        for planet in planet_names:
-            for biome, probability in self.planet.planet_biome_connections.get(planet, {}).items():
-                if biome in biome_names:
-                    px_b_df.at[planet, biome] = probability
-
-        # Initialize the Biome x Biology DataFrame
-        bx_b_df = pd.DataFrame(0.0, index=biome_names, columns=self.lifeform.life_form_categories)
-
-        # Populate the DataFrame with probabilities
-        for biome in biome_names:
-            for subcategory, probability in self.biome.biome_biology_probabilities.get(biome, {}).items():
-                if subcategory in self.lifeform.life_form_categories:
-                    bx_b_df.at[biome, subcategory] = probability
-
-        # Create the biological matrix with row normalization
-        biological_matrix_row_norm = self.lifeform.create_biological_matrix_row_normalization()
-
-        # Initialize the Biology x Individual Characteristics DataFrame
-        biology_x_individual_df = pd.DataFrame(0.0, index=biological_matrix_row_norm.index, columns=self.lifeform.life_form_characteristic_names)
-
-        # Populate the DataFrame with normalized values
-        for biology_type in biological_matrix_row_norm.index:
-            for characteristic in self.lifeform.life_form_characteristic_names:
-                biology_x_individual_df.at[biology_type, characteristic] = biological_matrix_row_norm.at[biology_type, characteristic]
-
-        # Normalize rows of GxS, SxP, PxB, and BxBio DataFrames
-        normalized_gx_s_df = normalize_rows(gx_s_df)
-        normalized_sx_p_df = normalize_rows(sx_p_df)
-        normalized_px_b_df = normalize_rows(px_b_df)
-        normalized_bx_b_df = normalize_rows(bx_b_df)
-        normalized_bx_lf_df = normalize_rows(biology_x_individual_df)
-
-        # Multiply normalized GxS, SxP, PxB, and BxBio DataFrames to get GxBio DataFrame
-        gx_p_df = normalized_gx_s_df.dot(normalized_sx_p_df)
-        gx_b_df = gx_p_df.dot(normalized_px_b_df)
-        gx_bb_df = gx_b_df.dot(normalized_bx_b_df)
-        gx_bl_df = gx_bb_df.dot(normalized_bx_lf_df)
-
-        # print(gx_bb_df)
-        # print(gx_b_df)
-        print(gx_p_df)
-        # print(gx_bl_df)
         start_time = time.time()
-        print("generating systems...")
-        star_probabilities = normalized_gx_s_df.iloc[0]
-        for star_position in star_positions:
-
+        print("Generating systems...")
+        self.up.setup() # setup the universe probability matricies
+        star_probabilities = self.up.normalized_gx_s_df.iloc[0]
+        for i in tqdm(range(num_systems), desc="Sampling solar systems..."):
             star_type = np.random.choice(star_names, p=star_probabilities)
 
             # Find the index of the sampled star type
@@ -180,24 +125,25 @@ class Galaxy:
             solar_system_info = {
                 "Name": name,
                 "Star": star_type,
-                "Star Position": star_position.tolist(),
+                # "Star Position": star_position.tolist(),
                 "Star Information": self.star.star_concepts[star_type].metadata,
                 "Star Mass (kg)": star_mass_kg,
                 "Star Age (Gyr)": star_age_Gyr,
                 "Number of Planets": num_planets,
                 "Disk Mass": disk_mass,
                 "Planets": [],
-                "uuid": star_id
+                "id": star_id
             }
 
             # Sample a planet type based on star type
-            planet_probabilities = normalized_sx_p_df.iloc[star_index]
+            planet_probabilities = self.up.normalized_sx_p_df.iloc[star_index]
             for _ in range(num_planets):
                 planet_type = np.random.choice(planet_names, p=planet_probabilities)
                 planet_name = name_generator.get_next_name("planet")
                 # Find the index of the sampled planet type
                 planet_index = planet_names.index(planet_type)
                 planet_info, estimated_biomes, life_presence = self.planet.generate(planet_type, star_mass_kg, star_type)
+                planet_info["system_id"] = star_id
 
                 # Small chance of alien lifeforms on strange new worlds
                 if not life_presence and np.random.rand() < self.ALIEN_LIFE_PROBABILITY and planet_type not in ['oceanPlanet', 'terrestrial', 'superEarth']:
@@ -210,49 +156,18 @@ class Galaxy:
                     moon["Name"] = moon_name
 
                 for _ in range(estimated_biomes):
-                    lifeforms = []
-                    biome_type = np.random.choice(biome_names, p=normalized_px_b_df.iloc[planet_index])
-                    biome_index = biome_names.index(biome_type)
-
-                    evolutionary_report =  None
-                    if life_presence:
-                        biome_quotient = self.biome.biome_biological_support[biome_type]['biological_diversity_quotient']
-                        biome_supported_species = 25
-
-                        for _ in range(biome_supported_species):
-                            biological_probabilities = normalized_bx_b_df.iloc[biome_index]
-                            biological_type = np.random.choice(self.lifeform.life_form_categories, p=biological_probabilities)
-
-                            biological_index = self.lifeform.life_form_categories.index(biological_type)
-
-                            life_form_characteristic_probabilities = normalized_bx_lf_df.iloc[biological_index]
-                            adjusted_probabilities = ensure_non_negative_and_normalize_row(life_form_characteristic_probabilities)
-                            life_form_characteristic_list = list(set(np.random.choice(self.lifeform.life_form_characteristic_names, p=adjusted_probabilities, size=5)))
-
-                            bio_info = {
-                                "Biological Type": biological_type,
-                                "Life Form Attributes": life_form_characteristic_list,
-                                "Genetic Profile": self.lifeform.sample_genetic_profile(biological_type),
-                            }
-
-                            lifeforms.append(bio_info)
-                            self.all_life_forms.append(bio_info)
-
-                        print("evolving life {} for {} ({})".format(len(lifeforms), planet_type, biome_type))
-                        origin_of_species = EvolutionarySimulation(planet_type, biome_type, planet_info['uuid'])
-                        evolutionary_report = origin_of_species.run(lifeforms)
+                    biome_type = np.random.choice(self.biome_names, p=self.up.normalized_px_b_df.iloc[planet_index])
 
                     biome_info = {
                         "Biome Type": biome_type,
-                        "Lifeforms": lifeforms,
+                        "Life Presence": life_presence,
                     }
+                    if life_presence:
+                        biome_info['evolved'] = False
 
                     if biome_type not in planet_info["Biomes"]:
                         planet_info["Biomes"][biome_type] = {}
 
-                    # Save final evolutionary report for this planet
-                    if evolutionary_report:
-                        biome_info["Evolution"] = evolutionary_report
                     planet_info["Biomes"][biome_type].update(biome_info)
 
                 solar_system_info["Planets"].append(planet_info)
@@ -262,30 +177,33 @@ class Galaxy:
             if life_presence:
                 self.has_life.append(solar_system_info)
                 self.life_data[planet_type] += 1
+                solar_system_info["Life"] = True
 
-        # Setup neighbors
         end_time = time.time()
         print(f"System Generation Time elapsed: {end_time - start_time}")
+        dead_systems = np.random.choice(self.systems, self.NUM_SYSTEMS - len(self.has_life), replace=False).tolist()
+        self.systems = dead_systems + self.has_life
 
+        # Setup neighbors
         for i, system in enumerate(self.systems):
+            self.systems[i]['Star Position'] = star_positions[i].tolist()
             system['Neighbors'] = []
             dist_idx = 0
             for neighbor_index in nearest_neighbors[i]:
                 neighbor = {
-                    "uuid": self.systems[neighbor_index]['uuid'],
+                    "id": self.systems[neighbor_index]['id'],
                     "Distance": str(distances_matrix[i, dist_idx]),
                     "Name": self.systems[neighbor_index]['Name'],
                 }
                 system['Neighbors'].append(neighbor)
                 dist_idx += 1
-        print(len(self.has_life))
-        print(self.life_data)
+
+        print(f"Systems With Life: {len(self.has_life)}")
+        print(f"Planetary Life Report: {self.life_data}")
+
         return {
             "systems": self.systems,
-            "has_life": self.has_life,
             "starfield_positions": starfield_positions.tolist(),
-            "lifeforms": self.all_life_forms,
-            "interstellar_civilizations": self.interstellar_civilizations,
         }
 
     # Perlin noise implementation
@@ -366,9 +284,7 @@ class Galaxy:
         # star_positions = self.update_positions_with_random_speeds(star_positions, star_speeds, 0.1, anim_steps)
 
         # Slow but accurate
-        for i in range(anim_steps):
-            if(i % 10 == 0):
-                print(f"step {i} of {anim_steps}")
+        for i in tqdm(range(anim_steps), desc="Aging Galaxy"):
             star_positions = self.update_positions_with_random_speeds_og(star_positions, star_speeds, i)
         
         end_time = time.time()
