@@ -12,11 +12,15 @@ class ImageProcessor:
         self.vqa_service = VQAService()
 
     def execute(self, context: Context) -> Dict[str, Any]:        
-        if not 'img' in context.get('input.messages')[-1] or context.get('input.messages')[-1]['img'] is None:
+        messages = context.get('input.messages')
+        if messages is None:
             return context
-        
-        img_bytes = context.get('input.messages')[-1]['img']
-        prompt = context.get('input.messages')[-1]['content']
+
+        if not 'img' in messages[-1] or messages[-1]['img'] is None:
+            return context
+
+        img_bytes = messages[-1]['img']
+        prompt = messages[-1]['content']
         try:
             response_data = self.vqa_service.process(prompt, img_bytes)
         except HTTPException as e:
