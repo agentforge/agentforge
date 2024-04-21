@@ -19,6 +19,9 @@ from celery import Celery
 class GalaxyResponse(BaseModel):
    systems: Dict
 
+class SystemResponse(BaseModel):
+   planets: List
+
 router = APIRouter()
 db_uri = os.getenv("MONGODB_URI")
 
@@ -71,7 +74,9 @@ def generate_species(id=None):
         db.set("species", species["id"], species)
         if not id:
             return generate_species()
-        # print(species_info)
+    else:
+        print("Waiting for viable species (press ctrl+c to cancel)")
+        time.sleep(60)
     print("Generation complete for species " + species["id"])
 
 @app.task
@@ -84,6 +89,10 @@ def generate_society(id=None):
         society = db.get_one("societies", {"generation": {"$exists": False}, "generation_emerging": {"$exists": False}})
     if society:
         species = Species.load(db, 'species', society["species"])
+        if 'Description' not in species.info:
+            print(f"Species {species.uuid} has no description")
+            generate_species(species.uuid)
+            species = Species.load(db, 'species', society["species"]) # reload species
         planet = db.get_one("planets", {"id": species.planet_id})
         society["generation_emerging"] = True
         db.set("societies", society["id"], society)
@@ -96,7 +105,10 @@ def generate_society(id=None):
         society["generation"] = True
         db.set("societies", society["id"], society)
         if not id: # Continue searching for societies to generate
-            return evolve_society()
+            return generate_society()
+    else:
+        print("Waiting for viable species (press ctrl+c to cancel)")
+        time.sleep(60)
     print("Generation complete")
 
 @app.task
@@ -198,17 +210,10 @@ async def evolve_galaxy(
     # Check if galaxy data exists
     existing_data = db.get(galaxies_collection, key)
     if existing_data:
+        print("existing data..")
         existing_data.pop('_id', None)
-        # Reassemble systems from slices stored in separate collections
-        all_systems = []
-        for system_key in existing_data.get('system_keys', []):
-            systems_data = db.get(systems_collection, system_key)
-            if systems_data:
-                systems_data.pop('_id', None)
-                all_systems.extend(systems_data.get('systems', []))
-
-        existing_data['systems'] = all_systems
-        logger.info(existing_data)
+        solar_systems = db.get_many(systems_collection, {"galaxy_key": key})
+        existing_data['systems'] = list(solar_systems)
         return GalaxyResponse(systems=existing_data)
 
     # Generate new galaxy data
@@ -252,7 +257,15 @@ async def evolve_galaxy(
     response.pop('_id', None)
     return GalaxyResponse(systems=response)
 
-@router.post("/generate-galaxy", operation_id="generateGalaxy")
+@router.post("/galaxy", operation_id="generateGalaxy")
 async def output() -> GalaxyResponse:
-   response = await evolve_galaxy("milky_way", 625)
-   return GalaxyResponse(systems=response)
+    response = await evolve_galaxy("milky_way", 625)
+    return GalaxyResponse(systems=response)
+
+@router.post("/solar-system", operation_id="getPlanets")
+async def getPlanets(request: Request) -> SystemResponse:
+    data = await request.json()
+    system_id = data.get("system_id")
+    db = interface_interactor.get_interface("db")
+    planets = db.get_many("planets", {"system_id": system_id})
+    return SystemResponse(planets=list(planets))
