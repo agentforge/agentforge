@@ -143,6 +143,8 @@ class Context:
     def get_messages(self, prefix="", postfix="", n=None):
         messages = []
         input_messages = self.get('input.messages')
+        if input_messages is None:
+            return "", 0
 
         # If n is provided and valid, slice the input_messages to get the last n items
         if n is not None and n > 0:
@@ -260,3 +262,8 @@ class Context:
         for k,v in values.items():
             prompt = prompt.replace(f"<|{k}|>", str(v))
         return prompt
+    
+    def get_model_outputs(self):
+        return {
+            "choices": self.get("choices"),
+        }

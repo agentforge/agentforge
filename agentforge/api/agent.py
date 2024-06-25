@@ -66,6 +66,7 @@ async def agent(request: Request, session: SessionContainer = Depends(verify_ses
     print(f"userId {user_id}")
     ## and add add the prompt and user_id to the data
     data = await request.json()
+    print(data)
     ## First check API key for legitimacy
     # valid_token = verify_token_exists(data)
     # if valid_token is None:
@@ -76,13 +77,21 @@ async def agent(request: Request, session: SessionContainer = Depends(verify_ses
     data['user_name'] = user_name
 
     ## TODO: Verify auth, rate limiter, etc -- should be handled by validation layer
-    if 'id' not in data:
+    if 'id' not in data and 'engine' not in data and 'model_id' not in data:
+        print("No model_profiles")
         return {"error": "No model profile specified."}
+    
+    if 'engine' in data:
+        data['id'] = data['engine']
+
+    if 'model_id' in data:
+        data['id'] = data['model_id']
     
     logger.info(data)
 
     # TODO: To make this faster we should ideally cache these models, gonna be a lot of reads and few writes here
     model_profiles = ModelProfile()
+    print("GOT model_profiles")
 
     if 'model_id' in data:
         model_profile = model_profiles.get(data['model_id'])
@@ -92,7 +101,9 @@ async def agent(request: Request, session: SessionContainer = Depends(verify_ses
     if model_profile['model_config']['streaming']:
         ## Get agent from agent Factory and run it
         agent = agent_interactor.get_agent()
+        print("GOT AGENT")
         output = agent.run({"input": data, "model": model_profile})
+        print(output)
 
         async def event_generator():
             redis = Redis.from_url('redis://redis:6379/0')
@@ -129,10 +140,10 @@ async def agent(request: Request, session: SessionContainer = Depends(verify_ses
         agent = agent_interactor.get_agent()
         # print("[DEBUG][api][agent][agent] agent: ", agent)
         output = agent.run({"input": data, "model": model_profile})
-        # print("[DEBUG][api][agent][agent] agent: ", output)
+        print("[DEBUG][api][agent][agent] agent: ", output)
 
         ### Parse video if needed
-        if 'video' in output:
+        if output.get('video'):
             filename = output['video']["lipsync_response"]
 
             with open(filename, 'rb') as fh:
@@ -144,7 +155,7 @@ async def agent(request: Request, session: SessionContainer = Depends(verify_ses
                 )
 
         ### Parse audio if needed
-        if 'audio' in output:
+        if output.get('audio'):
             filename = output['audio']["audio_response"]
 
             with open(filename, 'rb') as fh:
@@ -158,7 +169,7 @@ async def agent(request: Request, session: SessionContainer = Depends(verify_ses
         # print("[DEBUG][api][agent][agent] output: ", output)
 
         ## Return agent output
-        return AgentResponse(data=output)
+        return AgentResponse(data=output.get_model_outputs())
 
 ### Streaming for old Forge
 @router.get("/completions/stream/{channel}")

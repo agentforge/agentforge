@@ -44,14 +44,17 @@ class SimpleAgent:
         # load prefix/postfix for prompt and setup memory
         prefix = self.context.get('model.model_config.prefix')
         postfix = prefix = self.context.get('model.model_config.postfix')
-        self.context.memory =  Memory(prefix, postfix)
+        self.context.memory = Memory(prefix, postfix)
 
         # add task routines to context
         self.context.task_routines = self.task_routines #add to context for reference in routines
 
         try:
             state_machine = StateMachine(self.routine.subroutines, self.task_routines)
-            threading.Thread(target=state_machine.run, args=(self.context,)).start()
+            if not self.context.get('model.model_config.streaming'):
+                return state_machine.run(self.context)
+            else:
+                threading.Thread(target=state_machine.run, args=(self.context,)).start()
         except Exception as e:
             logger.info(f"Error starting thread: {str(e)}")
         return True
