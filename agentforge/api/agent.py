@@ -16,6 +16,30 @@ from supertokens_python.recipe.session import SessionContainer
 from supertokens_python.recipe.emailpassword.asyncio import get_user_by_id
 from fastapi import Depends
 
+### PRETTY PRINT THE REQUEST -- TODO: MOVE TO UTILS
+async def pretty_print_request(request: Request) -> None:
+    """
+    Prints the details of a Starlette request in a readable format.
+    """
+    # Get basic request details
+    request_details = {
+        "method": request.method,
+        "url": str(request.url),
+        "headers": dict(request.headers),
+    }
+
+    # Try to extract the body if it's JSON, handle other types or errors gracefully
+    try:
+        body = await request.json()
+        request_details["body"] = body
+    except json.JSONDecodeError:
+        body = await request.body()
+        request_details["body"] = body.decode() if body else "No body"
+
+    # Pretty print the request details
+    print(json.dumps(request_details, indent=4, sort_keys=True))
+
+
 # Setup Agent
 agent = agent_interactor.create_agent()
 parser = Parser() # for quick stream parsing
@@ -50,44 +74,46 @@ def abort() -> AgentResponse:
     return AgentResponse(data={"response": "aborted"})
 
 @router.post('/completions', operation_id="createChatCompletion")
-async def agent(request: Request, session: SessionContainer = Depends(verify_session())) -> AgentResponse:
+# async def agent(request: Request, session: SessionContainer = Depends(verify_session())) -> AgentResponse:
+async def agent(request: Request) -> AgentResponse:
     ## Parse Data --  from web acceptuseChat JSON, from client we need to pull ModelConfig
+    request_val = await pretty_print_request(request)
+    logger.info(request_val)
     session = await get_session(request)
+    # logger.info("SESSION", session)
 
     if session is None:
-        raise Exception("User session not found.")
+        return {"message": "unauthorized"}
 
     user_id = session.get_user_id()
 
     # You can learn more about the `User` object over here https://github.com/supertokens/core-driver-interface/wiki
     user = await get_user_by_id(user_id)
-    user_name = user.email.split("@")[0]
 
     print(f"userId {user_id}")
     ## and add add the prompt and user_id to the data
     data = await request.json()
-    print(data)
+    logger.info("DATA")
+    logger.info(data)
+
     ## First check API key for legitimacy
     # valid_token = verify_token_exists(data)
     # if valid_token is None:
     #     return {"error": "Invalid Token."}
 
-    # TODO: Bail on this response properly
     data['user_id'] = user_id #valid_token['user_id']
-    data['user_name'] = user_name
+    if 'user_name' not in data:
+        user_name = user.email.split("@")[0]
+        data['user_name'] = user_name
+    else:
+        user_name = data['user_name']
 
     ## TODO: Verify auth, rate limiter, etc -- should be handled by validation layer
-    if 'id' not in data and 'engine' not in data and 'model_id' not in data:
-        print("No model_profiles")
+    if 'id' not in data and 'model_id' not in data:
         return {"error": "No model profile specified."}
     
-    if 'engine' in data:
-        data['id'] = data['engine']
-
-    if 'model_id' in data:
-        data['id'] = data['model_id']
-    
-    logger.info(data)
+    logger.info("user_name")
+    logger.info(user_name)
 
     # TODO: To make this faster we should ideally cache these models, gonna be a lot of reads and few writes here
     model_profiles = ModelProfile()
@@ -138,35 +164,36 @@ async def agent(request: Request, session: SessionContainer = Depends(verify_ses
     else:
         ## Get agent from agent Factory and run it
         agent = agent_interactor.get_agent()
-        # print("[DEBUG][api][agent][agent] agent: ", agent)
+        # logger.info("[DEBUG][api][agent][agent] agent: ", agent)
         output = agent.run({"input": data, "model": model_profile})
-        print("[DEBUG][api][agent][agent] agent: ", output)
+        # TODO: Check for Errors here 
+        logger.info("[DEBUG][api][agent][agent] agent: " + output.pretty_print())
 
         ### Parse video if needed
-        if output.get('video'):
-            filename = output['video']["lipsync_response"]
+        if output.has_key('video'):
+            filename = output.get("video.lipsync_response")
 
             with open(filename, 'rb') as fh:
                 return AgentResponse(
                     data = {
-                        'choices': [{"text": output["response"]}],
+                        'choices': [{"text": output.get("response")}],
                         'video': b64encode(fh.read()).decode()
                     }
                 )
 
         ### Parse audio if needed
-        if output.get('audio'):
-            filename = output['audio']["audio_response"]
+        if output.has_key('audio'):
+            filename = output.get("audio.audio_response")
 
             with open(filename, 'rb') as fh:
                 return AgentResponse(
                     data = {
-                        'choices': [{"text": output["response"]}],
+                        'choices': [{"text": output.get("response")}],
                         'audio': b64encode(fh.read()).decode()
                     }
                 )
 
-        # print("[DEBUG][api][agent][agent] output: ", output)
+        # logger.info("[DEBUG][api][agent][agent] output: ", output)
 
         ## Return agent output
         return AgentResponse(data=output.get_model_outputs())

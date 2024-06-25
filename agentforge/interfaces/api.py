@@ -98,7 +98,7 @@ class vLLMService(APIService):
 class PixArtService(APIService):
   def __init__(self):
     super().__init__()
-    self.url = os.getenv('IMAGE_GEN_URL')
+    self.url = os.getenv('PIXART_URL')
     self.service = "pixart"
 
 class LLMService(APIService):

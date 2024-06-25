@@ -49,14 +49,22 @@ class SimpleAgent:
         # add task routines to context
         self.context.task_routines = self.task_routines #add to context for reference in routines
 
-        try:
-            state_machine = StateMachine(self.routine.subroutines, self.task_routines)
-            if not self.context.get('model.model_config.streaming'):
-                return state_machine.run(self.context)
-            else:
+        # Decide whether to run synchronously or asynchronously based on the streaming configuration
+        if self.context.get('model.model_config.streaming'):
+            # Asynchronous execution
+            try:
+                state_machine = StateMachine(self.routine.subroutines, self.task_routines)
                 threading.Thread(target=state_machine.run, args=(self.context,)).start()
-        except Exception as e:
-            logger.info(f"Error starting thread: {str(e)}")
+            except Exception as e:
+                logger.info(f"Error starting thread: {str(e)}")
+        else:
+            # Synchronous execution
+            try:
+                state_machine = StateMachine(self.routine.subroutines, self.task_routines)
+                return state_machine.run(self.context)
+            except Exception as e:
+                logger.info(f"Error in state machine execution: {str(e)}")
+
         return True
     
     def abort(self):

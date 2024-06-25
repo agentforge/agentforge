@@ -1,4 +1,4 @@
-import os, time
+import os, time, json
 from fastapi import APIRouter, Request, Depends, status, HTTPException
 from pydantic import BaseModel
 from typing import List, Dict
@@ -18,6 +18,9 @@ from celery import Celery
 
 class GalaxyResponse(BaseModel):
    systems: Dict
+
+class SystemResponse(BaseModel):
+   planets: List
 
 router = APIRouter()
 db_uri = os.getenv("MONGODB_URI")
@@ -46,52 +49,75 @@ def analyze_biome_species(biomes, db):
     return apex_species
 
 @app.task
-def generate_species():
+def generate_species(id=None):
+    evolutionary_stages = json.load(open(os.environ.get("WORLDGEN_DATA_DIR", "./") + "evolutionary_probability.json"))
+    evolutionary_stages = list(evolutionary_stages.keys())
     db = interface_interactor.get_interface("db")
-    species = db.get_one("species", {"generation": {"$exists": False}, "generation_emerging": {"$exists": False}})
+    if id:
+        species = db.get_one("species", {"id": id})
+    else:
+        species = db.get_one("species", {"generation": {"$exists": False}, "generation_emerging": {"$exists": False}})
     species_gen = SpeciesGenerator()
     if species:
         planet = db.get_one("planets", {"id": species["planet_id"]})
         species["generation_emerging"] = True
         db.set("species", species["id"], species)
         species_info = species_gen.generate(
-            planet["Planet Type"],
-            species["biome"],
-            species["evolutionary_stage"],
-            species["genus"],
-            species["role"],
-            species["behavioral_role"],
+            planet,
+            species,
+            evolutionary_stages[species["evolutionary_stage"]],
             #previous_species=previous_lifeform
         )
         species["info"] = (species_info)
         del species["generation_emerging"]
         species["generation"] = True
         db.set("species", species["id"], species)
-        return generate_species()
+        if not id:
+            return generate_species()
+    else:
+        print("Waiting for viable species (press ctrl+c to cancel)")
+        time.sleep(60)
     print("Generation complete for species " + species["id"])
 
 @app.task
-def generate_society():
+def generate_society(id=None):
     civ_gen = CivilizationGenerator()
     db = interface_interactor.get_interface("db")
-    society = db.get_one("societies", {"generation": {"$exists": False}, "generation_emerging": {"$exists": False}})
+    if id:
+        society = db.get_one("societies", {"id": id})
+    else:
+        society = db.get_one("societies", {"generation": {"$exists": False}, "generation_emerging": {"$exists": False}})
     if society:
         species = Species.load(db, 'species', society["species"])
+        if 'Description' not in species.info:
+            print(f"Species {species.uuid} has no description")
+            generate_species(species.uuid)
+            species = Species.load(db, 'species', society["species"]) # reload species
         planet = db.get_one("planets", {"id": species.planet_id})
         society["generation_emerging"] = True
         db.set("societies", society["id"], society)
-        civ_info = civ_gen.run(planet["Planet Type"], SociologicalGroup.load(db, 'societies', society["id"], society_dict=society))
+        civ_info = civ_gen.generate(
+            planet,
+            SociologicalGroup.load(db, 'societies', society["id"], society_dict=society)
+        )
         society["civ_info"] = civ_info
         del society["generation_emerging"]
         society["generation"] = True
         db.set("societies", society["id"], society)
-        # return evolve_society()
+        if not id: # Continue searching for societies to generate
+            return generate_society()
+    else:
+        print("Waiting for viable species (press ctrl+c to cancel)")
+        time.sleep(60)
     print("Generation complete")
 
 @app.task
-def evolve_society():
+def evolve_society(id=None):
     db = interface_interactor.get_interface("db")
-    planet = db.get_one("planets", {"evolution_complete": True, "civilization": {"$exists": False}, "civilization_emerging": {"$exists": False}})
+    if id:
+        planet = db.get_one("planets", {"id": id})
+    else:
+        planet = db.get_one("planets", {"evolution_complete": True, "civilization": {"$exists": False}, "civilization_emerging": {"$exists": False}})
     if planet:
         planet["civilization_emerging"] = True
         db.set("planets", planet["id"], planet)
@@ -100,18 +126,25 @@ def evolve_society():
         # for _, s in enumerate(species_cursor):
         #     species_objs.append(Species.load_from_object(db, 'species', s))
         # apex_species = EvolutionarySimulation.identify_apex_species(species_objs)
-        print(f"Apex species: {apex_species}")
+        if not apex_species:
+            print("No viable species found")
+            return evolve_society()
+        print(f"Apex species: {apex_species.uuid}")
         societies = Civilization.run(species_ids=[apex_species.uuid])
         for society in societies:
             society.save(db, 'societies')
         del planet["civilization_emerging"]
         planet["civilization"] = True
+        planet["species"]= apex_species.uuid
         planet["societies"] = [society.uuid for society in societies]
         db.set("planets", planet["id"], planet)
-        return evolve_society()
+        # Success
+        if not id:
+            return evolve_society()
     # wait for 1 minute and try again
-    print("Waiting for viable species (press ctrl+c to cancel)")
-    time.sleep(60)
+    else:
+        print("Waiting for viable species (press ctrl+c to cancel)")
+        time.sleep(60)
     return evolve_society()
 
 @app.task
@@ -177,17 +210,10 @@ async def evolve_galaxy(
     # Check if galaxy data exists
     existing_data = db.get(galaxies_collection, key)
     if existing_data:
+        print("existing data..")
         existing_data.pop('_id', None)
-        # Reassemble systems from slices stored in separate collections
-        all_systems = []
-        for system_key in existing_data.get('system_keys', []):
-            systems_data = db.get(systems_collection, system_key)
-            if systems_data:
-                systems_data.pop('_id', None)
-                all_systems.extend(systems_data.get('systems', []))
-
-        existing_data['systems'] = all_systems
-        logger.info(existing_data)
+        solar_systems = db.get_many(systems_collection, {"galaxy_key": key})
+        existing_data['systems'] = list(solar_systems)
         return GalaxyResponse(systems=existing_data)
 
     # Generate new galaxy data
@@ -231,7 +257,15 @@ async def evolve_galaxy(
     response.pop('_id', None)
     return GalaxyResponse(systems=response)
 
-@router.post("/generate-galaxy", operation_id="generateGalaxy")
+@router.post("/galaxy", operation_id="generateGalaxy")
 async def output() -> GalaxyResponse:
-   response = await evolve_galaxy("milky_way", 625)
-   return GalaxyResponse(systems=response)
+    response = await evolve_galaxy("milky_way", 625)
+    return GalaxyResponse(systems=response)
+
+@router.post("/solar-system", operation_id="getPlanets")
+async def getPlanets(request: Request) -> SystemResponse:
+    data = await request.json()
+    system_id = data.get("system_id")
+    db = interface_interactor.get_interface("db")
+    planets = db.get_many("planets", {"system_id": system_id})
+    return SystemResponse(planets=list(planets))

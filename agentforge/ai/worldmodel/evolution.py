@@ -331,36 +331,41 @@ class EvolutionarySimulation:
     # Identify the species that achieves supremacy in the ecosystem
     @classmethod
     def identify_apex_species(cls, lifeforms):
-            apex_species = None
-            highest_score = -1  # Initialize with a value that will be lower than any possible score
-            for species in lifeforms:
-                if species.has_predator(lifeforms):
-                    continue
-                else:
-                    average_health, max_health, min_health = species.analyze_health_statistics()
-
-                    # Define a scoring mechanism for identifying the apex species
-                    # This example simply multiplies average health by population for a basic score
-                    species_health = min(average_health, 100.0) * species.population
-                    species_genetics = 0.0
-                    for trait in cls.apex_species_traits:
-                        if trait in species.species_data['Genetic Profile']:
-                            species_genetics += species.species_data['Genetic Profile'][trait]
-                    species_score = ((species_health * 0.2) + (species_genetics * 0.8)) * species.evolutionary_stage
-                    if species.species_data['Biological Type'] == "Flora" or species.species_data['Biological Type'] == "Aquatic":
-                        species_score *= 0.5
-
-                    if species_score > highest_score:
-                        highest_score = species_score
-                        apex_species = species
-
-            if apex_species:
-                print(f"Apex Species: {apex_species.genus}, {apex_species.species_data['Biological Type']}, {apex_species.role}")
-                print(f"Average Health: {average_health}, Max Health: {max_health}, Min Health: {min_health}, Population: {apex_species.population}")
-                return apex_species, highest_score
+        apex_species = None
+        highest_score = -1  # Initialize with a value that will be lower than any possible score
+        for species in lifeforms:
+            if species.has_predator(lifeforms):
+                continue
             else:
-                print("No apex species identified.")
-                return None, 0.0
+                average_health, max_health, min_health = species.analyze_health_statistics()
+
+                # Define a scoring mechanism for identifying the apex species
+                # This example simply multiplies average health by population for a basic score
+                tool_use_probs = json.load(open(os.environ.get("WORLDGEN_DATA_DIR", "./") + "tool_use.json"))
+                tool_use_score = tool_use_probs[species.genus]
+                species_health = min(average_health, 100.0)
+                species_genetics = 0.0
+                for trait in cls.apex_species_traits:
+                    if trait in species.species_data['Genetic Profile']:
+                        species_genetics += species.species_data['Genetic Profile'][trait]
+                species_score = ((species_health * 0.2) + (species_genetics * 0.8)) * species.evolutionary_stage
+                if species.species_data['Biological Type'] == "Flora" or species.species_data['Biological Type'] == "Aquatic":
+                    species_score *= 0.5
+
+                # Include probability of tool use
+                species_score *= tool_use_score
+
+                if species_score > highest_score:
+                    highest_score = species_score
+                    apex_species = species
+
+        if apex_species:
+            print(f"Apex Species: {apex_species.genus}, {apex_species.species_data['Biological Type']}, {apex_species.role}")
+            print(f"Average Health: {average_health}, Max Health: {max_health}, Min Health: {min_health}, Population: {apex_species.population}")
+            return apex_species, highest_score
+        else:
+            print("No apex species identified.")
+            return None, 0.0
 
     def collect_data(self):
         # Collect and return data from the simulation

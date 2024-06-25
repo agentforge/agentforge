@@ -14,13 +14,10 @@ def calculate_similarity(gov_type, actual_dimensions):
 
 # Function to determine governance type based on dimensions
 def determine_governance_type(dimensions, era):
-    max_score = -np.inf
-    best_fit_gov_type = None
+    scores = {}
     for gov_type, properties in government_types.items():
         if era not in properties['category']:
             continue
         score = calculate_similarity(properties['prob'], dimensions)
-        if score > max_score:
-            max_score = score
-            best_fit_gov_type = gov_type
-    return best_fit_gov_type
+        scores[gov_type] = score
+    return np.random.choice(list(scores.keys()), p=[score/sum(scores.values()) for score in scores.values()])

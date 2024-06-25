@@ -23,7 +23,7 @@ class Summarizer:
         username = context.get('input.user_name', "Human")
         agentname = context.get('model.persona.display_name', "Agent")
         conversation, msg_cnt = context.get_messages(prefix=f"\n{username}: ", postfix=f"\n{agentname}:")
-        if msg_cnt == 0:
+        if msg_cnt <= 5:
             return context
         logger.info(f"Conversation {msg_cnt}: {conversation}")
         formatted = self.format_convo(conversation)
