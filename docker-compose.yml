@@ -28,8 +28,6 @@ services:
   #           - driver: nvidia
   #             count: all
   #             capabilities: [gpu]
-<<<<<<< HEAD
-=======
   # agentforge:
   #   image: agentforge
   #   ipc: host
@@ -47,7 +45,6 @@ services:
   #           - driver: nvidia
   #             count: all
   #             capabilities: [gpu]
->>>>>>> 314537215e8838da8b7632700cfc543cf78412b0
 
   # llm:
   #   image: llm
@@ -66,8 +63,6 @@ services:
   #           - driver: nvidia
   #             device_ids: ['1']
   #             capabilities: [gpu]
-<<<<<<< HEAD
-=======
   # llm:
   #   image: llm
   #   ipc: host
@@ -85,7 +80,6 @@ services:
   #           - driver: nvidia
   #             device_ids: ['1']
   #             capabilities: [gpu]
->>>>>>> 314537215e8838da8b7632700cfc543cf78412b0
 
   tokenizer:
     image: llm
@@ -131,8 +125,6 @@ services:
   #           - driver: nvidia
   #             device_ids: ['0']
   #             capabilities: [gpu]
-<<<<<<< HEAD
-=======
   # falcontune:
   #   image: falcontune
   #   ipc: host
@@ -150,7 +142,6 @@ services:
   #           - driver: nvidia
   #             device_ids: ['0']
   #             capabilities: [gpu]
->>>>>>> 314537215e8838da8b7632700cfc543cf78412b0
 
   # speech:
   #   image: speech
@@ -169,8 +160,6 @@ services:
   #           - driver: nvidia
   #             device_ids: ['1']
   #             capabilities: [gpu]
-<<<<<<< HEAD
-=======
   # speech:
   #   image: speech
   #   restart: always
@@ -188,7 +177,6 @@ services:
   #           - driver: nvidia
   #             device_ids: ['1']
   #             capabilities: [gpu]
->>>>>>> 314537215e8838da8b7632700cfc543cf78412b0
 
   # wav2lip:
   #   image: sadtalker
@@ -207,8 +195,6 @@ services:
   #           - driver: nvidia
   #             device_ids: ['1']
   #             capabilities: [gpu]
-<<<<<<< HEAD
-=======
   # wav2lip:
   #   image: sadtalker
   #   ipc: host
@@ -226,7 +212,6 @@ services:
   #           - driver: nvidia
   #             device_ids: ['1']
   #             capabilities: [gpu]
->>>>>>> 314537215e8838da8b7632700cfc543cf78412b0
 
   # vqa:
   #   image: llm
@@ -248,8 +233,6 @@ services:
   #           - driver: nvidia
   #             device_ids: ['1']
   #             capabilities: [gpu]
-<<<<<<< HEAD
-=======
   # vqa:
   #   image: llm
   #   hostname: vqa
@@ -270,7 +253,6 @@ services:
   #           - driver: nvidia
   #             device_ids: ['1']
   #             capabilities: [gpu]
->>>>>>> 314537215e8838da8b7632700cfc543cf78412b0
 
   # pixart:
   #   image: pixart
@@ -289,8 +271,6 @@ services:
   #           - driver: nvidia
   #             device_ids: ['1']
   #             capabilities: [gpu]
-<<<<<<< HEAD
-=======
   # pixart:
   #   image: pixart
   #   ipc: host
@@ -308,7 +288,6 @@ services:
   #           - driver: nvidia
   #             device_ids: ['1']
   #             capabilities: [gpu]
->>>>>>> 314537215e8838da8b7632700cfc543cf78412b0
 
   agent:
     image: agent
@@ -345,48 +324,17 @@ services:
       timeout: 10s
       retries: 3
 
-<<<<<<< HEAD
-  # vllm:
-  #   image: vllm
-  #   restart: always
-  #   deploy:
-  #     resources:
-  #       reservations:
-  #         devices:
-  #         - driver: nvidia
-  #           device_ids: ['0,1']
-  #           capabilities: [gpu]
-  #   environment:
-  #     - NVIDIA_VISIBLE_DEVICES=1,2
-  #   networks:
-  #     main-net:
-  #       aliases:
-  #         - vllm
-  #   ipc: host
-  #   stdin_open: true
-  #   tty: true
-
-  outlines:
-    image: outlines
-=======
   vllm:
     image: vllm/vllm-openai:latest
     hostname: outlines
->>>>>>> 314537215e8838da8b7632700cfc543cf78412b0
     restart: always
     deploy:
       resources:
         reservations:
           devices:
-<<<<<<< HEAD
-          - driver: nvidia
-            device_ids: ['0,1']
-            capabilities: [gpu]
-=======
             - driver: nvidia
               device_ids: ['0,1']
               capabilities: [gpu]
->>>>>>> 314537215e8838da8b7632700cfc543cf78412b0
     environment:
       - NVIDIA_VISIBLE_DEVICES=1,2
     volumes:
@@ -402,8 +350,6 @@ services:
     tty: true
     command: --model NousResearch/Meta-Llama-3.1-8B-Instruct --host 0.0.0.0 --port 8000 --max-model-len 8192
 
-<<<<<<< HEAD
-=======
   # outlines:
   #   image: outlines
   #   restart: always
@@ -424,7 +370,6 @@ services:
   #   stdin_open: true
   #   tty: true
 
->>>>>>> 314537215e8838da8b7632700cfc543cf78412b0
   # web:
   #   image: web
   #   ports:
@@ -463,8 +408,6 @@ services:
   #   environment:
   #     - GOOGLE_CLOUD_CREDENTIALS=your-google-cloud-credentials
   #   tty: true
-<<<<<<< HEAD
-=======
   # collector:
   #   image: collector
   #   restart: always
@@ -477,7 +420,6 @@ services:
   #   environment:
   #     - GOOGLE_CLOUD_CREDENTIALS=your-google-cloud-credentials
   #   tty: true
->>>>>>> 314537215e8838da8b7632700cfc543cf78412b0
 
   # etcd:
   #   container_name: milvus-etcd
@@ -534,8 +476,6 @@ services:
   #   depends_on:
   #     - "etcd"
   #     - "minio"
-<<<<<<< HEAD
-=======
   # etcd:
   #   container_name: milvus-etcd
   #   restart: always
@@ -591,7 +531,6 @@ services:
   #   depends_on:
   #     - "etcd"
   #     - "minio"
->>>>>>> 314537215e8838da8b7632700cfc543cf78412b0
 
   # Note: If you are assigning a custom name to your db service on the line below, make sure it does not contain underscores
   logindb:
