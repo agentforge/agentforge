@@ -36,7 +36,12 @@ POSTFIXES = ['### Thought',
         "</s>",
         "<|endoftext|>",
         "##",
-        "###"
+        "###",
+        '```',
+        '\n(',
+        '<|eot_id|>',
+        '\n---\n',
+        '\nPlease proceed'
       ]
 
 def clean_newlines(self, input_string: str):

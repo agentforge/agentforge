@@ -15,21 +15,22 @@ class ReactiveRoutine(Routine):
     def __init__(self):
         super().__init__("reactive", [])
         parse = Node(Parse().execute, [])
-        recall = Node(Recall().execute, [parse])
-        intent = Node(Intent().execute, [parse])
-        summarizer = Node(Summarizer().execute, [parse])
-        image_processor = Node(ImageProcessor().execute, [parse])
-        speak = Node(Speak().execute, [recall, parse, intent, image_processor])
-        respond = Node(Respond().execute, [recall, parse, intent, image_processor, summarizer])
-        remember = Node(Remember().execute, [speak, respond])
+        # recall = Node(Recall().execute, [parse])
+        # intent = Node(Intent().execute, [parse])
+        # summarizer = Node(Summarizer().execute, [parse])
+        # image_processor = Node(ImageProcessor().execute, [parse])
+        # speak = Node(Speak().execute, [recall, parse, intent, image_processor])
+        respond = Node(Respond().execute, [parse])
+        # remember = Node(Remember().execute, [speak, respond])
         self.subroutines = [
             parse,
-            recall,
-            intent,
-            summarizer,
-            image_processor,
+            # recall,
+            # intent,
+            # summarizer,
+            # image_processor,
             respond,
-            speak,
-            remember,
-            Node(Prep().execute, [remember]),
+            # speak,
+            # remember,
+            # Node(Prep().execute, [remember]),
+            Node(Prep().execute, [respond]),
         ]

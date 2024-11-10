@@ -22,9 +22,15 @@ class SocialFramework():
     }
   
   # Returns the dimensions that are mostly high or low
-  def define_dimensions(self) -> None:
+  def define_dimensions(self, n=None) -> None:
     high_dimensions = [k for k,v in self.dimension_values.items() if v > 0.75]
     low_dimensions = [k for k,v in self.dimension_values.items() if v < 0.25]
+    if n:
+      if n > len(high_dimensions):
+        n = len(high_dimensions)
+      # sort the dimensions by highest to lowest and take top n
+      high_dimensions = sorted(high_dimensions, key=lambda x: self.dimension_values[x], reverse=True)[:n]
+      low_dimensions = sorted(low_dimensions, key=lambda x: self.dimension_values[x])[:n]
     return high_dimensions, low_dimensions
 
   @classmethod

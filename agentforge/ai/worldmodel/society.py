@@ -19,7 +19,7 @@ from noise import pnoise1
 BASE_POP_RESOURCE_REQUIREMENT = 10
 MIN_POP_REQUIREMENTS = 5
 RESOURCE_GATHERING_MULTIPLIER = 1
-FOOD_RESOURCE_GATHERING_MULTIPLIER = 100
+FOOD_RESOURCE_GATHERING_MULTIPLIER = 75
 BASE_HOUSE_COST = 100
 BASE_CIVIC_BUILDING_COST = 30
 HOUSING_LOSS_RATE = 0.001
@@ -57,7 +57,6 @@ class SociologicalGroup:
         # Identification
         self.species = species
         self.values = ValueFramework(species.species_data["Life Form Attributes"])
-        self.designator = SocietyNamingSystem()
         self.action_history = ActionHistoryManager()
         self.sociopolitical = SocioPoliticalFramework()
         self.sociopolitical.setup_values(self.values)
@@ -67,20 +66,6 @@ class SociologicalGroup:
         self.reputation = ReputationManager()
         self.war_manager = War()
         # Store reputation with other societies
-        self.government = determine_governance_type(self.sociopolitical.dimension_values, 'Prehistoric') # Start at hunter-gatherer level
-        self.era = 'Prehistoric'
-        self.name = self.designator.generate_name()
-        self.collapse = None
-        self.year = 0
-
-        # Resource/Economics stand-in
-        self.resources = {
-            "food_supply": Resource("Food", 1000, req_per_pop=self.food_per_pop(), gather_per_pop=self.food_gathered_per_pop(), tradeable=True, consumable=True),
-            "housing": Resource("Housing", 4, req_per_pop=0.25, gather_per_pop=1, consumable=True),
-            "artifacts": Resource("Artifacts", 12, req_per_pop=1, gather_per_pop=1, tradeable=True, consumable=True),
-            "resource_pool": Resource("Resources", 200, req_per_pop=1, gather_per_pop=1, tradeable=True)
-        }
-        self.forums = 0
 
         # Societal Characteristics
         self.corruption = 0
@@ -92,7 +77,22 @@ class SociologicalGroup:
 
         # Social Constraints and demographics
         self.population = initial_population
+        self.era = 'Prehistoric'
+        self.collapse = None
+        self.year = 0
+
+    def initialize(self, initial_population):
         self.demographics = self.generate_demographic_distribution(initial_population)
+        self.government = determine_governance_type(self.sociopolitical.dimension_values, 'Prehistoric') # Start at hunter-gatherer level
+        self.designator = SocietyNamingSystem()
+        self.name = self.designator.generate_name()
+        # Resource/Economics stand-in
+        self.resources = {
+            "food_supply": Resource("Food", 1000, req_per_pop=self.food_per_pop(), gather_per_pop=self.food_gathered_per_pop(), tradeable=True, consumable=True),
+            "housing": Resource("Housing", 4, req_per_pop=0.25, gather_per_pop=1, consumable=True),
+            "artifacts": Resource("Artifacts", 12, req_per_pop=1, gather_per_pop=1, tradeable=True, consumable=True),
+            "resource_pool": Resource("Resources", 200, req_per_pop=1, gather_per_pop=1, tradeable=True)
+        }
 
     def serialize(self):
         # Convert the object's state to a serializable dictionary
@@ -112,7 +112,6 @@ class SociologicalGroup:
             "collapse": self.collapse,
             "year": self.year,
             "resources": {k: v.serialize() for k, v in self.resources.items()},
-            "forums": self.forums,
             "corruption": self.corruption,
             "happiness": self.happiness,
             "disease": self.disease,
@@ -142,7 +141,6 @@ class SociologicalGroup:
 
         # Deserialize and set complex attributes
         obj.values = ValueFramework.deserialize(society_dict["values"])
-        obj.designator = SocietyNamingSystem()
         obj.action_history = ActionHistoryManager()
         obj.sociopolitical = SocioPoliticalFramework.deserialize(society_dict["sociopolitical"])
         obj.sociopolitical.setup_values(obj.values)
@@ -161,7 +159,6 @@ class SociologicalGroup:
         obj.name = society_dict["name"]
         obj.collapse = society_dict["collapse"]
         obj.year = society_dict["year"]
-        obj.forums = society_dict["forums"]
         obj.corruption = society_dict["corruption"]
         obj.happiness = society_dict["happiness"]
         obj.disease = society_dict["disease"]
@@ -605,7 +602,8 @@ class SociologicalGroup:
             self.culture.mutate("Art & Aesthetics", 0.01)
         elif action == 4: # Trade
             self.sociopolitical.mutate("Isolationism", -0.01)
-            self.economy.mutate("Autarky", -0.01)
+            self.economy.mutate("Economic Autonomy", -0.01)
+            self.economy.mutate("Economic Integration", 0.03)
         elif action == 5: # Ally
             self.sociopolitical.mutate("Nationalism", -0.01)
             self.sociopolitical.mutate("Diplomatic", 0.01)
@@ -621,6 +619,15 @@ class SociologicalGroup:
         if np.random.rand() < 0.1:
             random_value = random.choice([self.sociopolitical, self.economy, self.culture])
             random_value.mutate(random.choice(list(random_value.dimension_values.keys())), np.random.uniform(-0.01, 0.01))
+
+    def war_power(self):
+        # Simplified war power calculation based on population and technological proficiency
+        proficiency = [self.technology.get_state_value("Warfare"),
+            self.sociopolitical.get_dimension_value("Militaristic"),
+            self.sociopolitical.get_dimension_value("Nationalism"),
+            self.sociopolitical.get_dimension_value("Egalitarianism"),
+            self.sociopolitical.get_dimension_value("Participatory Governance")]
+        return self.demographics['military'] * (sum(proficiency) / len(proficiency))
 
     # Determine if we need a government change, roll minor chance of revolution
     def evolve_society(self):
@@ -781,155 +788,3 @@ class SociologicalGroup:
     def migration(self):
         # Migration is based on the sociopolitical framework, environmental factors, and happiness
         pass
-
-    def simulate_societal_interactions(self, societies):
-        # Interaction effects for each governance system
-        governance_interaction_effects = {
-            'Democracy': 0.05,
-            'Oligarchy': 0.04,
-            'Monarchy': 0.04,
-            'Dictatorship': 0.03,
-            'Anarchy': 0.02,
-            'Republic': 0.05,
-            'Theocracy': 0.03,
-            'Technocracy': 0.05,
-            'Meritocracy': 0.05,
-            'Feudal System': 0.02,
-            'Empire': 0.02,
-            'Federation': 0.06,
-            'Confederation': 0.04,
-            'Corporate State': 0.03,
-            'Tribalism': 0.01,
-            'Matriarchy': 0.02,
-            'Patriarchy': 0.02,
-            'Cyberocracy': 0.04,
-            'Eco-Governance': 0.05,
-            'Direct Democracy': 0.05,
-            'Plutocracy': 0.02,
-            'Syndicalism': 0.03
-        }
-
-        for society in societies:
-            if society != self:
-                # Determine interaction type based on governance and relation type
-                interaction_type = self.determine_interaction_type(society)
-                effect_modifier = governance_interaction_effects.get(self.governance_system, 0.03)
-                
-                if interaction_type == 'Cooperative':
-                    # Technological and cultural exchanges
-                    exchange_rate = 0.01 * effect_modifier
-                    self.technological_proficiency += exchange_rate * society.technological_proficiency
-                    society.technological_proficiency += exchange_rate * self.technological_proficiency
-                elif interaction_type == 'Competitive' or interaction_type == 'Hostile':
-                    # Determine outcome of competition or conflict
-                    outcome = self.resolve_conflict(society)
-                    if outcome == 'win':
-                        self.technological_proficiency += 0.02 * society.technological_proficiency
-                    elif outcome == 'lose':
-                        society.technological_proficiency += 0.02 * self.technological_proficiency
-                elif interaction_type == 'Alliance-Based':
-                    # Benefits from alliances
-                    alliance_effect = 0.02 * effect_modifier
-                    self.technological_proficiency += alliance_effect * society.technological_proficiency
-                    society.technological_proficiency += alliance_effect * self.technological_proficiency
-                # Add more interactions as necessary
-    
-    def war_power(self):
-        # Simplified war power calculation based on population and technological proficiency
-        proficiency = [self.technology.get_state_value("Warfare"),
-            self.sociopolitical.get_dimension_value("Militaristic"),
-            self.sociopolitical.get_dimension_value("Nationalism"),
-            self.sociopolitical.get_dimension_value("Egalitarianism"),
-            self.sociopolitical.get_dimension_value("Participatory Governance")]
-        return self.demographics['military'] * (sum(proficiency) / len(proficiency))
-    
-    def simulate_environmental_impacts(self, environment):
-        stage_environmental_impact_factor = {
-            'Primitive Civilization - Hunter Gatherers': 0.8,  # Minimal impact due to low population density and sustainable practices
-            'Primitive Civilization - Tribal Societies': 0.85,  # Slightly higher impact due to more permanent settlements
-            'Classical Civilization - City States and Empires': 0.9,  # Growing impact from agriculture and urbanization
-            'Feudal Civilization - Medieval Era': 0.92,  # Similar to classical but with some advancements in land use
-            'Feudal Civilization - Renaissance': 0.94,  # Beginning of more significant environmental modifications
-            'Industrial Civilization - Industrial Era': 1.2,  # Major environmental impact due to industrialization
-            'Industrial Civilization - Atomic Era': 1.1,  # High impact but begins to include some environmental awareness
-            'Information Civilization - Digital Era': 1.0,  # Reduction in some types of pollution but still significant consumption and waste
-            'Spacefaring Civilization - Homebound': 0.8,  # Advanced technologies allow for more sustainable interaction with the environment
-            'Spacefaring Civilization - Multiplanetary': 0.6,  # Ability to harness resources from multiple planets reduces strain on any single environment
-            'Interstellar Civilization': 0.4  # Advanced technologies and societal structures minimize environmental impact
-        }
-
-        impact_factor = stage_environmental_impact_factor.get(self.evolutionary_stage, 1)
-        self.environmental_impact = self.population * self.resource_utilization * impact_factor
-
-    def determine_current_stage(self):
-        # Placeholder function for determining the society's current evolutionary stage
-        # This could be based on technological proficiency, population size, etc.
-        return 'Primitive Civilization - Hunter Gatherers'
-
-    social_systems = {
-        'Egalitarian': 0.1,
-        'Class-Based': 0.2,
-        'Caste-Based': 0.1,
-        'Meritocratic': 0.15,
-        'Plutocratic': 0.05,
-        'Technocratic': 0.1,
-        'Feudal': 0.2,
-        'Tribal': 0.1
-    }
-
-    # Mapping from social systems to governance systems
-    social_to_governance_mapping = {
-        'Egalitarian': ['Democracy', 'Republic', 'Direct Democracy'],
-        'Class-Based': ['Oligarchy', 'Plutocracy'],
-        'Caste-Based': ['Monarchy', 'Theocracy'],
-        'Meritocratic': ['Meritocracy', 'Technocracy'],
-        'Plutocratic': ['Plutocracy', 'Corporate State'],
-        'Technocratic': ['Technocracy', 'Cyberocracy'],
-        'Feudal': ['Feudal System', 'Monarchy'],
-        'Tribal': ['Tribalism', 'Anarchy']
-    }
-    
-    relation_types = {
-        'Isolationist': 0.15,
-        'Cooperative': 0.25,
-        'Competitive': 0.2,
-        'Hostile': 0.1,
-        'Alliance-Based': 0.15,
-        'Dominant-Submissive': 0.15
-    }
-
-    conflict_resolution_mechanisms = {
-        'Diplomacy': 0.2,
-        'Legal System': 0.25,
-        'Trial by Combat': 0.05,
-        'Mediation': 0.2,
-        'Warfare': 0.1,
-        'Economic Sanctions': 0.1,
-        'Social Ostracism': 0.1
-    }
-    
-    governance_systems = {
-        'Democracy': 0.15,
-        'Oligarchy': 0.1,
-        'Monarchy': 0.1,
-        'Dictatorship': 0.1,
-        'Anarchy': 0.05,
-        'Republic': 0.15,
-        'Theocracy': 0.1,
-        'Technocracy': 0.1,
-        'Meritocracy': 0.15,
-        # Adding more governance systems including sci-fi concepts
-        'Feudal System': 0.05, # Includes systems like the Klingon Houses
-        'Empire': 0.05,
-        'Federation': 0.07, # Advanced spacefaring civilizations
-        'Confederation': 0.05,
-        'Corporate State': 0.05, # Governance by corporate entities
-        'Tribalism': 0.03, # Primitive civilizations
-        'Matriarchy': 0.02,
-        'Patriarchy': 0.02,
-        'Cyberocracy': 0.03, # Governance through computerized/algorithmic means
-        'Eco-Governance': 0.02, # Governance prioritizing ecological balance
-        'Direct Democracy': 0.03, # Full participation in decision making
-        'Plutocracy': 0.02, # Governance by the wealthy
-        'Syndicalism': 0.02 # Governance by workers' syndicates or unions
-    }

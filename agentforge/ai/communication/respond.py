@@ -11,7 +11,7 @@ class Respond:
     def __init__(self):
         self.task_management = TaskManager()
         self.service = interface_interactor.get_interface("llm")
-        self.tokenizer = interface_interactor.get_interface("tokenizer")
+        # self.tokenizer = interface_interactor.get_interface("tokenizer")
         self.parser = Parser()
 
     def execute(self, context: Dict[str, Any]) -> Dict[str, Any]:
@@ -24,24 +24,24 @@ class Respond:
         agentname = context.get("model.persona.display_name") + ":"
 
         formatted = context.get_formatted()
-        response = self.tokenizer.call({'prompt': formatted})
-        token_cnt = int(response['text'])
-        max_tokens = int(context.get('model.model_config.max_tokens'))
-        if token_cnt > max_tokens:
-            message_cnt = len(context.get('input.messages'))
-            while token_cnt > max_tokens and message_cnt > 0:
-                formatted = context.get_formatted(message_cnt-1)
-                response = self.tokenizer.call({'prompt': formatted})
-                token_cnt = int(response['text'])
-                if token_cnt < max_tokens:
-                    break
-                message_cnt -= 1
-            if token_cnt > max_tokens:
-                formatted = context.get_formatted(message_cnt-1, use_memory=False)
-                response = self.tokenizer.call({'prompt': formatted})
-                token_cnt = int(response['text'])
-                if token_cnt > max_tokens:
-                    formatted = context.get_formatted(message_cnt-1, use_memory=False, knowledge=False)
+        # response = self.tokenizer.call({'prompt': formatted})
+        # token_cnt = int(response['text'])
+        # max_tokens = int(context.get('model.model_config.max_tokens'))
+        # if token_cnt > max_tokens:
+        #     message_cnt = len(context.get('input.messages'))
+        #     while token_cnt > max_tokens and message_cnt > 0:
+        #         formatted = context.get_formatted(message_cnt-1)
+        #         response = self.tokenizer.call({'prompt': formatted})
+        #         token_cnt = int(response['text'])
+        #         if token_cnt < max_tokens:
+        #             break
+        #         message_cnt -= 1
+        #     if token_cnt > max_tokens:
+        #         formatted = context.get_formatted(message_cnt-1, use_memory=False)
+        #         response = self.tokenizer.call({'prompt': formatted})
+        #         token_cnt = int(response['text'])
+        #         if token_cnt > max_tokens:
+        #             formatted = context.get_formatted(message_cnt-1, use_memory=False, knowledge=False)
 
 
         for tok in ['eos_token', 'bos_token', 'prefix', 'postfix']:

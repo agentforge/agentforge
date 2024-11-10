@@ -9,6 +9,8 @@ MAX_HEALTH = 100.0
 HEALTH_CONSUMPTION_FACTOR = 0.1
 MUTATION_RATE = 0.05
 PLANT_GROWTH_FACTOR = 0.30
+
+### A specific species of lifeform
 class Species:
     def __init__(self, species_data, evolutionary_stage, planet_id, biome):
         self.species_data = species_data
@@ -23,7 +25,7 @@ class Species:
         self.planet_id = planet_id
         self.biome = biome
         self.ancestor = None
-        self.info = {} # Additional information about the species
+        self.info = {} # Additional information about the species 
 
     def genetic_base_line(self):
         return self.species_data["Genetic Profile"]

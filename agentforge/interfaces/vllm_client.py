@@ -36,6 +36,8 @@ def post_http_request(api_url: str,
         "top_p": top_p,
         "top_k": top_k,
         "stop": stop,
+        "stop_token_ids": [128009], # TODO: For llama-3, generalize this
+
     }
     if schema:
         pload["schema"] = schema

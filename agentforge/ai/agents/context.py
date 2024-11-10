@@ -126,6 +126,19 @@ class Context:
         else:
             raise ValueError(f"Key {key} not found in context")
 
+    def serialize(self, key=None):
+        # Check if a specific key is provided
+        if key is None:
+            # Serialize the entire context data without pretty printing
+            return json.dumps(self.context_data, default=self._json_serializable)
+        # Check if the key exists in the context data
+        if key in self.context_data:
+            # Serialize the specific key's data without pretty printing
+            return json.dumps(self.context_data[key], default=self._json_serializable)
+        else:
+            # Raise an error if the key is not found
+            raise ValueError(f"Key {key} not found in context")
+
     def _json_serializable(self, obj):
         if isinstance(obj, ObjectId):
             return str(obj)
@@ -143,19 +156,24 @@ class Context:
     def get_messages(self, prefix="", postfix="", n=None):
         messages = []
         input_messages = self.get('input.messages')
+        if input_messages is None:
+            return "", 0
+
+        if input_messages is None:
+            return "", 0
 
         # If n is provided and valid, slice the input_messages to get the last n items
         if n is not None and n > 0:
             input_messages = input_messages[-n:]
 
         for message in input_messages[:-1]:
-            if message['role'] == 'user':
-                messages.append(f"{prefix}{message['content']}{postfix}")
-            elif message['role'] == 'assistant':
-                messages.append(message['content'])
+            if 'content' in message:
+                if message['role'] == 'user':
+                    messages.append(f"{prefix}{message['content']}{postfix}")
+                elif message['role'] == 'assistant':
+                    messages.append(message['content'])
 
         return " ".join(messages), len(messages)
-
 
     def format_template(self, prompt_template, **kwargs):
         logger.info("FORMAT_TEMPLATE")
@@ -260,3 +278,8 @@ class Context:
         for k,v in values.items():
             prompt = prompt.replace(f"<|{k}|>", str(v))
         return prompt
+    
+    def get_model_outputs(self):
+        return {
+            "choices": self.get("choices"),
+        }

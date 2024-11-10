@@ -19,5 +19,5 @@ RUN adduser --disabled-password --gecos '' fragro
 EXPOSE 3000
 COPY .env /app/agentforge/.env
 
-# CMD API_DOMAIN="https://api.agentforge.ai.ngrok-free.app" WEBSITE_DOMAIN="https://agentforge.ngrok.dev" PYTHONPATH="/app/agentforge/" uvicorn main:app --reload --host=0.0.0.0 --port=3005
 CMD tail -f /dev/null
+

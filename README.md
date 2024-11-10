@@ -235,6 +235,11 @@ On the PixArt container:
 PYTHONPATH="/app/agentforge/" uvicorn pixart:app --reload --host=0.0.0.0 --port=8000
 ```
 
+On the tokenizer container:
+```
+PYTHONPATH="/app/agentforge/" uvicorn tokenizer:app --reload --host=0.0.0.0 --port=3000
+```
+
 VLLM
 ```
 python -m vllm.entrypoints.api_server \
@@ -244,11 +249,22 @@ python -m vllm.entrypoints.api_server \
 ```
 
 Outlines
-``````
+
+```
+python3 -m outlines.serve.serve --model NousResearch/Meta-Llama-3-8B-Instruct --max-num-batched-tokens 8192
+```
+
+```
 python3 -m outlines.serve.serve --model TheBloke/Speechless-Llama2-Hermes-Orca-Platypus-WizardLM-13B-AWQ --quantization awq --max-num-batched-tokens 4096
-``````
+```
+
+```
+python3 -m outlines.serve.serve --model PrunaAI/Meta-Llama-3-8b-instruct-AWQ-smashed --quantization awq --max-num-batched-tokens 8192
+```
 
 ### Generating a Universe From Scratch
+
+For Final Frontier
 
 #### Generate a Galaxy + Planets:
 ```
