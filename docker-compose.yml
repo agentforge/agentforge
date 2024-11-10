@@ -11,41 +11,41 @@ services:
         aliases:
           - redis
 
-  agentforge:
-    image: agentforge
-    ipc: host
-    restart: always
-    networks:
-      main-net:
-        aliases:
-          - agentforge
-    volumes:
-      - cache-volume:/app/cache
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              count: all
-              capabilities: [gpu]
+  # agentforge:
+  #   image: agentforge
+  #   ipc: host
+  #   restart: always
+  #   networks:
+  #     main-net:
+  #       aliases:
+  #         - agentforge
+  #   volumes:
+  #     - cache-volume:/app/cache
+  #   deploy:
+  #     resources:
+  #       reservations:
+  #         devices:
+  #           - driver: nvidia
+  #             count: all
+  #             capabilities: [gpu]
 
-  llm:
-    image: llm
-    ipc: host
-    restart: always
-    networks:
-      main-net:
-        aliases:
-          - llm
-    volumes:
-      - cache-volume:/app/cache
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              device_ids: ['1']
-              capabilities: [gpu]
+  # llm:
+  #   image: llm
+  #   ipc: host
+  #   restart: always
+  #   networks:
+  #     main-net:
+  #       aliases:
+  #         - llm
+  #   volumes:
+  #     - cache-volume:/app/cache
+  #   deploy:
+  #     resources:
+  #       reservations:
+  #         devices:
+  #           - driver: nvidia
+  #             device_ids: ['1']
+  #             capabilities: [gpu]
 
   tokenizer:
     image: llm
@@ -74,98 +74,98 @@ services:
       timeout: 10s
       retries: 3
 
-  falcontune:
-    image: falcontune
-    ipc: host
-    restart: always
-    networks:
-      main-net:
-        aliases:
-          - falcontune
-    volumes:
-      - cache-volume:/app/cache
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              device_ids: ['0']
-              capabilities: [gpu]
+  # falcontune:
+  #   image: falcontune
+  #   ipc: host
+  #   restart: always
+  #   networks:
+  #     main-net:
+  #       aliases:
+  #         - falcontune
+  #   volumes:
+  #     - cache-volume:/app/cache
+  #   deploy:
+  #     resources:
+  #       reservations:
+  #         devices:
+  #           - driver: nvidia
+  #             device_ids: ['0']
+  #             capabilities: [gpu]
 
-  speech:
-    image: speech
-    restart: always
-    ipc: host
-    networks:
-      main-net:
-        aliases:
-          - speech
-    volumes:
-      - cache-volume:/app/cache
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              device_ids: ['1']
-              capabilities: [gpu]
+  # speech:
+  #   image: speech
+  #   restart: always
+  #   ipc: host
+  #   networks:
+  #     main-net:
+  #       aliases:
+  #         - speech
+  #   volumes:
+  #     - cache-volume:/app/cache
+  #   deploy:
+  #     resources:
+  #       reservations:
+  #         devices:
+  #           - driver: nvidia
+  #             device_ids: ['1']
+  #             capabilities: [gpu]
 
-  wav2lip:
-    image: sadtalker
-    ipc: host
-    restart: always
-    networks:
-      main-net:
-        aliases:
-          - wav2lip
-    volumes:
-      - cache-volume:/app/cache
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              device_ids: ['1']
-              capabilities: [gpu]
+  # wav2lip:
+  #   image: sadtalker
+  #   ipc: host
+  #   restart: always
+  #   networks:
+  #     main-net:
+  #       aliases:
+  #         - wav2lip
+  #   volumes:
+  #     - cache-volume:/app/cache
+  #   deploy:
+  #     resources:
+  #       reservations:
+  #         devices:
+  #           - driver: nvidia
+  #             device_ids: ['1']
+  #             capabilities: [gpu]
 
-  vqa:
-    image: llm
-    hostname: vqa
-    ipc: host
-    restart: always
-    networks:
-      main-net:
-        aliases:
-          - vqa
-    volumes:
-      - cache-volume:/app/cache
-    environment:
-      - RESOURCE=VQA
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              device_ids: ['1']
-              capabilities: [gpu]
+  # vqa:
+  #   image: llm
+  #   hostname: vqa
+  #   ipc: host
+  #   restart: always
+  #   networks:
+  #     main-net:
+  #       aliases:
+  #         - vqa
+  #   volumes:
+  #     - cache-volume:/app/cache
+  #   environment:
+  #     - RESOURCE=VQA
+  #   deploy:
+  #     resources:
+  #       reservations:
+  #         devices:
+  #           - driver: nvidia
+  #             device_ids: ['1']
+  #             capabilities: [gpu]
 
-  pixart:
-    image: pixart
-    ipc: host
-    restart: always
-    networks:
-      main-net:
-        aliases:
-          - pixart
-    volumes:
-      - cache-volume:/app/cache
-    deploy:
-      resources:
-        reservations:
-          devices:
-            - driver: nvidia
-              device_ids: ['1']
-              capabilities: [gpu]
+  # pixart:
+  #   image: pixart
+  #   ipc: host
+  #   restart: always
+  #   networks:
+  #     main-net:
+  #       aliases:
+  #         - pixart
+  #   volumes:
+  #     - cache-volume:/app/cache
+  #   deploy:
+  #     resources:
+  #       reservations:
+  #         devices:
+  #           - driver: nvidia
+  #             device_ids: ['1']
+  #             capabilities: [gpu]
 
   agent:
     image: agent
@@ -203,37 +203,22 @@ services:
       retries: 3
 
   vllm:
-    image: vllm
+    image: vllm/vllm-openai:latest
+    hostname: outlines
     restart: always
     deploy:
       resources:
         reservations:
           devices:
-          - driver: nvidia
-            device_ids: ['0,1']
-            capabilities: [gpu]
+            - driver: nvidia
+              device_ids: ['0,1']
+              capabilities: [gpu]
     environment:
       - NVIDIA_VISIBLE_DEVICES=1,2
-    networks:
-      main-net:
-        aliases:
-          - vllm
-    ipc: host
-    stdin_open: true
-    tty: true
-
-  outlines:
-    image: outlines
-    restart: always
-    deploy:
-      resources:
-        reservations:
-          devices:
-          - driver: nvidia
-            device_ids: ['0,1']
-            capabilities: [gpu]
-    environment:
-      - NVIDIA_VISIBLE_DEVICES=1,2
+    volumes:
+      - ~/.cache/huggingface:/root/.cache/huggingface
+    expose:
+      - "8000"
     networks:
       main-net:
         aliases:
@@ -241,16 +226,37 @@ services:
     ipc: host
     stdin_open: true
     tty: true
+    command: --model NousResearch/Meta-Llama-3.1-8B-Instruct --host 0.0.0.0 --port 8000 --max-model-len 8192
 
-  web:
-    image: web
-    ports:
-      - "8080:8080"
-    ipc: host
-    networks:
-      main-net:
-        aliases:
-          - web
+  # outlines:
+  #   image: outlines
+  #   restart: always
+  #   deploy:
+  #     resources:
+  #       reservations:
+  #         devices:
+  #         - driver: nvidia
+  #           device_ids: ['0,1']
+  #           capabilities: [gpu]
+  #   environment:
+  #     - NVIDIA_VISIBLE_DEVICES=1,2
+  #   networks:
+  #     main-net:
+  #       aliases:
+  #         - outlines
+  #   ipc: host
+  #   stdin_open: true
+  #   tty: true
+
+  # web:
+  #   image: web
+  #   ports:
+  #     - "8080:8080"
+  #   ipc: host
+  #   networks:
+  #     main-net:
+  #       aliases:
+  #         - web
 
   mongodb:
     image: mongo:latest
@@ -268,74 +274,74 @@ services:
         aliases:
           - mongodb
 
-  collector:
-    image: collector
-    restart: always
-    networks:
-      main-net:
-        aliases:
-          - collector
-    volumes:
-      - cache-volume:/app/cache
-    environment:
-      - GOOGLE_CLOUD_CREDENTIALS=your-google-cloud-credentials
-    tty: true
+  # collector:
+  #   image: collector
+  #   restart: always
+  #   networks:
+  #     main-net:
+  #       aliases:
+  #         - collector
+  #   volumes:
+  #     - cache-volume:/app/cache
+  #   environment:
+  #     - GOOGLE_CLOUD_CREDENTIALS=your-google-cloud-credentials
+  #   tty: true
 
-  etcd:
-    container_name: milvus-etcd
-    restart: always
-    image: quay.io/coreos/etcd:v3.5.5
-    environment:
-      - ETCD_AUTO_COMPACTION_MODE=revision
-      - ETCD_AUTO_COMPACTION_RETENTION=1000
-      - ETCD_QUOTA_BACKEND_BYTES=4294967296
-      - ETCD_SNAPSHOT_COUNT=50000
-    volumes:
-      - ${LOCAL_CACHE_DIR:-.}/volumes/etcd:/etcd
-    command: etcd -advertise-client-urls=http://127.0.0.1:2379 -listen-client-urls http://0.0.0.0:2379 --data-dir /etcd
-    networks:
-      main-net:
-        aliases:
-          - etcd
-  minio:
-    container_name: milvus-minio
-    image: minio/minio:RELEASE.2023-03-20T20-16-18Z
-    restart: always
-    environment:
-      MINIO_ACCESS_KEY: minioadmin
-      MINIO_SECRET_KEY: minioadmin
-    volumes:
-      - ${LOCAL_CACHE_DIR:-.}/volumes/minio:/minio_data
-    command: minio server /minio_data
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
-      interval: 30s
-      timeout: 20s
-      retries: 3
-    networks:
-      main-net:
-        aliases:
-          - minio
-  milvus:
-    container_name: milvus-standalone
-    image: milvusdb/milvus:v2.2.12
-    restart: always
-    command: ["milvus", "run", "standalone"]
-    environment:
-      ETCD_ENDPOINTS: etcd:2379
-      MINIO_ADDRESS: minio:9000
-    networks:
-      main-net:
-        aliases:
-          - milvus
-    volumes:
-      - ${LOCAL_CACHE_DIR:-.}/volumes/milvus:/var/lib/milvus
-    ports:
-      - "19530:19530"
-      - "9091:9091"
-    depends_on:
-      - "etcd"
-      - "minio"
+  # etcd:
+  #   container_name: milvus-etcd
+  #   restart: always
+  #   image: quay.io/coreos/etcd:v3.5.5
+  #   environment:
+  #     - ETCD_AUTO_COMPACTION_MODE=revision
+  #     - ETCD_AUTO_COMPACTION_RETENTION=1000
+  #     - ETCD_QUOTA_BACKEND_BYTES=4294967296
+  #     - ETCD_SNAPSHOT_COUNT=50000
+  #   volumes:
+  #     - ${LOCAL_CACHE_DIR:-.}/volumes/etcd:/etcd
+  #   command: etcd -advertise-client-urls=http://127.0.0.1:2379 -listen-client-urls http://0.0.0.0:2379 --data-dir /etcd
+  #   networks:
+  #     main-net:
+  #       aliases:
+  #         - etcd
+  # minio:
+  #   container_name: milvus-minio
+  #   image: minio/minio:RELEASE.2023-03-20T20-16-18Z
+  #   restart: always
+  #   environment:
+  #     MINIO_ACCESS_KEY: minioadmin
+  #     MINIO_SECRET_KEY: minioadmin
+  #   volumes:
+  #     - ${LOCAL_CACHE_DIR:-.}/volumes/minio:/minio_data
+  #   command: minio server /minio_data
+  #   healthcheck:
+  #     test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+  #     interval: 30s
+  #     timeout: 20s
+  #     retries: 3
+  #   networks:
+  #     main-net:
+  #       aliases:
+  #         - minio
+  # milvus:
+  #   container_name: milvus-standalone
+  #   image: milvusdb/milvus:v2.2.12
+  #   restart: always
+  #   command: ["milvus", "run", "standalone"]
+  #   environment:
+  #     ETCD_ENDPOINTS: etcd:2379
+  #     MINIO_ADDRESS: minio:9000
+  #   networks:
+  #     main-net:
+  #       aliases:
+  #         - milvus
+  #   volumes:
+  #     - ${LOCAL_CACHE_DIR:-.}/volumes/milvus:/var/lib/milvus
+  #   ports:
+  #     - "19530:19530"
+  #     - "9091:9091"
+  #   depends_on:
+  #     - "etcd"
+  #     - "minio"
 
   # Note: If you are assigning a custom name to your db service on the line below, make sure it does not contain underscores
   logindb:
