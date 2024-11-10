@@ -50,6 +50,7 @@ def override_emailpassword_functions(original_implementation: RecipeInterface) -
     ):
         # Pre sign-up logic: Check if user already exists in DB
         existing_user = db.get("users", email)
+        print("Checking email ", email)
         if existing_user:
             raise HTTPException(status_code=500, detail="User already exists.")
 

@@ -18,6 +18,8 @@
             "Simple Annelids": 1.0
         },
         "Complex lifeforms": {
+            "Triceratops": 0.9,
+            "Smilodon": 0.9,
             "Mammals": 1.2,
             "Birds": 1.0,
             "Reptiles": 1.0,
@@ -40,6 +42,7 @@
             "Felines": 1.2,
             "Canines": 1.2,
             "Primates": 1.2,
+            "Humanoids": 1.2,
             "Rodents": 1.2,
             "Bovines": 1.2,
             "Equines": 1.2,
@@ -156,6 +159,8 @@
             "Simple Annelids": 0.5
         },
         "Complex lifeforms": {
+            "Triceratops": 0.5,
+            "Smilodon": 0.3,
             "Mammals": 0.3,
             "Birds": 0.4,
             "Reptiles": 0.35,
@@ -178,6 +183,7 @@
             "Felines": 0.3,
             "Canines": 0.3,
             "Primates": 0.2,
+            "Humanoids": 0.2,
             "Rodents": 0.4,
             "Bovines": 0.25,
             "Equines": 0.25,
