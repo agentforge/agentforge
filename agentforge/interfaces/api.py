@@ -164,7 +164,7 @@ class vLLMService(APIService):
               )
           else:
               output = get_completion_text(response)
-              output = output.replace(form_data['prompt'], "")
+            #   output = output.replace(form_data['prompt'], "")
 
           # Clean up Redis connection
           if redis_server:
@@ -173,14 +173,7 @@ class vLLMService(APIService):
 
           logger.info(f"Response from vLLM: {output}")
           
-          return {
-              'choices': [{
-                  'text': output,
-                  'index': 0,
-                  'logprobs': None,
-                  'finish_reason': 'stop'
-              }]
-          }
+          return output
           
       except Exception as e:
           logger.error(f"Error in vLLM service: {str(e)}")

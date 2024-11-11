@@ -206,7 +206,7 @@ def get_completion_text(response: requests.Response) -> str:
     """
     if response.status_code != 200:
         raise Exception(f"Error: {response.status_code}\n{response.text}")
-    return response.json()['choices'][0]['text']
+    return response.json()
 
 
 def get_embeddings(response: requests.Response) -> List[List[float]]:
