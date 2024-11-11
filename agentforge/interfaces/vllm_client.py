@@ -56,6 +56,11 @@ def create_completion(
     
     # Request customization
     extra_headers: Optional[Dict[str, str]] = None,
+    n: Optional[int] = None,
+    best_of: Optional[int] = None,
+    logit_bias: Optional[Dict[int, float]] = None,
+    user: Optional[str] = None,
+    **kwargs: Any,  # Catch any other parameters we don't explicitly handle
 ) -> requests.Response:
     """
     Creates a completion request using VLLM's OpenAI-compatible API with all supported parameters.
