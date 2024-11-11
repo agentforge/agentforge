@@ -13,14 +13,13 @@ class Parse:
     def ensure_model_id(self, context: Dict[str, Any]) -> Dict[str, Any]:
         # if the dictioary is empty we need to load the model_profile
         if "model_id" not in context.get("input"):
-            raise Exception({"error": "model_id is not found in API input"})
-
-        id = context.get("input.model_id")
-        m_profile = self.model_profile.get(id)
-        if m_profile is None:
-            raise Exception({"error": "Incorrect Model Profile ID"})
-        else:
-            context.set('model', m_profile)
+            # raise Exception({"error": "model_id is not found in API input"})
+            id = context.get("input.model_id")
+            m_profile = self.model_profile.get(id)
+            if m_profile is None:
+                raise Exception({"error": "Incorrect Model Profile ID"})
+            else:
+                context.set('model', m_profile)
         return context
 
     def ensure_instruction(self, context):

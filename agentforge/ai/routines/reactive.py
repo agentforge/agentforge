@@ -14,16 +14,16 @@ from agentforge.ai.reasoning.summarization import Summarizer
 class ReactiveRoutine(Routine):
     def __init__(self):
         super().__init__("reactive", [])
-        parse = Node(Parse().execute, [])
+        # parse = Node(Parse().execute, [])
         # recall = Node(Recall().execute, [parse])
         # intent = Node(Intent().execute, [parse])
         # summarizer = Node(Summarizer().execute, [parse])
         # image_processor = Node(ImageProcessor().execute, [parse])
         # speak = Node(Speak().execute, [recall, parse, intent, image_processor])
-        respond = Node(Respond().execute, [parse])
+        respond = Node(Respond().execute, [])
         # remember = Node(Remember().execute, [speak, respond])
         self.subroutines = [
-            parse,
+            # parse,
             # recall,
             # intent,
             # summarizer,
@@ -32,5 +32,5 @@ class ReactiveRoutine(Routine):
             # speak,
             # remember,
             # Node(Prep().execute, [remember]),
-            Node(Prep().execute, [respond]),
+            # Node(Prep().execute, [respond]),
         ]
