@@ -73,70 +73,88 @@ def abort() -> AgentResponse:
     agent.abort()
     return AgentResponse(data={"response": "aborted"})
 
+"""OpenAI-compatible agent API endpoint with direct configuration handling"""
+
 @router.post('/completions', operation_id="createChatCompletion")
-# async def agent(request: Request, session: SessionContainer = Depends(verify_session())) -> AgentResponse:
 async def agent(request: Request) -> AgentResponse:
-    ## Parse Data --  from web acceptuseChat JSON, from client we need to pull ModelConfig
     request_val = await pretty_print_request(request)
     logger.info(request_val)
     session = await get_session(request)
-    # logger.info("SESSION", session)
 
     if session is None:
         return {"message": "unauthorized"}
 
     user_id = session.get_user_id()
-
-    # You can learn more about the `User` object over here https://github.com/supertokens/core-driver-interface/wiki
     user = await get_user_by_id(user_id)
 
-    print(f"userId {user_id}")
-    ## and add add the prompt and user_id to the data
+    # Parse request data
     data = await request.json()
     logger.info("DATA")
     logger.info(data)
 
-    ## First check API key for legitimacy
-    # valid_token = verify_token_exists(data)
-    # if valid_token is None:
-    #     return {"error": "Invalid Token."}
-
-    data['user_id'] = user_id #valid_token['user_id']
+    # Add user information
+    data['user_id'] = user_id
     if 'user_name' not in data:
         user_name = user.email.split("@")[0]
         data['user_name'] = user_name
     else:
         user_name = data['user_name']
 
-    ## TODO: Verify auth, rate limiter, etc -- should be handled by validation layer
-    if 'id' not in data and 'model_id' not in data:
-        return {"error": "No model profile specified."}
-    
-    logger.info("user_name")
-    logger.info(user_name)
+    logger.info(f"user_name: {user_name}")
 
-    # TODO: To make this faster we should ideally cache these models, gonna be a lot of reads and few writes here
-    model_profiles = ModelProfile()
-    print("GOT model_profiles")
+    # Construct model profile from request data instead of DB
+    model_profile = {
+        "model_config": {
+            "model_name": data.get("model", "default_model"),
+            "streaming": data.get("stream", False),
+        },
+        "generation_config": {
+            # Standard OpenAI parameters
+            "max_new_tokens": data.get("max_tokens", 16),
+            "temperature": data.get("temperature", 1.0),
+            "top_p": data.get("top_p", 1.0),
+            "n": data.get("n", 1),
+            "presence_penalty": data.get("presence_penalty", 0.0),
+            "frequency_penalty": data.get("frequency_penalty", 0.0),
+            
+            # VLLM specific parameters if provided
+            "use_beam_search": data.get("use_beam_search", False),
+            "top_k": data.get("top_k", -1),
+            "min_p": data.get("min_p", 0.0),
+            "repetition_penalty": data.get("repetition_penalty", 1.0),
+            "length_penalty": data.get("length_penalty", 1.0),
+            "stop_token_ids": data.get("stop_token_ids"),
+            "include_stop_str_in_output": data.get("include_stop_str_in_output", False),
+            "ignore_eos": data.get("ignore_eos", False),
+            "min_tokens": data.get("min_tokens", 0),
+            "skip_special_tokens": data.get("skip_special_tokens", True),
+            "spaces_between_special_tokens": data.get("spaces_between_special_tokens", True),
+        }
+    }
 
-    if 'model_id' in data:
-        model_profile = model_profiles.get(data['model_id'])
-    else:
-        model_profile = model_profiles.get(data['id'])
+    # Add optional parameters if present
+    optional_params = [
+        "truncate_prompt_tokens", "allowed_token_ids", "prompt_logprobs",
+        "guided_json", "guided_regex", "guided_choice", "guided_grammar",
+        "guided_decoding_backend", "guided_whitespace_pattern"
+    ]
+    for param in optional_params:
+        if param in data:
+            model_profile["generation_config"][param] = data[param]
+
+    # Add any stop sequences
+    if "stop" in data:
+        model_profile["generation_config"]["stop"] = data["stop"]
 
     if model_profile['model_config']['streaming']:
-        ## Get agent from agent Factory and run it
         agent = agent_interactor.get_agent()
-        print("GOT AGENT")
         output = agent.run({"input": data, "model": model_profile})
-        print(output)
 
         async def event_generator():
             redis = Redis.from_url('redis://redis:6379/0')
             async with redis.client() as client:
                 pubsub = client.pubsub()
                 await pubsub.subscribe(f"streaming-{user_id}")
-                id_counter = 0  # Initialize an ID counter
                 while True:
                     message = await pubsub.get_message()
                     if message and message['type'] == 'message':
@@ -162,17 +180,13 @@ async def agent(request: Request) -> AgentResponse:
         return StreamingResponse(event_generator(), media_type="text/event-stream")
 
     else:
-        ## Get agent from agent Factory and run it
         agent = agent_interactor.get_agent()
-        # logger.info("[DEBUG][api][agent][agent] agent: ", agent)
         output = agent.run({"input": data, "model": model_profile})
-        # TODO: Check for Errors here 
         logger.info("[DEBUG][api][agent][agent] agent: " + output.pretty_print())
 
-        ### Parse video if needed
+        # Handle video response
         if output.has_key('video'):
             filename = output.get("video.lipsync_response")
-
             with open(filename, 'rb') as fh:
                 return AgentResponse(
                     data = {
@@ -181,10 +195,9 @@ async def agent(request: Request) -> AgentResponse:
                     }
                 )
 
-        ### Parse audio if needed
+        # Handle audio response
         if output.has_key('audio'):
             filename = output.get("audio.audio_response")
-
             with open(filename, 'rb') as fh:
                 return AgentResponse(
                     data = {
@@ -193,9 +206,6 @@ async def agent(request: Request) -> AgentResponse:
                     }
                 )
 
-        # logger.info("[DEBUG][api][agent][agent] output: ", output)
-
-        ## Return agent output
         return AgentResponse(data=output.get_model_outputs())
 
 ### Streaming for old Forge
