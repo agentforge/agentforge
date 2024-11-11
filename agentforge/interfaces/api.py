@@ -19,13 +19,8 @@ class vLLMService(APIService):
 
   def prepare_stop_sequences(self, form_data: Dict[str, Any]) -> list:
       """Prepare stop sequences from form data"""
-      base_stops = [
-          form_data.get('user_id', ''),
-          "###",
-          ".## ",
-          "Summary:"
-      ]
-      
+      base_stops = ['<|eot_id|>']
+
       if 'generation_config' in form_data and 'stopping_criteria_string' in form_data['generation_config']:
           return form_data['generation_config']['stopping_criteria_string'].split(",") + base_stops
       return base_stops
@@ -88,7 +83,7 @@ class vLLMService(APIService):
 
       # Standard OpenAI parameters
       openai_params = {
-          "max_tokens": gen_config.get('max_new_tokens', 16),
+          "max_tokens": gen_config.get('max_tokens', 16),
           "temperature": gen_config.get('temperature', 0.7),
           "top_p": gen_config.get('top_p', 1.0),
           "n": gen_config.get('n', 1),
@@ -149,6 +144,8 @@ class vLLMService(APIService):
       try:
           # Prepare complete set of parameters
           completion_params = self.prepare_completion_params(form_data, stream)
+
+          logger.info(f"completion_params: {completion_params}\n")
           
           # Make request to VLLM
           response = create_completion(**completion_params)
