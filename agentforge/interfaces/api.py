@@ -3,6 +3,7 @@ import os
 import json
 from agentforge.adapters import APIService
 from agentforge.interfaces.vllm_client import get_streaming_response, create_completion, get_completion_text
+from typing import Optional
 from agentforge.utils import logger
 from agentforge.config import RedisConfig
 from fastapi import HTTPException
