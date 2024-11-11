@@ -189,7 +189,7 @@ class Context:
     ### Helper function to get entire formatted prompt
     def get_formatted(self, messages_cnt: int = 3, use_memory: str = True, knowledge: bool = True):
         # Our prompting now happens on the client side
-        return self.get('prompt')
+        return self.get('input.prompt')
         # prompt_template = self.prompts[self.get('input.model')]
         # biography = self.get('model.persona.biography')
         # memory = self.get('recall')
