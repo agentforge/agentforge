@@ -188,7 +188,7 @@ class Context:
 
     ### Helper function to get entire formatted prompt
     def get_formatted(self, messages_cnt: int = 3, use_memory: str = True, knowledge: bool = True):
-        prompt_template = self.prompts[self.get('model.prompt_config.prompt_template')]
+        prompt_template = self.prompts[self.get('input.model')]
         biography = self.get('model.persona.biography')
         memory = self.get('recall')
         if memory is not None and memory.strip() == "":
