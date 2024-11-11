@@ -282,6 +282,4 @@ class Context:
         return prompt
     
     def get_model_outputs(self):
-        return {
-            "choices": self.get("choices"),
-        }
+        return self.get("response")

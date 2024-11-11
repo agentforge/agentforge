@@ -121,15 +121,15 @@ class Respond:
             response = self.service.call(request)
 
             # Process response
-            if response and "choices" in response:
-                text = response["choices"][0]["text"]
+            # if response and "choices" in response:
+            #     text = response["choices"][0]["text"]
                 
-                # Clean and parse response
-                text = text.replace(request["prompt"], "")
-                text = self.parser.parse_llm_response(text)
-                text = self.clean_special_tokens(text, context)
-                
-                context.set("response", text)
+            #     # Clean and parse response
+            #     text = text.replace(request["prompt"], "")
+            #     text = self.parser.parse_llm_response(text)
+            #     text = self.clean_special_tokens(text, context)
+
+            context.set("response", response)
                 
             return context
             
