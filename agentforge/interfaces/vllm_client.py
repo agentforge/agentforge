@@ -74,7 +74,7 @@ def create_completion(
 
     # [Previous payload construction remains the same...]
     payload = {
-        "model": model,
+        # "model": model,
         "prompt": prompt,
         "max_tokens": max_tokens,
         "temperature": temperature,
