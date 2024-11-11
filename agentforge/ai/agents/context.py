@@ -188,70 +188,72 @@ class Context:
 
     ### Helper function to get entire formatted prompt
     def get_formatted(self, messages_cnt: int = 3, use_memory: str = True, knowledge: bool = True):
-        prompt_template = self.prompts[self.get('input.model')]
-        biography = self.get('model.persona.biography')
-        memory = self.get('recall')
-        if memory is not None and memory.strip() == "":
-            memory = None
-        plan = self.get('plan', None)
-        new_plan = self.get('new_plan', None)
-        instruction = self.get('prompt')
-        username = self.get('input.user_name', "Human")
-        agentname = self.get('model.persona.display_name', "Agent")
-        query = self.get('query', None)
-        message_history, msg_cnt = self.get_messages(prefix=f"\n{username}: ", postfix=f"\n{agentname}:", n=messages_cnt)
-        if memory is not None:
-            message_history.replace(memory, "") # remove memory from message history so no duplicates
-        ack = self.get('ack', None) # if response was an acknowledgement, we want to drop it
-        image_response = self.get('image_response', None)
-        knowledge = self.get('knowledge', None)
-        summary = self.get('summary', None)
-        voice = self.get('model.model_config.speech', False)
-        addtl_knowledge = self.get('additional_knowledge', None)
+        # Our prompting now happens on the client side
+        return self.get('prompt')
+        # prompt_template = self.prompts[self.get('input.model')]
+        # biography = self.get('model.persona.biography')
+        # memory = self.get('recall')
+        # if memory is not None and memory.strip() == "":
+        #     memory = None
+        # plan = self.get('plan', None)
+        # new_plan = self.get('new_plan', None)
+        # instruction = self.get('prompt')
+        # username = self.get('input.user_name', "Human")
+        # agentname = self.get('model.persona.display_name', "Agent")
+        # query = self.get('query', None)
+        # message_history, msg_cnt = self.get_messages(prefix=f"\n{username}: ", postfix=f"\n{agentname}:", n=messages_cnt)
+        # if memory is not None:
+        #     message_history.replace(memory, "") # remove memory from message history so no duplicates
+        # ack = self.get('ack', None) # if response was an acknowledgement, we want to drop it
+        # image_response = self.get('image_response', None)
+        # knowledge = self.get('knowledge', None)
+        # summary = self.get('summary', None)
+        # voice = self.get('model.model_config.speech', False)
+        # addtl_knowledge = self.get('additional_knowledge', None)
 
-        if not use_memory:
-            memory = None
-            message_history, msg_cnt = self.get_messages(prefix=f"\n{username}: ", postfix=f"\n{agentname}:", n=2)
+        # if not use_memory:
+        #     memory = None
+        #     message_history, msg_cnt = self.get_messages(prefix=f"\n{username}: ", postfix=f"\n{agentname}:", n=2)
         
-        if not knowledge:
-            knowledge = None
+        # if not knowledge:
+        #     knowledge = None
 
-        ### VALIDATE FORMATTED TEMPLATE
-        # formatted_template cannot be greater than the context window size of the model (and is preferably less)
-        # we need to tokenize the formatted template and check the length
-        # if the length is greater than the context window size, we need to truncate the formatted template
-        # To do so we will summarize our most recent memories and truncate the formatted template to fit
+        # ### VALIDATE FORMATTED TEMPLATE
+        # # formatted_template cannot be greater than the context window size of the model (and is preferably less)
+        # # we need to tokenize the formatted template and check the length
+        # # if the length is greater than the context window size, we need to truncate the formatted template
+        # # To do so we will summarize our most recent memories and truncate the formatted template to fit
         
-        # TODO: Implement this, pull this logic out into it's own function so we can reformat the template
-        # i.e. session history back-off, summarization of memories, etc.
+        # # TODO: Implement this, pull this logic out into it's own function so we can reformat the template
+        # # i.e. session history back-off, summarization of memories, etc.
 
-        # print(prompt_template,
-        #     name,
-        #     instruction,
-        #     f"biography: {biography}"
-        #     f"mem: {memory}"
+        # # print(prompt_template,
+        # #     name,
+        # #     instruction,
+        # #     f"biography: {biography}"
+        # #     f"mem: {memory}"
+        # # )
+
+        # formatted = self.format_template(
+        #     prompt_template,
+        #     name=agentname,
+        #     instruction=instruction,
+        #     biography=biography,
+        #     memory=memory,
+        #     human=username,
+        #     plan=plan,
+        #     new_plan=new_plan,
+        #     image_response=image_response,
+        #     knowledge=knowledge,
+        #     query=query,
+        #     message_history=message_history,
+        #     summary=summary,
+        #     voice=voice,
+        #     addtl_knowledge=addtl_knowledge,
+        #     ack=ack,
+        #     # current_date=datetime.now().strftime("%Y-%m-%d"),
         # )
-
-        formatted = self.format_template(
-            prompt_template,
-            name=agentname,
-            instruction=instruction,
-            biography=biography,
-            memory=memory,
-            human=username,
-            plan=plan,
-            new_plan=new_plan,
-            image_response=image_response,
-            knowledge=knowledge,
-            query=query,
-            message_history=message_history,
-            summary=summary,
-            voice=voice,
-            addtl_knowledge=addtl_knowledge,
-            ack=ack,
-            # current_date=datetime.now().strftime("%Y-%m-%d"),
-        )
-        return formatted
+        # return formatted
 
     
     def get_model_input(self):
