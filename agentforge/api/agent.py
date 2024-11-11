@@ -110,7 +110,7 @@ async def agent(request: Request) -> AgentResponse:
         },
         "generation_config": {
             # Standard OpenAI parameters
-            "max_new_tokens": data.get("max_tokens", 16),
+            "max_tokens": data.get("max_tokens", 16),
             "temperature": data.get("temperature", 1.0),
             "top_p": data.get("top_p", 1.0),
             "n": data.get("n", 1),
