@@ -85,7 +85,7 @@ async def agent(request: Request) -> AgentResponse:
         return {"message": "unauthorized"}
 
     user_id = session.get_user_id()
-    user = await get_user_by_id(user_id)
+    # user = await get_user_by_id(user_id)
 
     # Parse request data
     data = await request.json()
@@ -93,14 +93,14 @@ async def agent(request: Request) -> AgentResponse:
     logger.info(data)
 
     # Add user information
-    data['user_id'] = user_id
-    if 'user_name' not in data:
-        user_name = user.email.split("@")[0]
-        data['user_name'] = user_name
-    else:
-        user_name = data['user_name']
+    # data['user_id'] = user_id
+    # if 'user_name' not in data:
+    #     user_name = user.email.split("@")[0]
+    #     data['user_name'] = user_name
+    # else:
+    #     user_name = data['user_name']
 
-    logger.info(f"user_name: {user_name}")
+    # logger.info(f"user_name: {user_name}")
 
     # Construct model profile from request data instead of DB
     model_profile = {
